@@ -1,0 +1,113 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
+    }
+}
+plugins {
+    id "io.spring.dependency-management" version "1.0.6.RELEASE"
+}
+
+ext {
+    version = '1.0.0'
+    mockitoAllVersion = '1.10.19'
+    junitApiVersion = '5.2.0'
+    junitPlatformVersion = '1.2.0'
+    mockitoJunitVersion = '2.18.0'
+}
+
+allprojects {
+    group 'org.skellig'
+    version "${version}"
+}
+
+subprojects {
+
+    apply plugin: 'java'
+    apply plugin: 'groovy'
+    apply plugin: 'maven'
+    apply plugin: 'com.bmuschko.nexus'
+    apply plugin: 'io.spring.dependency-management'
+
+    version = '1.0.0'
+
+    ext {
+        projectUrl = 'http://skellig-framework.org'
+
+        projectRepo = {
+            url 'https://github.com/skellig-framework/skellig-core'
+            connection 'https://github.com/skellig-framework/skellig-core.git'
+        }
+
+        projectLicenses = {
+            license {
+                name = 'The Apache Software License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution 'repo'
+            }
+        }
+
+        projectDevelopers = {
+            developer {
+                id 'skellig-framework-team'
+                name = 'Skellig Framework Development Team'
+                roles {
+                    role 'developer'
+                    role 'tester'
+                }
+            }
+        }
+    }
+
+    sourceCompatibility = 1.8
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+
+    jar {
+        manifest {
+            attributes(
+                    "Manifest-Version": "1.0",
+                    "Implementation-Title": "${project.name}",
+                    "Implementation-Version": "${project.version}",
+                    'Implementation-Date': new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date()),
+                    'Created-By': "Gradle ${gradle.gradleVersion}",
+                    'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+            )
+        }
+    }
+
+    dependencyManagement {
+        dependencies {
+            dependency group: 'org.mockito', name: 'mockito-all', version: "${mockitoAllVersion}"
+            dependency group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "${junitApiVersion}"
+            dependency group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitApiVersion}"
+            dependency group: 'org.junit.platform', name: 'junit-platform-runner', version: "${junitPlatformVersion}"
+            dependency group: 'org.junit.platform', name: 'junit-platform-launcher', version: "${junitPlatformVersion}"
+            dependency group: 'org.mockito', name: 'mockito-junit-jupiter', version: "${mockitoJunitVersion}"
+        }
+    }
+
+    nexus {
+        sign = true
+        repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+        snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+
+    extraArchive {
+        sources = true
+        javadoc = true
+    }
+}
