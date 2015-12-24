@@ -1,0 +1,1 @@
+# skellig-core
