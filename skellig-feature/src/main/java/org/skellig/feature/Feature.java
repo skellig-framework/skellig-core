@@ -50,8 +50,15 @@ public class Feature {
             return this;
         }
 
+        public Builder withTestPreRequisites(List<TestPreRequisites<?>> testPreRequisites) {
+            this.testPreRequisites = testPreRequisites;
+            return this;
+        }
+
         public Builder withTestPreRequisite(TestPreRequisites<?> testPreRequisite) {
-            this.testPreRequisites.add(testPreRequisite);
+            if (testPreRequisite != null) {
+                this.testPreRequisites.add(testPreRequisite);
+            }
             return this;
         }
 

@@ -29,16 +29,19 @@ class DefaultFeatureParserTest {
         assertAll(
                 () -> assertEquals("Sign in user", feature.getName()),
                 () -> assertTrue(feature.getTestPreRequisites().isPresent()),
-                () -> assertTrue(((TagDetails) feature.getTestPreRequisites().get().get(0).getDetails())
-                        .getTags().containsAll(Stream.of("E2E", "SmokeTest", "User").collect(Collectors.toSet()))),
-                () -> assertEquals("/content/features/user",
-                        ((DataDetails) feature.getTestPreRequisites().get().get(1).getDetails()).getPaths()[0]),
-                () -> assertEquals("/content/features/common",
-                        ((DataDetails) feature.getTestPreRequisites().get().get(1).getDetails()).getPaths()[1]),
-                () -> assertEquals("default",
-                        ((InitDetails) feature.getTestPreRequisites().get().get(2).getDetails()).getId()),
-                () -> assertEquals("file1.std",
-                        ((InitDetails) feature.getTestPreRequisites().get().get(2).getDetails()).getFilePath()),
+                () -> assertTrue(feature.getTestPreRequisites().get().stream()
+                        .filter(item -> item.getDetails() instanceof TagDetails)
+                        .allMatch(item -> ((TagDetails)item).getTags().containsAll(Stream.of("E2E", "SmokeTest", "User").collect(Collectors.toSet())))),
+                () -> assertTrue(feature.getTestPreRequisites().get().stream()
+                                .filter(item -> item.getDetails() instanceof DataDetails)
+                                .allMatch(item ->
+                                        ((DataDetails)item).getPaths()[0].equals("/content/features/user") &&
+                                        ((DataDetails)item).getPaths()[1].equals("/content/features/common"))),
+                () -> assertTrue(feature.getTestPreRequisites().get().stream()
+                        .filter(item -> item.getDetails() instanceof InitDetails)
+                        .allMatch(item ->
+                                ((InitDetails)item).getId().equals("default") &&
+                                        ((InitDetails)item).getFilePath().equals("file1.std"))),
                 () -> assertEquals(2, feature.getScenarios().size())
         );
 
