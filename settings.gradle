@@ -1,4 +1,5 @@
 rootProject.name = 'skellig-core'
 
 include 'skellig-feature'
+include 'skellig-junit-runner'
 
