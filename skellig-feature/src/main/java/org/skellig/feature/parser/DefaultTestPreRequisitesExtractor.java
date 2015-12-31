@@ -25,10 +25,12 @@ class DefaultTestPreRequisitesExtractor {
     }
 
     public List<TestPreRequisites<?>> extractFrom(String text) {
-        return testPreRequisitesExtractors.stream()
-                .map(extractor -> extractor.extractFrom(text))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<TestPreRequisites<?>> preRequisites =
+                testPreRequisitesExtractors.stream()
+                        .map(extractor -> extractor.extractFrom(text))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+        return preRequisites.isEmpty() ? null : preRequisites;
     }
 
     public Set<String> extractTags(String text) {

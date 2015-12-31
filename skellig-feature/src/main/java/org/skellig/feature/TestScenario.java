@@ -6,20 +6,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TestScenario {
 
     private Set<String> tags;
     private String name;
     private List<TestStep> steps;
-    private List<Map<String, Object>> data;
 
-    protected TestScenario(String name, List<TestStep> steps, Set<String> tags,
-                           List<Map<String, Object>> data) {
+    protected TestScenario(String name, List<TestStep> steps, Set<String> tags) {
         this.name = name;
         this.steps = steps;
         this.tags = tags;
-        this.data = data;
     }
 
     public String getName() {
@@ -34,18 +32,15 @@ public class TestScenario {
         return Optional.ofNullable(tags == null ? null : Collections.unmodifiableSet(tags));
     }
 
-    public Optional<List<Map<String, Object>>> getData() {
-        return Optional.ofNullable(data == null ? null : Collections.unmodifiableList(data));
-    }
-
     public static class Builder {
+
         private String name;
-        private List<TestStep> steps;
         private Set<String> tags;
-        private List<Map<String, Object>> data;
+        private List<TestStep.Builder> stepBuilders;
+        private List<Map<String, String>> data;
 
         public Builder() {
-            steps = new ArrayList<>();
+            stepBuilders = new ArrayList<>();
         }
 
         public Builder withName(String name) {
@@ -53,8 +48,8 @@ public class TestScenario {
             return this;
         }
 
-        public Builder withStep(TestStep step) {
-            this.steps.add(step);
+        public Builder withStep(TestStep.Builder stepBuilder) {
+            this.stepBuilders.add(stepBuilder);
             return this;
         }
 
@@ -63,7 +58,7 @@ public class TestScenario {
             return this;
         }
 
-        public Builder withDataRow(Map<String, Object> dataRow) {
+        public Builder withDataRow(Map<String, String> dataRow) {
             if (data == null) {
                 data = new ArrayList<>();
             }
@@ -71,8 +66,25 @@ public class TestScenario {
             return this;
         }
 
-        public TestScenario build() {
-            return new TestScenario(name, steps, tags, data);
+        public List<TestScenario> build() {
+            if (data != null) {
+                return data.stream()
+                        .map(testDataRow ->
+                                new TestScenario(ParametersUtils.replaceParametersIfFound(name, testDataRow),
+                                        getTestStepsWithAppliedTestData(testDataRow), tags))
+                        .collect(Collectors.toList());
+            } else {
+                List<TestStep> steps = stepBuilders.stream()
+                        .map(TestStep.Builder::build)
+                        .collect(Collectors.toList());
+                return Collections.singletonList(new TestScenario(name, steps, tags));
+            }
+        }
+
+        private List<TestStep> getTestStepsWithAppliedTestData(Map<String, String> testDataRow) {
+            return stepBuilders.stream()
+                    .map(step -> step.buildAndApplyTestData(testDataRow))
+                    .collect(Collectors.toList());
         }
     }
 }
