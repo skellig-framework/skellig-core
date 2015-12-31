@@ -1,6 +1,15 @@
 Name: Test feature
 
    Test: Test scenario
-   Given something
-   Run something
-   Validate something
+      Given something
+      Run something
+      Validate something
+
+   Test: Another test scenario
+      Given value is <value>
+      Run function with <value>
+      Validate result is <expected>
+   Data:
+      |value|expected|
+      | v1  | e1     |
+      | v2  | e2     |
