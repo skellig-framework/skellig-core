@@ -8,7 +8,9 @@ import org.junit.runners.model.InitializationError;
 import org.skellig.feature.TestScenario;
 import org.skellig.feature.TestStep;
 import org.skellig.runner.exception.FeatureRunnerException;
+import org.skellig.test.processing.runner.TestStepRunner;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,11 +19,13 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
 
     private final Map<Object, Description> stepDescriptions = new HashMap<>();
     private TestScenario testScenario;
+    private TestStepRunner testStepRunner;
     private String[] testDataPaths;
 
-    protected TestScenarioRunner(TestScenario testScenario) throws InitializationError {
+    protected TestScenarioRunner(TestScenario testScenario, TestStepRunner testStepRunner) throws InitializationError {
         super(testScenario.getClass());
         this.testScenario = testScenario;
+        this.testStepRunner = testStepRunner;
     }
 
     @Override
@@ -60,7 +64,7 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
         Description childDescription = describeChild(child);
         notifier.fireTestStarted(childDescription);
         try {
-            //TODO: run test case from test data
+            testStepRunner.run(child.getName(), child.getParameters().orElse(Collections.emptyMap()), testDataPaths);
         } catch (Throwable e) {
             notifier.fireTestFailure(new Failure(childDescription, e));
             notifier.pleaseStop();
@@ -69,9 +73,9 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
         }
     }
 
-    public static TestScenarioRunner create(TestScenario testScenario) {
+    public static TestScenarioRunner create(TestScenario testScenario, TestStepRunner testStepRunner) {
         try {
-            return new TestScenarioRunner(testScenario);
+            return new TestScenarioRunner(testScenario, testStepRunner);
         } catch (InitializationError e) {
             throw new FeatureRunnerException(e.getMessage(), e);
         }
