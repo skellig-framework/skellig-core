@@ -17,6 +17,7 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
 
     private final Map<Object, Description> stepDescriptions = new HashMap<>();
     private TestScenario testScenario;
+    private String[] testDataPaths;
 
     protected TestScenarioRunner(TestScenario testScenario) throws InitializationError {
         super(testScenario.getClass());
@@ -47,6 +48,11 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
     public Description describeChild(TestStep step) {
         return stepDescriptions.getOrDefault(step,
                 Description.createTestDescription(getName(), step.getName(), step.getName()));
+    }
+
+    public void run(RunNotifier notifier, String[] testDataPaths) {
+        this.testDataPaths = testDataPaths;
+        super.run(notifier);
     }
 
     @Override

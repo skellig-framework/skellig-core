@@ -16,8 +16,8 @@ public class TestScenario {
 
     protected TestScenario(String name, List<TestStep> steps, Set<String> tags) {
         this.name = name;
-        this.steps = steps;
-        this.tags = tags;
+        this.steps = Collections.unmodifiableList(steps);
+        this.tags = tags == null ? null : Collections.unmodifiableSet(tags);
     }
 
     public String getName() {
@@ -25,11 +25,11 @@ public class TestScenario {
     }
 
     public List<TestStep> getSteps() {
-        return Collections.unmodifiableList(steps);
+        return steps;
     }
 
     public Optional<Set<String>> getTags() {
-        return Optional.ofNullable(tags == null ? null : Collections.unmodifiableSet(tags));
+        return Optional.ofNullable(tags);
     }
 
     public static class Builder {

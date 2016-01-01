@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 public class TestStep {
@@ -14,7 +13,7 @@ public class TestStep {
 
     protected TestStep(String name, Map<String, String> parameters) {
         this.name = name;
-        this.parameters = parameters;
+        this.parameters = parameters == null ? null : Collections.unmodifiableMap(parameters);
     }
 
     public String getName() {
@@ -22,7 +21,7 @@ public class TestStep {
     }
 
     public Optional<Map<String, String>> getParameters() {
-        return Optional.ofNullable(parameters == null ? null : Collections.unmodifiableMap(parameters));
+        return Optional.ofNullable(parameters);
     }
 
     public static class Builder {
