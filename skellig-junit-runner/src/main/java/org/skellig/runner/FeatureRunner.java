@@ -11,6 +11,7 @@ import org.skellig.feature.InitDetails;
 import org.skellig.runner.exception.FeatureRunnerException;
 import org.skellig.runner.tagextractor.RequestedTagExtractor;
 import org.skellig.runner.tagextractor.TagExtractor;
+import org.skellig.test.processing.runner.TestStepRunner;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,14 +24,16 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
 
     private Feature feature;
     private List<TestScenarioRunner> testScenarioRunners;
+    private TestStepRunner testStepRunner;
     private Description description;
 
-    protected FeatureRunner(Feature feature) throws InitializationError {
+    protected FeatureRunner(Feature feature, TestStepRunner testStepRunner) throws InitializationError {
         super(feature.getClass());
         this.feature = feature;
+        this.testStepRunner = testStepRunner;
         testScenarioRunners =
                 feature.getScenarios().stream()
-                        .map(TestScenarioRunner::create)
+                        .map(testScenario -> TestScenarioRunner.create(testScenario, testStepRunner))
                         .collect(Collectors.toList());
     }
 
@@ -63,9 +66,8 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
         Description childDescription = describeChild(child);
         notifier.fireTestStarted(childDescription);
 
-        extractTagFromFeature(InitDetails.class).ifPresent(value -> {
-            //TODO: run init from test data file
-        });
+        extractTagFromFeature(InitDetails.class).ifPresent(value ->
+                testStepRunner.run(value.getId(), value.getFilePath()));
 
         try {
             child.run(notifier, extractTagFromFeature(DataDetails.class).map(DataDetails::getPaths).orElse(null));
@@ -81,9 +83,9 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
         return tagExtractor.extract(tagClass, feature.getTestPreRequisites().orElse(Collections.emptyList()));
     }
 
-    public static FeatureRunner create(Feature feature) {
+    public static FeatureRunner create(Feature feature, TestStepRunner testStepRunner) {
         try {
-            return new FeatureRunner(feature);
+            return new FeatureRunner(feature, testStepRunner);
         } catch (InitializationError e) {
             throw new FeatureRunnerException(e.getMessage(), e);
         }

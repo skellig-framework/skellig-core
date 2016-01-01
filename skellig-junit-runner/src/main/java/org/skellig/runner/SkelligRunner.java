@@ -5,6 +5,8 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.model.Statement;
 import org.skellig.feature.parser.DefaultFeatureParser;
+import org.skellig.test.processing.runner.DefaultTestStepRunner;
+import org.skellig.test.processing.runner.TestStepRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +24,14 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
     public SkelligRunner(Class clazz) throws Exception {
         super(clazz);
 
+        TestStepRunner testStepRunner = new DefaultTestStepRunner.Builder().build();
+
         SkelligOptions skelligOptions = (SkelligOptions) clazz.getDeclaredAnnotation(SkelligOptions.class);
 
         DefaultFeatureParser featureParser = new DefaultFeatureParser();
         Path pathToFeatures = Paths.get(getClass().getResource(skelligOptions.features()[0]).toURI());
         children = featureParser.parse(pathToFeatures.toString()).stream()
-                .map(FeatureRunner::create)
+                .map(feature -> FeatureRunner.create(feature, testStepRunner))
                 .collect(Collectors.toList());
     }
 
