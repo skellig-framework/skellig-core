@@ -2,5 +2,6 @@ rootProject.name = 'skellig-core'
 
 include 'skellig-feature'
 include 'skellig-junit-runner'
-include 'skellig-test-processing'
+include 'skellig-test-step-processing'
+include 'skellig-test-step-reader'
 
