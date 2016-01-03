@@ -32,11 +32,11 @@ public class TestStep {
         return Optional.ofNullable(validationDetails);
     }
 
-    public static class Builder {
-        private String id;
-        private String name;
-        private Object testData;
-        private ValidationDetails validationDetails;
+    public static class Builder<T> {
+        protected String id;
+        protected String name;
+        protected Object testData;
+        protected ValidationDetails validationDetails;
 
         public Builder withId(String id) {
             this.id = id;
