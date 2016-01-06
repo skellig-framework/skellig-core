@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    compile group: 'io.rest-assured', name: 'json-path', version: '3.0.0'
+
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }

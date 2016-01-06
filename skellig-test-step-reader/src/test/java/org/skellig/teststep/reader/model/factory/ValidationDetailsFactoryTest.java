@@ -39,19 +39,19 @@ class ValidationDetailsFactoryTest {
                 () -> assertEquals("t1", validationDetails.getTestStepId().orElse("")),
                 () -> assertEquals(2, validationDetails.getValidationEntries().size())
         );
-        ValidationDetails.ValidationEntry firstValidationEntry = validationDetails.getValidationEntries().get(0);
-        ValidationDetails.ValidationEntry secondValidationEntry = validationDetails.getValidationEntries().get(1);
+        ValidationDetails.ExpectedTestResult firstExpectedTestResult = validationDetails.getValidationEntries().get(0);
+        ValidationDetails.ExpectedTestResult secondExpectedTestResult = validationDetails.getValidationEntries().get(1);
 
         assertAll(
-                () -> assertEquals(ValidationType.TABLE, firstValidationEntry.getValidationType()),
-                () -> assertEquals("v1", firstValidationEntry.getActualExpectedValues().get("f1")),
-                () -> assertEquals("v2", firstValidationEntry.getActualExpectedValues().get("f2"))
+                () -> assertEquals(ValidationType.TABLE, firstExpectedTestResult.getValidationType()),
+                () -> assertEquals("v1", firstExpectedTestResult.getActualExpectedValues().get("f1")),
+                () -> assertEquals("v2", firstExpectedTestResult.getActualExpectedValues().get("f2"))
         );
 
         assertAll(
-                () -> assertEquals(ValidationType.TABLE, secondValidationEntry.getValidationType()),
-                () -> assertEquals("g1", secondValidationEntry.getActualExpectedValues().get("f1")),
-                () -> assertEquals("g2", secondValidationEntry.getActualExpectedValues().get("f2"))
+                () -> assertEquals(ValidationType.TABLE, secondExpectedTestResult.getValidationType()),
+                () -> assertEquals("g1", secondExpectedTestResult.getActualExpectedValues().get("f1")),
+                () -> assertEquals("g2", secondExpectedTestResult.getActualExpectedValues().get("f2"))
         );
     }
 
@@ -71,31 +71,31 @@ class ValidationDetailsFactoryTest {
 
         assertEquals(4, validationDetails.getValidationEntries().size());
 
-        ValidationDetails.ValidationEntry firstValidationEntry = validationDetails.getValidationEntries().get(0);
-        ValidationDetails.ValidationEntry secondValidationEntry = validationDetails.getValidationEntries().get(1);
-        ValidationDetails.ValidationEntry thirdValidationEntry = validationDetails.getValidationEntries().get(2);
-        ValidationDetails.ValidationEntry forthValidationEntry = validationDetails.getValidationEntries().get(3);
+        ValidationDetails.ExpectedTestResult firstExpectedTestResult = validationDetails.getValidationEntries().get(0);
+        ValidationDetails.ExpectedTestResult secondExpectedTestResult = validationDetails.getValidationEntries().get(1);
+        ValidationDetails.ExpectedTestResult thirdExpectedTestResult = validationDetails.getValidationEntries().get(2);
+        ValidationDetails.ExpectedTestResult forthExpectedTestResult = validationDetails.getValidationEntries().get(3);
 
         assertAll(
-                () -> assertEquals(ValidationType.DEFAULT, firstValidationEntry.getValidationType()),
-                () -> assertEquals("size(1)", ((List) firstValidationEntry.getActualExpectedValues().get("expected size")).get(0))
+                () -> assertEquals(ValidationType.DEFAULT, firstExpectedTestResult.getValidationType()),
+                () -> assertEquals("size(1)", ((List) firstExpectedTestResult.getActualExpectedValues().get("expected size")).get(0))
         );
 
         assertAll(
-                () -> assertEquals(ValidationType.DEFAULT, secondValidationEntry.getValidationType()),
-                () -> assertEquals("contains(v1)", ((List) secondValidationEntry.getActualExpectedValues().get("contains")).get(0))
+                () -> assertEquals(ValidationType.DEFAULT, secondExpectedTestResult.getValidationType()),
+                () -> assertEquals("contains(v1)", ((List) secondExpectedTestResult.getActualExpectedValues().get("contains")).get(0))
         );
 
         assertAll(
-                () -> assertEquals(ValidationType.TABLE, thirdValidationEntry.getValidationType()),
-                () -> assertEquals("v1", thirdValidationEntry.getActualExpectedValues().get("c1")),
-                () -> assertEquals("v2", thirdValidationEntry.getActualExpectedValues().get("c2"))
+                () -> assertEquals(ValidationType.TABLE, thirdExpectedTestResult.getValidationType()),
+                () -> assertEquals("v1", thirdExpectedTestResult.getActualExpectedValues().get("c1")),
+                () -> assertEquals("v2", thirdExpectedTestResult.getActualExpectedValues().get("c2"))
         );
 
         assertAll(
-                () -> assertEquals(ValidationType.TABLE, forthValidationEntry.getValidationType()),
-                () -> assertEquals("g1", forthValidationEntry.getActualExpectedValues().get("c1")),
-                () -> assertEquals("g2", forthValidationEntry.getActualExpectedValues().get("c2"))
+                () -> assertEquals(ValidationType.TABLE, forthExpectedTestResult.getValidationType()),
+                () -> assertEquals("g1", forthExpectedTestResult.getActualExpectedValues().get("c1")),
+                () -> assertEquals("g2", forthExpectedTestResult.getActualExpectedValues().get("c2"))
         );
     }
 
@@ -109,19 +109,19 @@ class ValidationDetailsFactoryTest {
 
         assertEquals(2, validationDetails.getValidationEntries().size());
 
-        ValidationDetails.ValidationEntry firstValidationEntry = validationDetails.getValidationEntries().get(0);
-        ValidationDetails.ValidationEntry secondValidationEntry = validationDetails.getValidationEntries().get(1);
+        ValidationDetails.ExpectedTestResult firstExpectedTestResult = validationDetails.getValidationEntries().get(0);
+        ValidationDetails.ExpectedTestResult secondExpectedTestResult = validationDetails.getValidationEntries().get(1);
 
         assertAll(
-                () -> assertEquals(ValidationType.TABLE, firstValidationEntry.getValidationType()),
-                () -> assertEquals("v1", firstValidationEntry.getActualExpectedValues().get("c1")),
-                () -> assertEquals("v2", firstValidationEntry.getActualExpectedValues().get("c2"))
+                () -> assertEquals(ValidationType.TABLE, firstExpectedTestResult.getValidationType()),
+                () -> assertEquals("v1", firstExpectedTestResult.getActualExpectedValues().get("c1")),
+                () -> assertEquals("v2", firstExpectedTestResult.getActualExpectedValues().get("c2"))
         );
 
         assertAll(
-                () -> assertEquals(ValidationType.TABLE, secondValidationEntry.getValidationType()),
-                () -> assertEquals("g1", secondValidationEntry.getActualExpectedValues().get("c1")),
-                () -> assertEquals("g2", secondValidationEntry.getActualExpectedValues().get("c2"))
+                () -> assertEquals(ValidationType.TABLE, secondExpectedTestResult.getValidationType()),
+                () -> assertEquals("g1", secondExpectedTestResult.getActualExpectedValues().get("c1")),
+                () -> assertEquals("g2", secondExpectedTestResult.getActualExpectedValues().get("c2"))
         );
     }
 
@@ -133,17 +133,17 @@ class ValidationDetailsFactoryTest {
 
         assertEquals(2, validationDetails.getValidationEntries().size());
 
-        ValidationDetails.ValidationEntry firstValidationEntry = validationDetails.getValidationEntries().get(0);
-        ValidationDetails.ValidationEntry secondValidationEntry = validationDetails.getValidationEntries().get(1);
+        ValidationDetails.ExpectedTestResult firstExpectedTestResult = validationDetails.getValidationEntries().get(0);
+        ValidationDetails.ExpectedTestResult secondExpectedTestResult = validationDetails.getValidationEntries().get(1);
 
         assertAll(
-                () -> assertEquals(ValidationType.TABLE, firstValidationEntry.getValidationType()),
-                () -> assertEquals("v1", firstValidationEntry.getActualExpectedValues().get("f1"))
+                () -> assertEquals(ValidationType.TABLE, firstExpectedTestResult.getValidationType()),
+                () -> assertEquals("v1", firstExpectedTestResult.getActualExpectedValues().get("f1"))
         );
 
         assertAll(
-                () -> assertEquals(ValidationType.TABLE, secondValidationEntry.getValidationType()),
-                () -> assertEquals("v2", secondValidationEntry.getActualExpectedValues().get("f2"))
+                () -> assertEquals(ValidationType.TABLE, secondExpectedTestResult.getValidationType()),
+                () -> assertEquals("v2", secondExpectedTestResult.getActualExpectedValues().get("f2"))
         );
     }
 
@@ -155,12 +155,12 @@ class ValidationDetailsFactoryTest {
 
         assertEquals(1, validationDetails.getValidationEntries().size());
 
-        ValidationDetails.ValidationEntry firstValidationEntry = validationDetails.getValidationEntries().get(0);
+        ValidationDetails.ExpectedTestResult firstExpectedTestResult = validationDetails.getValidationEntries().get(0);
 
         assertAll(
-                () -> assertEquals(ValidationType.DEFAULT, firstValidationEntry.getValidationType()),
-                () -> assertEquals("contains(a)", ((List) firstValidationEntry.getActualExpectedValues().get("")).get(0)),
-                () -> assertEquals("contains(b)", ((List) firstValidationEntry.getActualExpectedValues().get("")).get(1))
+                () -> assertEquals(ValidationType.DEFAULT, firstExpectedTestResult.getValidationType()),
+                () -> assertEquals("contains(a)", ((List) firstExpectedTestResult.getActualExpectedValues().get("")).get(0)),
+                () -> assertEquals("contains(b)", ((List) firstExpectedTestResult.getActualExpectedValues().get("")).get(1))
         );
     }
 
