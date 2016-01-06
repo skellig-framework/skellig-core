@@ -2,13 +2,11 @@ plugins {
     id 'java'
 }
 
-group 'org.skellig'
-version 'unspecified'
-
-repositories {
-    mavenCentral()
+dependencies {
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }
 
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+test {
+    useJUnitPlatform()
 }
