@@ -22,4 +22,8 @@ public enum ValidationType {
                 .findFirst()
                 .orElse(ValidationType.TABLE);
     }
+
+    public Pattern getPattern() {
+        return pattern;
+    }
 }
