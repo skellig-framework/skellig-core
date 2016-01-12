@@ -8,7 +8,6 @@ import org.skellig.teststep.reader.model.ValidationDetails;
 import org.skellig.teststep.reader.model.ValidationType;
 import org.skellig.teststep.reader.validation.comparator.ValueComparator;
 
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

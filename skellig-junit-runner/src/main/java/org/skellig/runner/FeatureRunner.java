@@ -5,7 +5,6 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.model.InitializationError;
-import org.skellig.feature.DataDetails;
 import org.skellig.feature.Feature;
 import org.skellig.feature.InitDetails;
 import org.skellig.runner.exception.FeatureRunnerException;
@@ -66,11 +65,10 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
         Description childDescription = describeChild(child);
         notifier.fireTestStarted(childDescription);
 
-        extractTagFromFeature(InitDetails.class).ifPresent(value ->
-                testStepRunner.run(value.getId(), value.getFilePath()));
+        extractTagFromFeature(InitDetails.class).ifPresent(value -> testStepRunner.run(value.getId()));
 
         try {
-            child.run(notifier, extractTagFromFeature(DataDetails.class).map(DataDetails::getPaths).orElse(null));
+            child.run(notifier);
         } catch (Throwable e) {
             notifier.fireTestFailure(new Failure(childDescription, e));
             notifier.pleaseStop();

@@ -5,15 +5,18 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.model.Statement;
 import org.skellig.feature.parser.DefaultFeatureParser;
+import org.skellig.runner.exception.FeatureRunnerException;
 import org.skellig.test.processing.runner.DefaultTestStepRunner;
 import org.skellig.test.processing.runner.TestStepRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SkelligRunner extends ParentRunner<FeatureRunner> {
 
@@ -23,10 +26,23 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
 
     public SkelligRunner(Class clazz) throws Exception {
         super(clazz);
-
-        TestStepRunner testStepRunner = new DefaultTestStepRunner.Builder().build();
-
         SkelligOptions skelligOptions = (SkelligOptions) clazz.getDeclaredAnnotation(SkelligOptions.class);
+
+        List<Path> testStepPaths = Stream.of(skelligOptions.testSteps())
+                .map(path -> {
+                    try {
+                        return Paths.get(clazz.getResource(path).toURI());
+                    } catch (URISyntaxException e) {
+                        throw new FeatureRunnerException(e.getMessage(), e);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        TestStepRunner testStepRunner =
+                new DefaultTestStepRunner.Builder()
+                        .withTestStepReader(fileName -> null, testStepPaths)
+                        .build();
+
 
         DefaultFeatureParser featureParser = new DefaultFeatureParser();
         Path pathToFeatures = Paths.get(getClass().getResource(skelligOptions.features()[0]).toURI());
