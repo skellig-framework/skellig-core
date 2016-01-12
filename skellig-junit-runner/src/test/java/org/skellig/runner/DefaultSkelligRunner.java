@@ -4,7 +4,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(SkelligRunner.class)
 @SkelligOptions(
-        features = {"/feature"}
+        features = {"/feature"},
+        testSteps = {"/feature"}
 )
 public class DefaultSkelligRunner {
 
