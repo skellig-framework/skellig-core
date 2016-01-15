@@ -1,0 +1,13 @@
+# simple test step
+
+name(Simple test step){
+ url = ${baseUrl}/a/b/c
+ method = POST
+ payload {
+      type = json
+      json {
+             command = "go"
+            value = "v 1 2 3"
+      }
+ }
+}
