@@ -4,4 +4,5 @@ include 'skellig-feature'
 include 'skellig-junit-runner'
 include 'skellig-test-step-processing'
 include 'skellig-test-step-reader'
+include 'skellig-test-step-reader-sts'
 

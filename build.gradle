@@ -37,18 +37,18 @@ subprojects {
         projectLicenses = {
             license {
                 name = 'The Apache Software License, Version 2.0'
-                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                distribution 'repo'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution = 'repo'
             }
         }
 
         projectDevelopers = {
             developer {
-                id 'skellig-framework-team'
+                id = 'skellig-framework-team'
                 name = 'Skellig Framework Development Team'
                 roles {
-                    role 'developer'
-                    role 'tester'
+                    role = 'developer'
+                    role = 'tester'
                 }
             }
         }
