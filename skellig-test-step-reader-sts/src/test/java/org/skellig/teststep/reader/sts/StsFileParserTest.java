@@ -101,6 +101,23 @@ class StsFileParserTest {
         );
     }
 
+    @Test
+    void testParseTestStepWithArrayOfMaps() throws URISyntaxException {
+        Path filePath = Paths.get(getClass().getResource("/test-step-with-array-of-maps.sts").toURI());
+
+        List<Map<String, Object>> testSteps = stsFileParser.parse(filePath);
+
+        Map<String, Object> firstTestStep = testSteps.get(0);
+        assertAll(
+                () -> assertEquals("do something big", firstTestStep.get("name")),
+                () -> assertEquals(2, ((List)getValueFromMap(firstTestStep, "data", "values")).size()),
+                () -> assertEquals("v1", ((Map)((List)getValueFromMap(firstTestStep, "data", "values")).get(0)).get("c1")),
+                () -> assertEquals("v2", ((Map)((List)getValueFromMap(firstTestStep, "data", "values")).get(0)).get("c2")),
+                () -> assertEquals("v3", ((Map)((List)getValueFromMap(firstTestStep, "data", "values")).get(1)).get("c1")),
+                () -> assertEquals("v4", ((Map)((List)getValueFromMap(firstTestStep, "data", "values")).get(1)).get("c2"))
+        );
+    }
+
     private Object getValueFromMap(Map<String, Object> data, String... keys) {
         Object value = data;
         for (String key : keys) {
