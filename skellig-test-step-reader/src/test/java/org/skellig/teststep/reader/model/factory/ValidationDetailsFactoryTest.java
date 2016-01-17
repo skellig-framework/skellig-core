@@ -3,6 +3,7 @@ package org.skellig.teststep.reader.model.factory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.skellig.teststep.reader.model.TestStep;
 import org.skellig.teststep.reader.model.ValidationDetails;
 import org.skellig.teststep.reader.model.ValidationType;
 
@@ -13,27 +14,32 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("Create validation details")
 class ValidationDetailsFactoryTest {
 
-    private ValidationDetailsFactory validationDetailsFactory;
+    private TestStepFactory validationDetailsFactory;
 
     @BeforeEach
     void setUp() {
-        validationDetailsFactory = new ValidationDetailsFactory();
+        validationDetailsFactory =
+                new DefaultTestStepFactory.Build()
+                        .withDefaultFactories()
+                        .build();
     }
 
     @Test
     @DisplayName("When has test id and grouped expected results")
     void test() {
         Map<String, Object> rawValidationDetails = new LinkedHashMap<>();
-        rawValidationDetails.put("fromTest", "t1");
+        rawValidationDetails.put("from_test", "t1");
         rawValidationDetails.put("response has", createMap("f1", "v1", "f2", "v2"));
         rawValidationDetails.put("response also has", createMap("f1", "g1", "f2", "g2"));
 
-        ValidationDetails validationDetails = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        TestStep testStep = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertAll(
                 () -> assertEquals("t1", validationDetails.getTestStepId().orElse("")),
@@ -59,6 +65,7 @@ class ValidationDetailsFactoryTest {
     @DisplayName("When has many default and grouped table validation types")
     void test2() {
         Map<String, Object> rawValidationDetails = new LinkedHashMap<>();
+        rawValidationDetails.put("from_test", "t1");
         rawValidationDetails.put("expected size", Collections.singletonList("size(1)"));
         rawValidationDetails.put("contains", Collections.singletonList("contains(v1)"));
         rawValidationDetails.put("contains rows",
@@ -67,7 +74,8 @@ class ValidationDetailsFactoryTest {
                         createMap("c1", "g1", "c2", "g2"))
         );
 
-        ValidationDetails validationDetails = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        TestStep testStep = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertEquals(4, validationDetails.getValidationEntries().size());
 
@@ -102,10 +110,12 @@ class ValidationDetailsFactoryTest {
     @Test
     @DisplayName("When has many table validation types")
     void test3() {
-        ValidationDetails validationDetails = validationDetailsFactory.create(createMap("validate",
-                Arrays.asList(
-                        createMap("c1", "v1", "c2", "v2"),
-                        createMap("c1", "g1", "c2", "g2"))));
+        TestStep testStep = validationDetailsFactory.create(
+                createMap("table", "t_1",
+                        "validate", Arrays.asList(
+                                createMap("c1", "v1", "c2", "v2"),
+                                createMap("c1", "g1", "c2", "g2"))));
+        ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertEquals(2, validationDetails.getValidationEntries().size());
 
@@ -128,8 +138,9 @@ class ValidationDetailsFactoryTest {
     @Test
     @DisplayName("When has one table validation type")
     void test4() {
-        ValidationDetails validationDetails =
-                validationDetailsFactory.create(createMap("validate", createMap("f1", "v1", "f2", "v2")));
+        TestStep testStep =
+                validationDetailsFactory.create(createMap("table", "t_1", "validate", createMap("f1", "v1", "f2", "v2")));
+        ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertEquals(2, validationDetails.getValidationEntries().size());
 
@@ -150,8 +161,11 @@ class ValidationDetailsFactoryTest {
     @Test
     @DisplayName("When has one default validation type")
     void test5() {
-        ValidationDetails validationDetails = validationDetailsFactory.create(createMap("validate",
-                Arrays.asList("contains(a)", "contains(b)")));
+        Map<String, Object> rawValidationDetails = createMap("table", "t_1",
+                "validate", Arrays.asList("contains(a)", "contains(b)"));
+
+        TestStep testStep = validationDetailsFactory.create(rawValidationDetails);
+        ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertEquals(1, validationDetails.getValidationEntries().size());
 
