@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class StsFileParser {
+class StsFileParser {
 
-    public List<Map<String, Object>> parse(Path filePath) {
+    List<Map<String, Object>> parse(Path filePath) {
         List<Map<String, Object>> rawTestSteps = new ArrayList<>();
 
         try (StsFileBufferedReader reader = new StsFileBufferedReader(Files.newBufferedReader(filePath));
