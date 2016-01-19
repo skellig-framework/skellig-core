@@ -6,6 +6,7 @@ import org.junit.runners.ParentRunner;
 import org.junit.runners.model.Statement;
 import org.skellig.feature.parser.DefaultFeatureParser;
 import org.skellig.runner.exception.FeatureRunnerException;
+import org.skellig.test.processing.SkelligTestContext;
 import org.skellig.test.processing.runner.DefaultTestStepRunner;
 import org.skellig.test.processing.runner.TestStepRunner;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,7 +24,7 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SkelligRunner.class);
 
-    private List<FeatureRunner> children;
+    private List<FeatureRunner> children = new ArrayList<>();
 
     public SkelligRunner(Class clazz) throws Exception {
         super(clazz);
@@ -38,17 +40,30 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
                 })
                 .collect(Collectors.toList());
 
+        SkelligTestContext skelligTestContext = skelligOptions.context().newInstance();
+        skelligTestContext.initialize();
+
         TestStepRunner testStepRunner =
                 new DefaultTestStepRunner.Builder()
-                        .withTestStepReader(fileName -> null, testStepPaths)
+                        .withTestStepProcessor(skelligTestContext.getTestStepProcessor())
+                        .withTestStepReader(skelligTestContext.getTestStepReader(), testStepPaths)
                         .build();
 
-
         DefaultFeatureParser featureParser = new DefaultFeatureParser();
-        Path pathToFeatures = Paths.get(getClass().getResource(skelligOptions.features()[0]).toURI());
-        children = featureParser.parse(pathToFeatures.toString()).stream()
-                .map(feature -> FeatureRunner.create(feature, testStepRunner))
-                .collect(Collectors.toList());
+        Stream.of(skelligOptions.features())
+                .forEach(featureResourcePath -> {
+                    try {
+                        Path pathToFeatures = Paths.get(getClass().getResource(featureResourcePath).toURI());
+                        children.addAll(
+                                featureParser.parse(pathToFeatures.toString()).stream()
+                                        .map(feature -> FeatureRunner.create(feature, testStepRunner))
+                                        .collect(Collectors.toList())
+                        );
+                    } catch (URISyntaxException e) {
+                        throw new FeatureRunnerException("Failed to read features from path: " + featureResourcePath, e);
+                    }
+                });
+
     }
 
     @Override
@@ -78,7 +93,7 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
     }
 
 
-    class RunSkellig extends Statement {
+    private static class RunSkellig extends Statement {
         private final Statement runFeatures;
 
         RunSkellig(Statement runFeatures) {

@@ -1,5 +1,7 @@
 package org.skellig.runner;
 
+import org.skellig.test.processing.SkelligTestContext;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,4 +14,6 @@ public @interface SkelligOptions {
     String[] features();
 
     String[] testSteps();
+
+    Class<? extends SkelligTestContext> context() default SkelligTestContext.class;
 }
