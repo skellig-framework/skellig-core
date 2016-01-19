@@ -1,4 +1,4 @@
-package org.skellig.test.processing.exception;
+package org.skellig.teststep.processing.exception;
 
 public class TestStepProcessingException extends RuntimeException {
 

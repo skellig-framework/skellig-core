@@ -1,11 +1,11 @@
-package org.skellig.test.processing.runner;
+package org.skellig.teststep.processing.runner;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
-import org.skellig.test.processing.exception.TestStepProcessingException;
-import org.skellig.test.processing.processor.TestStepProcessor;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
+import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.reader.TestStepReader;
 import org.skellig.teststep.reader.model.TestStep;
 

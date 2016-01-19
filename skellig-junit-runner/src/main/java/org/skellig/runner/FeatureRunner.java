@@ -10,7 +10,7 @@ import org.skellig.feature.InitDetails;
 import org.skellig.runner.exception.FeatureRunnerException;
 import org.skellig.runner.tagextractor.RequestedTagExtractor;
 import org.skellig.runner.tagextractor.TagExtractor;
-import org.skellig.test.processing.runner.TestStepRunner;
+import org.skellig.teststep.processing.runner.TestStepRunner;
 
 import java.util.Collections;
 import java.util.List;
