@@ -1,6 +1,5 @@
 package org.skellig.teststep.reader.model.factory;
 
-import org.skellig.teststep.reader.exception.TestStepReadException;
 import org.skellig.teststep.reader.model.TestStep;
 
 import java.util.ArrayList;
@@ -8,7 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
-public class DefaultTestStepFactory implements TestStepFactory {
+public class DefaultTestStepFactory extends BaseTestStepFactory {
 
     private Collection<TestStepFactory> factories;
 
@@ -22,8 +21,12 @@ public class DefaultTestStepFactory implements TestStepFactory {
                 .filter(factory -> factory.isConstructableFrom(rawTestStep))
                 .findFirst()
                 .map(factory -> factory.create(rawTestStep))
-                .orElseThrow(() ->
-                        new TestStepReadException("No Test Step Factory found for raw test step: " + rawTestStep));
+                .orElse(new TestStep.Builder<TestStep>()
+                        .withId(getId(rawTestStep))
+                        .withName(getName(rawTestStep))
+                        .withTestData(getTestData(rawTestStep))
+                        .withValidationDetails(createValidationDetails(rawTestStep))
+                        .build());
     }
 
     @Override
@@ -55,12 +58,7 @@ public class DefaultTestStepFactory implements TestStepFactory {
         }
 
         public TestStepFactory build() {
-            addLastTestStepFactory();
             return new DefaultTestStepFactory(factories);
-        }
-
-        private void addLastTestStepFactory() {
-            factories.add(new ValidationTestStepFactory());
         }
     }
 }
