@@ -118,6 +118,16 @@ class StsFileParserTest {
         );
     }
 
+    @Test
+    void testParseTestStepWithEmptyStep() throws URISyntaxException {
+        Path filePath = Paths.get(getClass().getResource("/empty-step.sts").toURI());
+
+        List<Map<String, Object>> testSteps = stsFileParser.parse(filePath);
+
+        Map<String, Object> firstTestStep = testSteps.get(0);
+        assertEquals("Given something", firstTestStep.get("name"));
+    }
+
     private Object getValueFromMap(Map<String, Object> data, String... keys) {
         Object value = data;
         for (String key : keys) {
