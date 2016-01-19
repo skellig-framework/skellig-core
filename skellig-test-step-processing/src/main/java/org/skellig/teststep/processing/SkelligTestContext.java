@@ -1,7 +1,7 @@
-package org.skellig.test.processing;
+package org.skellig.teststep.processing;
 
-import org.skellig.test.processing.processor.DefaultTestStepProcessor;
-import org.skellig.test.processing.processor.TestStepProcessor;
+import org.skellig.teststep.processing.processor.DefaultTestStepProcessor;
+import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.reader.TestStepReader;
 import org.skellig.teststep.reader.sts.StsTestStepReader;
 

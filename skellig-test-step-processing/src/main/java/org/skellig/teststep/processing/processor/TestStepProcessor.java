@@ -1,4 +1,4 @@
-package org.skellig.test.processing.processor;
+package org.skellig.teststep.processing.processor;
 
 import org.skellig.teststep.reader.model.TestStep;
 

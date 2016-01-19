@@ -1,6 +1,6 @@
-package org.skellig.test.processing.runner;
+package org.skellig.teststep.processing.runner;
 
-import org.skellig.test.processing.exception.TestStepRegistryException;
+import org.skellig.teststep.processing.exception.TestStepRegistryException;
 import org.skellig.teststep.reader.TestStepReader;
 import org.skellig.teststep.reader.model.TestStep;
 import org.skellig.teststep.reader.model.TestStepFileExtension;
