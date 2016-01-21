@@ -41,7 +41,7 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
                 .collect(Collectors.toList());
 
         SkelligTestContext skelligTestContext = skelligOptions.context().newInstance();
-        skelligTestContext.initialize();
+        skelligTestContext.initialize(clazz.getClassLoader());
 
         TestStepRunner testStepRunner =
                 new DefaultTestStepRunner.Builder()
