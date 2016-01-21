@@ -13,9 +13,9 @@ import java.util.regex.Pattern;
 
 import static io.restassured.path.json.JsonPath.from;
 
-public class JsonPathTestResultValidator extends BaseTestResultValidator {
+public class JsonPathTestStepResultValidator extends BaseTestStepResultValidator {
 
-    public JsonPathTestResultValidator(ValueComparator valueComparator) {
+    public JsonPathTestStepResultValidator(ValueComparator valueComparator) {
         super(valueComparator);
     }
 

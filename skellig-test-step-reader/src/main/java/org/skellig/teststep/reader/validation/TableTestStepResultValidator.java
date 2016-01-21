@@ -9,9 +9,9 @@ import org.skellig.teststep.reader.validation.comparator.ValueComparator;
 import java.util.Collections;
 import java.util.Map;
 
-public class TableTestResultValidator extends BaseTestResultValidator {
+public class TableTestStepResultValidator extends BaseTestStepResultValidator {
 
-    public TableTestResultValidator(ValueComparator valueComparator) {
+    public TableTestStepResultValidator(ValueComparator valueComparator) {
         super(valueComparator);
     }
 

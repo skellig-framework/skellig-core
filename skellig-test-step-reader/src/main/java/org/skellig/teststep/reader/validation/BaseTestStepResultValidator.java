@@ -4,15 +4,15 @@ import org.skellig.teststep.reader.exception.ValidationException;
 import org.skellig.teststep.reader.model.ValidationDetails;
 import org.skellig.teststep.reader.validation.comparator.ValueComparator;
 
-public abstract class BaseTestResultValidator implements TestResultValidator {
+public abstract class BaseTestStepResultValidator implements TestStepResultValidator {
 
     protected ValueComparator valueComparator;
 
-    public BaseTestResultValidator(ValueComparator valueComparator) {
+    public BaseTestStepResultValidator(ValueComparator valueComparator) {
         this.valueComparator = valueComparator;
     }
 
-    public BaseTestResultValidator() {
+    public BaseTestStepResultValidator() {
     }
 
     @Override
