@@ -12,11 +12,10 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.io.StringReader;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class XPathTestResultValidator extends BaseTestResultValidator {
+public class XPathTestStepResultValidator extends BaseTestStepResultValidator {
 
     @Override
     protected void validateActualResult(Object actualResult, ValidationDetails.ExpectedTestResult expectedResult) {
