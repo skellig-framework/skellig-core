@@ -25,7 +25,7 @@ class ValidationDetailsFactoryTest {
     @BeforeEach
     void setUp() {
         validationDetailsFactory =
-                new DefaultTestStepFactory.Build()
+                new DefaultTestStepFactory.Builder()
                         .withDefaultFactories()
                         .build();
     }

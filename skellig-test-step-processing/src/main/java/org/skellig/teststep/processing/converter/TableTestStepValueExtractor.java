@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class TableValueExtractor implements ValueExtractor {
+class TableTestStepValueExtractor implements TestStepValueExtractor {
 
     private static final Pattern PATH_SEPARATOR = Pattern.compile("\\.");
     private static final Pattern INDEX_PATTERN = Pattern.compile("\\[(\\d+)\\]");

@@ -9,7 +9,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import java.io.StringReader;
 
-class XPathValueExtractor implements ValueExtractor {
+class XPathTestStepValueExtractor implements TestStepValueExtractor {
 
     @Override
     public Object extract(Object value, String filter) {

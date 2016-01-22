@@ -11,13 +11,13 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class TableValueExtractorTest {
+class TableTestStepValueExtractorTest {
 
-    private TableValueExtractor tableValueExtractor;
+    private TableTestStepValueExtractor tableValueExtractor;
 
     @BeforeEach
     void setUp() {
-        tableValueExtractor = new TableValueExtractor();
+        tableValueExtractor = new TableTestStepValueExtractor();
     }
 
     @Test
