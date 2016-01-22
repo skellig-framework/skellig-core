@@ -75,13 +75,13 @@ public class TestStepStateValueConverter implements TestStepValueConverter {
 
         public Builder() {
             valueExtractor = new DefaultValueExtractor.Builder()
-                    .withValueExtractors(new JsonPathValueExtractor())
-                    .withValueExtractors(new XPathValueExtractor())
-                    .withValueExtractors(new RegexValueExtractor())
-                    .withValueExtractors(new TableValueExtractor());
+                    .withValueExtractors(new JsonPathTestStepValueExtractor())
+                    .withValueExtractors(new XPathTestStepValueExtractor())
+                    .withValueExtractors(new RegexTestStepValueExtractor())
+                    .withValueExtractors(new TableTestStepValueExtractor());
         }
 
-        public Builder withValueExtractor(ValueExtractor valueExtractor) {
+        public Builder withValueExtractor(TestStepValueExtractor valueExtractor) {
             this.valueExtractor.withValueExtractors(valueExtractor);
             return this;
         }

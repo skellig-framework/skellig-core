@@ -4,7 +4,7 @@ import io.restassured.path.json.JsonPath;
 
 import static io.restassured.path.json.JsonPath.from;
 
-class JsonPathValueExtractor implements ValueExtractor {
+class JsonPathTestStepValueExtractor implements TestStepValueExtractor {
 
     @Override
     public Object extract(Object value, String filter) {

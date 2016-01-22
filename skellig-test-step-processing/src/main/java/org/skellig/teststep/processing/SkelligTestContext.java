@@ -1,36 +1,48 @@
 package org.skellig.teststep.processing;
 
+import org.skellig.teststep.processing.converter.TestStepValueConverter;
+import org.skellig.teststep.processing.converter.TestStepValueExtractor;
 import org.skellig.teststep.processing.processor.DefaultTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.state.ThreadLocalTestScenarioState;
 import org.skellig.teststep.reader.TestStepReader;
+import org.skellig.teststep.reader.model.factory.TestStepFactory;
 import org.skellig.teststep.reader.sts.StsTestStepReader;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 public class SkelligTestContext {
 
-    protected TestStepReader testStepReader;
-    protected TestStepProcessor testStepProcessor;
-    protected TestScenarioState testScenarioState;
+    private TestStepReader testStepReader;
+    private TestStepProcessor testStepProcessor;
+    private TestScenarioState testScenarioState;
 
     public SkelligTestContext() {
     }
 
     public void initialize(ClassLoader classLoader) {
-        if(testScenarioState == null){
+        List<TestStepProcessorDetails> additionalTestStepProcessors = getAdditionalTestStepProcessors();
+
+        if (testScenarioState == null) {
             testScenarioState = new ThreadLocalTestScenarioState();
         }
 
         if (testStepReader == null) {
-            testStepReader = new StsTestStepReader.Builder()
-                    .withDefaultTestStepFactory(getTestStepKeywordsProperties())
-                    .build();
+            StsTestStepReader.Builder builder = new StsTestStepReader.Builder();
+            additionalTestStepProcessors.forEach(item -> builder.withTestStepFactory(item.getTestStepFactory()));
+            testStepReader = builder.build(getTestStepKeywordsProperties());
         }
 
-        if(testStepProcessor == null){
-            testStepProcessor = new DefaultTestStepProcessor.Builder()
+        if (testStepProcessor == null) {
+            DefaultTestStepProcessor.Builder builder = new DefaultTestStepProcessor.Builder();
+            getAdditionalTestStepValueExtractors().forEach(builder::withValueOfStateExtractor);
+            getAdditionalTestStepValueConverters().forEach(builder::withValueConverter);
+            additionalTestStepProcessors.forEach(item -> builder.withTestStepProcessors(item.getTestStepProcessor()));
+
+            testStepProcessor = builder
                     .withClassLoader(classLoader)
                     .withTestScenarioState(testScenarioState)
                     .build();
@@ -45,7 +57,41 @@ public class SkelligTestContext {
         return testStepProcessor;
     }
 
+    public final TestScenarioState getTestScenarioState() {
+        return testScenarioState;
+    }
+
+    protected List<TestStepValueExtractor> getAdditionalTestStepValueExtractors() {
+        return Collections.emptyList();
+    }
+
+    protected List<TestStepValueConverter> getAdditionalTestStepValueConverters() {
+        return Collections.emptyList();
+    }
+
+    protected List<TestStepProcessorDetails> getAdditionalTestStepProcessors() {
+        return Collections.emptyList();
+    }
+
     protected Properties getTestStepKeywordsProperties() {
         return null;
+    }
+
+    public static final class TestStepProcessorDetails {
+        private TestStepProcessor testStepProcessor;
+        private TestStepFactory testStepFactory;
+
+        public TestStepProcessorDetails(TestStepProcessor testStepProcessor, TestStepFactory testStepFactory) {
+            this.testStepProcessor = testStepProcessor;
+            this.testStepFactory = testStepFactory;
+        }
+
+        public TestStepProcessor getTestStepProcessor() {
+            return testStepProcessor;
+        }
+
+        public TestStepFactory getTestStepFactory() {
+            return testStepFactory;
+        }
     }
 }

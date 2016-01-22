@@ -28,23 +28,27 @@ public class StsTestStepReader implements TestStepReader {
     }
 
     public static class Builder {
-        private TestStepFactory testStepFactory;
+
+        private DefaultTestStepFactory.Builder testStepFactoryBuilder;
+
+        public Builder() {
+            testStepFactoryBuilder = new DefaultTestStepFactory.Builder();
+        }
 
         public Builder withTestStepFactory(TestStepFactory testStepFactory) {
-            this.testStepFactory = testStepFactory;
+            testStepFactoryBuilder.withTestStepFactory(testStepFactory);
             return this;
         }
 
-        public Builder withDefaultTestStepFactory(Properties testStepKeywordProperties) {
-            this.testStepFactory =
-                    new DefaultTestStepFactory.Build()
-                            .withDefaultFactories(testStepKeywordProperties)
-                            .build();
-            return this;
+        public TestStepReader build(Properties testStepKeywordProperties) {
+
+            return new StsTestStepReader(testStepFactoryBuilder
+                    .withDefaultFactories(testStepKeywordProperties)
+                    .build());
         }
 
         public TestStepReader build() {
-            return new StsTestStepReader(testStepFactory);
+            return build(null);
         }
     }
 }

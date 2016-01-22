@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.converter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class RegexValueExtractor implements ValueExtractor {
+class RegexTestStepValueExtractor implements TestStepValueExtractor {
 
     @Override
     public Object extract(Object value, String filter) {

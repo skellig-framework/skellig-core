@@ -5,9 +5,9 @@ import java.util.Collection;
 
 class DefaultValueExtractor {
 
-    private Collection<ValueExtractor> valueExtractors;
+    private Collection<TestStepValueExtractor> valueExtractors;
 
-    DefaultValueExtractor(Collection<ValueExtractor> valueExtractors) {
+    DefaultValueExtractor(Collection<TestStepValueExtractor> valueExtractors) {
         this.valueExtractors = valueExtractors;
     }
 
@@ -21,13 +21,13 @@ class DefaultValueExtractor {
 
     static class Builder {
 
-        private Collection<ValueExtractor> valueExtractors;
+        private Collection<TestStepValueExtractor> valueExtractors;
 
         public Builder() {
             valueExtractors = new ArrayList<>();
         }
 
-        public Builder withValueExtractors(ValueExtractor valueExtractor) {
+        public Builder withValueExtractors(TestStepValueExtractor valueExtractor) {
             this.valueExtractors.add(valueExtractor);
             return this;
         }

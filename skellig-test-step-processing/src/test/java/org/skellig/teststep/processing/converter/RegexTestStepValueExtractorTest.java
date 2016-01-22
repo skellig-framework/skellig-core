@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class RegexValueExtractorTest {
+class RegexTestStepValueExtractorTest {
 
-    private RegexValueExtractor regexValueExtractor;
+    private RegexTestStepValueExtractor regexValueExtractor;
 
     @BeforeEach
     void setUp() {
-        regexValueExtractor = new RegexValueExtractor();
+        regexValueExtractor = new RegexTestStepValueExtractor();
     }
 
     @Test

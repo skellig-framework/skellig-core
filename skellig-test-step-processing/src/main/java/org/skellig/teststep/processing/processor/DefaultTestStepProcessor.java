@@ -5,7 +5,7 @@ import org.skellig.teststep.processing.converter.FileValueConverter;
 import org.skellig.teststep.processing.converter.IncrementValueConverter;
 import org.skellig.teststep.processing.converter.TestStepStateValueConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.converter.ValueExtractor;
+import org.skellig.teststep.processing.converter.TestStepValueExtractor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.reader.model.TestStep;
 
@@ -29,6 +29,11 @@ public class DefaultTestStepProcessor implements TestStepProcessor {
     public void process(TestStep testStep, Map<String, String> parameters) {
         //TODO: apply parameters and run pre-processing
 
+    }
+
+    @Override
+    public Class<? extends TestStep> getTestStepClass() {
+        return TestStep.class;
     }
 
     public static class Builder {
@@ -55,7 +60,7 @@ public class DefaultTestStepProcessor implements TestStepProcessor {
             return this;
         }
 
-        public Builder withValueOfStateExtractor(ValueExtractor valueExtractor) {
+        public Builder withValueOfStateExtractor(TestStepValueExtractor valueExtractor) {
             builderForStateValueConverter.withValueExtractor(valueExtractor);
             return this;
         }

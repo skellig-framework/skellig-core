@@ -1,7 +1,6 @@
 package org.skellig.teststep.processing.runner;
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processing.processor.DefaultTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.reader.TestStepReader;
 import org.skellig.teststep.reader.model.TestStep;
@@ -64,9 +63,8 @@ public class DefaultTestStepRunner implements TestStepRunner {
 
         public TestStepRunner build() {
             Objects.requireNonNull(testStepReader, "Test Step Reader is mandatory");
-            if (testStepProcessor == null) {
-                withTestStepProcessor(new DefaultTestStepProcessor());
-            }
+            Objects.requireNonNull(testStepProcessor, "Test Step processor is mandatory");
+
             TestStepsRegistry testStepsRegistry = new TestStepsRegistry(TestStepFileExtension.STS, testStepReader);
             testStepsRegistry.registerFoundTestStepsInPath(testStepPaths);
 

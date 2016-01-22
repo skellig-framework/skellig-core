@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.converter;
 
-public interface ValueExtractor {
+public interface TestStepValueExtractor {
 
     Object extract(Object value, String filter);
 
