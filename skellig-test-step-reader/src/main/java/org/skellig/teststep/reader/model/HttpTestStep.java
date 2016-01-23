@@ -1,10 +1,12 @@
 package org.skellig.teststep.reader.model;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class HttpTestStep extends TestStep {
 
     private String url;
+    private Collection<String> services;
     private String method;
     private String username;
     private String password;
@@ -13,9 +15,10 @@ public class HttpTestStep extends TestStep {
     private Map<String, String> form;
 
     protected HttpTestStep(String id, String name, Object testData, ValidationDetails validationDetails,
-                           String url, String method, String username, String password,
+                           Collection<String> services, String url, String method, String username, String password,
                            Map<String, String> headers, Map<String, String> query, Map<String, String> form) {
         super(id, name, testData, validationDetails);
+        this.services = services;
         this.url = url;
         this.method = method;
         this.username = username;
@@ -27,6 +30,10 @@ public class HttpTestStep extends TestStep {
 
     public String getUrl() {
         return url;
+    }
+
+    public Collection<String> getServices() {
+        return services;
     }
 
     public String getMethod() {
@@ -55,6 +62,7 @@ public class HttpTestStep extends TestStep {
 
     public static class Builder extends TestStep.Builder<HttpTestStep> {
 
+        private Collection<String> services;
         private String url;
         private String method;
         private String username;
@@ -62,6 +70,12 @@ public class HttpTestStep extends TestStep {
         private Map<String, String> headers;
         private Map<String, String> query;
         private Map<String, String> form;
+
+
+        public Builder withService(Collection<String> services) {
+            this.services = services;
+            return this;
+        }
 
         public Builder withUrl(String url) {
             this.url = url;
@@ -100,7 +114,7 @@ public class HttpTestStep extends TestStep {
 
         @Override
         public HttpTestStep build() {
-            return new HttpTestStep(id, name, testData, validationDetails, url, method, username, password,
+            return new HttpTestStep(id, name, testData, validationDetails, services, url, method, username, password,
                     headers, query, form);
         }
     }
