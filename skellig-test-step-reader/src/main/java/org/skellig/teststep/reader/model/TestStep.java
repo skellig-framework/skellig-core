@@ -17,7 +17,7 @@ public class TestStep {
     }
 
     public String getId() {
-        return id;
+        return id == null ? name : id;
     }
 
     public String getName() {
