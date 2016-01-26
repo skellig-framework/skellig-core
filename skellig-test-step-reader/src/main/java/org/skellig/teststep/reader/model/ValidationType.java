@@ -4,10 +4,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public enum ValidationType {
-    DEFAULT(null),
-    TABLE(null),
-    XPATH(Pattern.compile("xpath\\((.+)\\)")),
-    JSON_PATH(Pattern.compile("json_path\\((.+)\\)"));
+    ALL_MATCH(Pattern.compile("all[\\s_]?match")),
+    NONE_MATCH(Pattern.compile("none[\\s_]?match")),
+    ANY_MATCH(Pattern.compile("any[\\s_]?match")),
+    ANY_NONE_MATCH(Pattern.compile("any[\\s_]/none[\\s_]?match"));
 
     private Pattern pattern;
 
@@ -20,7 +20,7 @@ public enum ValidationType {
                 .filter(validationType -> validationType.pattern != null)
                 .filter(validationType -> validationType.pattern.matcher(actualValue).matches())
                 .findFirst()
-                .orElse(ValidationType.TABLE);
+                .orElse(ValidationType.ALL_MATCH);
     }
 
     public Pattern getPattern() {
