@@ -1,10 +1,10 @@
-package org.skellig.teststep.reader.validation;
+package org.skellig.teststep.processing.validation;
 
 
+import org.skellig.teststep.processing.validation.comparator.ValueComparator;
 import org.skellig.teststep.reader.exception.ValidationException;
 import org.skellig.teststep.reader.model.ValidationDetails;
 import org.skellig.teststep.reader.model.ValidationType;
-import org.skellig.teststep.reader.validation.comparator.ValueComparator;
 
 import java.util.List;
 

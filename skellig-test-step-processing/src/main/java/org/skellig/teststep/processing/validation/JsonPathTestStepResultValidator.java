@@ -1,12 +1,12 @@
-package org.skellig.teststep.reader.validation;
+package org.skellig.teststep.processing.validation;
 
 
 import io.restassured.path.json.JsonPath;
 import org.apache.commons.lang3.StringUtils;
+import org.skellig.teststep.processing.validation.comparator.ValueComparator;
 import org.skellig.teststep.reader.exception.ValidationException;
 import org.skellig.teststep.reader.model.ValidationDetails;
 import org.skellig.teststep.reader.model.ValidationType;
-import org.skellig.teststep.reader.validation.comparator.ValueComparator;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

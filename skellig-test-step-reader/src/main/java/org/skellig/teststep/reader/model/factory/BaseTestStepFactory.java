@@ -1,5 +1,6 @@
 package org.skellig.teststep.reader.model.factory;
 
+import org.skellig.teststep.reader.model.ExpectedResult;
 import org.skellig.teststep.reader.model.ValidationDetails;
 import org.skellig.teststep.reader.model.ValidationType;
 
@@ -17,6 +18,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     private static final String TEST_STEP_NAME_KEYWORD = "test.step.name";
     private static Set<String> testDataKeywords;
     private static Set<String> validationKeywords;
+    private static Set<String> validationTypeKeywords;
 
     private Properties keywordsProperties;
 
@@ -44,6 +46,13 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
                     getKeywordName("test.step.assert", "assert"))
                     .collect(Collectors.toSet());
         }
+        if (validationTypeKeywords == null) {
+            validationTypeKeywords = Stream.of(getKeywordName("test.step.all_match", "all_match"),
+                    getKeywordName("test.step.any_match", "any_match"),
+                    getKeywordName("test.step.none_match", "none_match"),
+                    getKeywordName("test.step.any_none_match", "any_none_match"))
+                    .collect(Collectors.toSet());
+        }
     }
 
     protected Object getTestData(Map<String, Object> rawTestStep) {
@@ -69,13 +78,19 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         if (rawValidationDetails.isPresent()) {
             if (rawValidationDetails.get() instanceof Map) {
                 Object fromTestId = ((Map) rawValidationDetails.get()).get(getFromTestKeyword());
-                builder.withTestStepId((String) fromTestId);
+                if (fromTestId != null) {
+                    builder.withTestStepId((String) fromTestId);
 
-                ((Map<String, Object>) rawValidationDetails.get()).entrySet().stream()
-                        .filter(entry -> !entry.getKey().equals(getFromTestKeyword()))
-                        .forEach(entry -> buildValidationEntry(builder, entry.getKey(), entry.getValue()));
+                    Map<String, Object> rawExpectedResult =
+                            ((Map<String, Object>) rawValidationDetails.get()).entrySet().stream()
+                                    .filter(entry -> !entry.getKey().equals(getFromTestKeyword()))
+                                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    builder.withExpectedResult(createExpectedResult("", rawExpectedResult));
+                } else {
+                    builder.withExpectedResult(createExpectedResult("", rawValidationDetails.get()));
+                }
             } else if (rawValidationDetails.get() instanceof List) {
-                buildValidationEntry(builder, "", rawValidationDetails.get());
+                builder.withExpectedResult(createExpectedResult("", rawValidationDetails.get()));
             }
 
             return builder.build();
@@ -85,22 +100,43 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
 
     }
 
-    private void buildValidationEntry(ValidationDetails.Builder builder, String actualValue, Object expectedValue) {
-        if (expectedValue instanceof List) {
-            List expectedValueAsList = (List) expectedValue;
-            if (!expectedValueAsList.isEmpty() && expectedValueAsList.get(0) instanceof Map) {
-                expectedValueAsList.stream()
-                        .forEach(v -> buildValidationEntry(builder, actualValue, v));
-            } else {
-                builder.withActualAndExpectedValues(ValidationType.DEFAULT, actualValue, expectedValue);
+    ExpectedResult createExpectedResult(String propertyName, Object expectedResult) {
+        if (expectedResult instanceof Map) {
+            Map<String, Object> expectedResultAsMap = (Map) expectedResult;
+            ValidationType validationType = getValidationType(expectedResultAsMap);
+
+            Object matchValue = expectedResultAsMap.entrySet().stream()
+                    .filter(entry -> validationTypeKeywords.contains(entry.getKey()))
+                    .findFirst()
+                    .map(Map.Entry::getValue)
+                    .orElse(expectedResultAsMap);
+
+            if (matchValue == expectedResultAsMap || matchValue instanceof Map) {
+                matchValue = ((Map<String, Object>) matchValue).entrySet().stream()
+                        .map(entry -> createExpectedResult(entry.getKey(), entry.getValue()))
+                        .collect(Collectors.toList());
+            } else if (matchValue instanceof List) {
+                matchValue = ((List<Object>) matchValue).stream()
+                        .map(entry -> createExpectedResult(null, entry))
+                        .collect(Collectors.toList());
             }
-        } else if (expectedValue instanceof Map) {
-            Map<String, Object> expectedValues = (Map<String, Object>) expectedValue;
-            String validationFunction = expectedValues.keySet().stream().findFirst().orElse("");
-            builder.withActualAndExpectedValues(ValidationType.getValidationTypeFor(validationFunction), expectedValues);
-        } else {
-            builder.withActualAndExpectedValues(ValidationType.getValidationTypeFor(actualValue), actualValue, expectedValue);
+
+            return new ExpectedResult(propertyName, matchValue, validationType);
+        } else if (expectedResult instanceof List) {
+            expectedResult = ((List<Object>) expectedResult).stream()
+                    .map(entry -> createExpectedResult(null, entry))
+                    .collect(Collectors.toList());
         }
+
+        return new ExpectedResult(propertyName, expectedResult, null);
+    }
+
+    private ValidationType getValidationType(Map expectedResultAsMap) {
+        return validationTypeKeywords.stream()
+                .filter(expectedResultAsMap::containsKey)
+                .findFirst()
+                .map(ValidationType::getValidationTypeFor)
+                .orElse(ValidationType.ALL_MATCH);
     }
 
     protected String getId(Map<String, Object> rawTestStep) {

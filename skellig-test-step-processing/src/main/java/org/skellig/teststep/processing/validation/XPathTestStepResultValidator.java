@@ -1,4 +1,4 @@
-package org.skellig.teststep.reader.validation;
+package org.skellig.teststep.processing.validation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.skellig.teststep.reader.exception.ValidationException;

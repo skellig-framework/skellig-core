@@ -1,10 +1,11 @@
-package org.skellig.teststep.reader.validation;
+package org.skellig.teststep.processing.validation;
 
 
+import org.skellig.teststep.processing.validation.comparator.ValueComparator;
 import org.skellig.teststep.reader.exception.ValidationException;
+import org.skellig.teststep.reader.model.ExpectedResult;
 import org.skellig.teststep.reader.model.ValidationDetails;
 import org.skellig.teststep.reader.model.ValidationType;
-import org.skellig.teststep.reader.validation.comparator.ValueComparator;
 
 import java.util.Collections;
 import java.util.Map;
@@ -14,6 +15,10 @@ public class TableTestStepResultValidator extends BaseTestStepResultValidator {
     public TableTestStepResultValidator(ValueComparator valueComparator) {
         super(valueComparator);
     }
+
+    public void validate(Object actualResult, ExpectedResult<Object> expectedResult) {
+    }
+
 
     @Override
     protected void validateActualResult(Object actualResult, ValidationDetails.ExpectedTestResult expectedResult) {
