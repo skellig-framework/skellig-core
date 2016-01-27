@@ -4,18 +4,24 @@ import org.skellig.teststep.reader.model.ExpectedResult;
 import org.skellig.teststep.reader.model.ValidationDetails;
 import org.skellig.teststep.reader.model.ValidationType;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class BaseTestStepFactory implements TestStepFactory {
 
+    private static final Pattern GROUPED_PROPERTIES_PATTERN = Pattern.compile("\\[([\\w,\\s]+)\\]");
+    private static final Pattern SPLIT_PATTERN = Pattern.compile(",");
     private static final String TEST_STEP_NAME_KEYWORD = "test.step.name";
+
     private static Set<String> testDataKeywords;
     private static Set<String> validationKeywords;
     private static Set<String> validationTypeKeywords;
@@ -100,10 +106,9 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
 
     }
 
-    ExpectedResult createExpectedResult(String propertyName, Object expectedResult) {
+    private ExpectedResult createExpectedResult(String propertyName, Object expectedResult) {
         if (expectedResult instanceof Map) {
             Map<String, Object> expectedResultAsMap = (Map) expectedResult;
-            ValidationType validationType = getValidationType(expectedResultAsMap);
 
             Object matchValue = expectedResultAsMap.entrySet().stream()
                     .filter(entry -> validationTypeKeywords.contains(entry.getKey()))
@@ -112,6 +117,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
                     .orElse(expectedResultAsMap);
 
             if (matchValue == expectedResultAsMap || matchValue instanceof Map) {
+                matchValue = extendExpectedResultMapIfApplicable((Map<String, Object>) matchValue);
                 matchValue = ((Map<String, Object>) matchValue).entrySet().stream()
                         .map(entry -> createExpectedResult(entry.getKey(), entry.getValue()))
                         .collect(Collectors.toList());
@@ -121,7 +127,8 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
                         .collect(Collectors.toList());
             }
 
-            return new ExpectedResult(propertyName, matchValue, validationType);
+            return new ExpectedResult(propertyName, matchValue, getValidationType(expectedResultAsMap));
+
         } else if (expectedResult instanceof List) {
             expectedResult = ((List<Object>) expectedResult).stream()
                     .map(entry -> createExpectedResult(null, entry))
@@ -129,6 +136,30 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         }
 
         return new ExpectedResult(propertyName, expectedResult, null);
+    }
+
+    private Map<String, Object> extendExpectedResultMapIfApplicable(Map<String, Object> expectedResultAsMap) {
+        if (hasSplitProperties(expectedResultAsMap)) {
+            Map<String, Object> extendedExpectedResultAsMap = new HashMap<>();
+
+            expectedResultAsMap.forEach((key, value) -> {
+                Matcher matcher = GROUPED_PROPERTIES_PATTERN.matcher(key);
+                if (matcher.find()) {
+                    for (String newPropertyName : SPLIT_PATTERN.split(matcher.group(1))) {
+                        extendedExpectedResultAsMap.put(newPropertyName.trim(), value);
+                    }
+                } else {
+                    extendedExpectedResultAsMap.put(key, value);
+                }
+            });
+            return extendedExpectedResultAsMap;
+        } else {
+            return expectedResultAsMap;
+        }
+    }
+
+    private boolean hasSplitProperties(Map<String, Object> expectedResultAsMap) {
+        return expectedResultAsMap.keySet().stream().anyMatch(key -> key.startsWith("["));
     }
 
     private ValidationType getValidationType(Map expectedResultAsMap) {
