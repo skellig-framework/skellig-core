@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 public abstract class BaseTestStepFactory implements TestStepFactory {
 
     private static final Pattern GROUPED_PROPERTIES_PATTERN = Pattern.compile("\\[([\\w,\\s]+)\\]");
+    private static final Pattern INDEX_PROPERTY_PATTERN = Pattern.compile("\\[\\s*\\d+\\s*\\]");
     private static final Pattern SPLIT_PATTERN = Pattern.compile(",");
     private static final String TEST_STEP_NAME_KEYWORD = "test.step.name";
 
@@ -159,7 +160,8 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     }
 
     private boolean hasSplitProperties(Map<String, Object> expectedResultAsMap) {
-        return expectedResultAsMap.keySet().stream().anyMatch(key -> key.startsWith("["));
+        return expectedResultAsMap.keySet().stream()
+                .anyMatch(key -> key.startsWith("[") && !INDEX_PROPERTY_PATTERN.matcher(key).matches());
     }
 
     private ValidationType getValidationType(Map expectedResultAsMap) {
