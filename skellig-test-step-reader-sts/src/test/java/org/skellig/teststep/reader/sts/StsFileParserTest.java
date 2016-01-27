@@ -110,11 +110,11 @@ class StsFileParserTest {
         Map<String, Object> firstTestStep = testSteps.get(0);
         assertAll(
                 () -> assertEquals("do something big", firstTestStep.get("name")),
-                () -> assertEquals(2, ((List)getValueFromMap(firstTestStep, "data", "values")).size()),
-                () -> assertEquals("v1", ((Map)((List)getValueFromMap(firstTestStep, "data", "values")).get(0)).get("c1")),
-                () -> assertEquals("v2", ((Map)((List)getValueFromMap(firstTestStep, "data", "values")).get(0)).get("c2")),
-                () -> assertEquals("v3", ((Map)((List)getValueFromMap(firstTestStep, "data", "values")).get(1)).get("c1")),
-                () -> assertEquals("v4", ((Map)((List)getValueFromMap(firstTestStep, "data", "values")).get(1)).get("c2"))
+                () -> assertEquals(2, ((List) getValueFromMap(firstTestStep, "data", "values")).size()),
+                () -> assertEquals("v1", ((Map) ((List) getValueFromMap(firstTestStep, "data", "values")).get(0)).get("c1")),
+                () -> assertEquals("v2", ((Map) ((List) getValueFromMap(firstTestStep, "data", "values")).get(0)).get("c2")),
+                () -> assertEquals("v3", ((Map) ((List) getValueFromMap(firstTestStep, "data", "values")).get(1)).get("c1")),
+                () -> assertEquals("v4", ((Map) ((List) getValueFromMap(firstTestStep, "data", "values")).get(1)).get("c2"))
         );
     }
 
@@ -126,6 +126,24 @@ class StsFileParserTest {
 
         Map<String, Object> firstTestStep = testSteps.get(0);
         assertEquals("Given something", firstTestStep.get("name"));
+    }
+
+    @Test
+    void testParseTestStepWithComplexValidation() throws URISyntaxException {
+        Path filePath = Paths.get(getClass().getResource("/test-step-with-complex-validations.sts").toURI());
+
+        List<Map<String, Object>> testSteps = stsFileParser.parse(filePath);
+
+        Map<String, Object> firstTestStep = testSteps.get(0);
+        assertAll(
+                () -> assertEquals("application/json", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "headers", "content-type")),
+                () -> assertEquals("contains(fail)", ((List) getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "log", "none_match")).get(0)),
+                () -> assertEquals("contains(error)", ((List) getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "log", "none_match")).get(1)),
+                () -> assertEquals("v3", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "body", "regex(.*f3=(\\\\w+).*)")),
+                () -> assertEquals("v2", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "body", "json_path(f1.f3)")),
+                () -> assertEquals("v1", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "body", "json_path(f1.f2)")),
+                () -> assertEquals("200", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "status"))
+        );
     }
 
     private Object getValueFromMap(Map<String, Object> data, String... keys) {

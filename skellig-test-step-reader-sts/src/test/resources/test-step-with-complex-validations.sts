@@ -1,0 +1,27 @@
+
+name (Validate response)
+{
+  validate {
+    fromTest = T1
+
+    any_match {
+
+      [srv1, srv2, srv3] {
+         status = 200
+         body {
+            json_path(f1.f2) = v1
+            json_path(f1.f3) = v2
+            'regex(.*f3=(\\w+).*)' = v3
+         }
+         headers {
+            content-type = application/json
+         }
+         log {
+            none_match [
+              contains(fail)
+              contains(error)
+            ]
+         }
+      }
+    }
+ }
