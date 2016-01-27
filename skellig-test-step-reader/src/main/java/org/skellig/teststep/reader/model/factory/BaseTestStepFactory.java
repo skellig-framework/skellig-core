@@ -118,25 +118,29 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
                     .orElse(expectedResultAsMap);
 
             if (matchValue == expectedResultAsMap || matchValue instanceof Map) {
-                matchValue = extendExpectedResultMapIfApplicable((Map<String, Object>) matchValue);
-                matchValue = ((Map<String, Object>) matchValue).entrySet().stream()
-                        .map(entry -> createExpectedResult(entry.getKey(), entry.getValue()))
-                        .collect(Collectors.toList());
+                matchValue = createExpectedResults(extendExpectedResultMapIfApplicable((Map<String, Object>) matchValue));
             } else if (matchValue instanceof List) {
-                matchValue = ((List<Object>) matchValue).stream()
-                        .map(entry -> createExpectedResult(null, entry))
-                        .collect(Collectors.toList());
+                matchValue = createExpectedResults((List<Object>) matchValue);
             }
 
             return new ExpectedResult(propertyName, matchValue, getValidationType(expectedResultAsMap));
-
         } else if (expectedResult instanceof List) {
-            expectedResult = ((List<Object>) expectedResult).stream()
-                    .map(entry -> createExpectedResult(null, entry))
-                    .collect(Collectors.toList());
+            expectedResult = createExpectedResults((List<Object>) expectedResult);
         }
 
         return new ExpectedResult(propertyName, expectedResult, null);
+    }
+
+    private Object createExpectedResults(Map<String, Object> matchValue) {
+        return matchValue.entrySet().stream()
+                .map(entry -> createExpectedResult(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    private Object createExpectedResults(List<Object> expectedResult) {
+        return  expectedResult.stream()
+                .map(entry -> createExpectedResult(null, entry))
+                .collect(Collectors.toList());
     }
 
     private Map<String, Object> extendExpectedResultMapIfApplicable(Map<String, Object> expectedResultAsMap) {
