@@ -1,0 +1,40 @@
+name (Validate response)
+{
+  validate {
+       size = 3
+       all_match
+       [
+          {
+             c1 {
+                none_match [
+                   v1
+                   v2
+                   v3
+                ]
+             }
+
+             c2 {
+                any_match [
+                   v5
+                   v6
+                ]
+             }
+          }
+
+          {
+            c1 = v2
+          }
+       ]
+
+       records {
+         [0] = contains(v1)
+         [1] = contains(v2)
+       }
+
+      # records[0] = contains(v1) - ignore as invalid structure
+
+       [0] {
+         c1 = v1
+       }
+     }
+ }
