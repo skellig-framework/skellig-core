@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.converter;
+package org.skellig.teststep.processing.valueextractor;
 
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -12,10 +12,10 @@ import java.io.StringReader;
 class XPathTestStepValueExtractor implements TestStepValueExtractor {
 
     @Override
-    public Object extract(Object value, String filter) {
+    public Object extract(Object value, String extractionParameter) {
         try (StringReader xmlReader = new StringReader((String) value)) {
             Document xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(xmlReader));
-            return extractDataFromXpath(xml, filter);
+            return extractDataFromXpath(xml, extractionParameter);
         } catch (Exception ex) {
             return null;
         }

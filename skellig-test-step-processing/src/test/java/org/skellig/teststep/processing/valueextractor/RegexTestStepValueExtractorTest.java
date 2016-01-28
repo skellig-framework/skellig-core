@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.converter;
+package org.skellig.teststep.processing.valueextractor;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
