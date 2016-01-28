@@ -1,42 +1,100 @@
 package org.skellig.teststep.processing.validation;
 
-
 import org.skellig.teststep.processing.validation.comparator.ValueComparator;
-import org.skellig.teststep.reader.exception.ValidationException;
-import org.skellig.teststep.reader.model.ValidationDetails;
+import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
+import org.skellig.teststep.reader.model.ExpectedResult;
 import org.skellig.teststep.reader.model.ValidationType;
 
 import java.util.List;
 
-public class DefaultTestStepResultValidator extends BaseTestStepResultValidator {
+public class DefaultTestStepResultValidator implements TestStepResultValidator {
 
-    public DefaultTestStepResultValidator(ValueComparator valueComparator) {
-        super(valueComparator);
+    private ValueComparator valueComparator;
+    private TestStepValueExtractor valueExtractor;
+
+    protected DefaultTestStepResultValidator(ValueComparator valueComparator,
+                                             TestStepValueExtractor valueExtractor) {
+        this.valueComparator = valueComparator;
+        this.valueExtractor = valueExtractor;
     }
 
-    @Override
-    protected void validateActualResult(Object actualResult, ValidationDetails.ExpectedTestResult expectedTestResult) {
-        expectedTestResult.getActualExpectedValues()
-                .forEach((key, expectedValues) -> {
-                    if (expectedValues instanceof List) {
-                        ((List) expectedValues).forEach(expectedValue -> compareActualAndExpectedValue(actualResult, expectedValue));
-                    } else {
-                        compareActualAndExpectedValue(actualResult, expectedValues);
-                    }
-                });
+    public boolean validate(ExpectedResult expectedResult, Object actualResult) {
+        StringBuilder errorBuilder = new StringBuilder();
+        return validate(expectedResult, actualResult, errorBuilder);
     }
 
-    private void compareActualAndExpectedValue(Object actualValue, Object expectedValue) {
-        if (!valueComparator.compare(actualValue, expectedValue)) {
-            String errorMessage =
-                    String.format("Failed validation of test result. Expected: '%s', actual: '%s'",
-                            expectedValue, actualValue);
-            throw new ValidationException(errorMessage);
+    private boolean validate(ExpectedResult expectedResult, Object actualResult, StringBuilder errorBuilder) {
+
+        if (expectedResult.getValidationType() == ValidationType.ANY_MATCH) {
+            return expectedResult.<List<ExpectedResult>>getExpectedResult().stream()
+                    .anyMatch(item -> {
+                        Object actualValue = extractActualValueFromExpectedResult(actualResult, item);
+                        return validate(item, actualValue, errorBuilder);
+                    });
+        } else if (expectedResult.getValidationType() == ValidationType.ANY_NONE_MATCH) {
+            return expectedResult.<List<ExpectedResult>>getExpectedResult().stream()
+                    .anyMatch(item -> {
+                        Object actualValue = extractActualValueFromExpectedResult(actualResult, item);
+                        return !validate(item, actualValue, errorBuilder);
+                    });
+        } else if (expectedResult.getValidationType() == ValidationType.NONE_MATCH) {
+            return expectedResult.<List<ExpectedResult>>getExpectedResult().stream()
+                    .noneMatch(item -> {
+                        Object actualValue = extractActualValueFromExpectedResult(actualResult, item);
+                        return validate(item, actualValue, errorBuilder);
+                    });
+        } else if (expectedResult.getValidationType() == ValidationType.ALL_MATCH) {
+            return expectedResult.<List<ExpectedResult>>getExpectedResult().stream()
+                    .allMatch(item -> {
+                        Object actualValue = extractActualValueFromExpectedResult(actualResult, item);
+                        return validate(item, actualValue, errorBuilder);
+                    });
+        } else {
+            boolean isValid = valueComparator.compare(expectedResult.getExpectedResult(), actualResult);
+
+            if (expectedResult.getValidationTypeOfParent() == ValidationType.NONE_MATCH && isValid ||
+                    expectedResult.getValidationTypeOfParent() != ValidationType.NONE_MATCH && !isValid) {
+                constructErrorMessage(expectedResult, actualResult, errorBuilder);
+            }
+        }
+        return false;
+    }
+
+    private Object extractActualValueFromExpectedResult(Object actualResult, Object expectedResult) {
+        if (ExpectedResult.class.equals(expectedResult.getClass())) {
+            return valueExtractor.extract(actualResult, ((ExpectedResult) expectedResult).getProperty());
+        } else {
+            return actualResult;
         }
     }
 
-    @Override
-    public boolean isApplicableFor(ValidationType validationType) {
-        return ValidationType.DEFAULT.equals(validationType);
+    private void constructErrorMessage(ExpectedResult expectedResult, Object actualValue, StringBuilder errorBuilder) {
+        errorBuilder.append(expectedResult.getFullPropertyPath())
+                .append(" is not valid. ")
+                .append(expectedResult.getValidationTypeOfParent() != ValidationType.NONE_MATCH ? "Expected: " : "Did not expect: ")
+                .append(expectedResult.<Object>getExpectedResult())
+                .append(" Actual: ")
+                .append(actualValue)
+                .append('\n');
+    }
+
+    public static class Builder {
+
+        private ValueComparator valueComparator;
+        private TestStepValueExtractor valueExtractor;
+
+        public Builder withValueComparator(ValueComparator valueComparator) {
+            this.valueComparator = valueComparator;
+            return this;
+        }
+
+        public Builder withValueExtractor(TestStepValueExtractor valueExtractor) {
+            this.valueExtractor = valueExtractor;
+            return this;
+        }
+
+        public TestStepResultValidator build() {
+            return new DefaultTestStepResultValidator(valueComparator, valueExtractor);
+        }
     }
 }
