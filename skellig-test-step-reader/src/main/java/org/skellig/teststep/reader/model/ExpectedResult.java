@@ -1,5 +1,7 @@
 package org.skellig.teststep.reader.model;
 
+import java.util.List;
+
 public class ExpectedResult {
 
     private String property;
@@ -7,15 +9,10 @@ public class ExpectedResult {
     private ValidationType validationType;
     private ExpectedResult parent;
 
-    public ExpectedResult(String property, Object expectedResult,
-                          ValidationType validationType, ExpectedResult parent) {
+    public ExpectedResult(String property, Object expectedResult, ValidationType validationType) {
         this.property = property;
         this.expectedResult = expectedResult;
         this.validationType = validationType;
-    }
-
-    public ExpectedResult(String property, Object expectedResult, ValidationType validationType) {
-        this(property, expectedResult, validationType, null);
     }
 
     public String getProperty() {
@@ -38,6 +35,16 @@ public class ExpectedResult {
         StringBuilder pathBuilder = new StringBuilder();
         constructFullPropertyPath(parent, pathBuilder);
         return pathBuilder.toString();
+    }
+
+    void initializeParents() {
+        if (expectedResult instanceof List) {
+            this.<List<ExpectedResult>>getExpectedResult()
+                    .forEach(expectedResult -> {
+                        expectedResult.parent = this;
+                        expectedResult.initializeParents();
+                    });
+        }
     }
 
     private void constructFullPropertyPath(ExpectedResult parent, StringBuilder pathBuilder) {

@@ -11,6 +11,7 @@ public class ValidationDetails {
     protected ValidationDetails(String testStepId, ExpectedResult expectedResult) {
         this.testStepId = testStepId;
         this.expectedResult = expectedResult;
+        this.expectedResult.initializeParents();
     }
 
     public Optional<String> getTestStepId() {
