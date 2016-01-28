@@ -45,7 +45,7 @@ class RawTestStepHandler implements AutoCloseable {
                 } else if (character == '{') {
                     handleOpenCurlyBracketCharacter(character, reader, rawTestStep);
                 } else if (character == '=') {
-                    handleEqualSignCharacter(reader);
+                    handleEqualSignCharacter();
                 } else if (character == '[' && rawTestStepBuilder.length() > 0) {
                     handleArrayBracketCharacter(reader, rawTestStep);
                 } else if (character == '\n') {
@@ -83,7 +83,8 @@ class RawTestStepHandler implements AutoCloseable {
     }
 
     private void handleListOpenedCurlyBracketCharacter(int character, StsFileBufferedReader reader, List<Object> result) throws IOException {
-        if (rawTestStepBuilder.length() == 0 || rawTestStepBuilder.charAt(rawTestStepBuilder.length() - 1) != '$') {
+        // '{' for list-type value means that its item will be Map
+        if (rawTestStepBuilder.length() == 0 || isPreviousCharacterNotParameterSign()) {
             openedBrackets++;
             result.add(readMap(reader, new HashMap<>()));
             rawTestStepBuilder.setLength(0);
@@ -94,13 +95,14 @@ class RawTestStepHandler implements AutoCloseable {
 
     private boolean handleClosedBracketCharacter(int character, Map<String, Object> rawTestStep) {
         if (!isParameter) {
+            // for '}' if paramName is not null then add its value
             openedBrackets--;
             if (paramName != null) {
-                rawTestStep.put(paramName, rawTestStepBuilder.toString());
-                rawTestStepBuilder.setLength(0);
+                addParameterWithValue(rawTestStep);
             }
             return true;
         } else {
+            // if '}' is part of parametrised value than close this parameter and include it in the future value
             isParameter = false;
             addCharacter(character);
         }
@@ -108,31 +110,33 @@ class RawTestStepHandler implements AutoCloseable {
     }
 
     private void handleNewLineCharacter(int character, Map<String, Object> rawTestStep) {
-        if (paramName != null) {
-            rawTestStep.put(paramName, rawTestStepBuilder.toString());
-            rawTestStepBuilder.setLength(0);
-            paramName = null;
-        } else {
-            addCharacter(character);
+        // skip it if there is nothing to add to the builder
+        if (rawTestStepBuilder.length() > 0) {
+            // if paramName is read before '=' then we can add value to it.
+            // Otherwise just add the character - usually when text is enclosed in single quotes
+            if (paramName != null) {
+                addParameterWithValue(rawTestStep);
+            } else {
+                addCharacter(character);
+            }
         }
     }
 
     private void handleArrayBracketCharacter(StsFileBufferedReader reader, Map<String, Object> rawTestStep) throws IOException {
-        paramName = rawTestStepBuilder.toString();
-        rawTestStep.put(paramName, readList(reader));
+        rawTestStep.put(rawTestStepBuilder.toString(), readList(reader));
         rawTestStepBuilder.setLength(0);
-        paramName = null;
     }
 
-    private void handleEqualSignCharacter(StsFileBufferedReader reader) throws IOException {
+    private void handleEqualSignCharacter() {
+        // after '=' sign we can set paramName and continue reading its value
         paramName = rawTestStepBuilder.toString();
         rawTestStepBuilder.setLength(0);
-        reader.skipAllEmptyCharacters();
     }
 
     private void handleOpenCurlyBracketCharacter(int character, StsFileBufferedReader reader, Map<String, Object> rawTestStep) throws IOException {
-        if (rawTestStepBuilder.length() > 0 &&
-                rawTestStepBuilder.charAt(rawTestStepBuilder.length() - 1) == '$') {
+        // if it's a parameter then continue reading.
+        // Otherwise start read value as Map
+        if (rawTestStepBuilder.length() > 0 && !isPreviousCharacterNotParameterSign()) {
             isParameter = true;
             addCharacter(character);
         } else {
@@ -143,13 +147,10 @@ class RawTestStepHandler implements AutoCloseable {
     }
 
     private void handleSingleQuoteCharacter(Map<String, Object> rawTestStep) {
+        // Single quote character means that we need to read the value till next single quote
         isEnclosedText = !isEnclosedText;
-        if (!isEnclosedText) {
-            if (paramName != null) {
-                rawTestStep.put(paramName, rawTestStepBuilder.toString());
-                rawTestStepBuilder.setLength(0);
-                paramName = null;
-            }
+        if (!isEnclosedText && paramName != null) {
+            addParameterWithValue(rawTestStep);
         }
     }
 
@@ -158,6 +159,7 @@ class RawTestStepHandler implements AutoCloseable {
     }
 
     private void handleOpenParenthesis(int character) {
+        // can be name of test step, or anything else, ex: regex, function, etc.
         if (bracketsNumber++ == 0) {
             paramName = rawTestStepBuilder.toString();
             rawTestStepBuilder.setLength(0);
@@ -167,6 +169,7 @@ class RawTestStepHandler implements AutoCloseable {
     }
 
     private void handleClosedParenthesis(int character, StsFileBufferedReader reader, List<Map<String, Object>> rawTestSteps) throws IOException {
+        // usually after it read name of test step, the next char must be '{'
         if (--bracketsNumber == 0) {
             Map<String, Object> rawTestStep = new HashMap<>();
             rawTestStep.put(paramName, rawTestStepBuilder.toString());
@@ -181,11 +184,21 @@ class RawTestStepHandler implements AutoCloseable {
         }
     }
 
+    private void addParameterWithValue(Map<String, Object> rawTestStep) {
+        rawTestStep.put(paramName, rawTestStepBuilder.toString());
+        rawTestStepBuilder.setLength(0);
+        paramName = null;
+    }
+
     private void addCharacter(int character) {
         if ((paramName != null && rawTestStepBuilder.length() > 0) ||
                 (character != ' ' && character != '\n')) {
             rawTestStepBuilder.append((char) character);
         }
+    }
+
+    private boolean isPreviousCharacterNotParameterSign() {
+        return rawTestStepBuilder.charAt(rawTestStepBuilder.length() - 1) != '$';
     }
 
     @Override
