@@ -34,11 +34,7 @@ class TestStepsRegistry {
 
     void registerFoundTestStepsInPath(Collection<Path> testStepsPaths) {
         this.testStepsPaths = testStepsPaths;
-        try {
-            testSteps = getTestStepsFromPath(testStepsPaths);
-        } catch (IOException e) {
-            throw new TestStepRegistryException(e.getMessage(), e);
-        }
+        testSteps = getTestStepsFromPath(testStepsPaths);
     }
 
     Optional<TestStep> getByName(String testStepName) {
@@ -66,7 +62,7 @@ class TestStepsRegistry {
         return stepNamePatternsCache.computeIfAbsent(testStepName, v -> Pattern.compile(testStepName));
     }
 
-    private Collection<TestStep> getTestStepsFromPath(Collection<Path> rootPaths) throws IOException {
+    private Collection<TestStep> getTestStepsFromPath(Collection<Path> rootPaths) {
         return rootPaths.stream()
                 .map(rootPath -> {
                     try {

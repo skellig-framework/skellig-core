@@ -58,7 +58,7 @@ public class DefaultValueExtractor implements TestStepValueExtractor {
             };
         }
 
-        public Builder withValueExtractors(TestStepValueExtractor valueExtractor) {
+        public Builder withValueExtractor(TestStepValueExtractor valueExtractor) {
             this.valueExtractors.add(valueExtractor);
             return this;
         }
