@@ -32,7 +32,7 @@ public class TestStep {
         return Optional.ofNullable(validationDetails);
     }
 
-    public static class Builder<T> {
+    public static class Builder {
         protected String id;
         protected String name;
         protected Object testData;

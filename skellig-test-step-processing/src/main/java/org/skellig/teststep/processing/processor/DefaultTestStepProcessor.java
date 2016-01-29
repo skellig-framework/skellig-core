@@ -1,34 +1,56 @@
 package org.skellig.teststep.processing.processor;
 
-import org.skellig.teststep.processing.converter.DateValueConverter;
-import org.skellig.teststep.processing.converter.FileValueConverter;
-import org.skellig.teststep.processing.converter.IncrementValueConverter;
-import org.skellig.teststep.processing.converter.TestStepStateValueConverter;
-import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
+import org.skellig.teststep.processing.validation.TestStepResultValidator;
+import org.skellig.teststep.reader.exception.ValidationException;
 import org.skellig.teststep.reader.model.TestStep;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class DefaultTestStepProcessor implements TestStepProcessor {
 
-    private List<TestStepValueConverter> valueConverters;
     private List<TestStepProcessor> testStepProcessors;
+    private TestScenarioState testScenarioState;
+    private TestStepResultValidator validator;
 
-    protected DefaultTestStepProcessor(List<TestStepValueConverter> valueConverters,
-                                       List<TestStepProcessor> testStepProcessors) {
-        this.valueConverters = valueConverters;
+    protected DefaultTestStepProcessor(List<TestStepProcessor> testStepProcessors,
+                                       TestScenarioState testScenarioState,
+                                       TestStepResultValidator validator) {
         this.testStepProcessors = testStepProcessors;
+        this.testScenarioState = testScenarioState;
+        this.validator = validator;
     }
 
     @Override
-    public void process(TestStep testStep, Map<String, String> parameters) {
-        //TODO: apply parameters and run pre-processing
+    public void process(TestStep testStep) {
+        Optional<TestStepProcessor> testStepProcessor = testStepProcessors.stream()
+                .filter(processor -> processor.getTestStepClass().equals(testStep.getClass()))
+                .findFirst();
 
+        testStepProcessor.ifPresent(stepProcessor -> stepProcessor.process(testStep));
+
+        validate(testStep);
+    }
+
+    private void validate(TestStep testStep) {
+        testStep.getValidationDetails()
+                .ifPresent(validationDetails -> {
+                    Optional<String> testStepId = validationDetails.getTestStepId();
+                    if (testStepId.isPresent()) {
+                        Object resultFromOtherTestStep = getResultByTestStepId(testStepId.get());
+                        validator.validate(validationDetails.getExpectedResult(), resultFromOtherTestStep);
+                    } else {
+                        validator.validate(validationDetails.getExpectedResult(), getResultByTestStepId(testStep.getId()));
+                    }
+                });
+    }
+
+    private Object getResultByTestStepId(String testStepId) {
+        return testScenarioState.get(testStepId)
+                .orElseThrow(() -> new ValidationException(String.format("Result of the test step '%s' not found", testStepId)));
     }
 
     @Override
@@ -38,30 +60,16 @@ public class DefaultTestStepProcessor implements TestStepProcessor {
 
     public static class Builder {
 
-        private TestStepStateValueConverter.Builder builderForStateValueConverter;
-        private List<TestStepValueConverter> valueConverters;
         private List<TestStepProcessor> testStepProcessors;
         private TestScenarioState testScenarioState;
-        private ClassLoader classLoader;
+        private TestStepResultValidator validator;
 
         public Builder() {
-            valueConverters = new ArrayList<>();
             testStepProcessors = new ArrayList<>();
-            builderForStateValueConverter = new TestStepStateValueConverter.Builder();
         }
 
-        public Builder withTestStepProcessors(TestStepProcessor testStepProcessor) {
+        public Builder withTestStepProcessor(TestStepProcessor testStepProcessor) {
             this.testStepProcessors.add(testStepProcessor);
-            return this;
-        }
-
-        public Builder withValueConverter(TestStepValueConverter valueConverter) {
-            this.valueConverters.add(valueConverter);
-            return this;
-        }
-
-        public Builder withValueOfStateExtractor(TestStepValueExtractor valueExtractor) {
-            builderForStateValueConverter.withValueExtractor(valueExtractor);
             return this;
         }
 
@@ -70,21 +78,15 @@ public class DefaultTestStepProcessor implements TestStepProcessor {
             return this;
         }
 
-        public Builder withClassLoader(ClassLoader classLoader) {
-            this.classLoader = classLoader;
+        public Builder withValidator(TestStepResultValidator validator) {
+            this.validator = validator;
             return this;
         }
 
         public TestStepProcessor build() {
-            Objects.requireNonNull(classLoader, "ClassLoader must be provided");
             Objects.requireNonNull(testScenarioState, "TestScenarioState must be provided");
 
-            valueConverters.add(builderForStateValueConverter.build(testScenarioState));
-            valueConverters.add(new DateValueConverter());
-            valueConverters.add(new FileValueConverter(classLoader));
-            valueConverters.add(new IncrementValueConverter());
-
-            return new DefaultTestStepProcessor(valueConverters, testStepProcessors);
+            return new DefaultTestStepProcessor(testStepProcessors, testScenarioState, validator);
         }
     }
 }

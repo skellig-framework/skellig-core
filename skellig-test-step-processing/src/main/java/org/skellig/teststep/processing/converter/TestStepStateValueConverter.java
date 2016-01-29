@@ -79,7 +79,7 @@ public class TestStepStateValueConverter implements TestStepValueConverter {
         }
 
         public Builder withValueExtractor(TestStepValueExtractor valueExtractor) {
-            this.valueExtractorBuilder.withValueExtractors(valueExtractor);
+            this.valueExtractorBuilder.withValueExtractor(valueExtractor);
             return this;
         }
 

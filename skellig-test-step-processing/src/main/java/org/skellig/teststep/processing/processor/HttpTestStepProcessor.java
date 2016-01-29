@@ -20,11 +20,10 @@ public class HttpTestStepProcessor implements TestStepProcessor {
     private HttpTestStepProcessor(Map<String, SendingChannel> httpChannelPerService,
                                   TestScenarioState testScenarioState) {
         this.httpChannelPerService = httpChannelPerService;
-        this.testScenarioState = testScenarioState;
     }
 
     @Override
-    public void process(TestStep testStep, Map<String, String> parameters) {
+    public void process(TestStep testStep) {
         HttpTestStep httpTestStep = (HttpTestStep) testStep;
 
         Object result = callHttpServices(httpTestStep);
@@ -60,7 +59,7 @@ public class HttpTestStepProcessor implements TestStepProcessor {
     }
 
     @Override
-    public Class<? extends TestStep> getTestStepClass() {
+    public Class<HttpTestStep> getTestStepClass() {
         return HttpTestStep.class;
     }
 

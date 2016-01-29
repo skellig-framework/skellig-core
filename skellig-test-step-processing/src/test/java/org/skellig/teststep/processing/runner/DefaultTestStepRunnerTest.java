@@ -3,7 +3,6 @@ package org.skellig.teststep.processing.runner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatcher;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.reader.TestStepReader;
@@ -13,13 +12,11 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -49,7 +46,7 @@ class DefaultTestStepRunnerTest {
 
         testStepRunner.run(testStepName);
 
-        verify(testStepProcessor).process(testStep, Collections.emptyMap());
+        verify(testStepProcessor).process(testStep);
     }
 
     @Test
@@ -60,16 +57,7 @@ class DefaultTestStepRunnerTest {
 
         testStepRunner.run("test with v1 and 2");
 
-        verify(testStepProcessor).process(eq(testStep),
-                argThat(new ArgumentMatcher<Map<String, String>>() {
-                    @Override
-                    public boolean matches(Object arg) {
-                        Map<String, String> parameters = (Map<String, String>) arg;
-                        return parameters.size() == 2 &&
-                                parameters.get("$1").equals("v1") &&
-                                parameters.get("$2").equals("2");
-                    }
-                }));
+        verify(testStepProcessor).process(eq(testStep));
     }
 
     @Test
@@ -80,17 +68,7 @@ class DefaultTestStepRunnerTest {
 
         testStepRunner.run("test with v1 and 2", Collections.singletonMap("p1", "v2"));
 
-        verify(testStepProcessor).process(eq(testStep),
-                argThat(new ArgumentMatcher<Map<String, String>>() {
-                    @Override
-                    public boolean matches(Object arg) {
-                        Map<String, String> parameters = (Map<String, String>) arg;
-                        return parameters.size() == 3 &&
-                                parameters.get("$1").equals("v1") &&
-                                parameters.get("$2").equals("2") &&
-                                parameters.get("p1").equals("v2");
-                    }
-                }));
+        verify(testStepProcessor).process(eq(testStep));
     }
 
     @Test
@@ -105,7 +83,7 @@ class DefaultTestStepRunnerTest {
     }
 
     private void initializeTestSteps(String testStepName) {
-        testStep = new TestStep.Builder<TestStep>()
+        testStep = new TestStep.Builder()
                 .withName(testStepName)
                 .build();
 
@@ -115,6 +93,7 @@ class DefaultTestStepRunnerTest {
 
     private void initializeTestStepRunner() throws URISyntaxException {
         testStepRunner = new DefaultTestStepRunner.Builder()
+                .withClassLoader(getClass().getClassLoader())
                 .withTestStepProcessor(testStepProcessor)
                 .withTestStepReader(testStepReader, Collections.singletonList(Paths.get(getClass().getResource("/steps").toURI())))
                 .build();

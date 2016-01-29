@@ -21,7 +21,7 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
                 .filter(factory -> factory.isConstructableFrom(rawTestStep))
                 .findFirst()
                 .map(factory -> factory.create(rawTestStep))
-                .orElse(new TestStep.Builder<TestStep>()
+                .orElse(new TestStep.Builder()
                         .withId(getId(rawTestStep))
                         .withName(getName(rawTestStep))
                         .withTestData(getTestData(rawTestStep))

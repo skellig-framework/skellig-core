@@ -26,7 +26,7 @@ public class DatabaseTestStep extends TestStep {
         return query;
     }
 
-    public static class Builder extends TestStep.Builder<DatabaseTestStep> {
+    public static class Builder extends TestStep.Builder {
 
         private String command;
         private String table;
@@ -48,7 +48,7 @@ public class DatabaseTestStep extends TestStep {
         }
 
         @Override
-        public DatabaseTestStep build() {
+        public TestStep build() {
             return new DatabaseTestStep(id, name, testData, validationDetails, command, table, query);
         }
     }

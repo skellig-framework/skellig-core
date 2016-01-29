@@ -7,7 +7,6 @@ import org.junit.runners.model.Statement;
 import org.skellig.feature.parser.DefaultFeatureParser;
 import org.skellig.runner.exception.FeatureRunnerException;
 import org.skellig.teststep.processing.SkelligTestContext;
-import org.skellig.teststep.processing.runner.DefaultTestStepRunner;
 import org.skellig.teststep.processing.runner.TestStepRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,13 +40,9 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
                 .collect(Collectors.toList());
 
         SkelligTestContext skelligTestContext = skelligOptions.context().newInstance();
-        skelligTestContext.initialize(clazz.getClassLoader());
+        skelligTestContext.initialize(clazz.getClassLoader(), testStepPaths);
 
-        TestStepRunner testStepRunner =
-                new DefaultTestStepRunner.Builder()
-                        .withTestStepProcessor(skelligTestContext.getTestStepProcessor())
-                        .withTestStepReader(skelligTestContext.getTestStepReader(), testStepPaths)
-                        .build();
+        TestStepRunner testStepRunner = skelligTestContext.getTestStepRunner();
 
         DefaultFeatureParser featureParser = new DefaultFeatureParser();
         Stream.of(skelligOptions.features())
