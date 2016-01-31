@@ -1,6 +1,6 @@
-package org.skellig.teststep.reader.model.factory;
+package org.skellig.teststep.processing.model.factory;
 
-import org.skellig.teststep.reader.model.TestStep;
+import org.skellig.teststep.processing.model.TestStep;
 
 import java.util.Map;
 

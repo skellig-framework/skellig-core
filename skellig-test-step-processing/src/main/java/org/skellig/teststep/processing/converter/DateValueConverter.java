@@ -8,7 +8,7 @@ import java.time.ZoneId;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DateValueConverter implements TestStepValueConverter {
+class DateValueConverter implements TestStepValueConverter {
 
     private static final Pattern NOW_REGEX = Pattern.compile("now\\(([\\w]*)\\)");
 

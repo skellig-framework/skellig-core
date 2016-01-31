@@ -1,7 +1,8 @@
-package org.skellig.teststep.reader.model.factory;
+package org.skellig.teststep.processing.model.factory;
 
-import org.skellig.teststep.reader.model.DatabaseTestStep;
-import org.skellig.teststep.reader.model.TestStep;
+import org.skellig.teststep.processing.converter.TestStepValueConverter;
+import org.skellig.teststep.processing.model.DatabaseTestStep;
+import org.skellig.teststep.processing.model.TestStep;
 
 import java.util.Map;
 import java.util.Properties;
@@ -12,19 +13,21 @@ public class DatabaseTestStepFactory extends BaseTestStepFactory {
     private static final String COMMAND_KEYWORD = "test.step.command";
     private static final String QUERY_KEYWORD = "test.step.query";
 
-    public DatabaseTestStepFactory() {
+    public DatabaseTestStepFactory(TestStepValueConverter testStepValueConverter) {
+        this(null, testStepValueConverter);
     }
 
-    public DatabaseTestStepFactory(Properties keywordsProperties) {
-        super(keywordsProperties);
+    public DatabaseTestStepFactory(Properties keywordsProperties,
+                                   TestStepValueConverter testStepValueConverter) {
+        super(keywordsProperties, testStepValueConverter);
     }
 
     @Override
     public TestStep create(Map<String, Object> rawTestStep) {
         return new DatabaseTestStep.Builder()
-                .withCommand((String) rawTestStep.get(getKeywordName(COMMAND_KEYWORD, "command")))
-                .withTable((String) rawTestStep.get(getTableKeyword()))
-                .withQuery((String) rawTestStep.get(getQueryKeyword()))
+                .withCommand(convertValue(rawTestStep.get(getKeywordName(COMMAND_KEYWORD, "command"))))
+                .withTable(convertValue(rawTestStep.get(getTableKeyword())))
+                .withQuery(convertValue(rawTestStep.get(getQueryKeyword())))
                 .withId(getId(rawTestStep))
                 .withName(getName(rawTestStep))
                 .withTestData(getTestData(rawTestStep))

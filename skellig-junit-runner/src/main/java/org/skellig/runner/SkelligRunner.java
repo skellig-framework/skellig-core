@@ -40,9 +40,7 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
                 .collect(Collectors.toList());
 
         SkelligTestContext skelligTestContext = skelligOptions.context().newInstance();
-        skelligTestContext.initialize(clazz.getClassLoader(), testStepPaths);
-
-        TestStepRunner testStepRunner = skelligTestContext.getTestStepRunner();
+        TestStepRunner testStepRunner = skelligTestContext.initialize(clazz.getClassLoader(), testStepPaths);
 
         DefaultFeatureParser featureParser = new DefaultFeatureParser();
         Stream.of(skelligOptions.features())

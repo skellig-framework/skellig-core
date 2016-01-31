@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class IncrementValueConverter implements TestStepValueConverter {
+class IncrementValueConverter implements TestStepValueConverter {
 
     private static final Pattern NAMED_INCREMENT_REGEX = Pattern.compile("inc\\((.*)\\)");
     private static final Pattern SPLIT_COMMA_REGEX = Pattern.compile(",");
