@@ -1,12 +1,14 @@
-package org.skellig.teststep.reader.model.factory;
+package org.skellig.teststep.processing;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.skellig.teststep.reader.model.ExpectedResult;
-import org.skellig.teststep.reader.model.TestStep;
-import org.skellig.teststep.reader.model.ValidationDetails;
-import org.skellig.teststep.reader.model.ValidationType;
+import org.skellig.teststep.processing.model.ExpectedResult;
+import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.ValidationDetails;
+import org.skellig.teststep.processing.model.ValidationType;
+import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory;
+import org.skellig.teststep.processing.model.factory.TestStepFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,7 +29,7 @@ class ValidationDetailsFactoryTest {
     void setUp() {
         validationDetailsFactory =
                 new DefaultTestStepFactory.Builder()
-                        .withDefaultFactories()
+                        .withTestStepValueConverter(v -> v)
                         .build();
     }
 

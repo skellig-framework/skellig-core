@@ -1,10 +1,10 @@
 package org.skellig.teststep.processing.processor;
 
-import org.skellig.teststep.reader.model.TestStep;
+import org.skellig.teststep.processing.model.TestStep;
 
-public interface TestStepProcessor {
+public interface TestStepProcessor<T extends TestStep> {
 
-    void process(TestStep testStep);
+    void process(T testStep);
 
-    Class<? extends TestStep> getTestStepClass();
+    Class<T> getTestStepClass();
 }

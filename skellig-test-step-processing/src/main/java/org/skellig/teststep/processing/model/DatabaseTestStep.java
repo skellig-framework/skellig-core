@@ -1,4 +1,4 @@
-package org.skellig.teststep.reader.model;
+package org.skellig.teststep.processing.model;
 
 public class DatabaseTestStep extends TestStep {
 

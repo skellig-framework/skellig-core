@@ -1,7 +1,8 @@
-package org.skellig.teststep.reader.model.factory;
+package org.skellig.teststep.processing.model.factory;
 
-import org.skellig.teststep.reader.model.HttpTestStep;
-import org.skellig.teststep.reader.model.TestStep;
+import org.skellig.teststep.processing.converter.TestStepValueConverter;
+import org.skellig.teststep.processing.model.HttpTestStep;
+import org.skellig.teststep.processing.model.TestStep;
 
 import java.util.Collection;
 import java.util.Map;
@@ -23,24 +24,25 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
     private static final String USER_KEYWORD = "test.step.username";
     private static final String PASSWORD_KEYWORD = "test.step.password";
 
-    public HttpTestStepFactory() {
+    public HttpTestStepFactory(TestStepValueConverter testStepValueConverter) {
+        this(null, testStepValueConverter);
     }
 
-    public HttpTestStepFactory(Properties keywordsProperties) {
-        super(keywordsProperties);
+    public HttpTestStepFactory(Properties keywordsProperties, TestStepValueConverter testStepValueConverter) {
+        super(keywordsProperties, testStepValueConverter);
     }
 
     @Override
     public TestStep create(Map<String, Object> rawTestStep) {
         return new HttpTestStep.Builder()
                 .withService(getServices(rawTestStep))
-                .withUrl((String) rawTestStep.get(getUrlKeyword()))
+                .withUrl(convertValue(rawTestStep.get(getUrlKeyword())))
                 .withMethod((String) rawTestStep.get(getMethodKeyword()))
-                .withHeaders((Map<String, String>) rawTestStep.get(getKeywordName(HEADERS_KEYWORD, "http_headers")))
-                .withQuery((Map<String, String>) rawTestStep.get(getKeywordName(QUERY_KEYWORD, "http_query")))
-                .withForm((Map<String, String>) rawTestStep.get(getKeywordName(FORM_KEYWORD, "form")))
-                .withUsername((String) rawTestStep.get(getKeywordName(USER_KEYWORD, "username")))
-                .withPassword((String) rawTestStep.get(getKeywordName(PASSWORD_KEYWORD, "password")))
+                .withHeaders(getHttpHeaders(rawTestStep))
+                .withQuery(getHttpQuery(rawTestStep))
+                .withForm(getForm(rawTestStep))
+                .withUsername(convertValue(rawTestStep.get(getKeywordName(USER_KEYWORD, "username"))))
+                .withPassword(convertValue(rawTestStep.get(getKeywordName(PASSWORD_KEYWORD, "password"))))
                 .withId(getId(rawTestStep))
                 .withName(getName(rawTestStep))
                 .withTestData(getTestData(rawTestStep))
@@ -48,11 +50,26 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
                 .build();
     }
 
+    private Map<String, String> getForm(Map<String, Object> rawTestStep) {
+        return ((Map<String, String>) rawTestStep.get(getKeywordName(FORM_KEYWORD, "form"))).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue())));
+    }
+
+    private Map<String, String> getHttpQuery(Map<String, Object> rawTestStep) {
+        return ((Map<String, String>) rawTestStep.get(getKeywordName(QUERY_KEYWORD, "http_query"))).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue())));
+    }
+
+    private Map<String, String> getHttpHeaders(Map<String, Object> rawTestStep) {
+        return ((Map<String, String>) rawTestStep.get(getKeywordName(HEADERS_KEYWORD, "http_headers"))).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue())));
+    }
+
     private Collection<String> getServices(Map<String, Object> rawTestStep) {
         Object rawServices = rawTestStep.get(getKeywordName(SERVICE_KEYWORD, "service"));
         if (rawServices != null) {
             if (rawServices instanceof String) {
-                return Stream.of(PATTERN.split((String) rawServices)).collect(Collectors.toList());
+                return Stream.of(PATTERN.split(convertValue(rawServices))).collect(Collectors.toList());
             } else if (rawServices instanceof Collection) {
                 return (Collection<String>) rawServices;
             }

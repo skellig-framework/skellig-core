@@ -1,8 +1,9 @@
-package org.skellig.teststep.reader.model.factory;
+package org.skellig.teststep.processing.model.factory;
 
-import org.skellig.teststep.reader.model.ExpectedResult;
-import org.skellig.teststep.reader.model.ValidationDetails;
-import org.skellig.teststep.reader.model.ValidationType;
+import org.skellig.teststep.processing.converter.TestStepValueConverter;
+import org.skellig.teststep.processing.model.ExpectedResult;
+import org.skellig.teststep.processing.model.ValidationDetails;
+import org.skellig.teststep.processing.model.ValidationType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,13 +29,15 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     private static Set<String> validationTypeKeywords;
 
     private Properties keywordsProperties;
+    private TestStepValueConverter testStepValueConverter;
 
-    public BaseTestStepFactory() {
-        this(null);
+    public BaseTestStepFactory(TestStepValueConverter testStepValueConverter) {
+        this(null, testStepValueConverter);
     }
 
-    public BaseTestStepFactory(Properties keywordsProperties) {
+    public BaseTestStepFactory(Properties keywordsProperties, TestStepValueConverter testStepValueConverter) {
         this.keywordsProperties = keywordsProperties;
+        this.testStepValueConverter = testStepValueConverter;
 
         if (testDataKeywords == null) {
             testDataKeywords = Stream.of(getKeywordName("test.step.data", "data"),
@@ -104,7 +107,6 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         } else {
             return null;
         }
-
     }
 
     private ExpectedResult createExpectedResult(String propertyName, Object expectedResult) {
@@ -126,9 +128,10 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
             return new ExpectedResult(propertyName, matchValue, getValidationType(expectedResultAsMap));
         } else if (expectedResult instanceof List) {
             expectedResult = createExpectedResults((List<Object>) expectedResult);
+            return new ExpectedResult(propertyName, expectedResult, ValidationType.ALL_MATCH);
+        } else {
+            return new ExpectedResult(propertyName, convertValue(expectedResult), null);
         }
-
-        return new ExpectedResult(propertyName, expectedResult, null);
     }
 
     private Object createExpectedResults(Map<String, Object> matchValue) {
@@ -138,7 +141,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     }
 
     private Object createExpectedResults(List<Object> expectedResult) {
-        return  expectedResult.stream()
+        return expectedResult.stream()
                 .map(entry -> createExpectedResult(null, entry))
                 .collect(Collectors.toList());
     }
@@ -191,4 +194,9 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     protected String getKeywordName(String keywordName, String defaultValue) {
         return keywordsProperties == null ? defaultValue : keywordsProperties.getProperty(keywordName, defaultValue);
     }
+
+    protected <T> T convertValue(Object value) {
+        return (T) testStepValueConverter.convert(String.valueOf(value));
+    }
+
 }

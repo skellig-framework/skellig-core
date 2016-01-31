@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.validation.comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RegexValueComparator implements ValueComparator {
+class RegexValueComparator implements ValueComparator {
 
     private static final Pattern PATTERN = Pattern.compile("regex\\((.+)\\)");
     private static final String REGEX_PREFIX = "regex(";
