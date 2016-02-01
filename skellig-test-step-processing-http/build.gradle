@@ -3,8 +3,7 @@ plugins {
 }
 
 dependencies {
-    compile 'log4j:log4j:1.2.17'
-    compile 'org.slf4j:slf4j-log4j12:1.7.25'
+    compile group: 'com.typesafe', name: 'config'
     compile group: 'org.junit.platform', name: 'junit-platform-runner'
     compile project(':skellig-connection-http')
     compile project(':skellig-test-step-processing')
