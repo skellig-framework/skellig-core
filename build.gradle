@@ -16,6 +16,8 @@ ext {
     junitApiVersion = '5.2.0'
     junitPlatformVersion = '1.2.0'
     mockitoJunitVersion = '2.18.0'
+    typesafeConfigVersion = '1.4.0'
+    slf4jLogVersion = '1.7.30'
 }
 
 allprojects {
@@ -91,6 +93,9 @@ subprojects {
 
     dependencyManagement {
         dependencies {
+            dependency group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jLogVersion}"
+            dependency group: 'org.slf4j', name: 'slf4j-log4j12', version: "${slf4jLogVersion}"
+            dependency group: 'com.typesafe', name: 'config', version: "${typesafeConfigVersion}"
             dependency group: 'org.mockito', name: 'mockito-all', version: "${mockitoAllVersion}"
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "${junitApiVersion}"
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitApiVersion}"

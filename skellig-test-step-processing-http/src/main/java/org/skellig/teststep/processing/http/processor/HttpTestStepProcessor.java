@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.http.processor;
 
+import com.typesafe.config.Config;
 import org.skellig.connection.channel.SendingChannel;
 import org.skellig.connection.http.HttpChannel;
 import org.skellig.connection.http.model.HttpMethodName;
@@ -11,6 +12,7 @@ import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
@@ -61,6 +63,10 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
     }
 
     public static class Builder {
+        private static final String URL_KEYWORD = "url";
+        private static final String SERVICE_NAME_KEYWORD = "serviceName";
+        private static final String HTTP_CONFIG_KEYWORD = "http";
+
         private Map<String, SendingChannel> httpChannelPerService;
         private TestScenarioState testScenarioState;
 
@@ -68,8 +74,18 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
             httpChannelPerService = new HashMap<>();
         }
 
-        public Builder withHttpService(String serviceName, String serviceBaseUrl) {
-            this.httpChannelPerService.put(serviceName, new HttpChannel(serviceBaseUrl));
+        public Builder withHttpService(HttpServiceDetails serviceDetails) {
+            this.httpChannelPerService.put(serviceDetails.getServiceName(), new HttpChannel(serviceDetails.getUrl()));
+            return this;
+        }
+
+        public Builder withHttpService(Config config) {
+            if (config.hasPath(HTTP_CONFIG_KEYWORD)) {
+                ((List<Map<String, String>>) config.getAnyRefList(HTTP_CONFIG_KEYWORD))
+                        .forEach(rawHttpService ->
+                                withHttpService(new HttpServiceDetails(rawHttpService.get(SERVICE_NAME_KEYWORD),
+                                        rawHttpService.get(URL_KEYWORD))));
+            }
             return this;
         }
 
@@ -80,6 +96,24 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
 
         public TestStepProcessor<HttpTestStep> build() {
             return new HttpTestStepProcessor(httpChannelPerService, testScenarioState);
+        }
+    }
+
+    static class HttpServiceDetails {
+        private String serviceName;
+        private String url;
+
+        public HttpServiceDetails(String serviceName, String url) {
+            this.serviceName = serviceName;
+            this.url = url;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public String getUrl() {
+            return url;
         }
     }
 }
