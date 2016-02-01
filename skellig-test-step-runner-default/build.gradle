@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compile project(':skellig-test-step-runner')
+    compile project(':skellig-test-step-processing-http')
+
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+    testImplementation group: 'org.mockito', name: 'mockito-all'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+}
+
+modifyPom {
+    project {
+        name = 'Skellig Test Step Runner Default'
+        packaging = 'jar'
+        description = 'Skellig Test Step Runner with default, pre-configured processors for test steps'
+        url = "$projectUrl"
+        scm(projectRepo)
+        licenses(projectLicenses)
+        developers(projectDevelopers)
+    }
+}

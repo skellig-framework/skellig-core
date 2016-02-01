@@ -23,23 +23,27 @@ import org.skellig.teststep.runner.TestStepRunner;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
 
 public class SkelligTestContext {
 
+    private TestStepValueConverter testStepValueConverter;
+    private TestScenarioState testScenarioState;
+
     public TestStepRunner initialize(ClassLoader classLoader, List<Path> testStepPaths) {
         TestStepReader testStepReader = createTestStepReader();
-        TestScenarioState testScenarioState = createTestScenarioState();
+        testScenarioState = createTestScenarioState();
 
         TestStepValueExtractor valueExtractor = createTestStepValueExtractor();
-        TestStepValueConverter testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState);
-        List<TestStepProcessorDetails> additionalTestStepProcessors = getAdditionalTestStepProcessors();
+        testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState);
+        List<TestStepProcessorDetails> testStepProcessors = getTestStepProcessors();
 
-        TestStepProcessor<TestStep> testStepProcessor = initializeTestStepProcessor(valueExtractor, additionalTestStepProcessors, testScenarioState);
+        TestStepProcessor<TestStep> testStepProcessor = initializeTestStepProcessor(valueExtractor, testStepProcessors, testScenarioState);
 
         DefaultTestStepFactory.Builder testStepFactoryBuilder = new DefaultTestStepFactory.Builder();
-        additionalTestStepProcessors.forEach(item -> testStepFactoryBuilder.withTestStepFactory(item.getTestStepFactory()));
+        testStepProcessors.forEach(item -> testStepFactoryBuilder.withTestStepFactory(item.getTestStepFactory()));
 
         TestStepFactory testStepFactory =
                 testStepFactoryBuilder
@@ -55,24 +59,31 @@ public class SkelligTestContext {
                 .build();
     }
 
+    public final TestScenarioState getTestScenarioState() {
+        Objects.requireNonNull(testScenarioState, "TestScenarioState must be initialized first. Did you forget to call 'initialize'?");
+        return testScenarioState;
+    }
+
     private TestStepProcessor<TestStep> initializeTestStepProcessor(TestStepValueExtractor valueExtractor,
                                                                     List<TestStepProcessorDetails> additionalTestStepProcessors,
                                                                     TestScenarioState testScenarioState) {
-        DefaultValueComparator.Builder valueComparatorBuilder = new DefaultValueComparator.Builder();
-        getAdditionalValueComparators().forEach(valueComparatorBuilder::withValueComparator);
-
-        DefaultTestStepResultValidator.Builder validatorBuilder = new DefaultTestStepResultValidator.Builder();
-        TestStepResultValidator validator =
-                validatorBuilder
-                        .withValueExtractor(valueExtractor)
-                        .withValueComparator(valueComparatorBuilder.build())
-                        .build();
 
         DefaultTestStepProcessor.Builder testStepProcessorBuilder = new DefaultTestStepProcessor.Builder();
         additionalTestStepProcessors.forEach(item -> testStepProcessorBuilder.withTestStepProcessor(item.getTestStepProcessor()));
         return testStepProcessorBuilder
                 .withTestScenarioState(testScenarioState)
-                .withValidator(validator)
+                .withValidator(createTestStepValidator(valueExtractor))
+                .build();
+    }
+
+    private TestStepResultValidator createTestStepValidator(TestStepValueExtractor valueExtractor) {
+        DefaultValueComparator.Builder valueComparatorBuilder = new DefaultValueComparator.Builder();
+        getAdditionalValueComparators().forEach(valueComparatorBuilder::withValueComparator);
+
+        DefaultTestStepResultValidator.Builder validatorBuilder = new DefaultTestStepResultValidator.Builder();
+        return validatorBuilder
+                .withValueExtractor(valueExtractor)
+                .withValueComparator(valueComparatorBuilder.build())
                 .build();
     }
 
@@ -115,7 +126,7 @@ public class SkelligTestContext {
         return Collections.emptyList();
     }
 
-    protected List<TestStepProcessorDetails> getAdditionalTestStepProcessors() {
+    protected List<TestStepProcessorDetails> getTestStepProcessors() {
         return Collections.emptyList();
     }
 
@@ -127,21 +138,33 @@ public class SkelligTestContext {
         return null;
     }
 
-    public static final class TestStepProcessorDetails {
+    protected TestStepFactory createTestStepFactoryFrom(TestStepFactoryCreationDelegate delegate) {
+        Objects.requireNonNull(testStepValueConverter, "TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?");
+
+        return delegate.create(getTestStepKeywordsProperties(), testStepValueConverter);
+    }
+
+    protected static final class TestStepProcessorDetails {
+
         private TestStepProcessor testStepProcessor;
         private TestStepFactory testStepFactory;
 
-        public TestStepProcessorDetails(TestStepProcessor testStepProcessor, TestStepFactory testStepFactory) {
+        protected TestStepProcessorDetails(TestStepProcessor testStepProcessor, TestStepFactory testStepFactory) {
             this.testStepProcessor = testStepProcessor;
             this.testStepFactory = testStepFactory;
         }
 
-        public TestStepProcessor getTestStepProcessor() {
+        protected TestStepProcessor getTestStepProcessor() {
             return testStepProcessor;
         }
 
-        public TestStepFactory getTestStepFactory() {
+        protected TestStepFactory getTestStepFactory() {
             return testStepFactory;
         }
+
+    }
+
+    protected interface TestStepFactoryCreationDelegate {
+        TestStepFactory create(Properties keywordsProperties, TestStepValueConverter testStepValueConverter);
     }
 }
