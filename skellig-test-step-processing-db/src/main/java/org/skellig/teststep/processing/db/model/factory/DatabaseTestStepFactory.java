@@ -10,9 +10,9 @@ import java.util.Properties;
 
 public class DatabaseTestStepFactory extends BaseTestStepFactory {
 
-    private static final String TABLE_KEYWORD = "test.step.table";
-    private static final String COMMAND_KEYWORD = "test.step.command";
-    private static final String QUERY_KEYWORD = "test.step.query";
+    private static final String TABLE_KEYWORD = "test.step.keyword.table";
+    private static final String COMMAND_KEYWORD = "test.step.keyword.command";
+    private static final String QUERY_KEYWORD = "test.step.keyword.query";
 
     public DatabaseTestStepFactory(TestStepValueConverter testStepValueConverter) {
         this(null, testStepValueConverter);
