@@ -1,11 +1,13 @@
-package org.skellig.teststep.processing.processor;
+package org.skellig.teststep.processing.http.processor;
 
 import org.skellig.connection.channel.SendingChannel;
 import org.skellig.connection.http.HttpChannel;
 import org.skellig.connection.http.model.HttpMethodName;
 import org.skellig.connection.http.model.HttpRequestDetails;
 import org.skellig.connection.http.model.HttpResponse;
-import org.skellig.teststep.processing.model.HttpTestStep;
+import org.skellig.teststep.processing.http.model.HttpTestStep;
+import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
+import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 
 import java.util.HashMap;

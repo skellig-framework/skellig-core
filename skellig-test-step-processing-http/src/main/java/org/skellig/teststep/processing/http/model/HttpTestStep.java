@@ -1,4 +1,7 @@
-package org.skellig.teststep.processing.model;
+package org.skellig.teststep.processing.http.model;
+
+import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.ValidationDetails;
 
 import java.util.Collection;
 import java.util.Map;

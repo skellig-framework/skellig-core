@@ -1,4 +1,7 @@
-package org.skellig.teststep.processing.model;
+package org.skellig.teststep.processing.db.model;
+
+import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.ValidationDetails;
 
 public class DatabaseTestStep extends TestStep {
 

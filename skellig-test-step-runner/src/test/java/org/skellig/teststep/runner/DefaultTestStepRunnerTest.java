@@ -1,4 +1,5 @@
-package org.skellig.teststep.processing.runner;
+package org.skellig.teststep.runner;
+
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

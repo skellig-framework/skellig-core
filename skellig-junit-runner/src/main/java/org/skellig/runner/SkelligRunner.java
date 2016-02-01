@@ -6,8 +6,8 @@ import org.junit.runners.ParentRunner;
 import org.junit.runners.model.Statement;
 import org.skellig.feature.parser.DefaultFeatureParser;
 import org.skellig.runner.exception.FeatureRunnerException;
-import org.skellig.teststep.processing.SkelligTestContext;
-import org.skellig.teststep.processing.runner.TestStepRunner;
+import org.skellig.teststep.runner.TestStepRunner;
+import org.skellig.teststep.runner.context.SkelligTestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

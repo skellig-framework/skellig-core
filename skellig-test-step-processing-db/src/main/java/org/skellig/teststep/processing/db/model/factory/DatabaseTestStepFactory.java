@@ -1,8 +1,9 @@
-package org.skellig.teststep.processing.model.factory;
+package org.skellig.teststep.processing.db.model.factory;
 
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.model.DatabaseTestStep;
+import org.skellig.teststep.processing.db.model.DatabaseTestStep;
 import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
 
 import java.util.Map;
 import java.util.Properties;
