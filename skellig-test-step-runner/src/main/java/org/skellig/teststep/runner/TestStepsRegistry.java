@@ -1,8 +1,8 @@
-package org.skellig.teststep.processing.runner;
+package org.skellig.teststep.runner;
 
-import org.skellig.teststep.processing.exception.TestStepRegistryException;
-import org.skellig.teststep.processing.model.TestStepFileExtension;
 import org.skellig.teststep.reader.TestStepReader;
+import org.skellig.teststep.runner.exception.TestStepRegistryException;
+import org.skellig.teststep.runner.model.TestStepFileExtension;
 
 import java.io.IOException;
 import java.nio.file.Files;

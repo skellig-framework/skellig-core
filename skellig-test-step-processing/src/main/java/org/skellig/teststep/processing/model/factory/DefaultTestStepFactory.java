@@ -65,9 +65,6 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
         }
 
         public TestStepFactory build() {
-            withTestStepFactory(new HttpTestStepFactory(keywordsProperties, testStepValueConverter))
-                    .withTestStepFactory(new DatabaseTestStepFactory(keywordsProperties, testStepValueConverter));
-
             return new DefaultTestStepFactory(keywordsProperties, testStepValueConverter, testStepFactories);
         }
     }

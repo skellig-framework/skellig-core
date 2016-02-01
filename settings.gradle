@@ -7,4 +7,8 @@ include 'skellig-test-step-reader'
 include 'skellig-test-step-reader-sts'
 include 'skellig-connection-channel'
 include 'skellig-connection-http'
+include 'skellig-test-step-runner'
+include 'skellig-test-step-runner-default'
+include 'skellig-test-step-processing-http'
+include 'skellig-test-step-processing-db'
 

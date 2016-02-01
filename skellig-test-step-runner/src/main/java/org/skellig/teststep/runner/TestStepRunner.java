@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.runner;
+package org.skellig.teststep.runner;
 
 import java.util.Map;
 

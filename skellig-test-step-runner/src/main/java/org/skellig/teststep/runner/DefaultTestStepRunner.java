@@ -1,12 +1,12 @@
-package org.skellig.teststep.processing.runner;
+package org.skellig.teststep.runner;
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.model.TestStep;
-import org.skellig.teststep.processing.model.TestStepFileExtension;
 import org.skellig.teststep.processing.model.factory.TestStepFactory;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.reader.TestStepReader;
+import org.skellig.teststep.runner.model.TestStepFileExtension;
 
 import java.nio.file.Path;
 import java.util.Collection;
@@ -41,7 +41,7 @@ public class DefaultTestStepRunner implements TestStepRunner {
     public void run(String testStepName, Map<String, String> parameters) {
         Optional<Map<String, Object>> rawTestStep = testStepsRegistry.getByName(testStepName);
         if (rawTestStep.isPresent()) {
-            initializeTestStepParameters(testStepName, parameters, rawTestStep);
+            initializeTestStepParameters(testStepName, parameters, rawTestStep.get());
             TestStep testStep = testStepFactory.create(rawTestStep.get());
             testScenarioState.set(testStep.getId(), testStep);
 
@@ -55,9 +55,9 @@ public class DefaultTestStepRunner implements TestStepRunner {
         }
     }
 
-    private void initializeTestStepParameters(String testStepName, Map<String, String> parameters, Optional<Map<String, Object>> rawTestStep) {
+    private void initializeTestStepParameters(String testStepName, Map<String, String> parameters, Map<String, Object> rawTestStep) {
         Map<String, String> additionalParameters =
-                testStepsRegistry.extractParametersFromTestStepName(rawTestStep.get(), testStepName);
+                testStepsRegistry.extractParametersFromTestStepName(rawTestStep, testStepName);
         additionalParameters.putAll(parameters);
         testScenarioState.set("parameters", additionalParameters);
     }

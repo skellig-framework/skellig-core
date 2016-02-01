@@ -8,7 +8,7 @@ import org.junit.runners.model.InitializationError;
 import org.skellig.feature.TestScenario;
 import org.skellig.feature.TestStep;
 import org.skellig.runner.exception.FeatureRunnerException;
-import org.skellig.teststep.processing.runner.TestStepRunner;
+import org.skellig.teststep.runner.TestStepRunner;
 
 import java.util.Collections;
 import java.util.HashMap;

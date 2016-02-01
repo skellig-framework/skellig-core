@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.model;
+package org.skellig.teststep.runner.model;
 
 public enum TestStepFileExtension {
     STS("sts");
