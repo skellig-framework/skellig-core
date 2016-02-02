@@ -2,7 +2,6 @@ package org.skellig.teststep.processing.db.model.factory;
 
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.db.model.DatabaseTestStep;
-import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
 
 import java.util.Map;
@@ -24,16 +23,17 @@ public class DatabaseTestStepFactory extends BaseTestStepFactory {
     }
 
     @Override
-    public TestStep create(Map<String, Object> rawTestStep) {
-        return new DatabaseTestStep.Builder()
-                .withCommand(convertValue(rawTestStep.get(getKeywordName(COMMAND_KEYWORD, "command"))))
-                .withTable(convertValue(rawTestStep.get(getTableKeyword())))
-                .withQuery(convertValue(rawTestStep.get(getQueryKeyword())))
-                .withId(getId(rawTestStep))
-                .withName(getName(rawTestStep))
-                .withTestData(getTestData(rawTestStep))
-                .withValidationDetails(createValidationDetails(rawTestStep))
-                .build();
+    protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
+        return (id, name, testData, validationDetails) ->
+                new DatabaseTestStep.Builder()
+                        .withCommand(convertValue(rawTestStep.get(getKeywordName(COMMAND_KEYWORD, "command"))))
+                        .withTable(convertValue(rawTestStep.get(getTableKeyword())))
+                        .withQuery(convertValue(rawTestStep.get(getQueryKeyword())))
+                        .withId(id)
+                        .withName(name)
+                        .withTestData(testData)
+                        .withValidationDetails(validationDetails)
+                        .build();
     }
 
     @Override
