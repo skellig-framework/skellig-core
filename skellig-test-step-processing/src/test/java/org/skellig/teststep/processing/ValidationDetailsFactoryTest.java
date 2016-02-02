@@ -11,6 +11,7 @@ import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory;
 import org.skellig.teststep.processing.model.factory.TestStepFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,7 +40,7 @@ class ValidationDetailsFactoryTest {
         Map<String, Object> rawValidationDetails =
                 createMap("status", "200", "log", "");
 
-        TestStep testStep = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        TestStep testStep = createTestStepWithoutParameters(rawValidationDetails);
         ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertAll(
@@ -63,7 +64,7 @@ class ValidationDetailsFactoryTest {
                         ),
                         "records[2]", "v3");
 
-        TestStep testStep = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        TestStep testStep = createTestStepWithoutParameters(rawValidationDetails);
         ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertAll(
@@ -91,7 +92,7 @@ class ValidationDetailsFactoryTest {
                                 createMap("b1", "v1", "b2", "v2")
                         ));
 
-        TestStep testStep = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        TestStep testStep = createTestStepWithoutParameters(rawValidationDetails);
         ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertAll(
@@ -147,6 +148,7 @@ class ValidationDetailsFactoryTest {
       }
     }
     * */
+
     @Test
     @DisplayName("When has test id and complex expected results with any_match and none_match")
     void testComplexExpectedResult() {
@@ -175,7 +177,7 @@ class ValidationDetailsFactoryTest {
                 )
         );
 
-        TestStep testStep = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        TestStep testStep = createTestStepWithoutParameters(rawValidationDetails);
         ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertAll(
@@ -227,7 +229,6 @@ class ValidationDetailsFactoryTest {
                 () -> assertEquals("200", extractExpectedValue(validationDetails.getExpectedResult(), 1, 3).getExpectedResult())
         );
     }
-
     /*
     * This test is to check the following structure from test step file:
     *
@@ -238,6 +239,7 @@ class ValidationDetailsFactoryTest {
        log = contains(success)
       }
     * */
+
     @Test
     @DisplayName("When has grouped properties Then verify these properties are split")
     void testWithGroupedProperties() {
@@ -247,7 +249,7 @@ class ValidationDetailsFactoryTest {
                                 "log", "contains(success)")
                 );
 
-        TestStep testStep = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        TestStep testStep = createTestStepWithoutParameters(rawValidationDetails);
         ValidationDetails validationDetails = testStep.getValidationDetails().get();
 
         assertAll(
@@ -284,5 +286,9 @@ class ValidationDetailsFactoryTest {
             map.put((String) params[i], params[i + 1]);
         }
         return map;
+    }
+
+    private TestStep createTestStepWithoutParameters(Map<String, Object> rawValidationDetails) {
+        return validationDetailsFactory.create("step1", createMap("validate", rawValidationDetails), Collections.emptyMap());
     }
 }

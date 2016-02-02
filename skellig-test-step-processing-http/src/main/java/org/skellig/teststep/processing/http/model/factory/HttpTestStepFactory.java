@@ -30,43 +30,44 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
 
     @Override
     protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
-        return (id, name, testData, validationDetails) ->
+        return (id, name, testData, validationDetails, parameters, variables) ->
                 new HttpTestStep.Builder()
-                        .withService(getServices(rawTestStep))
-                        .withUrl(convertValue(rawTestStep.get(getUrlKeyword())))
+                        .withService(getServices(rawTestStep, parameters))
+                        .withUrl(convertValue(rawTestStep.get(getUrlKeyword()), parameters))
                         .withMethod((String) rawTestStep.get(getMethodKeyword()))
-                        .withHeaders(getHttpHeaders(rawTestStep))
-                        .withQuery(getHttpQuery(rawTestStep))
-                        .withForm(getForm(rawTestStep))
-                        .withUsername(convertValue(rawTestStep.get(getKeywordName(USER_KEYWORD, "username"))))
-                        .withPassword(convertValue(rawTestStep.get(getKeywordName(PASSWORD_KEYWORD, "password"))))
+                        .withHeaders(getHttpHeaders(rawTestStep, parameters))
+                        .withQuery(getHttpQuery(rawTestStep, parameters))
+                        .withForm(getForm(rawTestStep, parameters))
+                        .withUsername(convertValue(rawTestStep.get(getKeywordName(USER_KEYWORD, "username")), parameters))
+                        .withPassword(convertValue(rawTestStep.get(getKeywordName(PASSWORD_KEYWORD, "password")), parameters))
                         .withId(id)
                         .withName(name)
                         .withTestData(testData)
                         .withValidationDetails(validationDetails)
+                        .withVariables(variables)
                         .build();
     }
 
-    private Map<String, String> getForm(Map<String, Object> rawTestStep) {
+    private Map<String, String> getForm(Map<String, Object> rawTestStep, Map<String, String> parameters) {
         return ((Map<String, String>) rawTestStep.get(getKeywordName(FORM_KEYWORD, "form"))).entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue())));
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue(), parameters)));
     }
 
-    private Map<String, String> getHttpQuery(Map<String, Object> rawTestStep) {
+    private Map<String, String> getHttpQuery(Map<String, Object> rawTestStep, Map<String, String> parameters) {
         return ((Map<String, String>) rawTestStep.get(getKeywordName(QUERY_KEYWORD, "http_query"))).entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue())));
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue(), parameters)));
     }
 
-    private Map<String, String> getHttpHeaders(Map<String, Object> rawTestStep) {
+    private Map<String, String> getHttpHeaders(Map<String, Object> rawTestStep, Map<String, String> parameters) {
         return ((Map<String, String>) rawTestStep.get(getKeywordName(HEADERS_KEYWORD, "http_headers"))).entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue())));
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue(), parameters)));
     }
 
-    private Collection<String> getServices(Map<String, Object> rawTestStep) {
+    private Collection<String> getServices(Map<String, Object> rawTestStep, Map<String, String> parameters) {
         Object rawServices = rawTestStep.get(getKeywordName(SERVICE_KEYWORD, "service"));
         if (rawServices != null) {
             if (rawServices instanceof String) {
-                return Stream.of(PATTERN.split(convertValue(rawServices))).collect(Collectors.toList());
+                return Stream.of(PATTERN.split(convertValue(rawServices, parameters))).collect(Collectors.toList());
             } else if (rawServices instanceof Collection) {
                 return (Collection<String>) rawServices;
             }

@@ -17,10 +17,10 @@ public class HttpTestStep extends TestStep {
     private Map<String, String> query;
     private Map<String, String> form;
 
-    protected HttpTestStep(String id, String name, Object testData, ValidationDetails validationDetails,
+    protected HttpTestStep(String id, String name, Map<String, String> variables, Object testData, ValidationDetails validationDetails,
                            Collection<String> services, String url, String method, String username, String password,
                            Map<String, String> headers, Map<String, String> query, Map<String, String> form) {
-        super(id, name, testData, validationDetails);
+        super(id, name, variables, testData, validationDetails);
         this.services = services;
         this.url = url;
         this.method = method;
@@ -117,7 +117,7 @@ public class HttpTestStep extends TestStep {
 
         @Override
         public HttpTestStep build() {
-            return new HttpTestStep(id, name, testData, validationDetails, services, url, method, username, password,
+            return new HttpTestStep(id, name, variables, testData, validationDetails, services, url, method, username, password,
                     headers, query, form);
         }
     }
