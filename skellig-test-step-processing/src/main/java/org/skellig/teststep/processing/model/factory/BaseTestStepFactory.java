@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.model.factory;
 
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.model.ExpectedResult;
+import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.ValidationDetails;
 import org.skellig.teststep.processing.model.ValidationType;
 
@@ -64,7 +65,18 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         }
     }
 
-    protected Object getTestData(Map<String, Object> rawTestStep) {
+    @Override
+    public TestStep create(Map<String, Object> rawTestStep) {
+        return createTestStep(rawTestStep).create(
+                getId(rawTestStep),
+                getName(rawTestStep),
+                getTestData(rawTestStep),
+                createValidationDetails(rawTestStep));
+    }
+
+    protected abstract CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep);
+
+    private Object getTestData(Map<String, Object> rawTestStep) {
         return testDataKeywords.stream()
                 .filter(rawTestStep::containsKey)
                 .map(rawTestStep::get)
@@ -72,14 +84,14 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
                 .orElse(null);
     }
 
-    protected Optional<Object> getValidationDetails(Map<String, Object> rawTestStep) {
+    private Optional<Object> getValidationDetails(Map<String, Object> rawTestStep) {
         return validationKeywords.stream()
                 .map(rawTestStep::get)
                 .filter(Objects::nonNull)
                 .findFirst();
     }
 
-    protected ValidationDetails createValidationDetails(Map<String, Object> rawTestStep) {
+    private ValidationDetails createValidationDetails(Map<String, Object> rawTestStep) {
 
         Optional<Object> rawValidationDetails = getValidationDetails(rawTestStep);
 
@@ -196,6 +208,10 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
 
     protected <T> T convertValue(Object value) {
         return (T) testStepValueConverter.convert(String.valueOf(value));
+    }
+
+    protected interface CreateTestStepDelegate {
+        TestStep create(String id, String name, Object testData, ValidationDetails validationDetails);
     }
 
 }

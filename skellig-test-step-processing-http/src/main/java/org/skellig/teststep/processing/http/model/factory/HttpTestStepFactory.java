@@ -2,7 +2,6 @@ package org.skellig.teststep.processing.http.model.factory;
 
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.http.model.HttpTestStep;
-import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
 
 import java.util.Collection;
@@ -30,21 +29,22 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
     }
 
     @Override
-    public TestStep create(Map<String, Object> rawTestStep) {
-        return new HttpTestStep.Builder()
-                .withService(getServices(rawTestStep))
-                .withUrl(convertValue(rawTestStep.get(getUrlKeyword())))
-                .withMethod((String) rawTestStep.get(getMethodKeyword()))
-                .withHeaders(getHttpHeaders(rawTestStep))
-                .withQuery(getHttpQuery(rawTestStep))
-                .withForm(getForm(rawTestStep))
-                .withUsername(convertValue(rawTestStep.get(getKeywordName(USER_KEYWORD, "username"))))
-                .withPassword(convertValue(rawTestStep.get(getKeywordName(PASSWORD_KEYWORD, "password"))))
-                .withId(getId(rawTestStep))
-                .withName(getName(rawTestStep))
-                .withTestData(getTestData(rawTestStep))
-                .withValidationDetails(createValidationDetails(rawTestStep))
-                .build();
+    protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
+        return (id, name, testData, validationDetails) ->
+                new HttpTestStep.Builder()
+                        .withService(getServices(rawTestStep))
+                        .withUrl(convertValue(rawTestStep.get(getUrlKeyword())))
+                        .withMethod((String) rawTestStep.get(getMethodKeyword()))
+                        .withHeaders(getHttpHeaders(rawTestStep))
+                        .withQuery(getHttpQuery(rawTestStep))
+                        .withForm(getForm(rawTestStep))
+                        .withUsername(convertValue(rawTestStep.get(getKeywordName(USER_KEYWORD, "username"))))
+                        .withPassword(convertValue(rawTestStep.get(getKeywordName(PASSWORD_KEYWORD, "password"))))
+                        .withId(id)
+                        .withName(name)
+                        .withTestData(testData)
+                        .withValidationDetails(validationDetails)
+                        .build();
     }
 
     private Map<String, String> getForm(Map<String, Object> rawTestStep) {

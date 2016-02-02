@@ -19,19 +19,19 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
         this.factories = factories;
     }
 
-
     @Override
-    public TestStep create(Map<String, Object> rawTestStep) {
-        return factories.stream()
-                .filter(factory -> factory.isConstructableFrom(rawTestStep))
-                .findFirst()
-                .map(factory -> factory.create(rawTestStep))
-                .orElse(new TestStep.Builder()
-                        .withId(getId(rawTestStep))
-                        .withName(getName(rawTestStep))
-                        .withTestData(getTestData(rawTestStep))
-                        .withValidationDetails(createValidationDetails(rawTestStep))
-                        .build());
+    protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
+        return (id, name, testData, validationDetails) ->
+                factories.stream()
+                        .filter(factory -> factory.isConstructableFrom(rawTestStep))
+                        .findFirst()
+                        .map(factory -> factory.create(rawTestStep))
+                        .orElse(new TestStep.Builder()
+                                .withId(id)
+                                .withName(name)
+                                .withTestData(testData)
+                                .withValidationDetails(validationDetails)
+                                .build());
     }
 
     @Override
