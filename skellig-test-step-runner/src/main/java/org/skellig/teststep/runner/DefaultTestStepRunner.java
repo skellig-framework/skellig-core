@@ -41,8 +41,8 @@ public class DefaultTestStepRunner implements TestStepRunner {
     public void run(String testStepName, Map<String, String> parameters) {
         Optional<Map<String, Object>> rawTestStep = testStepsRegistry.getByName(testStepName);
         if (rawTestStep.isPresent()) {
-            initializeTestStepParameters(testStepName, parameters, rawTestStep.get());
-            TestStep testStep = testStepFactory.create(rawTestStep.get());
+            TestStep testStep = testStepFactory.create(testStepName, rawTestStep.get(), parameters);
+
             testScenarioState.set(testStep.getId(), testStep);
 
             testStepProcessor.process(testStep);
@@ -53,13 +53,6 @@ public class DefaultTestStepRunner implements TestStepRunner {
                     String.format("Test step '%s' is not found in any of registered test data files from: %s",
                             testStepName, testStepsRegistry.getTestStepsRootPath()));
         }
-    }
-
-    private void initializeTestStepParameters(String testStepName, Map<String, String> parameters, Map<String, Object> rawTestStep) {
-        Map<String, String> additionalParameters =
-                testStepsRegistry.extractParametersFromTestStepName(rawTestStep, testStepName);
-        additionalParameters.putAll(parameters);
-        testScenarioState.set("parameters", additionalParameters);
     }
 
     public static class Builder {

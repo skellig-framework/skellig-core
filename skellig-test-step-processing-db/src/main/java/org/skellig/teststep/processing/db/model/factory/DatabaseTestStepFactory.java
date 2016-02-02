@@ -24,15 +24,16 @@ public class DatabaseTestStepFactory extends BaseTestStepFactory {
 
     @Override
     protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
-        return (id, name, testData, validationDetails) ->
+        return (id, name, testData, validationDetails, parameters, variables) ->
                 new DatabaseTestStep.Builder()
-                        .withCommand(convertValue(rawTestStep.get(getKeywordName(COMMAND_KEYWORD, "command"))))
-                        .withTable(convertValue(rawTestStep.get(getTableKeyword())))
-                        .withQuery(convertValue(rawTestStep.get(getQueryKeyword())))
+                        .withCommand(convertValue(rawTestStep.get(getKeywordName(COMMAND_KEYWORD, "command")), parameters))
+                        .withTable(convertValue(rawTestStep.get(getTableKeyword()), parameters))
+                        .withQuery(convertValue(rawTestStep.get(getQueryKeyword()), parameters))
                         .withId(id)
                         .withName(name)
                         .withTestData(testData)
                         .withValidationDetails(validationDetails)
+                        .withVariables(variables)
                         .build();
     }
 

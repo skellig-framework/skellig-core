@@ -38,18 +38,10 @@ public class SkelligTestContext {
 
         TestStepValueExtractor valueExtractor = createTestStepValueExtractor();
         testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState);
+
         List<TestStepProcessorDetails> testStepProcessors = getTestStepProcessors();
-
-        TestStepProcessor<TestStep> testStepProcessor = initializeTestStepProcessor(valueExtractor, testStepProcessors, testScenarioState);
-
-        DefaultTestStepFactory.Builder testStepFactoryBuilder = new DefaultTestStepFactory.Builder();
-        testStepProcessors.forEach(item -> testStepFactoryBuilder.withTestStepFactory(item.getTestStepFactory()));
-
-        TestStepFactory testStepFactory =
-                testStepFactoryBuilder
-                        .withKeywordsProperties(getTestStepKeywordsProperties())
-                        .withTestStepValueConverter(testStepValueConverter)
-                        .build();
+        TestStepProcessor<TestStep> testStepProcessor = createTestStepProcessor(valueExtractor, testStepProcessors, testScenarioState);
+        TestStepFactory testStepFactory = createTestStepFactory(testStepProcessors);
 
         return new DefaultTestStepRunner.Builder()
                 .withTestScenarioState(testScenarioState)
@@ -59,14 +51,24 @@ public class SkelligTestContext {
                 .build();
     }
 
+    private TestStepFactory createTestStepFactory(List<TestStepProcessorDetails> testStepProcessors) {
+        DefaultTestStepFactory.Builder testStepFactoryBuilder = new DefaultTestStepFactory.Builder();
+        testStepProcessors.forEach(item -> testStepFactoryBuilder.withTestStepFactory(item.getTestStepFactory()));
+
+        return testStepFactoryBuilder
+                .withKeywordsProperties(getTestStepKeywordsProperties())
+                .withTestStepValueConverter(testStepValueConverter)
+                .build();
+    }
+
     public final TestScenarioState getTestScenarioState() {
         Objects.requireNonNull(testScenarioState, "TestScenarioState must be initialized first. Did you forget to call 'initialize'?");
         return testScenarioState;
     }
 
-    private TestStepProcessor<TestStep> initializeTestStepProcessor(TestStepValueExtractor valueExtractor,
-                                                                    List<TestStepProcessorDetails> additionalTestStepProcessors,
-                                                                    TestScenarioState testScenarioState) {
+    private TestStepProcessor<TestStep> createTestStepProcessor(TestStepValueExtractor valueExtractor,
+                                                                List<TestStepProcessorDetails> additionalTestStepProcessors,
+                                                                TestScenarioState testScenarioState) {
 
         DefaultTestStepProcessor.Builder testStepProcessorBuilder = new DefaultTestStepProcessor.Builder();
         additionalTestStepProcessors.forEach(item -> testStepProcessorBuilder.withTestStepProcessor(item.getTestStepProcessor()));

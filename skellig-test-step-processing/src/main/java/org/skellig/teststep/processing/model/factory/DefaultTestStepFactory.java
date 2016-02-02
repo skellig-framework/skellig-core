@@ -21,11 +21,11 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
 
     @Override
     protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
-        return (id, name, testData, validationDetails) ->
+        return (id, name, testData, validationDetails, parameters, variables) ->
                 factories.stream()
                         .filter(factory -> factory.isConstructableFrom(rawTestStep))
                         .findFirst()
-                        .map(factory -> factory.create(rawTestStep))
+                        .map(factory -> factory.create(name, rawTestStep, parameters))
                         .orElse(new TestStep.Builder()
                                 .withId(id)
                                 .withName(name)

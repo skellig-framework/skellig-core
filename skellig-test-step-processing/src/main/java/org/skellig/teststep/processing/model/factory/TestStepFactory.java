@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface TestStepFactory {
 
-    TestStep create(Map<String, Object> rawTestStep);
+    TestStep create(String testStepName, Map<String, Object> rawTestStep, Map<String, String> parameters);
 
     boolean isConstructableFrom(Map<String, Object> rawTestStep);
 }
