@@ -1,25 +1,22 @@
-package org.skellig.teststep.processing;
+package org.skellig.teststep.processing.model.factory;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.skellig.teststep.processing.model.ExpectedResult;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.ValidationDetails;
 import org.skellig.teststep.processing.model.ValidationType;
-import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory;
-import org.skellig.teststep.processing.model.factory.TestStepFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.skellig.teststep.processing.utils.UnitTestUtils.createMap;
+import static org.skellig.teststep.processing.utils.UnitTestUtils.extractExpectedValue;
 
 @DisplayName("Create validation details")
 class ValidationDetailsFactoryTest {
@@ -272,21 +269,7 @@ class ValidationDetailsFactoryTest {
         );
     }
 
-    ExpectedResult extractExpectedValue(ExpectedResult expectedResult, int... indexPath) {
-        for (int index : indexPath) {
-            expectedResult = expectedResult.<List<ExpectedResult>>getExpectedResult().get(index);
-        }
-        return expectedResult;
-    }
 
-
-    private Map<String, Object> createMap(Object... params) {
-        Map<String, Object> map = new HashMap<>();
-        for (int i = 0; i < params.length; i += 2) {
-            map.put((String) params[i], params[i + 1]);
-        }
-        return map;
-    }
 
     private TestStep createTestStepWithoutParameters(Map<String, Object> rawValidationDetails) {
         return validationDetailsFactory.create("step1", createMap("validate", rawValidationDetails), Collections.emptyMap());
