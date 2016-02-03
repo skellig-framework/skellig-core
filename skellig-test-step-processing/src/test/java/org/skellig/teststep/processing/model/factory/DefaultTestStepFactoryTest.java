@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.model.factory;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.skellig.teststep.processing.converter.DefaultTestDataConverter;
 import org.skellig.teststep.processing.converter.DefaultValueConverter;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -33,6 +34,10 @@ class DefaultTestStepFactoryTest {
                                 .withTestScenarioState(testScenarioState)
                                 .build()
                 )
+                .withTestDataConverter(
+                        new DefaultTestDataConverter.Builder()
+                                .withClassLoader(getClass().getClassLoader())
+                                .build())
                 .build();
     }
 
@@ -55,9 +60,9 @@ class DefaultTestStepFactoryTest {
         TestStep testStep = testStepFactory.create("test 1", rawTestStep, parameters);
 
         assertAll(
-                () -> assertTrue(((List)testStep.getTestData()).containsAll(Arrays.asList("n1", "n2"))),
+                () -> assertTrue(((List) testStep.getTestData()).containsAll(Arrays.asList("n1", "n2"))),
                 () -> assertEquals(generatedId, testStep.getVariables().get("id")),
-                () -> assertTrue(((List)testStep.getVariables().get("names")).containsAll(Arrays.asList("n1", "n2"))),
+                () -> assertTrue(((List) testStep.getVariables().get("names")).containsAll(Arrays.asList("n1", "n2"))),
                 () -> assertEquals("100", testStep.getVariables().get("amount"))
         );
     }

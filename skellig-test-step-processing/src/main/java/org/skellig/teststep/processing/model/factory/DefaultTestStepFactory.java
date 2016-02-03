@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.model.factory;
 
+import org.skellig.teststep.processing.converter.TestDataConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.model.TestStep;
 
@@ -14,8 +15,9 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
 
     public DefaultTestStepFactory(Properties keywordsProperties,
                                   TestStepValueConverter testStepValueConverter,
-                                  Collection<TestStepFactory> factories) {
-        super(keywordsProperties, testStepValueConverter);
+                                  Collection<TestStepFactory> factories,
+                                  TestDataConverter testDataConverter) {
+        super(keywordsProperties, testStepValueConverter, testDataConverter);
         this.factories = factories;
     }
 
@@ -34,7 +36,7 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
                 new TestStep.Builder()
                         .withId(id)
                         .withName(name)
-                        .withTestData(convertValue(testData, parameters))
+                        .withTestData(testData)
                         .withValidationDetails(validationDetails)
                         .withVariables(variables)
                         .build();
@@ -50,6 +52,7 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
         private Collection<TestStepFactory> testStepFactories;
         private Properties keywordsProperties;
         private TestStepValueConverter testStepValueConverter;
+        private TestDataConverter testDataConverter;
 
         public Builder() {
             testStepFactories = new ArrayList<>();
@@ -70,8 +73,14 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
             return this;
         }
 
+        public Builder withTestDataConverter(TestDataConverter testDataConverter) {
+            this.testDataConverter = testDataConverter;
+            return this;
+        }
+
         public TestStepFactory build() {
-            return new DefaultTestStepFactory(keywordsProperties, testStepValueConverter, testStepFactories);
+            return new DefaultTestStepFactory(keywordsProperties, testStepValueConverter,
+                    testStepFactories, testDataConverter);
         }
     }
 }

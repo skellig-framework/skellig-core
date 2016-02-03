@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.model.factory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.skellig.teststep.processing.converter.TestDataConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.model.ExpectedResult;
 import org.skellig.teststep.processing.model.TestStep;
@@ -35,10 +36,15 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
 
     private Properties keywordsProperties;
     private TestStepValueConverter testStepValueConverter;
+    private TestDataConverter testDataConverter;
 
-    public BaseTestStepFactory(Properties keywordsProperties, TestStepValueConverter testStepValueConverter) {
+    public BaseTestStepFactory(Properties keywordsProperties,
+                               TestStepValueConverter testStepValueConverter,
+                               TestDataConverter testDataConverter) {
+
         this.keywordsProperties = keywordsProperties;
         this.testStepValueConverter = testStepValueConverter;
+        this.testDataConverter = testDataConverter;
 
         if (testDataKeywords == null) {
             testDataKeywords = Stream.of(
@@ -86,7 +92,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         return createTestStep(rawTestStep).create(
                 getId(rawTestStep),
                 testStepName,
-                getTestData(rawTestStep),
+                getTestData(rawTestStep, additionalParameters),
                 createValidationDetails(rawTestStep, additionalParameters),
                 additionalParameters,
                 variables);
@@ -96,29 +102,29 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
 
     private Map<String, Object> extractVariables(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
         Object rawVariables = rawTestStep.get(getKeywordName(VARIABLES_KEYWORD, "variables"));
-        Object convertedVariables = convertVariables(rawVariables, parameters);
+        Object convertedVariables = convertHierarchicalData(rawVariables, parameters);
         return convertedVariables instanceof Map ? (Map<String, Object>) convertedVariables : null;
     }
 
-    private Object convertVariables(Object variableValue, Map<String, Object> parameters) {
-        if (variableValue instanceof Map) {
-            return ((Map<String, Object>) variableValue).entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertVariables(entry.getValue(), parameters)));
-        } else if (variableValue instanceof List) {
-            return ((List) variableValue).stream()
-                    .map(item -> convertVariables(item, parameters))
-                    .collect(Collectors.toList());
-        } else {
-            return convertValue(variableValue, parameters);
-        }
-    }
-
-    private Object getTestData(Map<String, Object> rawTestStep) {
+    private Object getTestData(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
         return testDataKeywords.stream()
                 .filter(rawTestStep::containsKey)
-                .map(rawTestStep::get)
+                .map(keyword -> testDataConverter.convert(convertHierarchicalData(rawTestStep.get(keyword), parameters)))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private Object convertHierarchicalData(Object data, Map<String, Object> parameters) {
+        if (data instanceof Map) {
+            return ((Map<String, Object>) data).entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertHierarchicalData(entry.getValue(), parameters)));
+        } else if (data instanceof List) {
+            return ((List) data).stream()
+                    .map(item -> convertHierarchicalData(item, parameters))
+                    .collect(Collectors.toList());
+        } else {
+            return convertValue(data, parameters);
+        }
     }
 
     private Optional<Object> getValidationDetails(Map<String, Object> rawTestStep) {
