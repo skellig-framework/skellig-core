@@ -7,11 +7,11 @@ public class TestStep {
 
     private String id;
     private String name;
-    private Map<String, String> variables;
+    private Map<String, Object> variables;
     private Object testData;
     private ValidationDetails validationDetails;
 
-    protected TestStep(String id, String name, Map<String, String> variables, Object testData, ValidationDetails validationDetails) {
+    protected TestStep(String id, String name, Map<String, Object> variables, Object testData, ValidationDetails validationDetails) {
         this.id = id;
         this.name = name;
         this.variables = variables;
@@ -23,7 +23,7 @@ public class TestStep {
         return id == null ? name : id;
     }
 
-    public Map<String, String> getVariables() {
+    public Map<String, Object> getVariables() {
         return variables;
     }
 
@@ -42,7 +42,7 @@ public class TestStep {
     public static class Builder {
         protected String id;
         protected String name;
-        protected Map<String, String> variables;
+        protected Map<String, Object> variables;
         protected Object testData;
         protected ValidationDetails validationDetails;
 
@@ -66,7 +66,7 @@ public class TestStep {
             return this;
         }
 
-        public Builder withVariables(Map<String, String> variables) {
+        public Builder withVariables(Map<String, Object> variables) {
             this.variables = variables;
             return this;
         }
