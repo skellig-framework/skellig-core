@@ -11,7 +11,7 @@ public class DatabaseTestStep extends TestStep {
     private String table;
     private String query;
 
-    protected DatabaseTestStep(String id, String name, Map<String, String> variables, Object testData,
+    protected DatabaseTestStep(String id, String name, Map<String, Object> variables, Object testData,
                                ValidationDetails validationDetails, String command, String table, String query) {
         super(id, name, variables, testData, validationDetails);
         this.command = command;

@@ -71,13 +71,14 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
 
     @Override
     public TestStep create(String testStepName, Map<String, Object> rawTestStep, Map<String, String> parameters) {
-        Map<String, String> additionalParameters = new HashMap<>(parameters);
-        Map<String, String> parametersFromTestName = extractParametersFromTestStepName(rawTestStep, testStepName);
-        Map<String, String> variables = extractVariables(rawTestStep, parameters);
+        Map<String, Object> additionalParameters = new HashMap<>(parameters);
 
+        Map<String, String> parametersFromTestName = extractParametersFromTestStepName(rawTestStep, testStepName);
         if (parametersFromTestName != null) {
             additionalParameters.putAll(parametersFromTestName);
         }
+
+        Map<String, Object> variables = extractVariables(rawTestStep, additionalParameters);
         if (variables != null) {
             additionalParameters.putAll(variables);
         }
@@ -86,20 +87,20 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
                 getId(rawTestStep),
                 testStepName,
                 getTestData(rawTestStep),
-                createValidationDetails(rawTestStep, parameters),
+                createValidationDetails(rawTestStep, additionalParameters),
                 additionalParameters,
                 variables);
     }
 
     protected abstract CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep);
 
-    private Map<String, String> extractVariables(Map<String, Object> rawTestStep, Map<String, String> parameters) {
+    private Map<String, Object> extractVariables(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
         Object rawVariables = rawTestStep.get(getKeywordName(VARIABLES_KEYWORD, "variables"));
         Object convertedVariables = convertVariables(rawVariables, parameters);
-        return convertedVariables instanceof Map ? (Map<String, String>) convertedVariables : null;
+        return convertedVariables instanceof Map ? (Map<String, Object>) convertedVariables : null;
     }
 
-    private Object convertVariables(Object variableValue, Map<String, String> parameters) {
+    private Object convertVariables(Object variableValue, Map<String, Object> parameters) {
         if (variableValue instanceof Map) {
             return ((Map<String, Object>) variableValue).entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertVariables(entry.getValue(), parameters)));
@@ -139,7 +140,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         return parameters;
     }
 
-    private ValidationDetails createValidationDetails(Map<String, Object> rawTestStep, Map<String, String> parameters) {
+    private ValidationDetails createValidationDetails(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
 
         Optional<Object> rawValidationDetails = getValidationDetails(rawTestStep);
 
@@ -168,7 +169,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         }
     }
 
-    private ExpectedResult createExpectedResult(String propertyName, Object expectedResult, Map<String, String> parameters) {
+    private ExpectedResult createExpectedResult(String propertyName, Object expectedResult, Map<String, Object> parameters) {
         if (expectedResult instanceof Map) {
             Map<String, Object> expectedResultAsMap = (Map) expectedResult;
 
@@ -193,13 +194,13 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         }
     }
 
-    private Object createExpectedResults(Map<String, Object> matchValue, Map<String, String> parameters) {
+    private Object createExpectedResults(Map<String, Object> matchValue, Map<String, Object> parameters) {
         return matchValue.entrySet().stream()
                 .map(entry -> createExpectedResult(entry.getKey(), entry.getValue(), parameters))
                 .collect(Collectors.toList());
     }
 
-    private Object createExpectedResults(List<Object> expectedResult, Map<String, String> parameters) {
+    private Object createExpectedResults(List<Object> expectedResult, Map<String, Object> parameters) {
         return expectedResult.stream()
                 .map(entry -> createExpectedResult(null, entry, parameters))
                 .collect(Collectors.toList());
@@ -254,38 +255,53 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         return keywordsProperties == null ? defaultValue : keywordsProperties.getProperty(keywordName, defaultValue);
     }
 
-    protected <T> T convertValue(Object value, Map<String, String> parameters) {
-        if (value != null && value.getClass().equals(String.class)) {
-            String valueAsString = String.valueOf(value);
-            valueAsString = applyParameters(valueAsString, parameters);
-            return (T) testStepValueConverter.convert(valueAsString);
-        } else {
-            return (T) value;
-        }
-    }
-
-    private String applyParameters(String valueAsString, Map<String, String> parameters) {
-        Matcher matcher = PARAMETER_REGEX.matcher(valueAsString);
-        if (matcher.find()) {
-            String parameterName = matcher.group(1);
-            String propertyValue = parameters.getOrDefault(parameterName, "");
-            boolean hasDefaultValue = matcher.group(3) != null;
-            if (StringUtils.isNotEmpty(propertyValue) || !hasDefaultValue) {
-                valueAsString = valueAsString.replace(matcher.group(0), propertyValue);
-            } else {
-                String defaultValue = matcher.group(3);
-                defaultValue = String.valueOf(convertValue(defaultValue, parameters));
-
-                valueAsString = valueAsString.replace(matcher.group(0), defaultValue);
+    protected <T> T convertValue(Object value, Map<String, Object> parameters) {
+        Object result = value;
+        if (isString(value)) {
+            result = applyParameters(String.valueOf(value), parameters);
+            if (isString(result)) {
+                result = testStepValueConverter.convert(String.valueOf(result));
             }
         }
-        return valueAsString;
+        return (T) result;
+    }
+
+    private Object applyParameters(String valueAsString, Map<String, Object> parameters) {
+        Matcher matcher = PARAMETER_REGEX.matcher(valueAsString);
+        Object result = valueAsString;
+        if (matcher.find()) {
+            String parameterName = matcher.group(1);
+            Object parameterValue = parameters.getOrDefault(parameterName, null);
+            boolean hasDefaultValue = matcher.group(3) != null;
+            if (isString(parameterValue)) {
+                String parameterValueAsString = String.valueOf(parameterValue);
+                if (StringUtils.isNotEmpty(parameterValueAsString) || !hasDefaultValue) {
+                    result = valueAsString.replace(matcher.group(0), parameterValueAsString);
+                } else {
+                    String defaultValue = matcher.group(3);
+                    defaultValue = String.valueOf(convertValue(defaultValue, parameters));
+
+                    result = valueAsString.replace(matcher.group(0), defaultValue);
+                }
+            } else {
+                if (parameterValue != null || !hasDefaultValue) {
+                    result = parameterValue;
+                } else {
+                    result = convertValue(matcher.group(3), parameters);
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean isString(Object value) {
+        return value != null && value.getClass().equals(String.class);
     }
 
     protected interface CreateTestStepDelegate {
 
         TestStep create(String id, String name, Object testData, ValidationDetails validationDetails,
-                        Map<String, String> parameters, Map<String, String> variables);
+                        Map<String, Object> parameters, Map<String, Object> variables);
     }
 
 }
