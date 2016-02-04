@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.converter;
 import freemarker.cache.URLTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import org.skellig.teststep.processing.exception.TestDataConversionException;
 
 import java.io.StringWriter;
 import java.net.URL;
@@ -42,7 +43,7 @@ class TemplateTestDataConverter implements TestDataConverter {
             template.process(dataModel, outMessage);
             return outMessage.toString();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new TestDataConversionException("Can't process template file", e);
         }
     }
 
@@ -69,9 +70,9 @@ class TemplateTestDataConverter implements TestDataConverter {
             return templates.computeIfAbsent(relativeFilePath, v -> loadFtlTemplate(relativeFilePath));
         }
 
-        private Template loadFtlTemplate(String relativeFilePath) {
+        private Template loadFtlTemplate(String filePath) {
             try {
-                URL url = classLoader.getResource(relativeFilePath);
+                URL url = classLoader.getResource(filePath);
                 Configuration configuration = new Configuration(Configuration.VERSION_2_3_30);
                 configuration.setTemplateLoader(new URLTemplateLoader() {
                     @Override
@@ -82,7 +83,7 @@ class TemplateTestDataConverter implements TestDataConverter {
                 configuration.setDefaultEncoding("UTF-8");
                 return configuration.getTemplate("");
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new TestDataConversionException(String.format("Failed to load template file '%s'", filePath), e);
             }
         }
     }

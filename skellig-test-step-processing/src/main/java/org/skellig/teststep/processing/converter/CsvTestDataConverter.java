@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 class CsvTestDataConverter implements TestDataConverter {
 
     private static final String ROW_KEYWORD = "row";
     private static final String CSV_KEYWORD = "csv";
+    private static final String FILE_KEYWORD = "file";
 
     private ClassLoader classLoader;
 
@@ -30,43 +32,49 @@ class CsvTestDataConverter implements TestDataConverter {
     public Object convert(Object value) {
         if (value instanceof Map) {
             Map<String, Object> valueAsMap = (Map<String, Object>) value;
-            if (valueAsMap.containsKey("csv")) {
+            if (valueAsMap.containsKey(CSV_KEYWORD)) {
                 Map<String, Object> csv = (Map<String, Object>) valueAsMap.get(CSV_KEYWORD);
-                String csvFile = (String) csv.get("file");
-                Predicate<Map<String, String>> rowFilter;
-                if (csv.containsKey("row")) {
-                    Map<String, Object> row = (Map<String, Object>) valueAsMap.get(ROW_KEYWORD);
-                    rowFilter = (item) ->
-                            row.entrySet().stream()
-                                    .allMatch(entry ->
-                                            item.containsKey(entry.getKey()) && item.get(entry.getKey()).equals(entry.getValue()));
-                } else {
-                    rowFilter = (row) -> true;
-                }
+                String csvFile = (String) csv.get(FILE_KEYWORD);
 
-                value = read(csvFile, rowFilter);
+                value = readCsvFile(csvFile, getRowFilter(csv));
             }
         }
         return value;
     }
 
-    private List<Map<String, String>> read(String fileName, Predicate<Map<String, String>> rowFilter) {
+    private Predicate<Map<String, String>> getRowFilter(Map<String, Object> csvDetails) {
+        Predicate<Map<String, String>> rowFilter;
+        if (csvDetails.containsKey(ROW_KEYWORD)) {
+            Map<String, Object> row = (Map<String, Object>) csvDetails.get(ROW_KEYWORD);
+            rowFilter = (item) ->
+                    row.entrySet().stream()
+                            .allMatch(entry -> item.containsKey(entry.getKey()) && item.get(entry.getKey()).equals(entry.getValue()));
+        } else {
+            rowFilter = (row) -> true;
+        }
+        return rowFilter;
+    }
+
+    private List<Map<String, String>> readCsvFile(String fileName, Predicate<Map<String, String>> rowFilter) {
         List<Map<String, String>> result = new ArrayList<>();
 
         Path pathToFile = getPathToFile(fileName);
         if (Files.exists(pathToFile)) {
-            readTableFromCsv(pathToFile)
+            readCsvContainer(pathToFile)
                     .ifPresent(csvContainer -> {
                         csvContainer.getRows()
                                 .forEach(csvRow -> {
-                                    Map<String, String> row = csvRow.getFieldMap();
+                                    Map<String, String> row = csvRow.getFieldMap().entrySet().stream()
+                                            .collect(Collectors.toMap(
+                                                    entry -> entry.getKey().trim(),
+                                                    entry -> entry.getValue().trim()));
                                     if (rowFilter.test(row)) {
                                         result.add(row);
                                     }
                                 });
                     });
         } else {
-            throw new RuntimeException(String.format("File %s does not exist", fileName));
+            throw new TestDataConversionException(String.format("File %s does not exist", fileName));
         }
         return result;
     }
@@ -84,7 +92,7 @@ class CsvTestDataConverter implements TestDataConverter {
         }
     }
 
-    private Optional<CsvContainer> readTableFromCsv(Path pathToFile) {
+    private Optional<CsvContainer> readCsvContainer(Path pathToFile) {
         try {
             CsvReader csvReader = new CsvReader();
             csvReader.setContainsHeader(true);

@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.converter;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,10 +71,9 @@ class IncrementValueConverter implements TestStepValueConverter {
             }
 
             try (Stream<String> lines = Files.lines(pathToFile)) {
-                final Optional<String> first = lines.filter(line -> isMatchLine(key, maxLength, line))
-                        .map(line -> key != null && line.startsWith(key) ? SPLIT_SPACE_REGEX.split(line)[1] : line)
-                        .findFirst();
-                return first;
+                return lines.filter(line -> isMatchLine(key, maxLength, line))
+                       .map(line -> key != null && line.startsWith(key) ? SPLIT_SPACE_REGEX.split(line)[1] : line)
+                       .findFirst();
             }
         } catch (Exception e) {
             return Optional.empty();
@@ -93,32 +93,34 @@ class IncrementValueConverter implements TestStepValueConverter {
             Path pathToFile = Paths.get(FILE_NAME);
             if (Files.exists(pathToFile)) {
                 if (isOldValue) {
-                    try (Stream<String> lines = Files.lines(pathToFile)) {
-                        List<String> newLines = lines
-                                .map(line -> {
-                                    if (isMatchLine(key, newValue.length(), line)) {
-                                        return key != null && line.startsWith(key) ? key + " " + newValue : newValue;
-                                    } else {
-                                        return line;
-                                    }
-                                })
-                                .collect(Collectors.toList());
-                        Files.write(pathToFile, newLines);
-                    }
+                    overwriteValueInFile(key, newValue, pathToFile);
                 } else {
-                    Files.write(pathToFile,
-                            Collections.singletonList(key != null ? key + " " + newValue : newValue),
-                            StandardOpenOption.APPEND);
+                    writeNewValueInFile(key, newValue, pathToFile);
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        System.out.println("finalize");
+    private void writeNewValueInFile(String key, String newValue, Path pathToFile) throws IOException {
+        Files.write(pathToFile,
+                Collections.singletonList(key != null ? key + " " + newValue : newValue),
+                StandardOpenOption.APPEND);
     }
 
+    private void overwriteValueInFile(String key, String newValue, Path pathToFile) throws IOException {
+        try (Stream<String> lines = Files.lines(pathToFile)) {
+            List<String> newLines = lines
+                    .map(line -> {
+                        if (isMatchLine(key, newValue.length(), line)) {
+                            return key != null && line.startsWith(key) ? key + " " + newValue : newValue;
+                        } else {
+                            return line;
+                        }
+                    })
+                    .collect(Collectors.toList());
+            Files.write(pathToFile, newLines);
+        }
+    }
 }
