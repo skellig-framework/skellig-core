@@ -6,31 +6,28 @@ import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class PropertyAndParameterValueConverterTest {
+class PropertyValueConverterTest {
 
     private static final String CUSTOM_PROPERTY_KEY = "custom_properties";
     private static final String DEFAULT_CUSTOM_PROPERTY_VALUE = "from custom properties";
 
-    private PropertyAndParameterValueConverter valueConverter;
+    private PropertyValueConverter valueConverter;
     private TestScenarioState testScenarioState;
     private TestStepValueExtractor valueExtractor;
 
     @BeforeEach
     void setUp() {
         testScenarioState = mock(TestScenarioState.class);
-        when(testScenarioState.get("parameters")).thenReturn(Optional.empty());
 
         valueExtractor = mock(TestStepValueExtractor.class);
 
-        valueConverter = new PropertyAndParameterValueConverter(
-                testScenarioState,
+        valueConverter = new PropertyValueConverter(
                 new ArrayList<TestStepValueConverter>() {
                     {
                         add(new TestStepStateValueConverter(testScenarioState, valueExtractor));
@@ -47,29 +44,8 @@ class PropertyAndParameterValueConverterTest {
     }
 
     @Test
-    void testSimpleParameterWithValue() {
-        when(testScenarioState.get("parameters")).thenReturn(Optional.of(Collections.singletonMap("1", "v1")));
-
-        assertEquals("v1", valueConverter.convert("${1}"));
-    }
-
-    @Test
     void testSimpleParameterWithNoValueAndDefault() {
         assertEquals("def", valueConverter.convert("${1:def}"));
-    }
-
-    @Test
-    void testSimpleParameterWithValueAndDefault() {
-        when(testScenarioState.get("parameters")).thenReturn(Optional.of(Collections.singletonMap("key_1", "v1")));
-
-        assertEquals("v1", valueConverter.convert("${key_1:def}"));
-    }
-
-    @Test
-    void testWithNestedParameters() {
-        when(testScenarioState.get("parameters")).thenReturn(Optional.of(Collections.singletonMap("key_2", "v2")));
-
-        assertEquals("v2", valueConverter.convert("${key_1 : ${key_2 : v3}}"));
     }
 
     @Test
@@ -80,13 +56,6 @@ class PropertyAndParameterValueConverterTest {
     @Test
     void testWithComplexNestedParametersAndAttachedText() {
         assertEquals("id:v3_end", valueConverter.convert("${key_1 : id:${key_2 : ${id:v3}}_end}"));
-    }
-
-    @Test
-    void testWithComplexNestedParametersAndManyAttachedTexts() {
-        when(testScenarioState.get("parameters")).thenReturn(Optional.of(Collections.singletonMap("key_2", "v2")));
-
-        assertEquals("p1_p2_v2_end", valueConverter.convert("p1_${key_1 : p2_${key_2 : ${id:v3}}_end}"));
     }
 
     @Test
