@@ -35,6 +35,7 @@ public class DefaultSkelligTestContext extends SkelligTestContext {
                         new HttpTestStepProcessor.Builder()
                                 .withHttpService(config)
                                 .withTestScenarioState(getTestScenarioState())
+                                .withValidator(getTestStepResultValidator())
                                 .build(),
                         createTestStepFactoryFrom(HttpTestStepFactory::new)
                 )

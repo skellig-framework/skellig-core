@@ -4,6 +4,8 @@ Name: Test feature
       Given something
       Run something
       Validate something
+      Log result
+       | k1 | v1  |
 
    Test: Another test scenario
       Given value is <value>

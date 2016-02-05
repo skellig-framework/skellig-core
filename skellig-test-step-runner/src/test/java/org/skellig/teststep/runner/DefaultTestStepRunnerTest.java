@@ -11,9 +11,7 @@ import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.reader.TestStepReader;
 
-import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,7 +44,7 @@ class DefaultTestStepRunnerTest {
 
     @Test
     @DisplayName("When no parameters extracted from name")
-    void testRunTestStepWithoutParameters() throws URISyntaxException {
+    void testRunTestStepWithoutParameters() {
         String testStepName = "test1";
         initializeTestSteps(testStepName, Collections.emptyMap());
         initializeTestStepRunner();
@@ -57,10 +55,9 @@ class DefaultTestStepRunnerTest {
         verify(testScenarioState).set(testStep.getId(), testStep);
     }
 
-
     @Test
     @DisplayName("When step doesn't exist Then throw exception")
-    void testRunTestStepWhenNotExist() throws URISyntaxException {
+    void testRunTestStepWhenNotExist() {
         initializeTestSteps("test1", Collections.emptyMap());
         initializeTestStepRunner();
 
@@ -85,12 +82,12 @@ class DefaultTestStepRunnerTest {
                         .collect(Collectors.toList()));
     }
 
-    private void initializeTestStepRunner() throws URISyntaxException {
+    private void initializeTestStepRunner() {
         testStepRunner = new DefaultTestStepRunner.Builder()
                 .withTestScenarioState(testScenarioState)
                 .withTestStepFactory(testStepFactory)
                 .withTestStepProcessor(testStepProcessor)
-                .withTestStepReader(testStepReader, Collections.singletonList(Paths.get(getClass().getResource("/steps").toURI())))
+                .withTestStepReader(testStepReader, getClass().getClassLoader(), Collections.singletonList("steps"))
                 .build();
     }
 }
