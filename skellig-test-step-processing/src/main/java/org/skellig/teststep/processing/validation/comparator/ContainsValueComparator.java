@@ -10,7 +10,7 @@ class ContainsValueComparator implements ValueComparator {
     private static final Pattern CONTAINS_PATTERN = Pattern.compile("contains\\((.+)\\)");
 
     @Override
-    public boolean compare(Object actualValue, Object expectedValue) {
+    public boolean compare(Object expectedValue, Object actualValue) {
         if (actualValue != null) {
             Matcher matcher = CONTAINS_PATTERN.matcher(String.valueOf(expectedValue));
             if (matcher.find()) {

@@ -30,6 +30,7 @@ public class DefaultTestStepProcessor extends ValidatableTestStepProcessor<TestS
         if (testStepProcessor.isPresent()) {
             testStepProcessor.get().process(testStep);
         } else {
+            testScenarioState.set(testStep.getId(), testStep);
             validate(testStep, getLatestResultOfTestStep(testStep.getId()));
         }
     }

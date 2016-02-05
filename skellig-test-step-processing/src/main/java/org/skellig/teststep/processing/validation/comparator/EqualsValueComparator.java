@@ -5,8 +5,8 @@ import java.util.Objects;
 class EqualsValueComparator implements ValueComparator {
 
     @Override
-    public boolean compare(Object actualValue, Object expectedValue) {
-        return Objects.equals(actualValue, expectedValue);
+    public boolean compare(Object expectedValue, Object actualValue) {
+        return Objects.equals(expectedValue, actualValue);
     }
 
     @Override

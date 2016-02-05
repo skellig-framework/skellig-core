@@ -4,5 +4,5 @@ import org.skellig.teststep.processing.model.ExpectedResult;
 
 public interface TestStepResultValidator {
 
-    boolean validate(ExpectedResult expectedResult, Object actualResult);
+    void validate(ExpectedResult expectedResult, Object actualResult);
 }

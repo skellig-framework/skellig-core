@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.converter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.skellig.teststep.processing.exception.TestDataConversionException;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
 
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -65,5 +67,13 @@ class TestStepStateValueConverterTest {
         when(testScenarioState.get("key")).thenReturn(Optional.of(value));
 
         assertEquals(value.length(), testStepStateValueConverter.convert("get(key).(length)"));
+    }
+
+    @Test
+    void testGetValueFromStateWhenNotExist() {
+        when(testScenarioState.get("key")).thenReturn(Optional.empty());
+
+        assertThrows(TestDataConversionException.class,
+                () -> testStepStateValueConverter.convert("get(key).(length)"));
     }
 }

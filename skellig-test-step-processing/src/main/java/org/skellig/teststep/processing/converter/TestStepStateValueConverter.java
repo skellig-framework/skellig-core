@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.converter;
 
+import org.skellig.teststep.processing.exception.TestDataConversionException;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
 
@@ -37,28 +38,21 @@ class TestStepStateValueConverter implements TestStepValueConverter {
 
     private Object extractById(Object value, Matcher matcher) {
         String key = matcher.group(1);
-        if (testScenarioState.get(key).isPresent()) {
-            String originalValue = matcher.group(0);
-            Object valueFromState = testScenarioState.get(key).get();
+        Object valueFromState = testScenarioState.get(key).orElseThrow(() -> throwException(key));
+        String originalValue = matcher.group(0);
 
-            value = originalValue.equals(value) ? valueFromState : replace(value, originalValue, valueFromState);
-        }
-        return value;
+        return originalValue.equals(value) ? valueFromState : replace(value, originalValue, valueFromState);
     }
 
     private Object extractUsingExtractorFunction(Object value, Matcher matcher) {
         String key = matcher.group(1);
-        if (testScenarioState.get(key).isPresent()) {
-            String originalValue = matcher.group(0);
-            String extractionParameter = matcher.group(3);
-            Object valueFromState = testScenarioState.get(key).get();
+        Object valueFromState = testScenarioState.get(key).orElseThrow(() -> throwException(key));
+        String originalValue = matcher.group(0);
+        String extractionParameter = matcher.group(3);
 
-            Object extractedValue = valueExtractor.extract(valueFromState, extractionParameter);
+        Object extractedValue = valueExtractor.extract(valueFromState, extractionParameter);
 
-            value = originalValue.equals(value) ? extractedValue : replace(value, originalValue, extractedValue);
-        }
-
-        return value;
+        return originalValue.equals(value) ? extractedValue : replace(value, originalValue, extractedValue);
     }
 
     private String replace(Object value, String toReplace, Object replaceWith) {
@@ -71,6 +65,10 @@ class TestStepStateValueConverter implements TestStepValueConverter {
 
     private boolean hasIdOnly(Matcher matcher) {
         return matcher.group(2) == null;
+    }
+
+    private TestDataConversionException throwException(String key) {
+        return new TestDataConversionException("No data found in Test Scenario State with key " + key);
     }
 
 }

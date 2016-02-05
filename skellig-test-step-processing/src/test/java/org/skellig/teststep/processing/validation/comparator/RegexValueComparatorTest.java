@@ -17,21 +17,21 @@ class RegexValueComparatorTest {
 
     @Test
     void testRegexMatches() {
-        assertTrue(regexValueComparator.compare("a1 = v1", "regex(\\w+\\s?=\\s?\\w+)"));
+        assertTrue(regexValueComparator.compare("regex(\\w+\\s?=\\s?\\w+)", "a1 = v1"));
     }
 
     @Test
     void testRegexNotMatches() {
-        assertFalse(regexValueComparator.compare("a1 = v1", "regex(\\d+\\s?=\\s?\\d+)"));
+        assertFalse(regexValueComparator.compare("regex(\\d+\\s?=\\s?\\d+)", "a1 = v1"));
     }
 
     @Test
     void testRegexWithNullActualResult() {
-        assertFalse(regexValueComparator.compare(null, "regex(.*)"));
+        assertFalse(regexValueComparator.compare("regex(.*)", null));
     }
 
     @Test
     void testInvalidRegex() {
-        assertFalse(regexValueComparator.compare("value", "regex((??)"));
+        assertFalse(regexValueComparator.compare("regex((??)", "value"));
     }
 }
