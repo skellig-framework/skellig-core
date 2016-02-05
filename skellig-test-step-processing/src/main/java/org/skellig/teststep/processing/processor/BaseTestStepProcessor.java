@@ -2,13 +2,12 @@ package org.skellig.teststep.processing.processor;
 
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.state.TestScenarioState;
+import org.skellig.teststep.processing.validation.TestStepResultValidator;
 
-public abstract class BaseTestStepProcessor<T extends TestStep> implements TestStepProcessor<T> {
+public abstract class BaseTestStepProcessor<T extends TestStep> extends ValidatableTestStepProcessor<T> {
 
-    private TestScenarioState testScenarioState;
-
-    protected BaseTestStepProcessor(TestScenarioState testScenarioState) {
-        this.testScenarioState = testScenarioState;
+    protected BaseTestStepProcessor(TestScenarioState testScenarioState, TestStepResultValidator validator) {
+        super(testScenarioState, validator);
     }
 
     @Override
@@ -17,9 +16,10 @@ public abstract class BaseTestStepProcessor<T extends TestStep> implements TestS
 
         Object result = processTestStep(testStep);
 
-        testScenarioState.set(testStep.getId() + ".result", result);
+        testScenarioState.set(testStep.getId() + RESULT_SAVE_SUFFIX, result);
+
+        validate(testStep, result);
     }
 
     protected abstract Object processTestStep(T testStep);
-
 }

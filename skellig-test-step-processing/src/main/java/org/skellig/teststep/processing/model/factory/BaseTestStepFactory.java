@@ -108,7 +108,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         if (matcher.find()) {
             parameters = new HashMap<>();
             for (int i = 1; i <= matcher.groupCount(); i++) {
-                parameters.put("$" + i, matcher.group(i));
+                parameters.put(String.valueOf(i), matcher.group(i));
             }
         }
         return parameters;

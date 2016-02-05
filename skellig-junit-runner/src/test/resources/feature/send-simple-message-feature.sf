@@ -1,0 +1,9 @@
+Name: Send simple message from one user to another
+
+   Test: User sends a message to another User successfully
+      User <sender> prepares a message with score <score>
+      The user sends the message to <receiver>
+      User <receiver> receives valid response from <sender>
+   Data:
+      |sender   |receiver |score |
+      | user_a  | user_b  | 10   |

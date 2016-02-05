@@ -1,4 +1,4 @@
-package org.skellig.runner;
+package org.skellig.runner.annotation;
 
 import org.skellig.teststep.runner.context.SkelligTestContext;
 

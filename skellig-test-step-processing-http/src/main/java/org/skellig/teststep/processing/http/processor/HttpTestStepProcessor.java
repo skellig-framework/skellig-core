@@ -10,6 +10,7 @@ import org.skellig.teststep.processing.http.model.HttpTestStep;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
+import org.skellig.teststep.processing.validation.TestStepResultValidator;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,8 +21,9 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
     private Map<String, SendingChannel> httpChannelPerService;
 
     private HttpTestStepProcessor(Map<String, SendingChannel> httpChannelPerService,
-                                  TestScenarioState testScenarioState) {
-        super(testScenarioState);
+                                  TestScenarioState testScenarioState,
+                                  TestStepResultValidator validator) {
+        super(testScenarioState, validator);
         this.httpChannelPerService = httpChannelPerService;
     }
 
@@ -69,6 +71,7 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
 
         private Map<String, SendingChannel> httpChannelPerService;
         private TestScenarioState testScenarioState;
+        private TestStepResultValidator validator;
 
         public Builder() {
             httpChannelPerService = new HashMap<>();
@@ -94,8 +97,13 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
             return this;
         }
 
+        public Builder withValidator(TestStepResultValidator validator) {
+            this.validator = validator;
+            return this;
+        }
+
         public TestStepProcessor<HttpTestStep> build() {
-            return new HttpTestStepProcessor(httpChannelPerService, testScenarioState);
+            return new HttpTestStepProcessor(httpChannelPerService, testScenarioState, validator);
         }
     }
 

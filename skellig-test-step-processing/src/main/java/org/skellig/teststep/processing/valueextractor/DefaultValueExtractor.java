@@ -20,7 +20,7 @@ public class DefaultValueExtractor implements TestStepValueExtractor {
         Matcher matcher = EXTRACTION_PARAMETER_PATTERN.matcher(extractionParameter);
         if (matcher.find()) {
             String functionName = matcher.group(1);
-            return extract(functionName, value, getExtractionParameter(matcher));
+            return extract(functionName == null ? "" : functionName, value, getExtractionParameter(matcher));
         } else {
             return value;
         }

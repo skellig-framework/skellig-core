@@ -23,9 +23,9 @@ class ObjectTestStepValueExtractor implements TestStepValueExtractor {
         for (String key : PATH_SEPARATOR.split(extractionParameter)) {
             if (value instanceof Map) {
                 value = extractValueFromMap(value, key);
-            } else if (value instanceof List || value.getClass().isArray()) {
+            } else if (value instanceof List || (value != null && value.getClass().isArray())) {
                 value = extractValueFromListOrArray(value, key);
-            } else {
+            } else if (value != null) {
                 value = extractValueFromObject(key, value);
             }
         }
