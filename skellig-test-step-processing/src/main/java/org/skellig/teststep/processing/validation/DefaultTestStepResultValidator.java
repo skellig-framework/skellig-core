@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.model.ExpectedResult;
 import org.skellig.teststep.processing.model.ValidationType;
 import org.skellig.teststep.processing.validation.comparator.ValueComparator;
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
+import org.skellig.teststep.reader.exception.ValidationException;
 
 import java.util.List;
 
@@ -18,9 +19,11 @@ public class DefaultTestStepResultValidator implements TestStepResultValidator {
         this.valueExtractor = valueExtractor;
     }
 
-    public boolean validate(ExpectedResult expectedResult, Object actualResult) {
+    public void validate(ExpectedResult expectedResult, Object actualResult) {
         StringBuilder errorBuilder = new StringBuilder();
-        return validate(expectedResult, actualResult, errorBuilder);
+        if (!validate(expectedResult, actualResult, errorBuilder)) {
+            throw new ValidationException("Validation failed!\n" + errorBuilder.toString());
+        }
     }
 
     private boolean validate(ExpectedResult expectedResult, Object actualResult, StringBuilder errorBuilder) {
@@ -56,8 +59,8 @@ public class DefaultTestStepResultValidator implements TestStepResultValidator {
                     expectedResult.getValidationTypeOfParent() != ValidationType.NONE_MATCH && !isValid) {
                 constructErrorMessage(expectedResult, actualResult, errorBuilder);
             }
+            return isValid;
         }
-        return false;
     }
 
     private Object extractActualValueFromExpectedResult(Object actualResult, Object expectedResult) {

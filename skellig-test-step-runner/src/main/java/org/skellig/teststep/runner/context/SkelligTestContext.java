@@ -50,7 +50,6 @@ public class SkelligTestContext {
         TestStepFactory testStepFactory = createTestStepFactory(testStepProcessors);
 
         return new DefaultTestStepRunner.Builder()
-                .withTestScenarioState(testScenarioState)
                 .withTestStepProcessor(testStepProcessor)
                 .withTestStepFactory(testStepFactory)
                 .withTestStepReader(testStepReader, classLoader, testStepPaths)

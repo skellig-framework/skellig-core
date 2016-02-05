@@ -8,7 +8,6 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.TestStepFactory;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.reader.TestStepReader;
 
 import java.nio.file.Path;
@@ -32,14 +31,12 @@ class DefaultTestStepRunnerTest {
     private TestStepReader testStepReader;
     private TestStep testStep;
     private TestStepFactory testStepFactory;
-    private TestScenarioState testScenarioState;
 
     @BeforeEach
     void setUp() {
         testStepProcessor = mock(TestStepProcessor.class);
         testStepReader = mock(TestStepReader.class);
         testStepFactory = mock(TestStepFactory.class);
-        testScenarioState = mock(TestScenarioState.class);
     }
 
     @Test
@@ -52,7 +49,6 @@ class DefaultTestStepRunnerTest {
         testStepRunner.run(testStepName);
 
         verify(testStepProcessor).process(testStep);
-        verify(testScenarioState).set(testStep.getId(), testStep);
     }
 
     @Test
@@ -64,7 +60,6 @@ class DefaultTestStepRunnerTest {
         assertThrows(TestStepProcessingException.class, () -> testStepRunner.run("test2"));
 
         verifyZeroInteractions(testStepProcessor);
-        verifyZeroInteractions(testScenarioState);
     }
 
     private void initializeTestSteps(String testStepName, Map<String, String> parameters) {
@@ -84,7 +79,6 @@ class DefaultTestStepRunnerTest {
 
     private void initializeTestStepRunner() {
         testStepRunner = new DefaultTestStepRunner.Builder()
-                .withTestScenarioState(testScenarioState)
                 .withTestStepFactory(testStepFactory)
                 .withTestStepProcessor(testStepProcessor)
                 .withTestStepReader(testStepReader, getClass().getClassLoader(), Collections.singletonList("steps"))

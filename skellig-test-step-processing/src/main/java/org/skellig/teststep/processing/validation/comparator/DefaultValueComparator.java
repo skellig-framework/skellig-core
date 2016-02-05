@@ -12,10 +12,10 @@ public class DefaultValueComparator implements ValueComparator {
     }
 
     @Override
-    public boolean compare(Object actualValue, Object expectedValue) {
+    public boolean compare(Object expectedValue, Object actualValue) {
         return comparators.stream()
                 .filter(comparator -> comparator.isApplicable(expectedValue))
-                .anyMatch(comparator -> comparator.compare(actualValue, expectedValue));
+                .anyMatch(comparator -> comparator.compare(expectedValue, actualValue));
     }
 
     @Override

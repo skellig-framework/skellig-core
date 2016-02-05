@@ -17,13 +17,16 @@ public class DefaultValueExtractor implements TestStepValueExtractor {
 
     @Override
     public Object extract(Object value, String extractionParameter) {
-        Matcher matcher = EXTRACTION_PARAMETER_PATTERN.matcher(extractionParameter);
-        if (matcher.find()) {
-            String functionName = matcher.group(1);
-            return extract(functionName == null ? "" : functionName, value, getExtractionParameter(matcher));
-        } else {
-            return value;
+        if (extractionParameter != null) {
+            Matcher matcher = EXTRACTION_PARAMETER_PATTERN.matcher(extractionParameter);
+            if (matcher.find()) {
+                String functionName = matcher.group(1);
+                value = extract(functionName == null ? "" : functionName, value, getExtractionParameter(matcher));
+            } else {
+                value = extract("", value, extractionParameter);
+            }
         }
+        return value;
     }
 
     private Object extract(String extractFunctionName, Object value, String parameter) {
@@ -40,7 +43,7 @@ public class DefaultValueExtractor implements TestStepValueExtractor {
     }
 
     private String getExtractionParameter(Matcher matcher) {
-        return matcher.groupCount() == 3 ? matcher.group(3) : matcher.group(2);
+        return matcher.group(3) != null ? matcher.group(3) : matcher.group(2);
     }
 
     public static class Builder {
