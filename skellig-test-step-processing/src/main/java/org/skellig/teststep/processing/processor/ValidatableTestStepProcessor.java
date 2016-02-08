@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.processor;
 
 import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.ValidationDetails;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
 import org.skellig.teststep.reader.exception.ValidationException;
@@ -26,15 +27,23 @@ public abstract class ValidatableTestStepProcessor<T extends TestStep> implement
                     if (testStepId.isPresent()) {
                         Optional<Object> actualResultFromAnotherStep = getLatestResultOfTestStep(testStepId.get());
                         if (actualResultFromAnotherStep.isPresent()) {
-                            validator.validate(validationDetails.getExpectedResult(), actualResultFromAnotherStep.get());
+                            validate(testStep.getId(), validationDetails, actualResultFromAnotherStep.get());
                         } else {
                             throw new ValidationException(String.format("Result from test step with id '%s' was not found " +
                                     "in Test Scenario State", testStepId.get()));
                         }
                     } else {
-                        validator.validate(validationDetails.getExpectedResult(), actualResult);
+                        validate(testStep.getId(), validationDetails, actualResult);
                     }
                 });
+    }
+
+    private void validate(String testStepId, ValidationDetails validationDetails, Object actualResultFromAnotherStep) {
+        try {
+            validator.validate(validationDetails.getExpectedResult(), actualResultFromAnotherStep);
+        } catch (ValidationException ex) {
+            throw new ValidationException(ex.getMessage(), testStepId);
+        }
     }
 
     protected Optional<Object> getLatestResultOfTestStep(String testStepId) {

@@ -47,12 +47,12 @@ class TemplateTestDataConverter implements TestDataConverter {
         }
     }
 
-    private Map<String, ?> getDataModel(Map<String, Object> template) {
-        Object dataModel = csvTestDataConverter.convert(template);
+    private Map<String, ?> getDataModel(Map<String, Object> templateDetails) {
+        Object dataModel = csvTestDataConverter.convert(templateDetails);
         if (dataModel instanceof List) {
             return ((List<Map<String, String>>) dataModel).stream().findFirst().orElse(Collections.emptyMap());
         } else {
-            return template;
+            return templateDetails;
         }
     }
 
