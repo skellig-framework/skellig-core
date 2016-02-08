@@ -4,7 +4,7 @@ import java.util.Map;
 
 public interface TestStepRunner {
 
-    void run(String testStepName);
+    String run(String testStepName);
 
-    void run(String testStepName, Map<String, String> parameters);
+    String run(String testStepName, Map<String, String> parameters);
 }

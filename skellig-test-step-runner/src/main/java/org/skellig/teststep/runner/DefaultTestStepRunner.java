@@ -40,21 +40,24 @@ public class DefaultTestStepRunner implements TestStepRunner {
     }
 
     @Override
-    public void run(String testStepName) {
-        run(testStepName, Collections.emptyMap());
+    public String run(String testStepName) {
+        return run(testStepName, Collections.emptyMap());
     }
 
     @Override
-    public void run(String testStepName, Map<String, String> parameters) {
+    public String run(String testStepName, Map<String, String> parameters) {
         Optional<Map<String, Object>> rawTestStep = testStepsRegistry.getByName(testStepName);
         if (rawTestStep.isPresent()) {
             TestStep testStep = testStepFactory.create(testStepName, rawTestStep.get(), parameters);
 
             testStepProcessor.process(testStep);
+
+            return testStep.getId();
         } else {
             Optional<ClassTestStepsRegistry.TestStepDefDetails> testStep = classTestStepsRegistry.getTestStep(testStepName);
             if (testStep.isPresent()) {
                 testStepDefMethodRunner.invoke(testStepName, testStep.get(), parameters);
+                return null;
             } else {
                 throw new TestStepProcessingException(
                         String.format("Test step '%s' is not found in any of registered test data files from: %s",
@@ -106,22 +109,22 @@ public class DefaultTestStepRunner implements TestStepRunner {
 
         private Collection<String> extractTestStepPackages() {
             return this.testStepPaths.stream()
-                            .filter(path -> !path.contains("/"))
-                            .collect(Collectors.toSet());
+                    .filter(path -> !path.contains("/"))
+                    .collect(Collectors.toSet());
         }
 
         private Collection<Path> extractTestStepPaths() {
             return this.testStepPaths.stream()
-                            .filter(path -> !path.contains("."))
-                            .map(path -> {
-                                try {
-                                    URL resource = classLoader.getResource(path);
-                                    return Paths.get(resource.toURI());
-                                } catch (URISyntaxException e) {
-                                    throw new TestStepRegistryException(e.getMessage(), e);
-                                }
-                            })
-                            .collect(Collectors.toList());
+                    .filter(path -> !path.contains("."))
+                    .map(path -> {
+                        try {
+                            URL resource = classLoader.getResource(path);
+                            return Paths.get(resource.toURI());
+                        } catch (URISyntaxException e) {
+                            throw new TestStepRegistryException(e.getMessage(), e);
+                        }
+                    })
+                    .collect(Collectors.toList());
         }
     }
 }
