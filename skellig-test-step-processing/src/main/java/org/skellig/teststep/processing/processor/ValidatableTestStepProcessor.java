@@ -1,10 +1,10 @@
 package org.skellig.teststep.processing.processor;
 
+import org.skellig.teststep.processing.exception.ValidationException;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.ValidationDetails;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
-import org.skellig.teststep.reader.exception.ValidationException;
 
 import java.util.Optional;
 

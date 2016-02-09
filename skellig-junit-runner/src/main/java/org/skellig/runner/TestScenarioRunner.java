@@ -10,8 +10,8 @@ import org.skellig.feature.TestStep;
 import org.skellig.runner.exception.FeatureRunnerException;
 import org.skellig.runner.junit.report.model.TestScenarioReportDetails;
 import org.skellig.runner.junit.report.model.TestStepReportDetails;
+import org.skellig.teststep.processing.exception.ValidationException;
 import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.reader.exception.ValidationException;
 import org.skellig.teststep.runner.TestStepRunner;
 
 import java.io.PrintWriter;
