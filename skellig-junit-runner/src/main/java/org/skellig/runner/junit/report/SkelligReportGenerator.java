@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,8 @@ public class SkelligReportGenerator implements ReportGenerator {
             Map<String, Object> dataModel = new HashMap<>();
             dataModel.put("featuresReportDetails", testReportDetails);
             dataModel.put("featureTitle", "Feature");
-            dataModel.put("propertiesTitle", "Test data");
+            dataModel.put("propertiesTitle", "Properties");
+            dataModel.put("testDataTitle", "Test data");
             dataModel.put("validationTitle", "Expected response");
             dataModel.put("responseTitle", "Response");
             dataModel.put("errorTitle", "Error log");
@@ -107,7 +109,7 @@ public class SkelligReportGenerator implements ReportGenerator {
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            Files.copy(file, targetPath.resolve(sourcePath.relativize(file)));
+            Files.copy(file, targetPath.resolve(sourcePath.relativize(file)), StandardCopyOption.REPLACE_EXISTING);
             return FileVisitResult.CONTINUE;
         }
     }
