@@ -3,20 +3,28 @@ package org.skellig.teststep.processing.db.model;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.ValidationDetails;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class DatabaseTestStep extends TestStep {
 
+    private Collection<String> servers;
     private String command;
     private String table;
     private String query;
 
     protected DatabaseTestStep(String id, String name, Map<String, Object> variables, Object testData,
-                               ValidationDetails validationDetails, String command, String table, String query) {
+                               ValidationDetails validationDetails, Collection<String> servers,
+                               String command, String table, String query) {
         super(id, name, variables, testData, validationDetails);
+        this.servers = servers;
         this.command = command;
         this.table = table;
         this.query = query;
+    }
+
+    public Collection<String> getServers() {
+        return servers;
     }
 
     public String getCommand() {
@@ -33,9 +41,15 @@ public class DatabaseTestStep extends TestStep {
 
     public static class Builder extends TestStep.Builder {
 
+        private Collection<String> servers;
         private String command;
         private String table;
         private String query;
+
+        public Builder withServers(Collection<String> servers) {
+            this.servers = servers;
+            return this;
+        }
 
         public Builder withCommand(String command) {
             this.command = command;
@@ -54,7 +68,7 @@ public class DatabaseTestStep extends TestStep {
 
         @Override
         public TestStep build() {
-            return new DatabaseTestStep(id, name, variables, testData, validationDetails, command, table, query);
+            return new DatabaseTestStep(id, name, variables, testData, validationDetails, servers, command, table, query);
         }
     }
 }

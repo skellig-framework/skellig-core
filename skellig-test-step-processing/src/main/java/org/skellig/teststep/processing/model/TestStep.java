@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.model;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class TestStep {
@@ -72,6 +73,7 @@ public class TestStep {
         }
 
         public TestStep build() {
+            Objects.requireNonNull(name, "Name of the Test Step must be set");
             return new TestStep(id, name, variables, testData, validationDetails);
         }
     }

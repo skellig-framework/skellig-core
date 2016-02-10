@@ -34,6 +34,7 @@ public class SkelligTestContext {
     private TestDataConverter testDataConverter;
     private TestScenarioState testScenarioState;
     private TestStepResultValidator testStepResultValidator;
+    private TestStepProcessor<TestStep> defaultTestStepProcessor;
 
     public TestStepRunner initialize(ClassLoader classLoader, List<String> testStepPaths) {
         TestStepReader testStepReader = createTestStepReader();
@@ -83,10 +84,11 @@ public class SkelligTestContext {
 
         DefaultTestStepProcessor.Builder testStepProcessorBuilder = new DefaultTestStepProcessor.Builder();
         additionalTestStepProcessors.forEach(item -> testStepProcessorBuilder.withTestStepProcessor(item.getTestStepProcessor()));
-        return testStepProcessorBuilder
+        defaultTestStepProcessor = testStepProcessorBuilder
                 .withTestScenarioState(testScenarioState)
                 .withValidator(getTestStepResultValidator())
                 .build();
+        return defaultTestStepProcessor;
     }
 
     private TestStepResultValidator createTestStepValidator(TestStepValueExtractor valueExtractor) {
@@ -167,6 +169,10 @@ public class SkelligTestContext {
         Objects.requireNonNull(testDataConverter, "TestDataConverter must be initialized first. Did you forget to call 'initialize'?");
 
         return delegate.create(getTestStepKeywordsProperties(), testStepValueConverter, testDataConverter);
+    }
+
+    public void cleanUp() {
+        defaultTestStepProcessor.close();
     }
 
     protected static final class TestStepProcessorDetails {

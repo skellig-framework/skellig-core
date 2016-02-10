@@ -22,4 +22,23 @@ public abstract class BaseTestStepProcessor<T extends TestStep> extends Validata
     }
 
     protected abstract Object processTestStep(T testStep);
+
+
+    public static abstract class Builder<T extends TestStep> {
+
+        protected TestScenarioState testScenarioState;
+        protected TestStepResultValidator validator;
+
+        public Builder withTestScenarioState(TestScenarioState testScenarioState) {
+            this.testScenarioState = testScenarioState;
+            return this;
+        }
+
+        public Builder withValidator(TestStepResultValidator validator) {
+            this.validator = validator;
+            return this;
+        }
+
+        public abstract TestStepProcessor<T> build();
+    }
 }

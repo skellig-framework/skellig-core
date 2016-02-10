@@ -11,4 +11,5 @@ include 'skellig-test-step-runner'
 include 'skellig-test-step-runner-default'
 include 'skellig-test-step-processing-http'
 include 'skellig-test-step-processing-db'
+include 'skellig-connection-database'
 

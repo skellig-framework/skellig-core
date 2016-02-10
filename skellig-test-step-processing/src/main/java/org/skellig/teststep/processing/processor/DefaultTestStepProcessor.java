@@ -40,6 +40,11 @@ public class DefaultTestStepProcessor extends ValidatableTestStepProcessor<TestS
         return TestStep.class;
     }
 
+    @Override
+    public void close() {
+        testStepProcessors.forEach(TestStepProcessor::close);
+    }
+
     public static class Builder {
 
         private List<TestStepProcessor> testStepProcessors;

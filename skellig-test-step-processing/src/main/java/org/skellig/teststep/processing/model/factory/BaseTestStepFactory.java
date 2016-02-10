@@ -6,17 +6,21 @@ import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.ValidationDetails;
 import org.skellig.teststep.processing.utils.CachedPattern;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class BaseTestStepFactory implements TestStepFactory {
 
+    private static final Pattern COMMA_SPLIT_PATTERN = Pattern.compile(",");
 
     private static final String TEST_STEP_NAME_KEYWORD = "test.step.keyword.name";
     private static final String VARIABLES_KEYWORD = "test.step.keyword.variables";
@@ -75,6 +79,25 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
 
     protected abstract CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep);
 
+    protected Collection<String> getStringArrayDataFromRawTestStep(String propertyName, Map<String, Object> rawTestStep,
+                                                                   Map<String, Object> parameters) {
+        Object rawArrayData = rawTestStep.get(propertyName);
+        if (rawArrayData != null) {
+            if (rawArrayData instanceof String) {
+                return Stream.of(COMMA_SPLIT_PATTERN.split(convertValue(rawArrayData, parameters))).collect(Collectors.toList());
+            } else if (rawArrayData instanceof Collection) {
+                return (Collection<String>) rawArrayData;
+            } else if (rawArrayData.getClass().isArray()) {
+                return Arrays.stream((String[]) rawArrayData).collect(Collectors.toSet());
+            }
+        }
+        return null;
+    }
+
+    protected Set<String> getTestDataKeywords() {
+        return testDataKeywords;
+    }
+
     private Map<String, Object> extractVariables(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
         Object rawVariables = rawTestStep.get(getKeywordName(VARIABLES_KEYWORD, "variables"));
         Object convertedVariables = convertHierarchicalData(rawVariables, parameters);
@@ -82,7 +105,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     }
 
     private Object extractTestData(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
-        return testDataKeywords.stream()
+        return getTestDataKeywords().stream()
                 .filter(rawTestStep::containsKey)
                 .map(keyword -> testDataConverter.convert(convertHierarchicalData(rawTestStep.get(keyword), parameters)))
                 .findFirst()
