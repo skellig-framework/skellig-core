@@ -29,6 +29,7 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
 
     private List<FeatureRunner> children = new ArrayList<>();
     private ReportGenerator reportGenerator;
+    private SkelligTestContext skelligTestContext;
 
     public SkelligRunner(Class clazz) throws Exception {
         super(clazz);
@@ -36,7 +37,7 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
 
         reportGenerator = new SkelligReportGenerator();
 
-        SkelligTestContext skelligTestContext = skelligOptions.context().newInstance();
+        skelligTestContext = skelligOptions.context().newInstance();
         TestStepRunner testStepRunner = skelligTestContext.initialize(clazz.getClassLoader(),
                 Stream.of(skelligOptions.testSteps()).collect(Collectors.toList()));
         TestScenarioState testScenarioState = skelligTestContext.getTestScenarioState();
@@ -63,6 +64,7 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
             super.run(notifier);
         } finally {
             reportGenerator.generate(getChildren().stream().map(FeatureRunner::getFeatureReportDetails).collect(Collectors.toList()));
+            skelligTestContext.cleanUp();
         }
     }
 

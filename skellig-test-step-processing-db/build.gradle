@@ -6,7 +6,9 @@ dependencies {
     compile 'log4j:log4j:1.2.17'
     compile 'org.slf4j:slf4j-log4j12:1.7.25'
     compile group: 'org.junit.platform', name: 'junit-platform-runner'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.2'
     compile project(':skellig-test-step-processing')
+    compile project(':skellig-connection-database')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'org.mockito', name: 'mockito-all'
