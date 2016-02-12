@@ -35,7 +35,7 @@ class TestStepFactoryValueConverter {
             String parameterName = matcher.group(1);
             Object parameterValue = parameters.getOrDefault(parameterName, null);
             boolean hasDefaultValue = matcher.group(3) != null;
-            if (isString(parameterValue)) {
+            if (matcher.group(0).length() != valueAsString.length()) {
                 String parameterValueAsString = String.valueOf(parameterValue);
                 if (StringUtils.isNotEmpty(parameterValueAsString) || !hasDefaultValue) {
                     result = valueAsString.replace(matcher.group(0), parameterValueAsString);

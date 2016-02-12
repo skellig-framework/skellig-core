@@ -34,7 +34,8 @@ public class ExpectedResult {
     public String getFullPropertyPath() {
         StringBuilder pathBuilder = new StringBuilder();
         constructFullPropertyPath(this, pathBuilder);
-        return pathBuilder.toString();
+        String path = pathBuilder.toString();
+        return path.length() == 0 ? "result" : path;
     }
 
     void initializeParents() {
@@ -51,7 +52,7 @@ public class ExpectedResult {
         if (parent.parent != null) {
             constructFullPropertyPath(parent.parent, pathBuilder);
         }
-        if(parent.getProperty() != null) {
+        if (parent.getProperty() != null) {
             pathBuilder.append(parent.getProperty());
         }
 
