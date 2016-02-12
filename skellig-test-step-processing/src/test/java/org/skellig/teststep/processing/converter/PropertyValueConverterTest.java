@@ -31,7 +31,7 @@ class PropertyValueConverterTest {
                 new ArrayList<TestStepValueConverter>() {
                     {
                         add(new TestStepStateValueConverter(testScenarioState, valueExtractor));
-                        add(new DateValueConverter());
+                        add(new DateTimeValueConverter());
                     }
                 },
                 (key) -> CUSTOM_PROPERTY_KEY.equals(key) ? DEFAULT_CUSTOM_PROPERTY_VALUE : null
