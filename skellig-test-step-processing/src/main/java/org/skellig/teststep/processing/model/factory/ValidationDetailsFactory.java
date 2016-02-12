@@ -164,14 +164,6 @@ class ValidationDetailsFactory {
                 .anyMatch(key -> key.startsWith("[") && !INDEX_PROPERTY_PATTERN.matcher(key).matches());
     }
 
-    private ValidationType getValidationTypeFrom(Map expectedResult) {
-        return validationTypeKeywords.keySet().stream()
-                .filter(expectedResult::containsKey)
-                .findFirst()
-                .map(ValidationType::getValidationTypeFor)
-                .orElse(ValidationType.ALL_MATCH);
-    }
-
     private String getFromTestKeyword() {
         return getKeywordName("test.step.keyword.from_test", "from_test");
     }
