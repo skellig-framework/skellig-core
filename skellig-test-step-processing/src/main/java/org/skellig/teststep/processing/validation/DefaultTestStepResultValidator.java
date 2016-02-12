@@ -55,18 +55,22 @@ public class DefaultTestStepResultValidator implements TestStepResultValidator {
 
     private boolean validate2(ExpectedResult expectedResult, Object actualResult, StringBuilder errorBuilder) {
         Object actualValue = extractActualValueFromExpectedResult(actualResult, expectedResult);
-        if (expectedResult.getProperty() == null && actualValue instanceof Collection) {
-            if (expectedResult.getValidationType() == ValidationType.NONE_MATCH) {
-                return ((Collection) actualValue).stream().allMatch(actualResultItem ->
-                        validate(expectedResult, actualResultItem, errorBuilder));
-            } else {
-                return ((Collection) actualValue).stream().anyMatch(actualResultItem ->
-                        validate(expectedResult, actualResultItem, errorBuilder));
-            }
-        } else if (actualResult.getClass().isArray()) {
-            return validate2(expectedResult, Arrays.stream((Object[]) actualResult).collect(Collectors.toList()), errorBuilder);
-        } else {
+        if (expectedResult.isGroup()) {
             return validate(expectedResult, actualValue, errorBuilder);
+        } else {
+            if (expectedResult.getProperty() == null && actualValue instanceof Collection) {
+                if (expectedResult.getValidationType() == ValidationType.NONE_MATCH) {
+                    return ((Collection) actualValue).stream().allMatch(actualResultItem ->
+                            validate(expectedResult, actualResultItem, errorBuilder));
+                } else {
+                    return ((Collection) actualValue).stream().anyMatch(actualResultItem ->
+                            validate(expectedResult, actualResultItem, errorBuilder));
+                }
+            } else if (actualResult.getClass().isArray()) {
+                return validate2(expectedResult, Arrays.stream((Object[]) actualResult).collect(Collectors.toList()), errorBuilder);
+            } else {
+                return validate(expectedResult, actualValue, errorBuilder);
+            }
         }
     }
 

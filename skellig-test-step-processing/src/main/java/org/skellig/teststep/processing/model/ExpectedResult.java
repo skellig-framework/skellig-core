@@ -38,6 +38,11 @@ public class ExpectedResult {
         return path.length() == 0 ? "result" : path;
     }
 
+    public boolean isGroup() {
+        return property == null && expectedResult instanceof List &&
+                this.<List<ExpectedResult>>getExpectedResult().stream().anyMatch(item -> item.property == null);
+    }
+
     void initializeParents() {
         if (expectedResult instanceof List) {
             this.<List<ExpectedResult>>getExpectedResult()
