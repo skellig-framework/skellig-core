@@ -11,7 +11,7 @@ class DatabaseTestStepProcessorTest {
     @BeforeEach
     void setUp() {
         databaseTestStepProcessor = new DatabaseTestStepProcessor(
-                dbServers, new ThreadLocalTestScenarioState(),
+                null, new ThreadLocalTestScenarioState(),
                 new DefaultTestStepResultValidator.Builder()
                         .build()
         );

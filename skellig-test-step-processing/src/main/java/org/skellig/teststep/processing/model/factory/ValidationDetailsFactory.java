@@ -23,7 +23,7 @@ class ValidationDetailsFactory {
     private static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
     private static Set<String> validationKeywords;
-    private static Set<String> validationTypeKeywords;
+    private static Map<String, ValidationType> validationTypeKeywords;
 
     private Properties keywordsProperties;
     private TestStepFactoryValueConverter testStepFactoryValueConverter;
@@ -45,12 +45,11 @@ class ValidationDetailsFactory {
         }
 
         if (validationTypeKeywords == null) {
-            validationTypeKeywords = Stream.of(
-                    getKeywordName("test.step.keyword.all_match", "all_match"),
-                    getKeywordName("test.step.keyword.any_match", "any_match"),
-                    getKeywordName("test.step.keyword.none_match", "none_match"),
-                    getKeywordName("test.step.keyword.any_none_match", "any_none_match"))
-                    .collect(Collectors.toSet());
+            validationTypeKeywords = new HashMap<>();
+            validationTypeKeywords.put(getKeywordName("test.step.keyword.all_match", "all_match"), ValidationType.ALL_MATCH);
+            validationTypeKeywords.put(getKeywordName("test.step.keyword.any_match", "any_match"), ValidationType.ANY_MATCH);
+            validationTypeKeywords.put(getKeywordName("test.step.keyword.none_match", "none_match"), ValidationType.NONE_MATCH);
+            validationTypeKeywords.put(getKeywordName("test.step.keyword.any_none_match", "any_none_match"), ValidationType.ANY_NONE_MATCH);
         }
     }
 
@@ -92,32 +91,40 @@ class ValidationDetailsFactory {
 
     private ExpectedResult createExpectedResult(String propertyName, Object expectedResult, Map<String, Object> parameters) {
         expectedResult = testStepFactoryValueConverter.convertValue(expectedResult, parameters);
+
+        ValidationType validationType = ValidationType.ALL_MATCH;
+        if (validationTypeKeywords.containsKey(propertyName)) {
+            validationType = validationTypeKeywords.get(propertyName);
+            propertyName = null;
+        }
+
         if (expectedResult instanceof Map) {
             Map<String, Object> expectedResultAsMap = (Map) expectedResult;
-
-            Object matchValue = expectedResultAsMap.entrySet().stream()
-                    .filter(entry -> validationTypeKeywords.contains(entry.getKey()))
-                    .findFirst()
-                    .map(Map.Entry::getValue)
-                    .orElse(expectedResultAsMap);
-
-            if (matchValue == expectedResultAsMap || matchValue instanceof Map) {
-                matchValue = createExpectedResults(extendExpectedResultMapIfApplicable((Map<String, Object>) matchValue), parameters);
-            } else if (matchValue instanceof List) {
-                matchValue = createExpectedResults((List<Object>) matchValue, parameters);
+            // If expectedResult has only 1 key and it is a validation type, then extract the value
+            // and assign it to the current propertyName
+            if (expectedResultAsMap.size() == 1) {
+                Optional<Map.Entry<String, Object>> entry = expectedResultAsMap.entrySet().stream().findFirst();
+                if (validationTypeKeywords.containsKey(entry.get().getKey())) {
+                    validationType = validationTypeKeywords.get(entry.get().getKey());
+                    expectedResult = entry.get().getValue();
+                }
             }
-
-            return new ExpectedResult(propertyName, matchValue, getValidationType(expectedResultAsMap));
+            if (expectedResult == expectedResultAsMap || expectedResult instanceof Map) {
+                expectedResult = createExpectedResults(extendExpectedResultMapIfApplicable((Map<String, Object>) expectedResult), parameters);
+            } else if (expectedResult instanceof List) {
+                expectedResult = createExpectedResults((List<Object>) expectedResult, parameters);
+            }
         } else if (expectedResult instanceof List) {
             expectedResult = createExpectedResults((List<Object>) expectedResult, parameters);
-            return new ExpectedResult(propertyName, expectedResult, ValidationType.ALL_MATCH);
         } else {
-            return new ExpectedResult(propertyName, expectedResult, null);
+            validationType = null;
         }
+
+        return new ExpectedResult(propertyName, expectedResult, validationType);
     }
 
-    private Object createExpectedResults(Map<String, Object> matchValue, Map<String, Object> parameters) {
-        return matchValue.entrySet().stream()
+    private Object createExpectedResults(Map<String, Object> expectedResult, Map<String, Object> parameters) {
+        return expectedResult.entrySet().stream()
                 .map(entry -> createExpectedResult(entry.getKey(), entry.getValue(), parameters))
                 .collect(Collectors.toList());
     }
@@ -128,6 +135,10 @@ class ValidationDetailsFactory {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * If expected result contains construction like: [n1,n2...n] as a key, then it must be split by comma
+     * and for each element assign the value of the original key and put it back to the new Map
+     */
     private Map<String, Object> extendExpectedResultMapIfApplicable(Map<String, Object> expectedResultAsMap) {
         if (hasSplitProperties(expectedResultAsMap)) {
             Map<String, Object> extendedExpectedResultAsMap = new HashMap<>();
@@ -153,9 +164,9 @@ class ValidationDetailsFactory {
                 .anyMatch(key -> key.startsWith("[") && !INDEX_PROPERTY_PATTERN.matcher(key).matches());
     }
 
-    private ValidationType getValidationType(Map expectedResultAsMap) {
-        return validationTypeKeywords.stream()
-                .filter(expectedResultAsMap::containsKey)
+    private ValidationType getValidationTypeFrom(Map expectedResult) {
+        return validationTypeKeywords.keySet().stream()
+                .filter(expectedResult::containsKey)
                 .findFirst()
                 .map(ValidationType::getValidationTypeFor)
                 .orElse(ValidationType.ALL_MATCH);

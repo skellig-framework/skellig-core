@@ -80,10 +80,11 @@ class ValidationDetailsFactoryTest {
     }
 
     @Test
-    @DisplayName("When has array of expected values as Map ")
+    @DisplayName("When has array of expected values as Map And additional field to check")
     void testWithArrayOfMaps() {
         Map<String, Object> rawValidationDetails =
-                createMap("all_match",
+                createMap("size", "2",
+                        "any_match",
                         Arrays.asList(
                                 createMap("a1", "v1", "a2", "v2"),
                                 createMap("b1", "v1", "b2", "v2")
@@ -96,18 +97,49 @@ class ValidationDetailsFactoryTest {
                 () -> assertEquals(ValidationType.ALL_MATCH, validationDetails.getExpectedResult().getValidationType()),
                 () -> assertEquals("", validationDetails.getExpectedResult().getProperty()),
 
-                () -> assertNull(extractExpectedValue(validationDetails.getExpectedResult(), 0).getProperty()),
-                () -> assertEquals("a1", extractExpectedValue(validationDetails.getExpectedResult(), 0, 0).getProperty()),
-                () -> assertEquals("v1", extractExpectedValue(validationDetails.getExpectedResult(), 0, 0).getExpectedResult()),
-                () -> assertEquals("a2", extractExpectedValue(validationDetails.getExpectedResult(), 0, 1).getProperty()),
-                () -> assertEquals("v2", extractExpectedValue(validationDetails.getExpectedResult(), 0, 1).getExpectedResult()),
+                () -> assertEquals("size", extractExpectedValue(validationDetails.getExpectedResult(), 0).getProperty()),
+                () -> assertEquals("2", extractExpectedValue(validationDetails.getExpectedResult(), 0).getExpectedResult()),
 
+                () -> assertEquals(ValidationType.ANY_MATCH, extractExpectedValue(validationDetails.getExpectedResult(), 1).getValidationType()),
                 () -> assertNull(extractExpectedValue(validationDetails.getExpectedResult(), 1).getProperty()),
-                () -> assertEquals("b2", extractExpectedValue(validationDetails.getExpectedResult(), 1, 0).getProperty()),
-                () -> assertEquals("v2", extractExpectedValue(validationDetails.getExpectedResult(), 1, 0).getExpectedResult()),
-                () -> assertEquals("b1", extractExpectedValue(validationDetails.getExpectedResult(), 1, 1).getProperty()),
-                () -> assertEquals("v1", extractExpectedValue(validationDetails.getExpectedResult(), 1, 1).getExpectedResult())
+                () -> assertNull(extractExpectedValue(validationDetails.getExpectedResult(), 1, 0).getProperty()),
+                () -> assertEquals("a1", extractExpectedValue(validationDetails.getExpectedResult(), 1, 0, 0).getProperty()),
+                () -> assertEquals("v1", extractExpectedValue(validationDetails.getExpectedResult(), 1, 0, 0).getExpectedResult()),
+                () -> assertEquals("a2", extractExpectedValue(validationDetails.getExpectedResult(), 1, 0, 1).getProperty()),
+                () -> assertEquals("v2", extractExpectedValue(validationDetails.getExpectedResult(), 1, 0, 1).getExpectedResult()),
 
+                () -> assertNull(extractExpectedValue(validationDetails.getExpectedResult(), 1, 1).getProperty()),
+                () -> assertEquals("b2", extractExpectedValue(validationDetails.getExpectedResult(), 1, 1, 0).getProperty()),
+                () -> assertEquals("v2", extractExpectedValue(validationDetails.getExpectedResult(), 1, 1, 0).getExpectedResult()),
+                () -> assertEquals("b1", extractExpectedValue(validationDetails.getExpectedResult(), 1, 1, 1).getProperty()),
+                () -> assertEquals("v1", extractExpectedValue(validationDetails.getExpectedResult(), 1, 1, 1).getExpectedResult())
+
+        );
+    }
+
+    @Test
+    @DisplayName("When has array of expected values as Map And additional field to check")
+    void testWithArrayOfMaps3() {
+        Map<String, Object> rawValidationDetails =
+                createMap("size", "2",
+                        "any_match", createMap("a1", "v1", "a2", "v2"));
+
+        TestStep testStep = createTestStepWithoutParameters(rawValidationDetails);
+        ValidationDetails validationDetails = testStep.getValidationDetails().get();
+
+        assertAll(
+                () -> assertEquals(ValidationType.ALL_MATCH, validationDetails.getExpectedResult().getValidationType()),
+                () -> assertEquals("", validationDetails.getExpectedResult().getProperty()),
+
+                () -> assertEquals("size", extractExpectedValue(validationDetails.getExpectedResult(), 0).getProperty()),
+                () -> assertEquals("2", extractExpectedValue(validationDetails.getExpectedResult(), 0).getExpectedResult()),
+
+                () -> assertEquals(ValidationType.ANY_MATCH, extractExpectedValue(validationDetails.getExpectedResult(), 1).getValidationType()),
+                () -> assertNull(extractExpectedValue(validationDetails.getExpectedResult(), 1).getProperty()),
+                () -> assertEquals("a1", extractExpectedValue(validationDetails.getExpectedResult(), 1, 0).getProperty()),
+                () -> assertEquals("v1", extractExpectedValue(validationDetails.getExpectedResult(), 1, 0).getExpectedResult()),
+                () -> assertEquals("a2", extractExpectedValue(validationDetails.getExpectedResult(), 1, 1).getProperty()),
+                () -> assertEquals("v2", extractExpectedValue(validationDetails.getExpectedResult(), 1, 1).getExpectedResult())
         );
     }
 
@@ -268,7 +300,6 @@ class ValidationDetailsFactoryTest {
 
         );
     }
-
 
 
     private TestStep createTestStepWithoutParameters(Map<String, Object> rawValidationDetails) {
