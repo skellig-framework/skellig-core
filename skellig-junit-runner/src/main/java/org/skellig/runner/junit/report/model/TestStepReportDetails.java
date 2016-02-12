@@ -81,7 +81,7 @@ public class TestStepReportDetails {
             stringBuilder.append(expectedResult.getProperty()).append(": ");
         }
         if (expectedResult.getExpectedResult() instanceof List) {
-            stringBuilder.append("[\n");
+            stringBuilder.append(getValidationType(expectedResult)).append("[\n");
             expectedResult.<List<ExpectedResult>>getExpectedResult()
                     .forEach(item -> constructValidationDetails(item, stringBuilder));
             stringBuilder.append("]\n");
@@ -90,6 +90,10 @@ public class TestStepReportDetails {
                     .append(expectedResult.getExpectedResult().toString())
                     .append("\n");
         }
+    }
+
+    private String getValidationType(ExpectedResult expectedResult) {
+        return expectedResult.getValidationType().name().toLowerCase();
     }
 
     private String getPropertyWithValue(Map.Entry<String, Optional<Method>> propertyGetterPair) {
