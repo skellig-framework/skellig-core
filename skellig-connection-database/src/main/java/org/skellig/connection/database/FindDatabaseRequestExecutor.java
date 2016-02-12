@@ -30,12 +30,13 @@ class FindDatabaseRequestExecutor extends BaseDatabaseRequestExecutor {
                 Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
                 query = composeFindQuery(databaseRequest, searchCriteria);
 
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                Object[] rawParameters = convertToRawParameters(searchCriteria);
-                for (int i = 0; i < rawParameters.length; i++) {
-                    preparedStatement.setString(i + 1, rawParameters[i].toString());
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                    Object[] rawParameters = convertToRawParameters(searchCriteria);
+                    for (int i = 0; i < rawParameters.length; i++) {
+                        preparedStatement.setObject(i + 1, rawParameters[i]);
+                    }
+                    return executeQuery(preparedStatement);
                 }
-                return executeQuery(preparedStatement);
             }
         } catch (Exception ex) {
             throw new DatabaseChannelException(ex.getMessage(), ex);

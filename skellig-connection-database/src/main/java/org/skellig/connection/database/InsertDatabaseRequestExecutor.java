@@ -1,5 +1,6 @@
 package org.skellig.connection.database;
 
+import org.skellig.connection.database.exception.DatabaseChannelException;
 import org.skellig.connection.database.model.DatabaseRequest;
 
 import java.sql.Connection;
@@ -22,12 +23,13 @@ class InsertDatabaseRequestExecutor extends BaseDatabaseRequestExecutor {
                 Map<String, Object> insertData = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
                 query = composeInsertQuery(databaseRequest, insertData);
 
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                Object[] rawParameters = convertToRawParameters(insertData);
-                for (int i = 0; i < rawParameters.length; i++) {
-                    preparedStatement.setObject(i, rawParameters[i]);
+                try(PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                    Object[] rawParameters = convertToRawParameters(insertData);
+                    for (int i = 0; i < rawParameters.length; i++) {
+                        preparedStatement.setObject(i + 1, rawParameters[i]);
+                    }
+                    result = preparedStatement.executeUpdate();
                 }
-                result = preparedStatement.executeUpdate();
             }
             connection.commit();
         } catch (Exception ex) {
@@ -36,6 +38,7 @@ class InsertDatabaseRequestExecutor extends BaseDatabaseRequestExecutor {
             } catch (SQLException e) {
                 //log later
             }
+            throw new DatabaseChannelException(ex.getMessage(), ex);
         }
         return result;
     }
