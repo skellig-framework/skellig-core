@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 class InsertDatabaseRequestExecutor extends BaseDatabaseRequestExecutor {
 
     Object executeRequest(Connection connection, DatabaseRequest databaseRequest) {
-        int result = 0;
+        int result;
         try {
             String query;
-            if (databaseRequest.getQuery().isPresent()) {
-                query = databaseRequest.getQuery().get();
+            if (databaseRequest.getQuery() != null) {
+                query = databaseRequest.getQuery();
                 result = connection.createStatement().executeUpdate(query);
             } else {
                 Map<String, Object> insertData = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());

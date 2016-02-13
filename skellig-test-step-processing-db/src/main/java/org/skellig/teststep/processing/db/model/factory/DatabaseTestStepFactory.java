@@ -37,7 +37,7 @@ public class DatabaseTestStepFactory extends BaseTestStepFactory {
     @Override
     protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
         return (id, name, testData, validationDetails, parameters, variables) -> {
-            if (!(testData instanceof Map)) {
+            if (testData != null && !(testData instanceof Map)) {
                 throw new TestDataConversionException("Test Data of Database Test Step must be class of Map<String,Object>");
             }
 

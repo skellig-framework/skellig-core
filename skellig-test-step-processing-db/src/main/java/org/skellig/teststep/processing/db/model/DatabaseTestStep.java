@@ -67,7 +67,7 @@ public class DatabaseTestStep extends TestStep {
         }
 
         @Override
-        public TestStep build() {
+        public DatabaseTestStep build() {
             return new DatabaseTestStep(id, name, variables, testData, validationDetails, servers, command, table, query);
         }
     }

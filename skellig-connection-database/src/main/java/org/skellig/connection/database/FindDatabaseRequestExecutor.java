@@ -23,8 +23,8 @@ class FindDatabaseRequestExecutor extends BaseDatabaseRequestExecutor {
     Object executeRequest(Connection connection, DatabaseRequest databaseRequest) {
         try {
             String query;
-            if (databaseRequest.getQuery().isPresent()) {
-                query = databaseRequest.getQuery().get();
+            if (databaseRequest.getQuery() != null) {
+                query = databaseRequest.getQuery();
                 return executeQuery(query, connection.createStatement());
             } else {
                 Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
