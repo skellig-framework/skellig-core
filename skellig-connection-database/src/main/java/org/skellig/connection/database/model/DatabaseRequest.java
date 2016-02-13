@@ -28,8 +28,8 @@ public class DatabaseRequest {
         return table;
     }
 
-    public Optional<String> getQuery() {
-        return Optional.ofNullable(query);
+    public String getQuery() {
+        return query;
     }
 
     public Optional<Map<String, Object>> getColumnValuePairs() {
