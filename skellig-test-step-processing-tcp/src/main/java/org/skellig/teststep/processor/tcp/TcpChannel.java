@@ -46,20 +46,6 @@ class TcpChannel implements AutoCloseable {
 
     public Optional<Object> read() {
         try {
-            Optional<Object> response;
-            do {
-                response = readIfAvailable();
-                Thread.sleep(5);
-            } while (!response.isPresent() && !isClosed);
-
-            return response;
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-
-    private Optional<Object> readIfAvailable() {
-        try {
             if (inputStream.available() > 0) {
                 byte[] bytes = new byte[inputStream.available()];
                 inputStream.readFully(bytes, 0, bytes.length);
