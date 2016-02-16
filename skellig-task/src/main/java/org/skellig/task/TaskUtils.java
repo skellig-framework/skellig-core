@@ -14,13 +14,14 @@ public final class TaskUtils {
     }
 
     public static <T> T runTask(Callable<T> task, Predicate<T> stopCondition, int delay, int timeout) throws TaskRunException {
-        return runTaskUntil(task, stopCondition, delay, timeout, null);
+        return runTaskUntil(task, stopCondition, delay, timeout);
     }
 
-    private static <T> T runTaskUntil(Callable<T> task, Predicate<T> stopCondition, int delay, double timeout, T previousResult) throws TaskRunException {
-        if (timeout >= 0) {
+    private static <T> T runTaskUntil(Callable<T> task, Predicate<T> stopCondition, int delay, double timeout) throws TaskRunException {
+        T result = null;
+
+        while (timeout > 0) {
             long startTime = System.currentTimeMillis();
-            T result;
             try {
                 result = task.call();
             } catch (Exception ex) {
@@ -29,15 +30,15 @@ public final class TaskUtils {
             int totalExecutionTime = (int) (System.currentTimeMillis() - startTime);
 
             if (stopCondition.test(result)) {
-                return result;
+                timeout = 0;
             } else {
                 if (delay > 0) {
                     delay(delay);
                 }
-                return runTaskUntil(task, stopCondition, delay, timeout - delay/MS_CONSTANT - totalExecutionTime, result);
+                timeout = timeout - delay / MS_CONSTANT - totalExecutionTime;
             }
         }
-        return previousResult;
+        return result;
     }
 
     private static void delay(int idleMilliseconds) {
