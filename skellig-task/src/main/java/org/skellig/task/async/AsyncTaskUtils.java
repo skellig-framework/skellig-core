@@ -6,6 +6,7 @@ import org.skellig.task.exception.TaskRunException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -18,21 +19,21 @@ public final class AsyncTaskUtils {
     private AsyncTaskUtils() {
     }
 
-    public static <T> AsyncResult<T> runTaskAsync(Callable<T> task, int timeoutSeconds) {
+    public static <T> Future<T> runTaskAsync(Callable<T> task) {
         try {
-            return new AsyncResult<>(executorService.submit(task)).withTimeout(timeoutSeconds);
+            return executorService.submit(task);
         } catch (Exception e) {
-            return AsyncResult.empty();
+            throw new TaskRunException(e.getMessage(), e);
         }
     }
 
-    public static <T> AsyncResult<T> runTaskAsync(Callable<T> task, Predicate<T> stopCondition, int timeout) {
-        return runTaskAsync(() -> runTask(task, stopCondition, 0, timeout), timeout);
+    public static <T> Future<T> runTaskAsync(Callable<T> task, Predicate<T> stopCondition, int timeout) {
+        return runTaskAsync(() -> runTask(task, stopCondition, 0, timeout));
     }
 
-    public static <T> AsyncResult<T> runTaskAsync(Callable<T> task, Predicate<T> stopCondition,
-                                                  int delay, int timeout) {
-        return runTaskAsync(() -> runTask(task, stopCondition, delay, timeout), timeout);
+    public static <T> Future<T> runTaskAsync(Callable<T> task, Predicate<T> stopCondition,
+                                             int delay, int timeout) {
+        return runTaskAsync(() -> runTask(task, stopCondition, delay, timeout));
     }
 
     public static void shutdown() {
