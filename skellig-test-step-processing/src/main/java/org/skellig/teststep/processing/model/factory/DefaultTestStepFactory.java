@@ -31,15 +31,8 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
     }
 
     @Override
-    protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
-        return (id, name, testData, validationDetails, parameters, variables) ->
-                new TestStep.Builder()
-                        .withId(id)
-                        .withName(name)
-                        .withTestData(testData)
-                        .withValidationDetails(validationDetails)
-                        .withVariables(variables)
-                        .build();
+    protected TestStep.Builder createTestStepBuilder(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
+        return new TestStep.Builder();
     }
 
     @Override

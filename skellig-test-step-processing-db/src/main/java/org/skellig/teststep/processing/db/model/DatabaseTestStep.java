@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.db.model;
 
 import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.TestStepExecutionType;
 import org.skellig.teststep.processing.model.ValidationDetails;
 
 import java.util.Collection;
@@ -13,15 +14,16 @@ public class DatabaseTestStep extends TestStep {
     private String table;
     private String query;
 
-    protected DatabaseTestStep(String id, String name, Map<String, Object> variables, Object testData,
-                               ValidationDetails validationDetails, Collection<String> servers,
-                               String command, String table, String query) {
-        super(id, name, variables, testData, validationDetails);
+    protected DatabaseTestStep(String id, String name, TestStepExecutionType execution, int timeout, int delay,
+                               Map<String, Object> variables, Object testData, ValidationDetails validationDetails,
+                               Collection<String> servers, String command, String table, String query) {
+        super(id, name, execution, timeout, delay, variables, testData, validationDetails);
         this.servers = servers;
         this.command = command;
         this.table = table;
         this.query = query;
     }
+
 
     public Collection<String> getServers() {
         return servers;
@@ -68,7 +70,8 @@ public class DatabaseTestStep extends TestStep {
 
         @Override
         public DatabaseTestStep build() {
-            return new DatabaseTestStep(id, name, variables, testData, validationDetails, servers, command, table, query);
+            return new DatabaseTestStep(id, name, execution, timeout, delay, variables, testData,
+                    validationDetails, servers, command, table, query);
         }
     }
 }

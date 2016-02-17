@@ -27,6 +27,14 @@ public final class AsyncTaskUtils {
         }
     }
 
+    public static void runTaskAsync(Runnable task) {
+        try {
+            executorService.submit(task);
+        } catch (Exception e) {
+            throw new TaskRunException(e.getMessage(), e);
+        }
+    }
+
     public static <T> Future<T> runTaskAsync(Callable<T> task, Predicate<T> stopCondition, int timeout) {
         return runTaskAsync(() -> runTask(task, stopCondition, 0, timeout));
     }
