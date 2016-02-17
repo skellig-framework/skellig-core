@@ -9,8 +9,8 @@ import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory;
 import org.skellig.teststep.processing.model.factory.TestStepFactory;
 import org.skellig.teststep.processing.processor.DefaultTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
+import org.skellig.teststep.processing.state.DefaultTestScenarioState;
 import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.state.ThreadLocalTestScenarioState;
 import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
 import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator;
@@ -133,7 +133,7 @@ public class SkelligTestContext {
     }
 
     protected TestScenarioState createTestScenarioState() {
-        return new ThreadLocalTestScenarioState();
+        return new DefaultTestScenarioState();
     }
 
     protected List<TestStepValueExtractor> getAdditionalTestStepValueExtractors() {

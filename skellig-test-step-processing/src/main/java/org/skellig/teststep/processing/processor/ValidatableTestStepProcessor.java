@@ -8,6 +8,8 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator;
 
 import java.util.Optional;
 
+import static org.skellig.task.TaskUtils.runTask;
+
 public abstract class ValidatableTestStepProcessor<T extends TestStep> implements TestStepProcessor<T> {
 
     protected static final String RESULT_SAVE_SUFFIX = ".result";
@@ -20,12 +22,17 @@ public abstract class ValidatableTestStepProcessor<T extends TestStep> implement
         this.validator = validator;
     }
 
+    protected void validate(TestStep testStep) {
+        validate(testStep, null);
+    }
+
     protected void validate(TestStep testStep, Object actualResult) {
         testStep.getValidationDetails()
                 .ifPresent(validationDetails -> {
                     Optional<String> testStepId = validationDetails.getTestStepId();
                     if (testStepId.isPresent()) {
-                        Optional<Object> actualResultFromAnotherStep = getLatestResultOfTestStep(testStepId.get());
+                        Optional<Object> actualResultFromAnotherStep =
+                                getLatestResultOfTestStep(testStepId.get(), testStep.getDelay(), testStep.getTimeout());
                         if (actualResultFromAnotherStep.isPresent()) {
                             validate(testStep.getId(), validationDetails, actualResultFromAnotherStep.get());
                         } else {
@@ -46,7 +53,7 @@ public abstract class ValidatableTestStepProcessor<T extends TestStep> implement
         }
     }
 
-    protected Optional<Object> getLatestResultOfTestStep(String testStepId) {
-        return testScenarioState.get(testStepId + RESULT_SAVE_SUFFIX);
+    private Optional<Object> getLatestResultOfTestStep(String testStepId, int delay, int timeout) {
+        return runTask(() -> testScenarioState.get(testStepId + RESULT_SAVE_SUFFIX), Optional::isPresent, delay, timeout);
     }
 }

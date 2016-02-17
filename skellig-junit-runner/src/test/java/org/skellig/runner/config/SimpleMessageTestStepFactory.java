@@ -18,11 +18,12 @@ public class SimpleMessageTestStepFactory extends BaseTestStepFactory {
     @Override
     protected TestStep.Builder createTestStepBuilder(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
         return new SimpleMessageTestStep.Builder()
-                .withReceiver(convertValue(rawTestStep.get("receiver"), parameters));
+                .withReceiver(convertValue(rawTestStep.get("receiver"), parameters))
+                .withReceiveFrom(convertValue(rawTestStep.get("receiveFrom"), parameters));
     }
 
     @Override
     public boolean isConstructableFrom(Map<String, Object> rawTestStep) {
-        return rawTestStep.containsKey("receiver");
+        return rawTestStep.containsKey("receiver") || rawTestStep.containsKey("receiveFrom");
     }
 }

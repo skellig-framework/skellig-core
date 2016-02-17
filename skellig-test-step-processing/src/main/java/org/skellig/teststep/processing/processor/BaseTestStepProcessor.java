@@ -1,8 +1,11 @@
 package org.skellig.teststep.processing.processor;
 
 import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.TestStepExecutionType;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
+
+import static org.skellig.task.async.AsyncTaskUtils.runTaskAsync;
 
 public abstract class BaseTestStepProcessor<T extends TestStep> extends ValidatableTestStepProcessor<T> {
 
@@ -14,14 +17,22 @@ public abstract class BaseTestStepProcessor<T extends TestStep> extends Validata
     public void process(T testStep) {
         testScenarioState.set(testStep.getId(), testStep);
 
+        if (testStep.getExecution() == TestStepExecutionType.ASYNC) {
+            runTaskAsync(() -> processAndValidate(testStep));
+        } else {
+            processAndValidate(testStep);
+        }
+    }
+
+    protected abstract Object processTestStep(T testStep);
+
+    private void processAndValidate(T testStep) {
         Object result = processTestStep(testStep);
 
         testScenarioState.set(testStep.getId() + RESULT_SAVE_SUFFIX, result);
 
         validate(testStep, result);
     }
-
-    protected abstract Object processTestStep(T testStep);
 
 
     public static abstract class Builder<T extends TestStep> {
