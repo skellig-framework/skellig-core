@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.converter.TestDataConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.db.model.DatabaseTestStep;
 import org.skellig.teststep.processing.exception.TestDataConversionException;
+import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
 
 import java.util.Collection;
@@ -35,26 +36,24 @@ public class DatabaseTestStepFactory extends BaseTestStepFactory {
     }
 
     @Override
-    protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
-        return (id, name, testData, validationDetails, parameters, variables) -> {
-            if (testData != null && !(testData instanceof Map)) {
-                throw new TestDataConversionException("Test Data of Database Test Step must be class of Map<String,Object>");
-            }
+    public TestStep create(String testStepName, Map<String, Object> rawTestStep, Map<String, String> parameters) {
+        TestStep testStep = super.create(testStepName, rawTestStep, parameters);
+        if (testStep.getTestData() != null && !(testStep.getTestData() instanceof Map)) {
+            throw new TestDataConversionException("Test Data of Database Test Step must be class of Map<String,Object>");
+        }
 
-            Collection<String> servers =
-                    getStringArrayDataFromRawTestStep(getKeywordName(SERVERS_KEYWORD, "servers"), rawTestStep, parameters);
-            return new DatabaseTestStep.Builder()
-                    .withServers(servers)
-                    .withCommand(convertValue(rawTestStep.get(getKeywordName(COMMAND_KEYWORD, "command")), parameters))
-                    .withTable(convertValue(rawTestStep.get(getTableKeyword()), parameters))
-                    .withQuery(convertValue(rawTestStep.get(getQueryKeyword()), parameters))
-                    .withId(id)
-                    .withName(name)
-                    .withTestData(testData)
-                    .withValidationDetails(validationDetails)
-                    .withVariables(variables)
-                    .build();
-        };
+        return testStep;
+    }
+
+    @Override
+    protected TestStep.Builder createTestStepBuilder(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
+        Collection<String> servers =
+                getStringArrayDataFromRawTestStep(getKeywordName(SERVERS_KEYWORD, "servers"), rawTestStep, parameters);
+        return new DatabaseTestStep.Builder()
+                .withServers(servers)
+                .withCommand(convertValue(rawTestStep.get(getKeywordName(COMMAND_KEYWORD, "command")), parameters))
+                .withTable(convertValue(rawTestStep.get(getTableKeyword()), parameters))
+                .withQuery(convertValue(rawTestStep.get(getQueryKeyword()), parameters));
     }
 
     @Override

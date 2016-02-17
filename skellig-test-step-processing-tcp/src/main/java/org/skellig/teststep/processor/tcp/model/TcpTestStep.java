@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.tcp.model;
 
 import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.TestStepExecutionType;
 import org.skellig.teststep.processing.model.ValidationDetails;
 
 import java.util.Map;
@@ -11,12 +12,14 @@ public class TcpTestStep extends TestStep {
     private String sendTo;
     private String readFrom;
 
-    protected TcpTestStep(String id, String name, Map<String, Object> variables, Object testData,
-                          ValidationDetails validationDetails, String sendTo, String readFrom) {
-        super(id, name, variables, testData, validationDetails);
+    protected TcpTestStep(String id, String name, TestStepExecutionType execution, int timeout, int delay,
+                          Map<String, Object> variables, Object testData, ValidationDetails validationDetails,
+                          String sendTo, String readFrom) {
+        super(id, name, execution, timeout, delay, variables, testData, validationDetails);
         this.sendTo = sendTo;
         this.readFrom = readFrom;
     }
+
 
     public Optional<String> getSendTo() {
         return Optional.ofNullable(sendTo);
@@ -42,7 +45,7 @@ public class TcpTestStep extends TestStep {
         }
 
         public TcpTestStep build() {
-            return new TcpTestStep(id, name, variables, testData, validationDetails, sendTo, readFrom);
+            return new TcpTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails, sendTo, readFrom);
         }
     }
 }

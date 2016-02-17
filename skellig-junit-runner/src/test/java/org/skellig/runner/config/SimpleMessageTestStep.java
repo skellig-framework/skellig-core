@@ -1,6 +1,7 @@
 package org.skellig.runner.config;
 
 import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.TestStepExecutionType;
 import org.skellig.teststep.processing.model.ValidationDetails;
 
 import java.util.Map;
@@ -9,9 +10,9 @@ public class SimpleMessageTestStep extends TestStep {
 
     private String receiver;
 
-    protected SimpleMessageTestStep(String id, String name, Map<String, Object> variables,
-                                    Object testData, ValidationDetails validationDetails, String receiver) {
-        super(id, name, variables, testData, validationDetails);
+    protected SimpleMessageTestStep(String id, String name, TestStepExecutionType execution, int timeout, int delay,
+                                    Map<String, Object> variables, Object testData, ValidationDetails validationDetails, String receiver) {
+        super(id, name, execution, timeout, delay, variables, testData, validationDetails);
         this.receiver = receiver;
     }
 
@@ -30,7 +31,7 @@ public class SimpleMessageTestStep extends TestStep {
 
         @Override
         public TestStep build() {
-            return new SimpleMessageTestStep(id, name, variables, testData, validationDetails, receiver);
+            return new SimpleMessageTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails, receiver);
         }
     }
 }

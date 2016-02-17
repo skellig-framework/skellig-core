@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.http.model.factory;
 import org.skellig.teststep.processing.converter.TestDataConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.http.model.HttpTestStep;
+import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
 
 import java.util.Collection;
@@ -28,28 +29,19 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
     }
 
     @Override
-    protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
-        return (id, name, testData, validationDetails, parameters, variables) ->
-        {
-            Collection<String> services =
-                    getStringArrayDataFromRawTestStep(getKeywordName(SERVICE_KEYWORD, "service"), rawTestStep, parameters);
+    protected TestStep.Builder createTestStepBuilder(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
+        Collection<String> services =
+                getStringArrayDataFromRawTestStep(getKeywordName(SERVICE_KEYWORD, "service"), rawTestStep, parameters);
 
-            return new HttpTestStep.Builder()
-                    .withService(services)
-                    .withUrl(convertValue(rawTestStep.get(getUrlKeyword()), parameters))
-                    .withMethod((String) rawTestStep.get(getMethodKeyword()))
-                    .withHeaders(getHttpHeaders(rawTestStep, parameters))
-                    .withQuery(getHttpQuery(rawTestStep, parameters))
-                    .withForm(getForm(rawTestStep, parameters))
-                    .withUsername(convertValue(rawTestStep.get(getKeywordName(USER_KEYWORD, "username")), parameters))
-                    .withPassword(convertValue(rawTestStep.get(getKeywordName(PASSWORD_KEYWORD, "password")), parameters))
-                    .withId(id)
-                    .withName(name)
-                    .withTestData(testData)
-                    .withValidationDetails(validationDetails)
-                    .withVariables(variables)
-                    .build();
-        };
+        return new HttpTestStep.Builder()
+                .withService(services)
+                .withUrl(convertValue(rawTestStep.get(getUrlKeyword()), parameters))
+                .withMethod((String) rawTestStep.get(getMethodKeyword()))
+                .withHeaders(getHttpHeaders(rawTestStep, parameters))
+                .withQuery(getHttpQuery(rawTestStep, parameters))
+                .withForm(getForm(rawTestStep, parameters))
+                .withUsername(convertValue(rawTestStep.get(getKeywordName(USER_KEYWORD, "username")), parameters))
+                .withPassword(convertValue(rawTestStep.get(getKeywordName(PASSWORD_KEYWORD, "password")), parameters));
     }
 
     private Map<String, String> getForm(Map<String, Object> rawTestStep, Map<String, Object> parameters) {

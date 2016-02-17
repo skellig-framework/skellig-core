@@ -8,13 +8,20 @@ public class TestStep {
 
     private String id;
     private String name;
+    private TestStepExecutionType execution;
+    private int timeout;
+    private int delay;
     private Map<String, Object> variables;
     private Object testData;
     private ValidationDetails validationDetails;
 
-    protected TestStep(String id, String name, Map<String, Object> variables, Object testData, ValidationDetails validationDetails) {
+    protected TestStep(String id, String name, TestStepExecutionType execution, int timeout, int delay,
+                       Map<String, Object> variables, Object testData, ValidationDetails validationDetails) {
         this.id = id;
         this.name = name;
+        this.execution = execution == null ? TestStepExecutionType.SYNC : execution;
+        this.timeout = timeout;
+        this.delay = delay;
         this.variables = variables;
         this.testData = testData;
         this.validationDetails = validationDetails;
@@ -36,6 +43,18 @@ public class TestStep {
         return testData;
     }
 
+    public TestStepExecutionType getExecution() {
+        return execution;
+    }
+
+    public int getTimeout() {
+        return timeout;
+    }
+
+    public int getDelay() {
+        return delay;
+    }
+
     public Optional<ValidationDetails> getValidationDetails() {
         return Optional.ofNullable(validationDetails);
     }
@@ -46,6 +65,9 @@ public class TestStep {
         protected Map<String, Object> variables;
         protected Object testData;
         protected ValidationDetails validationDetails;
+        protected TestStepExecutionType execution;
+        protected int timeout;
+        protected int delay;
 
         public Builder withId(String id) {
             this.id = id;
@@ -72,9 +94,24 @@ public class TestStep {
             return this;
         }
 
+        public Builder withExecution(TestStepExecutionType execution) {
+            this.execution = execution;
+            return this;
+        }
+
+        public Builder withTimeout(int timeout) {
+            this.timeout = timeout;
+            return this;
+        }
+
+        public Builder withDelay(int delay) {
+            this.delay = delay;
+            return this;
+        }
+
         public TestStep build() {
             Objects.requireNonNull(name, "Name of the Test Step must be set");
-            return new TestStep(id, name, variables, testData, validationDetails);
+            return new TestStep(id, name, execution, timeout, delay, variables, testData, validationDetails);
         }
     }
 }
