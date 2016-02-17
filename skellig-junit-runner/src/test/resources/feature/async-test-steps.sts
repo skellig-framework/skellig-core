@@ -1,0 +1,36 @@
+name(User (\w+) is waiting for request from (\w+)) {
+   id = step2
+   execution = async
+   receiveFrom = ${2}
+}
+
+name(User .* sends the message to (\w+)) {
+    id = step3
+    receiver = ${1}
+    message {
+       toCustomFormat {
+          id = get(step1).(variables.id)
+          userName = get(step1).(variables.name)
+          score = get(step1).(variables.score)
+       }
+    }
+}
+
+name(User (\w+) received a valid response from (\w+)) {
+   variables {
+      score = get(step1).(variables.score)
+   }
+   delay = 100
+   timeout = 10
+   validate {
+      from_test = step2
+      originalRequest [
+         regex(.*score=${score}.*)
+         contains(${2})
+      ]
+      receivedBy = ${1}
+      receivedFrom = ${2}
+      status = success
+   }
+}
+

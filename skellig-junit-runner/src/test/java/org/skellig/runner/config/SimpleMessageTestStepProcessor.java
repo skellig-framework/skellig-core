@@ -7,8 +7,13 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+
+import static org.skellig.task.TaskUtils.runTask;
 
 public class SimpleMessageTestStepProcessor extends BaseTestStepProcessor<SimpleMessageTestStep> {
+
+    private Map<Object, Object> latestReceivedMessage;
 
     protected SimpleMessageTestStepProcessor(TestScenarioState testScenarioState,
                                              TestStepResultValidator validator) {
@@ -17,11 +22,22 @@ public class SimpleMessageTestStepProcessor extends BaseTestStepProcessor<Simple
 
     @Override
     protected Object processTestStep(SimpleMessageTestStep testStep) {
+        if (testStep.getReceiveFrom() != null) {
+             Map<Object, Object> response =
+                    runTask(() -> latestReceivedMessage, Objects::nonNull, 500, 3000);
+            response.put("receivedFrom", testStep.getReceiveFrom());
+            return response;
+        } else {
+            latestReceivedMessage = createResponse(testStep);
+            return latestReceivedMessage;
+        }
+    }
+
+    private Map<Object, Object> createResponse(SimpleMessageTestStep testStep) {
         Map<Object, Object> response = new HashMap<>();
         response.put("originalRequest", testStep.getTestData());
         response.put("receivedBy", testStep.getReceiver());
         response.put("status", "success");
-
         return response;
     }
 
