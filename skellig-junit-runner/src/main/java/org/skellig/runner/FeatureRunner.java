@@ -36,7 +36,7 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
         this.testScenarioState = testScenarioState;
         testScenarioRunners =
                 feature.getScenarios().stream()
-                        .map(testScenario -> TestScenarioRunner.create(testScenario, testStepRunner, testScenarioState))
+                        .map(testScenario -> TestScenarioRunner.create(testScenario, testStepRunner))
                         .collect(Collectors.toList());
     }
 

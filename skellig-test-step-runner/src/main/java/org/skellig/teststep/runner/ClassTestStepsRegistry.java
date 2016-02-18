@@ -70,7 +70,7 @@ class ClassTestStepsRegistry {
         }
     }
 
-    static class TestStepDefDetails {
+    static final class TestStepDefDetails {
         private Pattern testStepNamePattern;
         private Object testStepDefInstance;
         private Method testStepMethod;

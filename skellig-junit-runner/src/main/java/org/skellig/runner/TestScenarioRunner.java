@@ -10,8 +10,7 @@ import org.skellig.feature.TestStep;
 import org.skellig.runner.exception.FeatureRunnerException;
 import org.skellig.runner.junit.report.model.TestScenarioReportDetails;
 import org.skellig.runner.junit.report.model.TestStepReportDetails;
-import org.skellig.teststep.processing.exception.ValidationException;
-import org.skellig.teststep.processing.state.TestScenarioState;
+import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.runner.TestStepRunner;
 
 import java.io.PrintWriter;
@@ -21,25 +20,25 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TestScenarioRunner extends ParentRunner<TestStep> {
 
     private Map<Object, Description> stepDescriptions;
     private TestScenario testScenario;
     private TestStepRunner testStepRunner;
-    private List<TestStepReportDetails> testStepsDataReport;
-    private TestScenarioState testScenarioState;
+    private List<TestStepReportDetails.Builder> testStepsDataReport;
+    private List<TestStepProcessor.TestStepRunResult> testStepRunResults;
     private boolean isChildFailed;
 
-    protected TestScenarioRunner(TestScenario testScenario, TestStepRunner testStepRunner,
-                                 TestScenarioState testScenarioState) throws InitializationError {
+    protected TestScenarioRunner(TestScenario testScenario, TestStepRunner testStepRunner) throws InitializationError {
         super(testScenario.getClass());
         this.testScenario = testScenario;
         this.testStepRunner = testStepRunner;
-        this.testScenarioState = testScenarioState;
 
         stepDescriptions = new HashMap<>();
         testStepsDataReport = new ArrayList<>();
+        testStepRunResults = new ArrayList<>();
     }
 
     @Override
@@ -69,53 +68,63 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
     }
 
     @Override
+    public void run(RunNotifier notifier) {
+        try {
+            super.run(notifier);
+        } finally {
+            try {
+                testStepRunResults.forEach(TestStepProcessor.TestStepRunResult::awaitResult);
+            }catch (Exception ex){
+                fireFailureEvent(notifier, getDescription(), ex);
+            }
+        }
+    }
+
+    @Override
     protected void runChild(TestStep child, RunNotifier notifier) {
         Description childDescription = describeChild(child);
 
-        String testStepId = null;
-        String errorLog = null;
+        TestStepReportDetails.Builder testStepReportBuilder = new TestStepReportDetails.Builder().withName(child.getName());
         if (isChildFailed) {
             notifier.fireTestIgnored(childDescription);
+            testStepsDataReport.add(testStepReportBuilder);
         } else {
             notifier.fireTestStarted(childDescription);
             try {
                 Map<String, String> parameters = child.getParameters().orElse(Collections.emptyMap());
-                testStepId = testStepRunner.run(child.getName(), parameters);
-            } catch (ValidationException ve) {
-                fireFailureEvent(notifier, childDescription, ve);
-                errorLog = ve.getMessage();
-                testStepId = ve.getTestStepId();
+                TestStepProcessor.TestStepRunResult runResult = testStepRunner.run(child.getName(), parameters);
+                testStepRunResults.add(runResult);
+                runResult.subscribe((t, r, e) -> {
+                    testStepReportBuilder
+                            .withOriginalTestStep(t)
+                            .withResult(r);
+                    if (e != null) {
+                        testStepReportBuilder.withErrorLog(attachStackTrace(e));
+                        throw e;
+                    }
+                });
             } catch (Throwable e) {
                 fireFailureEvent(notifier, childDescription, e);
-                errorLog = attachStackTrace(e);
             } finally {
-                collectReportDetails(testStepId, child.getName(), errorLog);
+                testStepsDataReport.add(testStepReportBuilder);
                 notifier.fireTestFinished(childDescription);
             }
         }
     }
 
     public TestScenarioReportDetails getTestScenarioReportDetails() {
-        return new TestScenarioReportDetails(getName(), testStepsDataReport);
+        return new TestScenarioReportDetails(getName(),
+                testStepsDataReport.stream()
+                        .map(TestStepReportDetails.Builder::build)
+                        .collect(Collectors.toList()));
     }
 
-    public static TestScenarioRunner create(TestScenario testScenario, TestStepRunner testStepRunner,
-                                            TestScenarioState testScenarioState) {
+    public static TestScenarioRunner create(TestScenario testScenario, TestStepRunner testStepRunner) {
         try {
-            return new TestScenarioRunner(testScenario, testStepRunner, testScenarioState);
+            return new TestScenarioRunner(testScenario, testStepRunner);
         } catch (InitializationError e) {
             throw new FeatureRunnerException(e.getMessage(), e);
         }
-    }
-
-    private void collectReportDetails(String testStepId, String testStepName, String errorLog) {
-        TestStepReportDetails.Builder testStepReportBuilder =
-                new TestStepReportDetails.Builder()
-                        .withName(testStepName)
-                        .withErrorLog(errorLog);
-        testScenarioState.get(testStepId).ifPresent(testStepReportBuilder::withOriginalTestStep);
-        testScenarioState.get(testStepId + ".result").ifPresent(testStepReportBuilder::withResult);
-        testStepsDataReport.add(testStepReportBuilder.build());
     }
 
     private String attachStackTrace(Throwable e) {
