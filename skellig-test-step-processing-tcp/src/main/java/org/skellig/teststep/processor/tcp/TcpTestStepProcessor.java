@@ -69,7 +69,7 @@ public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
             return this;
         }
 
-        public Builder withTcpChannel(Config config) {
+        public Builder withTcpChannels(Config config) {
             if (config.hasPath(TCP_CONFIG_KEYWORD)) {
                 ((List<Map<String, String>>) config.getAnyRefList(TCP_CONFIG_KEYWORD))
                         .forEach(rawHttpService ->
