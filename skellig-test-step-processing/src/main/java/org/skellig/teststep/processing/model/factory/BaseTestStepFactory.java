@@ -74,7 +74,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         }
 
         return createTestStepBuilder(rawTestStep, additionalParameters)
-                .withId(getId(rawTestStep))
+                .withId(getId(rawTestStep, additionalParameters))
                 .withName(testStepName)
                 .withTestData(extractTestData(rawTestStep, additionalParameters))
                 .withValidationDetails(validationDetailsFactory.create(rawTestStep, additionalParameters))
@@ -145,8 +145,8 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
         return parameters;
     }
 
-    protected String getId(Map<String, Object> rawTestStep) {
-        return rawTestStep.containsKey("id") ? String.valueOf(rawTestStep.get("id")) : null;
+    protected String getId(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
+        return rawTestStep.containsKey("id") ? convertValue(rawTestStep.get("id"), parameters) : null;
     }
 
     protected TestStepExecutionType getExecutionType(Map<String, Object> rawTestStep) {
