@@ -30,16 +30,23 @@ public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
     protected Object processTestStep(TcpTestStep testStep) {
         Object response = null;
         Optional<String> sendTo = testStep.getSendTo();
-        Optional<String> readFrom = testStep.getReadFrom();
+        Optional<String> receiveFrom = testStep.getReceiveFrom();
+        Optional<String> respondTo = testStep.getReceiveFrom();
 
-        if (sendTo.isPresent()) {
-            TcpChannel tcpChannel = tcpChannels.get(sendTo.get());
-            tcpChannel.send(testStep.getTestData());
-        } else if (readFrom.isPresent()) {
-            TcpChannel tcpChannel = tcpChannels.get(readFrom.get());
+        sendTo.ifPresent(channel -> send(testStep.getTestData(), channel));
+
+        if (receiveFrom.isPresent()) {
+            TcpChannel tcpChannel = tcpChannels.get(receiveFrom.get());
             response = runTask(tcpChannel::read, r -> r.isPresent() || tcpChannel.isClosed(), 5, 30).orElse(null);
+
+            respondTo.ifPresent(s -> send(testStep.getTestData(), s));
         }
         return response;
+    }
+
+    private void send(Object testData, String channel) {
+        TcpChannel tcpChannel = tcpChannels.get(channel);
+        tcpChannel.send(testData);
     }
 
     @Override
