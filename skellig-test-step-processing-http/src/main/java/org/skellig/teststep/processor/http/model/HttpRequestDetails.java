@@ -1,4 +1,4 @@
-package org.skellig.connection.http.model;
+package org.skellig.teststep.processor.http.model;
 
 import java.util.Collections;
 import java.util.Map;
