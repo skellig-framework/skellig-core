@@ -44,14 +44,14 @@ class FindDatabaseRequestExecutor extends BaseDatabaseRequestExecutor {
     }
 
     private List<Map<String, Object>> executeQuery(String query, Statement statement) throws SQLException {
-        return extractFromResultSte(statement.executeQuery(query));
+        return extractFromResultSet(statement.executeQuery(query));
     }
 
     private List<Map<String, Object>> executeQuery(PreparedStatement statement) throws SQLException {
-        return extractFromResultSte(statement.executeQuery());
+        return extractFromResultSet(statement.executeQuery());
     }
 
-    private List<Map<String, Object>> extractFromResultSte(ResultSet resultSet) throws SQLException {
+    private List<Map<String, Object>> extractFromResultSet(ResultSet resultSet) throws SQLException {
         List<Map<String, Object>> result = new ArrayList<>();
 
         List<String> columns = extractColumns(resultSet);

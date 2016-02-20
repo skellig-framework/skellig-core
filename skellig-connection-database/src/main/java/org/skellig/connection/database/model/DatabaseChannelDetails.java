@@ -1,8 +1,6 @@
 package org.skellig.connection.database.model;
 
-import org.skellig.connection.channel.model.BaseChannelDetails;
-
-public class DatabaseChannelDetails extends BaseChannelDetails {
+public class DatabaseChannelDetails {
 
     private String driverName;
     private String url;
@@ -11,7 +9,6 @@ public class DatabaseChannelDetails extends BaseChannelDetails {
 
 
     public DatabaseChannelDetails(String driverName, String url, String userName, String password) {
-        super(url);
         this.driverName = driverName;
         this.url = url;
         this.userName = userName;

@@ -1,19 +1,18 @@
-package org.skellig.teststep.processing.db.processor;
+package org.skellig.teststep.processor.db;
 
 import org.skellig.connection.database.DatabaseChannel;
 import org.skellig.connection.database.model.DatabaseChannelDetails;
 import org.skellig.connection.database.model.DatabaseRequest;
-import org.skellig.teststep.processing.db.model.DatabaseTestStep;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
+import org.skellig.teststep.processor.db.model.DatabaseTestStep;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTestStep> {
 
@@ -42,15 +41,15 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
                         request = new DatabaseRequest(testStep.getCommand(), testStep.getTable(), (Map<String, Object>) testStep.getTestData());
                     }
 
-                    Optional<Object> response = databaseChannel.send(request);
+                    Object response = databaseChannel.send(request);
 
-                    result.put(serverName, response.orElse(null));
+                    result.put(serverName, response);
                 });
         return result.size() == 1 ? result.values().stream().findFirst().orElse(null) : result;
     }
 
     private DatabaseChannel getDatabaseChannel(String serverName) {
-        if(!dbServers.containsKey(serverName)){
+        if (!dbServers.containsKey(serverName)) {
             throw new TestStepProcessingException(String.format("No database channel was registered for server name '%s'", serverName));
         }
         return dbServers.get(serverName);
