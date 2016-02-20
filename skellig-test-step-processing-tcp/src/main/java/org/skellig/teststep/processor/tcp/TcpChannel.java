@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.tcp;
 
-import org.skellig.connection.channel.exception.ChannelConnectionException;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processor.tcp.model.TcpDetails;
 
 import java.io.DataInputStream;
@@ -18,7 +18,7 @@ class TcpChannel implements AutoCloseable {
     private DataOutputStream outputStream;
     private boolean isClosed;
 
-    TcpChannel(TcpDetails tcpDetails) throws ChannelConnectionException {
+    TcpChannel(TcpDetails tcpDetails) {
         try {
             socket = new Socket();
             socket.setKeepAlive(true);
@@ -28,7 +28,7 @@ class TcpChannel implements AutoCloseable {
             inputStream = new DataInputStream(socket.getInputStream());
             outputStream = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            throw new ChannelConnectionException(e);
+            throw new TestStepProcessingException(e.getMessage(), e);
         }
     }
 

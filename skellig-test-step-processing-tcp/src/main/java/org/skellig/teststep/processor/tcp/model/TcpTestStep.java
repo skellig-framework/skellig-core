@@ -10,32 +10,43 @@ import java.util.Optional;
 public class TcpTestStep extends TestStep {
 
     private String sendTo;
-    private String readFrom;
+    private String receiveFrom;
+    private String respondTo;
 
     protected TcpTestStep(String id, String name, TestStepExecutionType execution, int timeout, int delay,
                           Map<String, Object> variables, Object testData, ValidationDetails validationDetails,
-                          String sendTo, String readFrom) {
+                          String sendTo, String receiveFrom, String respondTo) {
         super(id, name, execution, timeout, delay, variables, testData, validationDetails);
         this.sendTo = sendTo;
-        this.readFrom = readFrom;
+        this.respondTo = respondTo;
+        this.receiveFrom = receiveFrom;
     }
-
 
     public Optional<String> getSendTo() {
         return Optional.ofNullable(sendTo);
     }
 
-    public Optional<String> getReadFrom() {
-        return Optional.ofNullable(readFrom);
+    public Optional<String> getReceiveFrom() {
+        return Optional.ofNullable(receiveFrom);
+    }
+
+    public Optional<String> getRespondTo() {
+        return Optional.ofNullable(respondTo);
     }
 
     public static class Builder extends TestStep.Builder {
 
         private String sendTo;
-        private String readFrom;
+        private String receiveFrom;
+        private String respondTo;
 
-        public Builder withReadFrom(String readFrom) {
-            this.readFrom = readFrom;
+        public Builder withReceiveFrom(String receiveFrom) {
+            this.receiveFrom = receiveFrom;
+            return this;
+        }
+
+        public Builder withRespondTo(String respondTo) {
+            this.respondTo = respondTo;
             return this;
         }
 
@@ -45,7 +56,8 @@ public class TcpTestStep extends TestStep {
         }
 
         public TcpTestStep build() {
-            return new TcpTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails, sendTo, readFrom);
+            return new TcpTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails,
+                    sendTo, receiveFrom, respondTo);
         }
     }
 }
