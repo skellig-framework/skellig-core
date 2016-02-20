@@ -14,4 +14,5 @@ include 'skellig-test-step-processing-db'
 include 'skellig-connection-database'
 include 'skellig-connection-tcp'
 include 'skellig-test-step-processing-tcp'
+include 'skellig-task'
 
