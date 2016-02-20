@@ -73,9 +73,13 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
             super.run(notifier);
         } finally {
             try {
+                // if there are any async test step running, then wait until they're finished
+                // within set timeout. Cleanup results as they are no longer needed.
                 testStepRunResults.forEach(TestStepProcessor.TestStepRunResult::awaitResult);
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 fireFailureEvent(notifier, getDescription(), ex);
+            } finally {
+                testStepRunResults = null;
             }
         }
     }
@@ -94,11 +98,18 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
                 Map<String, String> parameters = child.getParameters().orElse(Collections.emptyMap());
                 TestStepProcessor.TestStepRunResult runResult = testStepRunner.run(child.getName(), parameters);
                 testStepRunResults.add(runResult);
+
+                // subscribe for result from test step. Usually needed for async test step
+                // however if it's sync, then the function will be called anyway.
                 runResult.subscribe((t, r, e) -> {
-                    testStepReportBuilder
-                            .withOriginalTestStep(t)
-                            .withResult(r);
+                    testStepReportBuilder.withOriginalTestStep(t).withResult(r);
                     if (e != null) {
+                         /*
+                           if test step is sync, then the thrown exception will be caught in runChild
+                           if test step is async, then throwing exception doesn't give any effect, however
+                           it will fail on 'run' method while waiting for the result and the error will be
+                           registered in the report
+                         */
                         testStepReportBuilder.withErrorLog(attachStackTrace(e));
                         throw e;
                     }
