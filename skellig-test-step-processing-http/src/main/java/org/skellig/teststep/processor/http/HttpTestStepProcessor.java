@@ -1,16 +1,13 @@
-package org.skellig.teststep.processing.http.processor;
+package org.skellig.teststep.processor.http;
 
 import com.typesafe.config.Config;
-import org.skellig.connection.channel.SendingChannel;
-import org.skellig.connection.http.HttpChannel;
-import org.skellig.connection.http.model.HttpMethodName;
-import org.skellig.connection.http.model.HttpRequestDetails;
-import org.skellig.connection.http.model.HttpResponse;
-import org.skellig.teststep.processing.http.model.HttpTestStep;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
+import org.skellig.teststep.processor.http.model.HttpMethodName;
+import org.skellig.teststep.processor.http.model.HttpRequestDetails;
+import org.skellig.teststep.processor.http.model.HttpTestStep;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,9 +15,9 @@ import java.util.Map;
 
 public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
 
-    private Map<String, SendingChannel> httpChannelPerService;
+    private Map<String, HttpChannel> httpChannelPerService;
 
-    private HttpTestStepProcessor(Map<String, SendingChannel> httpChannelPerService,
+    private HttpTestStepProcessor(Map<String, HttpChannel> httpChannelPerService,
                                   TestScenarioState testScenarioState,
                                   TestStepResultValidator validator) {
         super(testScenarioState, validator);
@@ -29,16 +26,12 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
 
     @Override
     protected Object processTestStep(HttpTestStep testStep) {
-        return callHttpServices(testStep);
-    }
-
-    private Object callHttpServices(HttpTestStep httpTestStep) {
         Map<String, Object> result = new HashMap<>();
-        httpTestStep.getServices().parallelStream()
+        testStep.getServices().parallelStream()
                 .forEach(serviceName -> {
-                    SendingChannel httpChannel = httpChannelPerService.get(serviceName);
-                    HttpRequestDetails request = buildHttpRequestDetails(httpTestStep);
-                    Object httpResponse = httpChannel.send(request).orElse(new HttpResponse.Builder().build());
+                    HttpChannel httpChannel = httpChannelPerService.get(serviceName);
+                    HttpRequestDetails request = buildHttpRequestDetails(testStep);
+                    Object httpResponse = httpChannel.send(request);
 
                     result.put(serviceName, httpResponse);
                 });
@@ -69,7 +62,7 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
         private static final String SERVICE_NAME_KEYWORD = "serviceName";
         private static final String HTTP_CONFIG_KEYWORD = "http";
 
-        private Map<String, SendingChannel> httpChannelPerService;
+        private Map<String, HttpChannel> httpChannelPerService;
         private TestScenarioState testScenarioState;
         private TestStepResultValidator validator;
 

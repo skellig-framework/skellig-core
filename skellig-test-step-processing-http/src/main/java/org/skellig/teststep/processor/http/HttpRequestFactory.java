@@ -1,4 +1,4 @@
-package org.skellig.connection.http.factory;
+package org.skellig.teststep.processor.http;
 
 
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -14,9 +14,9 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
-import org.skellig.connection.http.exception.HttpClientException;
-import org.skellig.connection.http.model.HttpMethodName;
-import org.skellig.connection.http.model.HttpRequestDetails;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
+import org.skellig.teststep.processor.http.model.HttpMethodName;
+import org.skellig.teststep.processor.http.model.HttpRequestDetails;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HttpRequestFactory {
+class HttpRequestFactory {
 
     private static final int DEFAULT_HTTP_READ_TIMEOUT = 5000;
 
@@ -35,7 +35,7 @@ public class HttpRequestFactory {
         this.baseUrl = baseUrl;
     }
 
-    public HttpUriRequest createRequest(HttpRequestDetails httpRequestDetails) {
+    HttpUriRequest createRequest(HttpRequestDetails httpRequestDetails) {
         HttpRequestBase request;
         try {
             request = createHttpRequest(httpRequestDetails, baseUrl + createUrl(httpRequestDetails));
@@ -46,7 +46,7 @@ public class HttpRequestFactory {
                     .setConnectionRequestTimeout(DEFAULT_HTTP_READ_TIMEOUT)
                     .build());
         } catch (UnsupportedEncodingException e) {
-            throw new HttpClientException(e.getMessage());
+            throw new TestStepProcessingException(e.getMessage());
         }
 
         return request;

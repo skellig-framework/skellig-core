@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.http.model;
+package org.skellig.teststep.processor.http.model;
 
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.TestStepExecutionType;

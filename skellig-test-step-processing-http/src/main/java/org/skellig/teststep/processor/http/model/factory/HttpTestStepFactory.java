@@ -1,10 +1,10 @@
-package org.skellig.teststep.processing.http.model.factory;
+package org.skellig.teststep.processor.http.model.factory;
 
 import org.skellig.teststep.processing.converter.TestDataConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.http.model.HttpTestStep;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
+import org.skellig.teststep.processor.http.model.HttpTestStep;
 
 import java.util.Collection;
 import java.util.Map;

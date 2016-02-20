@@ -1,8 +1,8 @@
 package org.skellig.teststep.runner.context;
 
 import com.typesafe.config.Config;
-import org.skellig.teststep.processing.http.model.factory.HttpTestStepFactory;
-import org.skellig.teststep.processing.http.processor.HttpTestStepProcessor;
+import org.skellig.teststep.processor.http.HttpTestStepProcessor;
+import org.skellig.teststep.processor.http.model.factory.HttpTestStepFactory;
 
 import java.util.List;
 import java.util.Properties;
