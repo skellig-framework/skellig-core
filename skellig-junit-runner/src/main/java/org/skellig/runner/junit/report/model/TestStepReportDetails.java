@@ -42,6 +42,10 @@ public class TestStepReportDetails {
         return errorLog == null || errorLog.equals("");
     }
 
+    public boolean isIgnored() {
+        return originalTestStep == null && result == null;
+    }
+
     public String getTestData() {
         String result = "";
         if (originalTestStep instanceof TestStep) {

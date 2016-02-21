@@ -1,5 +1,6 @@
 package org.skellig.teststep.runner;
 
+import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.runner.exception.TestStepMethodInvocationException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -10,8 +11,8 @@ import java.util.regex.Pattern;
 
 class TestStepDefMethodRunner {
 
-    void invoke(String testStepName, ClassTestStepsRegistry.TestStepDefDetails testStepDefDetails,
-                Map<String, String> parameters) throws TestStepMethodInvocationException {
+    TestStepProcessor.TestStepRunResult invoke(String testStepName, ClassTestStepsRegistry.TestStepDefDetails testStepDefDetails,
+                                               Map<String, String> parameters) throws TestStepMethodInvocationException {
         Method testStepMethod = testStepDefDetails.getTestStepMethod();
         Pattern testStepNamePattern = testStepDefDetails.getTestStepNamePattern();
         Matcher matcher = testStepNamePattern.matcher(testStepName);
@@ -25,18 +26,25 @@ class TestStepDefMethodRunner {
             }
         }
 
+        TestStepProcessor.TestStepRunResult result = new TestStepProcessor.TestStepRunResult(null);
         Object testStepDefInstance = testStepDefDetails.getTestStepDefInstance();
-
+        Object response = null;
+        TestStepMethodInvocationException error = null;
         try {
-            testStepMethod.invoke(testStepDefInstance, methodParameters);
+            response = testStepMethod.invoke(testStepDefInstance, methodParameters);
         } catch (IllegalAccessException e) {
-            throw new TestStepMethodInvocationException("Unexpected failure when running a test step method", e);
+            error = new TestStepMethodInvocationException("Unexpected failure when running a test step method", e);
+            throw error;
         } catch (InvocationTargetException e) {
             Throwable targetException = e;
             if (e.getTargetException() != null) {
                 targetException = e.getTargetException();
             }
-            throw new TestStepMethodInvocationException(targetException.getMessage(), targetException);
+            error = new TestStepMethodInvocationException(targetException.getMessage(), targetException);
+            throw error;
+        } finally {
+            result.notify(response, error);
         }
+        return result;
     }
 }
