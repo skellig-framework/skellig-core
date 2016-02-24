@@ -6,17 +6,18 @@ import org.skellig.connection.database.model.DatabaseRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-class DatabaseRequestExecutorFactory {
+public class DatabaseRequestExecutorFactory {
 
-    private Map<String, BaseDatabaseRequestExecutor> databaseRequestExecutors;
+    private Map<String, DatabaseRequestExecutor> databaseRequestExecutors;
 
-    public DatabaseRequestExecutorFactory() {
+    public DatabaseRequestExecutorFactory(DatabaseRequestExecutor select,
+                                          DatabaseRequestExecutor insert) {
         databaseRequestExecutors = new HashMap<>();
-        databaseRequestExecutors.put("select", new FindDatabaseRequestExecutor());
-        databaseRequestExecutors.put("insert", new InsertDatabaseRequestExecutor());
+        databaseRequestExecutors.put("select", select);
+        databaseRequestExecutors.put("insert", insert);
     }
 
-    BaseDatabaseRequestExecutor get(DatabaseRequest databaseRequest) {
+    public DatabaseRequestExecutor get(DatabaseRequest databaseRequest) {
         String command = databaseRequest.getCommand();
         if (isQueryOnlyProvided(databaseRequest, command)) {
             String query = databaseRequest.getQuery();

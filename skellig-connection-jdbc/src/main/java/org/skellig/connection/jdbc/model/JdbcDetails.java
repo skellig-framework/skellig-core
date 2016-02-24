@@ -1,6 +1,6 @@
 package org.skellig.connection.database.model;
 
-public class DatabaseChannelDetails {
+public class JdbcDetails {
 
     private String driverName;
     private String url;
@@ -8,7 +8,7 @@ public class DatabaseChannelDetails {
     private String password;
 
 
-    public DatabaseChannelDetails(String driverName, String url, String userName, String password) {
+    public JdbcDetails(String driverName, String url, String userName, String password) {
         this.driverName = driverName;
         this.url = url;
         this.userName = userName;

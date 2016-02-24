@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.db;
 
-import org.skellig.connection.database.DatabaseChannel;
-import org.skellig.connection.database.model.DatabaseChannelDetails;
+import org.skellig.connection.database.DatabaseRequestExecutor;
 import org.skellig.connection.database.model.DatabaseRequest;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
@@ -16,9 +15,9 @@ import java.util.Map;
 
 public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTestStep> {
 
-    private Map<String, DatabaseChannel> dbServers;
+    private Map<String, DatabaseRequestExecutor> dbServers;
 
-    protected DatabaseTestStepProcessor(Map<String, DatabaseChannel> dbServers, TestScenarioState testScenarioState, TestStepResultValidator validator) {
+    protected DatabaseTestStepProcessor(Map<String, DatabaseRequestExecutor> dbServers, TestScenarioState testScenarioState, TestStepResultValidator validator) {
         super(testScenarioState, validator);
         this.dbServers = dbServers;
     }
@@ -33,7 +32,7 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
 
         servers.parallelStream()
                 .forEach(serverName -> {
-                    DatabaseChannel databaseChannel = getDatabaseChannel(serverName);
+                    DatabaseRequestExecutor databaseChannel = getDatabaseChannel(serverName);
                     DatabaseRequest request;
                     if (testStep.getQuery() != null) {
                         request = new DatabaseRequest(testStep.getQuery());
@@ -41,14 +40,14 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
                         request = new DatabaseRequest(testStep.getCommand(), testStep.getTable(), (Map<String, Object>) testStep.getTestData());
                     }
 
-                    Object response = databaseChannel.send(request);
+                    Object response = databaseChannel.execute(request);
 
                     result.put(serverName, response);
                 });
         return result.size() == 1 ? result.values().stream().findFirst().orElse(null) : result;
     }
 
-    private DatabaseChannel getDatabaseChannel(String serverName) {
+    private DatabaseRequestExecutor getDatabaseChannel(String serverName) {
         if (!dbServers.containsKey(serverName)) {
             throw new TestStepProcessingException(String.format("No database channel was registered for server name '%s'", serverName));
         }
@@ -62,18 +61,18 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
 
     @Override
     public void close() {
-        dbServers.values().forEach(DatabaseChannel::close);
+        dbServers.values().forEach(DatabaseRequestExecutor::close);
     }
 
     public static class Builder extends BaseTestStepProcessor.Builder<DatabaseTestStep> {
-        private Map<String, DatabaseChannel> dbServers;
+        private Map<String, DatabaseRequestExecutor> dbServers;
 
         public Builder() {
             dbServers = new HashMap<>();
         }
 
-        public Builder withDbServer(String name, DatabaseChannelDetails databaseChannelDetails) {
-            dbServers.put(name, new DatabaseChannel(databaseChannelDetails));
+        public Builder withDbServer(String name, DatabaseRequestExecutor databaseRequestExecutor) {
+            dbServers.put(name, databaseRequestExecutor);
             return this;
         }
 

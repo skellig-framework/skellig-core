@@ -1,43 +1,40 @@
-package org.skellig.connection.database;
+package org.skellig.connection.cassandra;
 
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
+import org.skellig.connection.database.BaseDatabaseRequestExecutor;
 import org.skellig.connection.database.exception.DatabaseChannelException;
 import org.skellig.connection.database.model.DatabaseRequest;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-class InsertDatabaseRequestExecutor extends BaseDatabaseRequestExecutor {
+class CassandraInsertRequestExecutor extends BaseDatabaseRequestExecutor {
 
-    Object executeRequest(Connection connection, DatabaseRequest databaseRequest) {
+    private Session session;
+
+    public CassandraInsertRequestExecutor(Session session) {
+        this.session = session;
+    }
+
+    @Override
+    public Object execute(DatabaseRequest databaseRequest) {
         int result;
         try {
-            String query;
             if (databaseRequest.getQuery() != null) {
-                query = databaseRequest.getQuery();
-                result = connection.createStatement().executeUpdate(query);
+                return session.execute(databaseRequest.getQuery());
             } else {
-                Map<String, Object> insertData = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
-                query = composeInsertQuery(databaseRequest, insertData);
+                Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
+                String query = composeInsertQuery(databaseRequest, searchCriteria);
 
-                try(PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                    Object[] rawParameters = convertToRawParameters(insertData);
-                    for (int i = 0; i < rawParameters.length; i++) {
-                        preparedStatement.setObject(i + 1, rawParameters[i]);
-                    }
-                    result = preparedStatement.executeUpdate();
-                }
+                PreparedStatement preparedStatement = session.prepare(query);
+                Object[] rawParameters = convertToRawParameters(searchCriteria);
+
+                session.execute(preparedStatement.bind(rawParameters));
+                result = 1;
             }
-            connection.commit();
         } catch (Exception ex) {
-            try {
-                connection.rollback();
-            } catch (SQLException e) {
-                //log later
-            }
             throw new DatabaseChannelException(ex.getMessage(), ex);
         }
         return result;
