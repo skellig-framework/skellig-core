@@ -1,27 +1,31 @@
-package org.skellig.connection.database;
+package org.skellig.connection.jdbc;
 
+import org.skellig.connection.database.DatabaseRequestExecutor;
 import org.skellig.connection.database.exception.DatabaseChannelException;
-import org.skellig.connection.database.model.DatabaseChannelDetails;
 import org.skellig.connection.database.model.DatabaseRequest;
+import org.skellig.connection.database.model.JdbcDetails;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DatabaseChannel implements AutoCloseable {
+public class JdbcRequestExecutor implements DatabaseRequestExecutor {
+
+    private final JdbcRequestExecutorFactory factory;
 
     private Connection connection;
-    private static final DatabaseRequestExecutorFactory factory = new DatabaseRequestExecutorFactory();
 
-    public DatabaseChannel(DatabaseChannelDetails details) {
+    public JdbcRequestExecutor(JdbcDetails details) {
         connectToDatabase(details);
+        factory = new JdbcRequestExecutorFactory(connection);
     }
 
-    public Object send(DatabaseRequest request) {
-        return factory.get(request).executeRequest(connection, request);
+    @Override
+    public Object execute(DatabaseRequest request) {
+        return factory.get(request).execute(request);
     }
 
-    private void connectToDatabase(DatabaseChannelDetails details) {
+    private void connectToDatabase(JdbcDetails details) {
         try {
             Class.forName(details.getDriverName());
             connection = DriverManager.getConnection(details.getUrl(), details.getUserName(), details.getPassword());
