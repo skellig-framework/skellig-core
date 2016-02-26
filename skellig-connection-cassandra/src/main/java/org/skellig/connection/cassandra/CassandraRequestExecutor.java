@@ -1,6 +1,7 @@
 package org.skellig.connection.cassandra;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.PlainTextAuthProvider;
 import com.datastax.driver.core.Session;
 import org.skellig.connection.cassandra.model.CassandraDetails;
 import org.skellig.connection.database.DatabaseRequestExecutor;
@@ -13,9 +14,13 @@ public class CassandraRequestExecutor implements DatabaseRequestExecutor {
     private Session session;
 
     public CassandraRequestExecutor(CassandraDetails cassandraDetails) {
-        cluster = Cluster.builder()
-                .addContactPointsWithPorts(cassandraDetails.getNodes())
-                .build();
+        Cluster.Builder clusterBuilder = Cluster.builder()
+                .addContactPointsWithPorts(cassandraDetails.getNodes());
+        if (cassandraDetails.getUsername().isPresent()) {
+            clusterBuilder.withAuthProvider(
+                    new PlainTextAuthProvider(cassandraDetails.getUsername().get(), cassandraDetails.getPassword().orElse(null)));
+        }
+        cluster = clusterBuilder.build();
         session = cluster.connect();
 
         factory = new CassandraRequestExecutorFactory(session);
