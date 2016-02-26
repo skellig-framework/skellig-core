@@ -1,8 +1,8 @@
 package org.skellig.connection.cassandra;
 
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
-import org.skellig.connection.database.BaseDatabaseRequestExecutor;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import org.skellig.connection.database.exception.DatabaseChannelException;
 import org.skellig.connection.database.model.DatabaseRequest;
 
@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-class CassandraInsertRequestExecutor extends BaseDatabaseRequestExecutor {
+class CassandraInsertRequestExecutor extends BaseCassandraRequestExecutor {
 
     private Session session;
 
@@ -28,10 +28,10 @@ class CassandraInsertRequestExecutor extends BaseDatabaseRequestExecutor {
                 Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
                 String query = composeInsertQuery(databaseRequest, searchCriteria);
 
-                PreparedStatement preparedStatement = session.prepare(query);
                 Object[] rawParameters = convertToRawParameters(searchCriteria);
+                Statement preparedStatement = new SimpleStatement(query, rawParameters);
 
-                session.execute(preparedStatement.bind(rawParameters));
+                session.execute(preparedStatement);
                 result = 1;
             }
         } catch (Exception ex) {

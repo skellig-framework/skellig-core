@@ -6,7 +6,7 @@ import org.skellig.connection.database.DatabaseRequestExecutorFactory;
 class CassandraRequestExecutorFactory extends DatabaseRequestExecutorFactory {
 
     public CassandraRequestExecutorFactory(Session session) {
-        super(new CassandraSelectRequestExecutor(session), null);
+        super(new CassandraSelectRequestExecutor(session), new CassandraInsertRequestExecutor(session));
     }
 
 }
