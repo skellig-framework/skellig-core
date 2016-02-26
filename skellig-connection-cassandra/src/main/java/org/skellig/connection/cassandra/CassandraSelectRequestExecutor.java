@@ -1,9 +1,9 @@
 package org.skellig.connection.cassandra;
 
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
-import org.skellig.connection.database.BaseDatabaseRequestExecutor;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import org.skellig.connection.database.exception.DatabaseChannelException;
 import org.skellig.connection.database.model.DatabaseRequest;
 
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-class CassandraSelectRequestExecutor extends BaseDatabaseRequestExecutor {
+class CassandraSelectRequestExecutor extends BaseCassandraRequestExecutor {
 
     private static final String COMPARATOR = "comparator";
 
@@ -33,10 +33,10 @@ class CassandraSelectRequestExecutor extends BaseDatabaseRequestExecutor {
                 Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
                 String query = composeFindQuery(databaseRequest, searchCriteria);
 
-                PreparedStatement preparedStatement = session.prepare(query);
                 Object[] rawParameters = convertToRawParameters(searchCriteria);
+                Statement preparedStatement = new SimpleStatement(query, rawParameters);
 
-                return extractFromResultSet(session.execute(preparedStatement.bind(rawParameters)));
+                return extractFromResultSet(session.execute(preparedStatement));
             }
 
         } catch (Exception ex) {
@@ -81,7 +81,7 @@ class CassandraSelectRequestExecutor extends BaseDatabaseRequestExecutor {
 
             queryBuilder.append(columns);
         }
-        return queryBuilder.toString();
+        return queryBuilder.append(" ALLOW FILTERING").toString();
     }
 
     private String getCompareOperator(Object valueToCompare) {
