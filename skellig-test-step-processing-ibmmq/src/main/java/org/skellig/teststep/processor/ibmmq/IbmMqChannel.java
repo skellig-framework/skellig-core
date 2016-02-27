@@ -47,7 +47,7 @@ class IbmMqChannel implements AutoCloseable {
             MQGetMessageOptions options = new MQGetMessageOptions();
 
             options.options = MQConstants.MQGMO_WAIT + MQConstants.MQSO_READ_AHEAD;
-            options.waitInterval = timeout * 1000;
+            options.waitInterval = timeout;
 
             queue.get(message, options);
 
