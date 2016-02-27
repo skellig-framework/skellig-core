@@ -13,15 +13,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.skellig.teststep.processing.utils.UnitTestUtils.createMap;
 
 @DisplayName("Convert test data from ftl")
-class TemplateTestDataConverterTest {
+class TestDataConverterTestFromFTL {
 
-    private TemplateTestDataConverter templateTestDataConverter;
+    private TestDataFromFTLConverter testDataFromFTLConverter;
 
     @BeforeEach
     void setUp() {
         ClassLoader classLoader = getClass().getClassLoader();
-        templateTestDataConverter =
-                new TemplateTestDataConverter(classLoader, new CsvTestDataConverter(classLoader));
+        testDataFromFTLConverter =
+                new TestDataFromFTLConverter(classLoader, new TestDataFromCsvConverter(classLoader));
     }
 
     @Test
@@ -35,7 +35,7 @@ class TemplateTestDataConverterTest {
                                 "value", "v1"
                         ));
 
-        Object result = templateTestDataConverter.convert(templateDetails);
+        Object result = testDataFromFTLConverter.convert(templateDetails);
 
         assertAll(
                 () -> assertEquals(
@@ -61,7 +61,7 @@ class TemplateTestDataConverterTest {
                                 )
                         ));
 
-        Object result = templateTestDataConverter.convert(templateDetails);
+        Object result = testDataFromFTLConverter.convert(templateDetails);
 
         assertAll(
                 () -> assertEquals(
@@ -84,7 +84,7 @@ class TemplateTestDataConverterTest {
                                 "csv", createMap("file", "csv/test-file.csv")
                         ));
 
-        Object result = templateTestDataConverter.convert(templateDetails);
+        Object result = testDataFromFTLConverter.convert(templateDetails);
 
         assertAll(
                 () -> assertEquals(
@@ -106,6 +106,6 @@ class TemplateTestDataConverterTest {
                                 "file", "template/invalid.ftl"
                         ));
 
-        assertThrows(TestDataConversionException.class, () -> templateTestDataConverter.convert(templateDetails));
+        assertThrows(TestDataConversionException.class, () -> testDataFromFTLConverter.convert(templateDetails));
     }
 }

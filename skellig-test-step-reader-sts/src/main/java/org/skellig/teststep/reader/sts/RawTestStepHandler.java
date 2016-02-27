@@ -10,10 +10,11 @@ class RawTestStepHandler implements AutoCloseable {
 
     private int openedBrackets;
     private int bracketsNumber = 0;
-    private String paramName;
+    private String propertyName;
     private boolean isEnclosedText;
     private boolean isParameter;
     private StringBuilder rawTestStepBuilder;
+    private StringBuilder spacesBuilder = new StringBuilder();
 
     RawTestStepHandler() {
         rawTestStepBuilder = new StringBuilder();
@@ -32,7 +33,7 @@ class RawTestStepHandler implements AutoCloseable {
     }
 
     private Map<String, Object> readMap(StsFileBufferedReader reader, Map<String, Object> rawTestStep) throws IOException {
-        rawTestStepBuilder.setLength(0);
+        emptyBuffer();
         int character;
         while ((character = reader.read()) > 0) {
             if (character == '#') {
@@ -61,7 +62,7 @@ class RawTestStepHandler implements AutoCloseable {
     }
 
     private List<Object> readList(StsFileBufferedReader reader) throws IOException {
-        rawTestStepBuilder.setLength(0);
+        emptyBuffer();
         int character;
         List<Object> result = new ArrayList<>();
         while ((character = reader.read()) > 0) {
@@ -71,7 +72,7 @@ class RawTestStepHandler implements AutoCloseable {
                 handleListOpenedCurlyBracketCharacter(character, reader, result);
             } else if (character == '\n' && rawTestStepBuilder.length() > 0) {
                 result.add(rawTestStepBuilder.toString());
-                rawTestStepBuilder.setLength(0);
+                emptyBuffer();
             } else if (character == ']') {
                 break;
             } else {
@@ -87,7 +88,7 @@ class RawTestStepHandler implements AutoCloseable {
         if (rawTestStepBuilder.length() == 0 || isPreviousCharacterNotParameterSign()) {
             openedBrackets++;
             result.add(readMap(reader, new HashMap<>()));
-            rawTestStepBuilder.setLength(0);
+            emptyBuffer();
         } else {
             addCharacter(character);
         }
@@ -97,7 +98,7 @@ class RawTestStepHandler implements AutoCloseable {
         if (!isParameter) {
             // for '}' if paramName is not null then add its value
             openedBrackets--;
-            if (paramName != null) {
+            if (propertyName != null) {
                 addParameterWithValue(rawTestStep);
             }
             return true;
@@ -114,7 +115,7 @@ class RawTestStepHandler implements AutoCloseable {
         if (rawTestStepBuilder.length() > 0) {
             // if paramName is read before '=' then we can add value to it.
             // Otherwise just add the character - usually when text is enclosed in single quotes
-            if (paramName != null) {
+            if (propertyName != null) {
                 addParameterWithValue(rawTestStep);
             } else {
                 addCharacter(character);
@@ -124,13 +125,13 @@ class RawTestStepHandler implements AutoCloseable {
 
     private void handleArrayBracketCharacter(StsFileBufferedReader reader, Map<String, Object> rawTestStep) throws IOException {
         rawTestStep.put(rawTestStepBuilder.toString(), readList(reader));
-        rawTestStepBuilder.setLength(0);
+        emptyBuffer();
     }
 
     private void handleEqualSignCharacter() {
         // after '=' sign we can set paramName and continue reading its value
-        paramName = rawTestStepBuilder.toString();
-        rawTestStepBuilder.setLength(0);
+        propertyName = rawTestStepBuilder.toString();
+        emptyBuffer();
     }
 
     private void handleOpenCurlyBracketCharacter(int character, StsFileBufferedReader reader, Map<String, Object> rawTestStep) throws IOException {
@@ -142,14 +143,14 @@ class RawTestStepHandler implements AutoCloseable {
         } else {
             openedBrackets++;
             rawTestStep.put(rawTestStepBuilder.toString(), readMap(reader, new HashMap<>()));
-            rawTestStepBuilder.setLength(0);
+            emptyBuffer();
         }
     }
 
     private void handleSingleQuoteCharacter(Map<String, Object> rawTestStep) {
         // Single quote character means that we need to read the value till next single quote
         isEnclosedText = !isEnclosedText;
-        if (!isEnclosedText && paramName != null) {
+        if (!isEnclosedText && propertyName != null) {
             addParameterWithValue(rawTestStep);
         }
     }
@@ -161,8 +162,8 @@ class RawTestStepHandler implements AutoCloseable {
     private void handleOpenParenthesis(int character) {
         // can be name of test step, or anything else, ex: regex, function, etc.
         if (bracketsNumber++ == 0) {
-            paramName = rawTestStepBuilder.toString();
-            rawTestStepBuilder.setLength(0);
+            propertyName = rawTestStepBuilder.toString();
+            emptyBuffer();
         } else {
             addCharacter(character);
         }
@@ -172,12 +173,12 @@ class RawTestStepHandler implements AutoCloseable {
         // usually after it read name of test step, the next char must be '{'
         if (--bracketsNumber == 0) {
             Map<String, Object> rawTestStep = new HashMap<>();
-            rawTestStep.put(paramName, rawTestStepBuilder.toString());
+            rawTestStep.put(propertyName, rawTestStepBuilder.toString());
 
             reader.readUntilFindCharacter('{');
             openedBrackets++;
 
-            paramName = null;
+            propertyName = null;
             rawTestSteps.add(readMap(reader, rawTestStep));
         } else {
             addCharacter(character);
@@ -185,20 +186,36 @@ class RawTestStepHandler implements AutoCloseable {
     }
 
     private void addParameterWithValue(Map<String, Object> rawTestStep) {
-        rawTestStep.put(paramName, rawTestStepBuilder.toString());
-        rawTestStepBuilder.setLength(0);
-        paramName = null;
+        rawTestStep.put(propertyName, rawTestStepBuilder.toString());
+        emptyBuffer();
+        propertyName = null;
     }
 
     private void addCharacter(int character) {
-        if ((paramName != null && rawTestStepBuilder.length() > 0) ||
-                (character != ' ' && character != '\n')) {
+        if (isValueOfPropertyUnderConstruction() || (character != ' ' && character != '\n')) {
+            if (!isValueOfPropertyUnderConstruction() && spacesBuilder.length() > 0) {
+                rawTestStepBuilder.append(spacesBuilder.toString());
+                spacesBuilder.setLength(0);
+            }
+
             rawTestStepBuilder.append((char) character);
         }
+        if (rawTestStepBuilder.length() > 0 && character == ' ') {
+            spacesBuilder.append((char)character);
+        }
+    }
+
+    private boolean isValueOfPropertyUnderConstruction() {
+        return propertyName != null && rawTestStepBuilder.length() > 0;
     }
 
     private boolean isPreviousCharacterNotParameterSign() {
         return rawTestStepBuilder.charAt(rawTestStepBuilder.length() - 1) != '$';
+    }
+
+    private void emptyBuffer() {
+        rawTestStepBuilder.setLength(0);
+        spacesBuilder.setLength(0);
     }
 
     @Override

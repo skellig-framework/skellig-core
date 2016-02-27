@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.http;
 
 import com.typesafe.config.Config;
+import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -19,8 +20,9 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
 
     private HttpTestStepProcessor(Map<String, HttpChannel> httpChannelPerService,
                                   TestScenarioState testScenarioState,
-                                  TestStepResultValidator validator) {
-        super(testScenarioState, validator);
+                                  TestStepResultValidator validator,
+                                  TestStepResultConverter testStepResultConverter) {
+        super(testScenarioState, validator, testStepResultConverter);
         this.httpChannelPerService = httpChannelPerService;
     }
 
@@ -57,14 +59,12 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
         return HttpTestStep.class;
     }
 
-    public static class Builder {
+    public static class Builder extends BaseTestStepProcessor.Builder<HttpTestStep> {
         private static final String URL_KEYWORD = "url";
         private static final String SERVICE_NAME_KEYWORD = "serviceName";
         private static final String HTTP_CONFIG_KEYWORD = "http";
 
         private Map<String, HttpChannel> httpChannelPerService;
-        private TestScenarioState testScenarioState;
-        private TestStepResultValidator validator;
 
         public Builder() {
             httpChannelPerService = new HashMap<>();
@@ -85,18 +85,9 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
             return this;
         }
 
-        public Builder withTestScenarioState(TestScenarioState testScenarioState) {
-            this.testScenarioState = testScenarioState;
-            return this;
-        }
-
-        public Builder withValidator(TestStepResultValidator validator) {
-            this.validator = validator;
-            return this;
-        }
-
+        @Override
         public TestStepProcessor<HttpTestStep> build() {
-            return new HttpTestStepProcessor(httpChannelPerService, testScenarioState, validator);
+            return new HttpTestStepProcessor(httpChannelPerService, testScenarioState, validator, testStepResultConverter);
         }
     }
 

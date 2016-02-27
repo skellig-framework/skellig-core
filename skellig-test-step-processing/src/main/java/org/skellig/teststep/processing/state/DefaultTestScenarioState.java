@@ -19,7 +19,9 @@ public class DefaultTestScenarioState implements TestScenarioState {
 
     @Override
     public void set(String key, Object value) {
-        state.put(key, value);
+        if(value != null) {
+            state.put(key, value);
+        }
     }
 
     @Override

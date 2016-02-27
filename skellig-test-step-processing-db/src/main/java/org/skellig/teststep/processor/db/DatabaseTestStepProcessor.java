@@ -2,6 +2,7 @@ package org.skellig.teststep.processor.db;
 
 import org.skellig.connection.database.DatabaseRequestExecutor;
 import org.skellig.connection.database.model.DatabaseRequest;
+import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
@@ -17,8 +18,10 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
 
     private Map<String, DatabaseRequestExecutor> dbServers;
 
-    protected DatabaseTestStepProcessor(Map<String, DatabaseRequestExecutor> dbServers, TestScenarioState testScenarioState, TestStepResultValidator validator) {
-        super(testScenarioState, validator);
+    protected DatabaseTestStepProcessor(Map<String, DatabaseRequestExecutor> dbServers,
+                                        TestScenarioState testScenarioState, TestStepResultValidator validator,
+                                        TestStepResultConverter testStepResultConverter) {
+        super(testScenarioState, validator, testStepResultConverter);
         this.dbServers = dbServers;
     }
 
@@ -77,7 +80,7 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
         }
 
         public TestStepProcessor<DatabaseTestStep> build() {
-            return new DatabaseTestStepProcessor(dbServers, testScenarioState, validator);
+            return new DatabaseTestStepProcessor(dbServers, testScenarioState, validator, testStepResultConverter);
         }
     }
 }

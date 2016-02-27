@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.processor;
 
+import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.exception.ValidationException;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.ValidationDetails;
@@ -16,10 +17,13 @@ public abstract class ValidatableTestStepProcessor<T extends TestStep> implement
 
     protected final TestScenarioState testScenarioState;
     protected final TestStepResultValidator validator;
+    protected final TestStepResultConverter testStepResultConverter;
 
-    protected ValidatableTestStepProcessor(TestScenarioState testScenarioState, TestStepResultValidator validator) {
+    protected ValidatableTestStepProcessor(TestScenarioState testScenarioState, TestStepResultValidator validator,
+                                           TestStepResultConverter testStepResultConverter) {
         this.testScenarioState = testScenarioState;
         this.validator = validator;
+        this.testStepResultConverter = testStepResultConverter;
     }
 
     protected void validate(TestStep testStep) {
@@ -45,9 +49,13 @@ public abstract class ValidatableTestStepProcessor<T extends TestStep> implement
                 });
     }
 
-    private void validate(String testStepId, ValidationDetails validationDetails, Object actualResultFromAnotherStep) {
+    private void validate(String testStepId, ValidationDetails validationDetails, Object actualResult) {
         try {
-            validator.validate(validationDetails.getExpectedResult(), actualResultFromAnotherStep);
+            Optional<String> convertTo = validationDetails.getConvertTo();
+            if (convertTo.isPresent()) {
+                actualResult = testStepResultConverter.convert(convertTo.get(), actualResult);
+            }
+            validator.validate(validationDetails.getExpectedResult(), actualResult);
         } catch (ValidationException ex) {
             throw new ValidationException(ex.getMessage(), testStepId);
         }

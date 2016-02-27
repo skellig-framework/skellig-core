@@ -8,8 +8,8 @@ public class DefaultTestDataConverter implements TestDataConverter {
 
     private List<TestDataConverter> testDataConverters;
 
-    protected DefaultTestDataConverter(List<TestDataConverter> valueConverters) {
-        this.testDataConverters = valueConverters;
+    protected DefaultTestDataConverter(List<TestDataConverter> testDataConverters) {
+        this.testDataConverters = testDataConverters;
     }
 
     @Override
@@ -47,9 +47,10 @@ public class DefaultTestDataConverter implements TestDataConverter {
         public TestDataConverter build() {
             Objects.requireNonNull(classLoader, "ClassLoader must be provided");
 
-            CsvTestDataConverter csvTestDataConverter = new CsvTestDataConverter(classLoader);
-            testDataConverters.add(new TemplateTestDataConverter(classLoader, csvTestDataConverter));
-            testDataConverters.add(csvTestDataConverter);
+            TestDataFromCsvConverter testDataFromCsvConverter = new TestDataFromCsvConverter(classLoader);
+            testDataConverters.add(new TestDataFromFTLConverter(classLoader, testDataFromCsvConverter));
+            testDataConverters.add(testDataFromCsvConverter);
+            testDataConverters.add(new TestDataToBytesConverter());
 
             return new DefaultTestDataConverter(testDataConverters);
         }

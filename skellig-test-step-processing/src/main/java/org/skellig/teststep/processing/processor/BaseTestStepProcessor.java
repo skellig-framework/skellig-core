@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.processor;
 
+import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.exception.ValidationException;
 import org.skellig.teststep.processing.model.TestStep;
@@ -11,8 +12,9 @@ import static org.skellig.task.async.AsyncTaskUtils.runTaskAsync;
 
 public abstract class BaseTestStepProcessor<T extends TestStep> extends ValidatableTestStepProcessor<T> {
 
-    protected BaseTestStepProcessor(TestScenarioState testScenarioState, TestStepResultValidator validator) {
-        super(testScenarioState, validator);
+    protected BaseTestStepProcessor(TestScenarioState testScenarioState, TestStepResultValidator validator,
+                                    TestStepResultConverter testStepResultConverter) {
+        super(testScenarioState, validator, testStepResultConverter);
     }
 
     @Override
@@ -53,6 +55,7 @@ public abstract class BaseTestStepProcessor<T extends TestStep> extends Validata
 
         protected TestScenarioState testScenarioState;
         protected TestStepResultValidator validator;
+        protected TestStepResultConverter testStepResultConverter;
 
         public Builder withTestScenarioState(TestScenarioState testScenarioState) {
             this.testScenarioState = testScenarioState;
@@ -61,6 +64,11 @@ public abstract class BaseTestStepProcessor<T extends TestStep> extends Validata
 
         public Builder withValidator(TestStepResultValidator validator) {
             this.validator = validator;
+            return this;
+        }
+
+        public Builder withTestStepResultConverter(TestStepResultConverter testStepResultConverter) {
+            this.testStepResultConverter = testStepResultConverter;
             return this;
         }
 

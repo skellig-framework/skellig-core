@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.rmq;
 
 import com.typesafe.config.Config;
+import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -18,8 +19,9 @@ public class RmqTestStepProcessor extends BaseTestStepProcessor<RmqTestStep> {
 
     protected RmqTestStepProcessor(Map<String, RmqChannel> rmqChannels,
                                    TestScenarioState testScenarioState,
-                                   TestStepResultValidator validator) {
-        super(testScenarioState, validator);
+                                   TestStepResultValidator validator,
+                                   TestStepResultConverter testStepResultConverter) {
+        super(testScenarioState, validator, testStepResultConverter);
         this.rmqChannels = rmqChannels;
     }
 
@@ -82,7 +84,7 @@ public class RmqTestStepProcessor extends BaseTestStepProcessor<RmqTestStep> {
 
         @Override
         public TestStepProcessor<RmqTestStep> build() {
-            return new RmqTestStepProcessor(rmqChannels, testScenarioState, validator);
+            return new RmqTestStepProcessor(rmqChannels, testScenarioState, validator, testStepResultConverter);
         }
     }
 }
