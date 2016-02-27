@@ -5,14 +5,15 @@ name (Validate response)
     fromTest = T1
     contains_expected_values [
 
+       equals to something
        contains(success)
-       contains(go)
+       contains(go go go)
        regex(.*get(id).*)
     ]
     has_fields
     {
       f1 = v1
-      json_path(f1.f2) = get(id)
+      json_path(f1.f2) = get(id) and more
     }
  }
  }
