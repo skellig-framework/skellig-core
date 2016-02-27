@@ -2,6 +2,7 @@ package org.skellig.teststep.processor.ibmmq;
 
 import com.ibm.mq.MQEnvironment;
 import com.ibm.mq.MQException;
+import com.ibm.mq.MQGetMessageOptions;
 import com.ibm.mq.MQMessage;
 import com.ibm.mq.MQQueue;
 import com.ibm.mq.MQQueueManager;
@@ -16,8 +17,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import static org.skellig.task.TaskUtils.runTask;
 
 class IbmMqChannel implements AutoCloseable {
 
@@ -45,17 +44,22 @@ class IbmMqChannel implements AutoCloseable {
     Object read(int periodicDelay, int timeout) {
         try {
             MQMessage message = new MQMessage();
+            MQGetMessageOptions options = new MQGetMessageOptions();
 
-            runTask(() -> {
-                queue.get(message);
-                return null;
-            }, r -> {
-                try {
-                    return message.getDataLength() > 0 || !queue.isOpen();
-                } catch (IOException e) {
-                    return false;
-                }
-            }, periodicDelay, timeout);
+            options.options = MQConstants.MQGMO_WAIT + MQConstants.MQSO_READ_AHEAD;
+            options.waitInterval = timeout;
+
+            queue.get(message, options);
+//            runTask(() -> {
+//                queue.get(message);
+//                return null;
+//            }, r -> {
+//                try {
+//                    return message.getDataLength() > 5 || !queue.isOpen();
+//                } catch (IOException e) {
+//                    return false;
+//                }
+//            }, periodicDelay, timeout);
 
             return getMessageBody(message);
         } catch (Exception ex) {
