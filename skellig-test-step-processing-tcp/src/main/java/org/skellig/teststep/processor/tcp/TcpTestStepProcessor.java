@@ -39,7 +39,8 @@ public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
 
         if (receiveFrom.isPresent()) {
             TcpChannel tcpChannel = tcpChannels.get(receiveFrom.get());
-            response = runTask(tcpChannel::read, r -> r.isPresent() || tcpChannel.isClosed(), 5, 30).orElse(null);
+            response = runTask(tcpChannel::read, r -> r.isPresent() || tcpChannel.isClosed(),
+                    testStep.getDelay(), testStep.getTimeout()).orElse(null);
 
             respondTo.ifPresent(s -> send(testStep.getTestData(), s));
         }
