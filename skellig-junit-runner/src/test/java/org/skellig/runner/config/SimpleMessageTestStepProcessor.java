@@ -17,7 +17,7 @@ public class SimpleMessageTestStepProcessor extends BaseTestStepProcessor<Simple
 
     protected SimpleMessageTestStepProcessor(TestScenarioState testScenarioState,
                                              TestStepResultValidator validator) {
-        super(testScenarioState, validator);
+        super(testScenarioState, validator, null);
     }
 
     @Override
