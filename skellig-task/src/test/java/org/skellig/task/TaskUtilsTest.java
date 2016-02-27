@@ -26,7 +26,7 @@ class TaskUtilsTest {
             } else {
                 return RESPONSE;
             }
-        }, Objects::nonNull, 10, 1);
+        }, Objects::nonNull, 10, 1000);
 
         assertEquals(7, atomicInteger.get());
         assertEquals(RESPONSE, response);

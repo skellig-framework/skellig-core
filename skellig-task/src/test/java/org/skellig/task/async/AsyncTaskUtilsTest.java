@@ -49,7 +49,7 @@ class AsyncTaskUtilsTest {
                 countDownLatch.countDown();
                 return RESPONSE;
             }
-        }, Objects::nonNull, 10, 1);
+        }, Objects::nonNull, 10, 1000);
 
         countDownLatch.await(1000, TimeUnit.MILLISECONDS);
 
