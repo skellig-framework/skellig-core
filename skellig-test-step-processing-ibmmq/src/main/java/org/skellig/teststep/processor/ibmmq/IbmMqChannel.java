@@ -41,25 +41,15 @@ class IbmMqChannel implements AutoCloseable {
         }
     }
 
-    Object read(int periodicDelay, int timeout) {
+    Object read(int timeout) {
         try {
             MQMessage message = new MQMessage();
             MQGetMessageOptions options = new MQGetMessageOptions();
 
             options.options = MQConstants.MQGMO_WAIT + MQConstants.MQSO_READ_AHEAD;
-            options.waitInterval = timeout;
+            options.waitInterval = timeout * 1000;
 
             queue.get(message, options);
-//            runTask(() -> {
-//                queue.get(message);
-//                return null;
-//            }, r -> {
-//                try {
-//                    return message.getDataLength() > 5 || !queue.isOpen();
-//                } catch (IOException e) {
-//                    return false;
-//                }
-//            }, periodicDelay, timeout);
 
             return getMessageBody(message);
         } catch (Exception ex) {

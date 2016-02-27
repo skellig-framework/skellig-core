@@ -35,7 +35,7 @@ public class IbmMqTestStepProcessor extends BaseTestStepProcessor<IbmMqTestStep>
 
         if (receiveFrom.isPresent()) {
             IbmMqChannel ibmMqChannel = ibmMqChannels.get(receiveFrom.get());
-            response = ibmMqChannel.read(testStep.getDelay(), testStep.getTimeout());
+            response = ibmMqChannel.read(testStep.getTimeout());
 
             respondTo.ifPresent(channel -> send(testStep.getTestData(), channel));
         }
