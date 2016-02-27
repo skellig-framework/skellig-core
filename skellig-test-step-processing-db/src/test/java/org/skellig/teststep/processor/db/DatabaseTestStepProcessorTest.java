@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.skellig.connection.database.DatabaseRequestExecutor;
 import org.skellig.connection.database.model.DatabaseRequest;
+import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.state.DefaultTestScenarioState;
 import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator;
@@ -31,11 +32,13 @@ class DatabaseTestStepProcessorTest {
     private DatabaseTestStepProcessor databaseTestStepProcessor;
     private DatabaseRequestExecutor dbRequestExecutor1;
     private DatabaseRequestExecutor dbRequestExecutor2;
+    private TestStepResultConverter testStepResultConverter;
 
     @BeforeEach
     void setUp() {
         dbRequestExecutor1 = mock(DatabaseRequestExecutor.class);
         dbRequestExecutor2 = mock(DatabaseRequestExecutor.class);
+        testStepResultConverter = mock(TestStepResultConverter.class);
 
         Map<String, DatabaseRequestExecutor> dbChannels = new HashMap<>();
         dbChannels.put("srv1", dbRequestExecutor1);
@@ -44,7 +47,8 @@ class DatabaseTestStepProcessorTest {
         databaseTestStepProcessor = new DatabaseTestStepProcessor(
                 dbChannels, new DefaultTestScenarioState(),
                 new DefaultTestStepResultValidator.Builder()
-                        .build()
+                        .build(),
+                testStepResultConverter
         );
     }
 

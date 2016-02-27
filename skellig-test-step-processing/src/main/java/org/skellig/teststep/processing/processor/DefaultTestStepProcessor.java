@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.processor;
 
+import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.exception.ValidationException;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -16,8 +17,9 @@ public class DefaultTestStepProcessor extends ValidatableTestStepProcessor<TestS
 
     protected DefaultTestStepProcessor(List<TestStepProcessor> testStepProcessors,
                                        TestScenarioState testScenarioState,
-                                       TestStepResultValidator validator) {
-        super(testScenarioState, validator);
+                                       TestStepResultValidator validator,
+                                       TestStepResultConverter testStepResultConverter) {
+        super(testScenarioState, validator, testStepResultConverter);
         this.testStepProcessors = testStepProcessors;
     }
 
@@ -61,11 +63,9 @@ public class DefaultTestStepProcessor extends ValidatableTestStepProcessor<TestS
         testStepProcessors.forEach(TestStepProcessor::close);
     }
 
-    public static class Builder {
+    public static class Builder extends BaseTestStepProcessor.Builder<TestStep> {
 
         private List<TestStepProcessor> testStepProcessors;
-        private TestScenarioState testScenarioState;
-        private TestStepResultValidator validator;
 
         public Builder() {
             testStepProcessors = new ArrayList<>();
@@ -76,20 +76,10 @@ public class DefaultTestStepProcessor extends ValidatableTestStepProcessor<TestS
             return this;
         }
 
-        public Builder withTestScenarioState(TestScenarioState testScenarioState) {
-            this.testScenarioState = testScenarioState;
-            return this;
-        }
-
-        public Builder withValidator(TestStepResultValidator validator) {
-            this.validator = validator;
-            return this;
-        }
-
         public TestStepProcessor<TestStep> build() {
             Objects.requireNonNull(testScenarioState, "TestScenarioState must be provided");
 
-            return new DefaultTestStepProcessor(testStepProcessors, testScenarioState, validator);
+            return new DefaultTestStepProcessor(testStepProcessors, testScenarioState, validator, testStepResultConverter);
         }
     }
 }

@@ -1,8 +1,10 @@
 package org.skellig.teststep.runner.context;
 
 import org.skellig.teststep.processing.converter.DefaultTestDataConverter;
+import org.skellig.teststep.processing.converter.DefaultTestStepResultConverter;
 import org.skellig.teststep.processing.converter.DefaultValueConverter;
 import org.skellig.teststep.processing.converter.TestDataConverter;
+import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory;
@@ -31,6 +33,7 @@ import java.util.function.Function;
 public class SkelligTestContext {
 
     private TestStepValueConverter testStepValueConverter;
+    private TestStepResultConverter testStepResultConverter;
     private TestDataConverter testDataConverter;
     private TestScenarioState testScenarioState;
     private TestStepResultValidator testStepResultValidator;
@@ -44,10 +47,11 @@ public class SkelligTestContext {
         testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState);
 
         testDataConverter = createTestDataConverter(classLoader);
+        testStepResultConverter = createTestDataResultConverter();
         testStepResultValidator = createTestStepValidator(valueExtractor);
 
         List<TestStepProcessorDetails> testStepProcessors = getTestStepProcessors();
-        TestStepProcessor<TestStep> testStepProcessor = createTestStepProcessor(valueExtractor, testStepProcessors, testScenarioState);
+        TestStepProcessor<TestStep> testStepProcessor = createTestStepProcessor(testStepProcessors, testScenarioState);
         TestStepFactory testStepFactory = createTestStepFactory(testStepProcessors);
 
         return new DefaultTestStepRunner.Builder()
@@ -78,8 +82,12 @@ public class SkelligTestContext {
         return testStepResultValidator;
     }
 
-    private TestStepProcessor<TestStep> createTestStepProcessor(TestStepValueExtractor valueExtractor,
-                                                                List<TestStepProcessorDetails> additionalTestStepProcessors,
+    public TestStepResultConverter getTestStepResultConverter() {
+        Objects.requireNonNull(testStepResultValidator, "TestStepResultConverter must be initialized first. Did you forget to call 'initialize'?");
+        return testStepResultConverter;
+    }
+
+    private TestStepProcessor<TestStep> createTestStepProcessor(List<TestStepProcessorDetails> additionalTestStepProcessors,
                                                                 TestScenarioState testScenarioState) {
 
         DefaultTestStepProcessor.Builder testStepProcessorBuilder = new DefaultTestStepProcessor.Builder();
@@ -87,6 +95,7 @@ public class SkelligTestContext {
         defaultTestStepProcessor = testStepProcessorBuilder
                 .withTestScenarioState(testScenarioState)
                 .withValidator(getTestStepResultValidator())
+                .withTestStepResultConverter(getTestStepResultConverter())
                 .build();
         return defaultTestStepProcessor;
     }
@@ -116,10 +125,17 @@ public class SkelligTestContext {
     }
 
     private TestDataConverter createTestDataConverter(ClassLoader classLoader) {
-        final DefaultTestDataConverter.Builder builder = new DefaultTestDataConverter.Builder();
+        DefaultTestDataConverter.Builder builder = new DefaultTestDataConverter.Builder();
         getAdditionalTestDataConverters().forEach(builder::withTestDataConverter);
 
         return builder.withClassLoader(classLoader).build();
+    }
+
+    private TestStepResultConverter createTestDataResultConverter() {
+        DefaultTestStepResultConverter.Builder builder = new DefaultTestStepResultConverter.Builder();
+        getAdditionalTestStepResultConverters().forEach(builder::withTestStepResultConverter);
+
+        return builder.build();
     }
 
     private TestStepValueExtractor createTestStepValueExtractor() {
@@ -149,6 +165,10 @@ public class SkelligTestContext {
     }
 
     protected List<TestDataConverter> getAdditionalTestDataConverters() {
+        return Collections.emptyList();
+    }
+
+    protected List<TestStepResultConverter> getAdditionalTestStepResultConverters() {
         return Collections.emptyList();
     }
 

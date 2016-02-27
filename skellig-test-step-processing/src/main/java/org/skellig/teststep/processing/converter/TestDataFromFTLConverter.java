@@ -12,17 +12,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class TemplateTestDataConverter implements TestDataConverter {
+class TestDataFromFTLConverter implements TestDataConverter {
 
     private static final String TEMPLATE_KEYWORD = "template";
     private static final String FILE_KEYWORD = "file";
 
     private TemplateProvider templateProvider;
-    private CsvTestDataConverter csvTestDataConverter;
+    private TestDataFromCsvConverter testDataFromCsvConverter;
 
-    TemplateTestDataConverter(ClassLoader classLoader, CsvTestDataConverter csvTestDataConverter) {
+    TestDataFromFTLConverter(ClassLoader classLoader, TestDataFromCsvConverter testDataFromCsvConverter) {
         templateProvider = new TemplateProvider(classLoader);
-        this.csvTestDataConverter = csvTestDataConverter;
+        this.testDataFromCsvConverter = testDataFromCsvConverter;
     }
 
     public Object convert(Object value) {
@@ -48,7 +48,7 @@ class TemplateTestDataConverter implements TestDataConverter {
     }
 
     private Map<String, ?> getDataModel(Map<String, Object> templateDetails) {
-        Object dataModel = csvTestDataConverter.convert(templateDetails);
+        Object dataModel = testDataFromCsvConverter.convert(templateDetails);
         if (dataModel instanceof List) {
             return ((List<Map<String, String>>) dataModel).stream().findFirst().orElse(Collections.emptyMap());
         } else {

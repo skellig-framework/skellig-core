@@ -61,18 +61,22 @@ class ValidationDetailsFactory {
         if (rawValidationDetails.isPresent()) {
             if (rawValidationDetails.get() instanceof Map) {
                 Object fromTestId = ((Map) rawValidationDetails.get()).get(getFromTestKeyword());
-                if (fromTestId != null) {
+                Object convertTo = ((Map) rawValidationDetails.get()).get(getConvertToKeyword());
+                builder.withConvertTo((String) convertTo);
+
+                if (fromTestId != null || convertTo != null) {
                     builder.withTestStepId((String) fromTestId);
 
                     Map<String, Object> rawExpectedResult =
                             ((Map<String, Object>) rawValidationDetails.get()).entrySet().stream()
-                                    .filter(entry -> !entry.getKey().equals(getFromTestKeyword()))
+                                    .filter(entry -> !entry.getKey().equals(getFromTestKeyword()) &&
+                                            !entry.getKey().equals(getConvertToKeyword()))
                                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                     builder.withExpectedResult(createExpectedResult("", rawExpectedResult, parameters));
                 } else {
                     builder.withExpectedResult(createExpectedResult("", rawValidationDetails.get(), parameters));
                 }
-            } else if (rawValidationDetails.get() instanceof List) {
+            } else {
                 builder.withExpectedResult(createExpectedResult("", rawValidationDetails.get(), parameters));
             }
 
@@ -166,6 +170,10 @@ class ValidationDetailsFactory {
 
     private String getFromTestKeyword() {
         return getKeywordName("test.step.keyword.from_test", "from_test");
+    }
+
+    private String getConvertToKeyword() {
+        return getKeywordName("test.step.keyword.convert_to", "convert_to");
     }
 
     protected String getKeywordName(String keywordName, String defaultValue) {
