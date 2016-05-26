@@ -15,3 +15,15 @@ Name: Test feature
       |value|expected|
       | v1  | e1     |
       | v2  | e2     |
+
+   Test: Check If statement in test step
+      Send a message with if statement
+      | num | <num>  |
+      Validate test with if statement
+      | num         | <num>  |
+      | expected_f2 | <expected_f2>  |
+      | expected_f3 | <expected_f3>  |
+   Data:
+      | num | expected_f2 | expected_f3 |
+      | 1   |    1        |    11       |
+      | 2   |    2        |    22       |

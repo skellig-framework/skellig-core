@@ -49,6 +49,7 @@ public class DefaultTestDataConverter implements TestDataConverter {
 
             TestDataFromCsvConverter testDataFromCsvConverter = new TestDataFromCsvConverter(classLoader);
             testDataConverters.add(new TestDataFromFTLConverter(classLoader, testDataFromCsvConverter));
+            testDataConverters.add(new TestDataFromIfStatementConverter());
             testDataConverters.add(testDataFromCsvConverter);
             testDataConverters.add(new TestDataToBytesConverter());
 
