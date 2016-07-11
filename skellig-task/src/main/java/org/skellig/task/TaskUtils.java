@@ -16,9 +16,9 @@ public final class TaskUtils {
     }
 
     private static <T> T runTaskUntil(Callable<T> task, Predicate<T> stopCondition, int delay, int timeout) throws TaskRunException {
-        T result = null;
+        T result;
 
-        while (timeout > 0) {
+        do {
             long startTime = System.currentTimeMillis();
             try {
                 result = task.call();
@@ -35,7 +35,7 @@ public final class TaskUtils {
                 }
                 timeout = timeout - delay - totalExecutionTime;
             }
-        }
+        } while (timeout > 0);
         return result;
     }
 
