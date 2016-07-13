@@ -17,7 +17,6 @@ import org.skellig.teststep.processor.rmq.model.RmqTestStep;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -101,18 +100,18 @@ class RmqTestStepProcessorTest {
                             .withReceiveFrom(CHANNEL_ID)
                             .withTestData("hi")
                             .build();
-            when(rmqChannel.read(anyInt(), anyInt())).thenReturn(response);
+            when(rmqChannel.read(anyInt(), anyInt())).thenReturn(response.getBytes());
 
             AtomicBoolean isPassed = new AtomicBoolean();
 
             processor.process((RmqTestStep) testStep)
                     .subscribe((t, r, e) -> {
-                        assertEquals(response, r);
+                        assertEquals(response, new String((byte[]) r));
                         isPassed.set(true);
                     });
 
             assertTrue(isPassed.get());
-            verify(testScenarioState).set(testStep.getId() + ".result", response);
+            verify(testScenarioState).set(testStep.getId() + ".result", response.getBytes());
         }
 
         @Test
@@ -124,7 +123,7 @@ class RmqTestStepProcessorTest {
                             .withReceiveFrom(CHANNEL_ID)
                             .withTestData("hi")
                             .build();
-            when(rmqChannel.read(anyInt(), anyInt())).thenReturn(Optional.of("yo"));
+            when(rmqChannel.read(anyInt(), anyInt())).thenReturn("yo".getBytes());
 
             processor.process(testStep);
 
@@ -146,8 +145,8 @@ class RmqTestStepProcessorTest {
                                             .withExpectedResult(expectedResult)
                                             .build())
                             .build();
-            when(rmqChannel.read(anyInt(), anyInt())).thenReturn(response);
-            doThrow(ValidationException.class).when(validator).validate(expectedResult, response);
+            when(rmqChannel.read(anyInt(), anyInt())).thenReturn(response.getBytes());
+            doThrow(ValidationException.class).when(validator).validate(expectedResult, response.getBytes());
 
             processor.process(testStep);
 

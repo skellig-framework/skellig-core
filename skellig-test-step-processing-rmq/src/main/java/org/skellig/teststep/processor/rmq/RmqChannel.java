@@ -44,28 +44,14 @@ class RmqChannel implements AutoCloseable {
         }
     }
 
-    Object read(Object acknowledgeResponse, int timeout) {
-        final AtomicReference<Object> response = new AtomicReference<>();
+    byte[] read(Object acknowledgeResponse, int timeout) {
+        AtomicReference<byte[]> response = new AtomicReference<>();
         try {
             CountDownLatch countDownLatch = new CountDownLatch(1);
-            channel.basicConsume(rmqDetails.getQueue().getName(), true,
-                    new DefaultConsumer(channel) {
-                        @Override
-                        public void handleDelivery(String consumerTag, Envelope envelope,
-                                                   AMQP.BasicProperties properties, byte[] body) {
-                            if (response.get() == null) {
-                                response.set(body);
 
-                                try {
-                                    if (acknowledgeResponse != null) {
-                                        sendResponse(properties, acknowledgeResponse);
-                                    }
-                                } finally {
-                                    countDownLatch.countDown();
-                                }
-                            }
-                        }
-                    });
+            channel.basicConsume(rmqDetails.getQueue().getName(), true,
+                    createConsumer(acknowledgeResponse, response, countDownLatch));
+
             countDownLatch.await(timeout, TimeUnit.SECONDS);
         } catch (Exception e) {
             //log later
@@ -73,8 +59,24 @@ class RmqChannel implements AutoCloseable {
         return response.get();
     }
 
-    boolean isClosed() {
-        return !(channel.isOpen() || conn.isOpen());
+    private DefaultConsumer createConsumer(Object acknowledgeResponse, AtomicReference<byte[]> response, CountDownLatch countDownLatch) {
+        return new DefaultConsumer(channel) {
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope,
+                                       AMQP.BasicProperties properties, byte[] body) {
+                if (response.get() == null) {
+                    response.set(body);
+
+                    try {
+                        if (acknowledgeResponse != null) {
+                            sendResponse(properties, acknowledgeResponse);
+                        }
+                    } finally {
+                        countDownLatch.countDown();
+                    }
+                }
+            }
+        };
     }
 
     private void sendResponse(AMQP.BasicProperties properties, Object message) {

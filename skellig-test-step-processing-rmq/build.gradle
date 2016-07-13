@@ -12,6 +12,10 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-all'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+
+    testCompile 'org.testcontainers:testcontainers:1.15.0'
+    testCompile "org.testcontainers:junit-jupiter:1.15.0"
+    testCompile "org.testcontainers:rabbitmq:1.15.0"
 }
 
 modifyPom {
