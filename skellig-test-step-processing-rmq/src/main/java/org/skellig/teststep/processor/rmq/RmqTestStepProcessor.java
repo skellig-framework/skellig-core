@@ -2,6 +2,7 @@ package org.skellig.teststep.processor.rmq;
 
 import com.typesafe.config.Config;
 import org.skellig.teststep.processing.converter.TestStepResultConverter;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -40,16 +41,20 @@ public class RmqTestStepProcessor extends BaseTestStepProcessor<RmqTestStep> {
             Object responseTestData = testStep.getTestData();
             response = channel.read(respondTo.isPresent() ? null : responseTestData, testStep.getTimeout());
 
-            if (respondTo.isPresent() && response != null) {
-                send(responseTestData, respondTo.get(), routingKey);
-            }
+            validate(testStep, response);
+            respondTo.ifPresent(c -> send(responseTestData, c, routingKey));
         }
         return response;
     }
 
     private void send(Object testData, String channelId, String routingKey) {
-        RmqChannel channel = rmqChannels.get(channelId);
-        channel.send(testData, routingKey);
+        if (rmqChannels.containsKey(channelId)) {
+            RmqChannel channel = rmqChannels.get(channelId);
+            channel.send(testData, routingKey);
+        } else {
+            throw new TestStepProcessingException(String.format("Channel '%s' was not registered " +
+                    "in RMQ Test Step Processor", channelId));
+        }
     }
 
     @Override
