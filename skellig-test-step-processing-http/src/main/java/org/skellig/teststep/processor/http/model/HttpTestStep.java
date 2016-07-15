@@ -5,6 +5,7 @@ import org.skellig.teststep.processing.model.TestStepExecutionType;
 import org.skellig.teststep.processing.model.ValidationDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 public class HttpTestStep extends TestStep {
@@ -67,7 +68,7 @@ public class HttpTestStep extends TestStep {
 
     public static class Builder extends TestStep.Builder {
 
-        private Collection<String> services;
+        private Collection<String> services = Collections.emptyList();
         private String url;
         private String method;
         private String username;

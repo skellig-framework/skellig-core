@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.http;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.skellig.teststep.processing.converter.TestStepResultConverter;
@@ -47,6 +48,7 @@ class HttpTestStepProcessorTest {
     }
 
     @Test
+    @DisplayName("Send HTTP request to a single service Then verify response received un-grouped")
     void testSendHttpRequest() {
         HttpTestStep httpTestStep =
                 new HttpTestStep.Builder()
@@ -77,6 +79,7 @@ class HttpTestStepProcessorTest {
     }
 
     @Test
+    @DisplayName("Send HTTP request to 2 service Then verify response received from both")
     void testSendHttpRequestToAllServices() {
         HttpTestStep httpTestStep =
                 new HttpTestStep.Builder()
@@ -103,4 +106,44 @@ class HttpTestStepProcessorTest {
         assertTrue(isPassed.get());
     }
 
+    @Test
+    @DisplayName("Send HTTP request When no services provided Then throw an error")
+    void testSendHttpRequestWhenNoServicesProvided() {
+        HttpTestStep httpTestStep =
+                new HttpTestStep.Builder()
+                        .withUrl("/a/b/c")
+                        .withMethod("POST")
+                        .build();
+
+        AtomicBoolean isPassed = new AtomicBoolean();
+        processor.process(httpTestStep)
+                .subscribe((t, r, e) -> {
+                    assertEquals("No services were provided to run an HTTP request." +
+                            " Registered services are: [srv1, srv2]", e.getMessage());
+                    isPassed.set(true);
+                });
+
+        assertTrue(isPassed.get());
+    }
+
+    @Test
+    @DisplayName("Send HTTP request to a service which not registered Then throw an error")
+    void testSendHttpRequestToNonExistentService() {
+        HttpTestStep httpTestStep =
+                new HttpTestStep.Builder()
+                        .withService(Collections.singletonList("srv3"))
+                        .withUrl("/a/b/c")
+                        .withMethod("POST")
+                        .build();
+
+        AtomicBoolean isPassed = new AtomicBoolean();
+        processor.process(httpTestStep)
+                .subscribe((t, r, e) -> {
+                    assertEquals("Service 'srv3' was not registered in HTTP Processor." +
+                            " Registered services are: [srv1, srv2]", e.getMessage());
+                    isPassed.set(true);
+                });
+
+        assertTrue(isPassed.get());
+    }
 }
