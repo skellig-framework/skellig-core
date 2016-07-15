@@ -2,6 +2,7 @@ package org.skellig.teststep.processor.http;
 
 import com.typesafe.config.Config;
 import org.skellig.teststep.processing.converter.TestStepResultConverter;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -19,22 +20,33 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
     private Map<String, HttpChannel> httpChannelPerService;
 
     protected HttpTestStepProcessor(Map<String, HttpChannel> httpChannelPerService,
-                                  TestScenarioState testScenarioState,
-                                  TestStepResultValidator validator,
-                                  TestStepResultConverter testStepResultConverter) {
+                                    TestScenarioState testScenarioState,
+                                    TestStepResultValidator validator,
+                                    TestStepResultConverter testStepResultConverter) {
         super(testScenarioState, validator, testStepResultConverter);
         this.httpChannelPerService = httpChannelPerService;
     }
 
     @Override
     protected Object processTestStep(HttpTestStep testStep) {
+        if (testStep.getServices().isEmpty()) {
+            throw new TestStepProcessingException("No services were provided to run an HTTP request." +
+                    " Registered services are: " + httpChannelPerService.keySet().toString());
+        }
+
         Map<String, Object> result = new HashMap<>();
         testStep.getServices().parallelStream()
                 .forEach(serviceName -> {
-                    HttpChannel httpChannel = httpChannelPerService.get(serviceName);
-                    HttpRequestDetails request = buildHttpRequestDetails(testStep);
+                    if (httpChannelPerService.containsKey(serviceName)) {
+                        HttpChannel httpChannel = httpChannelPerService.get(serviceName);
+                        HttpRequestDetails request = buildHttpRequestDetails(testStep);
 
-                    result.put(serviceName, httpChannel.send(request));
+                        result.put(serviceName, httpChannel.send(request));
+                    } else {
+                        throw new TestStepProcessingException(String.format(
+                                "Service '%s' was not registered in HTTP Processor." +
+                                        " Registered services are: %s", serviceName, httpChannelPerService.keySet().toString()));
+                    }
                 });
         return result.size() == 1 ? result.values().stream().findFirst().get() : result;
     }
