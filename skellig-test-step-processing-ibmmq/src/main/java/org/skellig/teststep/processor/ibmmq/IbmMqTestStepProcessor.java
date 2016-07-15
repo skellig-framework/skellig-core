@@ -2,6 +2,7 @@ package org.skellig.teststep.processor.ibmmq;
 
 import com.typesafe.config.Config;
 import org.skellig.teststep.processing.converter.TestStepResultConverter;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -31,20 +32,26 @@ public class IbmMqTestStepProcessor extends BaseTestStepProcessor<IbmMqTestStep>
         Optional<String> receiveFrom = testStep.getReceiveFrom();
         Optional<String> respondTo = testStep.getRespondTo();
 
-        sendTo.ifPresent(channel -> send(testStep.getTestData(), channel));
+        sendTo.ifPresent(channelId -> send(testStep.getTestData(), channelId));
 
         if (receiveFrom.isPresent()) {
             IbmMqChannel ibmMqChannel = ibmMqChannels.get(receiveFrom.get());
             response = ibmMqChannel.read(testStep.getTimeout());
 
+            validate(testStep, response);
             respondTo.ifPresent(channel -> send(testStep.getTestData(), channel));
         }
         return response;
     }
 
-    private void send(Object testData, String channel) {
-        IbmMqChannel ibmMqChannel = ibmMqChannels.get(channel);
-        ibmMqChannel.send(testData);
+    private void send(Object testData, String channelId) {
+        if (ibmMqChannels.containsKey(channelId)) {
+            IbmMqChannel ibmMqChannel = ibmMqChannels.get(channelId);
+            ibmMqChannel.send(testData);
+        } else {
+            throw new TestStepProcessingException(String.format("Channel '%s' was not registered " +
+                    "in IBMMQ Test Step Processor", channelId));
+        }
     }
 
     @Override
