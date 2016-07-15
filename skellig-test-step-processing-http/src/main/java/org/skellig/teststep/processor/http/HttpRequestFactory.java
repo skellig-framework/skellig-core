@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 
 class HttpRequestFactory {
 
-    private static final int DEFAULT_HTTP_READ_TIMEOUT = 5000;
-
     private String baseUrl;
 
     public HttpRequestFactory(String baseUrl) {
@@ -41,9 +39,9 @@ class HttpRequestFactory {
             request = createHttpRequest(httpRequestDetails, baseUrl + createUrl(httpRequestDetails));
 
             request.setConfig(RequestConfig.custom()
-                    .setSocketTimeout(DEFAULT_HTTP_READ_TIMEOUT)
-                    .setConnectTimeout(DEFAULT_HTTP_READ_TIMEOUT)
-                    .setConnectionRequestTimeout(DEFAULT_HTTP_READ_TIMEOUT)
+                    .setSocketTimeout(httpRequestDetails.getTimeout())
+                    .setConnectTimeout(httpRequestDetails.getTimeout())
+                    .setConnectionRequestTimeout(httpRequestDetails.getTimeout())
                     .build());
         } catch (UnsupportedEncodingException e) {
             throw new TestStepProcessingException(e.getMessage());

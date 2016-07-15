@@ -14,10 +14,11 @@ public class HttpRequestDetails {
     private final Map<String, String> queryParams;
     private final String username;
     private final String password;
+    private final int timeout;
 
     private HttpRequestDetails(HttpMethodName verb, String url, Map<String, String> headers,
                                Map<String, String> formParams, String body, Map<String, String> queryParams,
-                               String username, String password) {
+                               String username, String password, int timeout) {
         this.verb = verb;
         this.url = url;
         this.headers = headers;
@@ -26,6 +27,7 @@ public class HttpRequestDetails {
         this.body = body;
         this.username = username;
         this.password = password;
+        this.timeout = timeout;
     }
 
     public HttpMethodName getVerb() {
@@ -60,6 +62,10 @@ public class HttpRequestDetails {
         return Optional.ofNullable(password);
     }
 
+    public int getTimeout() {
+        return timeout;
+    }
+
     @Override
     public String toString() {
         return url;
@@ -75,6 +81,7 @@ public class HttpRequestDetails {
         private String body;
         private String username;
         private String password;
+        private int timeout;
 
         public Builder(HttpMethodName verb) {
             this.verb = verb;
@@ -121,8 +128,13 @@ public class HttpRequestDetails {
             return this;
         }
 
+        public Builder withTimeout(int timeout) {
+            this.timeout = timeout;
+            return this;
+        }
+
         public HttpRequestDetails build() {
-            return new HttpRequestDetails(verb, url, headers, formParams, body, queryParams, username, password);
+            return new HttpRequestDetails(verb, url, headers, formParams, body, queryParams, username, password, timeout);
         }
     }
 
