@@ -18,7 +18,7 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
 
     private Map<String, HttpChannel> httpChannelPerService;
 
-    private HttpTestStepProcessor(Map<String, HttpChannel> httpChannelPerService,
+    protected HttpTestStepProcessor(Map<String, HttpChannel> httpChannelPerService,
                                   TestScenarioState testScenarioState,
                                   TestStepResultValidator validator,
                                   TestStepResultConverter testStepResultConverter) {
@@ -33,15 +33,14 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
                 .forEach(serviceName -> {
                     HttpChannel httpChannel = httpChannelPerService.get(serviceName);
                     HttpRequestDetails request = buildHttpRequestDetails(testStep);
-                    Object httpResponse = httpChannel.send(request);
 
-                    result.put(serviceName, httpResponse);
+                    result.put(serviceName, httpChannel.send(request));
                 });
         return result.size() == 1 ? result.values().stream().findFirst().get() : result;
     }
 
     private HttpRequestDetails buildHttpRequestDetails(HttpTestStep httpTestStep) {
-        Object serializedPayload = httpTestStep.getTestData();
+        Object testData = httpTestStep.getTestData();
 
         return new HttpRequestDetails.Builder(HttpMethodName.valueOf(httpTestStep.getMethod()))
                 .withUrl(httpTestStep.getUrl())
@@ -50,7 +49,7 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
                 .withFormParam(httpTestStep.getForm())
                 .withUsername(httpTestStep.getUsername())
                 .withPassword(httpTestStep.getPassword())
-                .withBody(serializedPayload != null ? String.valueOf(serializedPayload) : null)
+                .withBody(testData != null ? String.valueOf(testData) : null)
                 .build();
     }
 
@@ -70,8 +69,8 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
             httpChannelPerService = new HashMap<>();
         }
 
-        public Builder withHttpService(HttpServiceDetails serviceDetails) {
-            this.httpChannelPerService.put(serviceDetails.getServiceName(), new HttpChannel(serviceDetails.getUrl()));
+        public Builder withHttpService(String serviceName, String url) {
+            this.httpChannelPerService.put(serviceName, new HttpChannel(url));
             return this;
         }
 
@@ -79,8 +78,7 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
             if (config.hasPath(HTTP_CONFIG_KEYWORD)) {
                 ((List<Map<String, String>>) config.getAnyRefList(HTTP_CONFIG_KEYWORD))
                         .forEach(rawHttpService ->
-                                withHttpService(new HttpServiceDetails(rawHttpService.get(SERVICE_NAME_KEYWORD),
-                                        rawHttpService.get(URL_KEYWORD))));
+                                withHttpService(rawHttpService.get(SERVICE_NAME_KEYWORD), rawHttpService.get(URL_KEYWORD)));
             }
             return this;
         }
@@ -88,24 +86,6 @@ public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
         @Override
         public TestStepProcessor<HttpTestStep> build() {
             return new HttpTestStepProcessor(httpChannelPerService, testScenarioState, validator, testStepResultConverter);
-        }
-    }
-
-    static class HttpServiceDetails {
-        private String serviceName;
-        private String url;
-
-        public HttpServiceDetails(String serviceName, String url) {
-            this.serviceName = serviceName;
-            this.url = url;
-        }
-
-        public String getServiceName() {
-            return serviceName;
-        }
-
-        public String getUrl() {
-            return url;
         }
     }
 }
