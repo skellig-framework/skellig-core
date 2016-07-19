@@ -1,0 +1,11 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compile project(':skellig-test-step-processing-db')
+}
+
+test {
+    useJUnitPlatform()
+}
