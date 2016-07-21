@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.jdbc;
 
-import org.skellig.teststep.processor.db.exception.DatabaseChannelException;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processor.db.model.DatabaseRequest;
 
 import java.sql.Connection;
@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 class FindJdbcRequestExecutor extends BaseJdbcRequestExecutor {
 
     private static final String COMPARATOR = "comparator";
+    private static final String DEFAULT_VALUE_PLACEHOLDER = "?";
+    private static final String DEFAULT_COMPARATOR = "=";
+
     private Connection connection;
 
     FindJdbcRequestExecutor(Connection connection) {
@@ -44,7 +47,7 @@ class FindJdbcRequestExecutor extends BaseJdbcRequestExecutor {
                 }
             }
         } catch (Exception ex) {
-            throw new DatabaseChannelException(ex.getMessage(), ex);
+            throw new TestStepProcessingException(ex.getMessage(), ex);
         }
     }
 
@@ -85,12 +88,15 @@ class FindJdbcRequestExecutor extends BaseJdbcRequestExecutor {
             queryBuilder.append(" WHERE ");
             String columns = searchCriteria.entrySet().stream()
                     .map(entry -> {
+                        String comparator = DEFAULT_COMPARATOR;
+                        String valuePlaceholder = DEFAULT_VALUE_PLACEHOLDER;
                         if (entry.getValue() instanceof Map) {
-                            String comparator = (String) ((Map) entry.getValue()).get(COMPARATOR);
-                            return entry.getKey() + comparator + " ?";
-                        } else {
-                            return entry.getKey() + getCompareOperator(entry.getValue()) + "?";
+                            comparator = (String) ((Map) entry.getValue()).get(COMPARATOR);
+                            if ("in".equals(comparator)) {
+                                valuePlaceholder = "(?)";
+                            }
                         }
+                        return String.format("%s %s %s", entry.getKey(), comparator, valuePlaceholder);
                     })
                     .collect(Collectors.joining(" AND "));
 
@@ -106,9 +112,5 @@ class FindJdbcRequestExecutor extends BaseJdbcRequestExecutor {
             columns.add(metadata.getColumnName(i));
         }
         return columns;
-    }
-
-    private String getCompareOperator(Object valueToCompare) {
-        return String.valueOf(valueToCompare).contains("%") ? " like " : " = ";
     }
 }
