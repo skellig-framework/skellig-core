@@ -3,7 +3,7 @@ package org.skellig.teststep.processor.cassandra;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-import org.skellig.teststep.processor.db.exception.DatabaseChannelException;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processor.db.model.DatabaseRequest;
 
 import java.util.Collections;
@@ -35,7 +35,7 @@ class CassandraInsertRequestExecutor extends BaseCassandraRequestExecutor {
                 result = 1;
             }
         } catch (Exception ex) {
-            throw new DatabaseChannelException(ex.getMessage(), ex);
+            throw new TestStepProcessingException(ex.getMessage(), ex);
         }
         return result;
     }
