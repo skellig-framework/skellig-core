@@ -6,7 +6,6 @@ import org.skellig.teststep.processor.db.model.DatabaseRequest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,8 @@ class InsertJdbcRequestExecutor extends BaseJdbcRequestExecutor {
                 query = databaseRequest.getQuery();
                 result = connection.createStatement().executeUpdate(query);
             } else {
-                Map<String, Object> insertData = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
+                Map<String, Object> insertData = databaseRequest.getColumnValuePairs()
+                        .orElseThrow(() -> new TestStepProcessingException("Cannot insert empty data to table " + databaseRequest.getTable()));
                 query = composeInsertQuery(databaseRequest, insertData);
 
                 try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
