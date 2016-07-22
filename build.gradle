@@ -28,7 +28,6 @@ allprojects {
 subprojects {
 
     apply plugin: 'java'
-    apply plugin: 'groovy'
     apply plugin: 'maven'
     apply plugin: 'com.bmuschko.nexus'
     apply plugin: 'io.spring.dependency-management'

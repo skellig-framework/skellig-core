@@ -6,7 +6,6 @@ import com.datastax.driver.core.Statement;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processor.db.model.DatabaseRequest;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -20,19 +19,19 @@ class CassandraInsertRequestExecutor extends BaseCassandraRequestExecutor {
 
     @Override
     public Object execute(DatabaseRequest databaseRequest) {
-        int result;
+        Object result;
         try {
             if (databaseRequest.getQuery() != null) {
-                return session.execute(databaseRequest.getQuery());
+                result = session.execute(databaseRequest.getQuery());
             } else {
-                Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
+                Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs()
+                        .orElseThrow(() -> new TestStepProcessingException("Cannot insert empty data to table " + databaseRequest.getTable()));
                 String query = composeInsertQuery(databaseRequest, searchCriteria);
 
                 Object[] rawParameters = convertToRawParameters(searchCriteria);
                 Statement preparedStatement = new SimpleStatement(query, rawParameters);
 
-                session.execute(preparedStatement);
-                result = 1;
+                result = session.execute(preparedStatement);
             }
         } catch (Exception ex) {
             throw new TestStepProcessingException(ex.getMessage(), ex);
