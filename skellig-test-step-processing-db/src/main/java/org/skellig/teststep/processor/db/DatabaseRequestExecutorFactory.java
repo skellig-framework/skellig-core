@@ -31,9 +31,11 @@ public class DatabaseRequestExecutorFactory {
             return databaseRequestExecutors.get(command);
         } else {
             if (isQueryOnlyProvided(databaseRequest, command)) {
-                throw new TestStepProcessingException("No database query executors found for query: " + databaseRequest.getQuery());
+                throw new TestStepProcessingException(String.format("No database query executors found for query: '%s'." +
+                        " Supported types of queries: %s", databaseRequest.getQuery(), databaseRequestExecutors.keySet()));
             } else {
-                throw new TestStepProcessingException("No database query executors found for command: " + command);
+                throw new TestStepProcessingException(String.format("No database query executors found for command: '%s'." +
+                        " Supported commands: %s", command, databaseRequestExecutors.keySet()));
             }
         }
     }

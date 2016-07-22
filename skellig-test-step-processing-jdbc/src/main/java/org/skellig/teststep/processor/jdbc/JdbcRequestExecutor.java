@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.jdbc;
 
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
+import org.skellig.teststep.processing.exception.TestDataProcessorInitException;
 import org.skellig.teststep.processor.db.DatabaseRequestExecutor;
 import org.skellig.teststep.processor.db.model.DatabaseRequest;
 import org.skellig.teststep.processor.jdbc.model.JdbcDetails;
@@ -32,7 +32,7 @@ class JdbcRequestExecutor implements DatabaseRequestExecutor {
                     details.getUserName().orElse(null), details.getPassword().orElse(null));
             connection.setAutoCommit(false);
         } catch (Exception e) {
-            throw new TestStepProcessingException(e.getMessage(), e);
+            throw new TestDataProcessorInitException(e.getMessage(), e);
         }
     }
 
