@@ -28,7 +28,7 @@ class CassandraSelectRequestExecutor extends BaseCassandraRequestExecutor {
     public Object execute(DatabaseRequest databaseRequest) {
         try {
             if (databaseRequest.getQuery() != null) {
-                return session.execute(databaseRequest.getQuery());
+                return extractFromResultSet(session.execute(databaseRequest.getQuery()));
             } else {
                 Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
                 String query = composeFindQuery(databaseRequest, searchCriteria);
@@ -50,7 +50,7 @@ class CassandraSelectRequestExecutor extends BaseCassandraRequestExecutor {
         resultSet.forEach(row -> {
             Map<String, Object> resultRow = new LinkedHashMap<>();
             result.add(resultRow);
-            row.getColumnDefinitions().asList()
+            row.getColumnDefinitions()
                     .forEach(column -> resultRow.put(column.getName(), row.getObject(column.getName())));
         });
         return result;
