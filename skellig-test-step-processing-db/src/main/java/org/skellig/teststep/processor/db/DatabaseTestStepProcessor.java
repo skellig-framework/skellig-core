@@ -39,7 +39,7 @@ public abstract class DatabaseTestStepProcessor<T extends DatabaseRequestExecuto
                     Object response = getDatabaseServer(serverName).execute(getDatabaseRequest(testStep));
                     result.put(serverName, response);
                 });
-        return result.size() == 1 ? result.values().stream().findFirst().orElse(null) : result;
+        return result;
     }
 
     private DatabaseRequest getDatabaseRequest(DatabaseTestStep testStep) {
