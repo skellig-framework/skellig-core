@@ -1,11 +1,13 @@
 package org.skellig.teststep.processor.unix;
 
+import com.typesafe.config.Config;
 import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
+import org.skellig.teststep.processor.unix.model.UnixShellHostDetails;
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep;
 
 import java.util.HashMap;
@@ -26,17 +28,25 @@ public class UnixShellTestStepProcessor extends BaseTestStepProcessor<UnixShellT
 
     @Override
     protected Object processTestStep(UnixShellTestStep testStep) {
-        Map<String, String> results =
-                hosts.entrySet().parallelStream()
-                        .filter(host -> testStep.getHosts().isEmpty() || testStep.getHosts().contains(host.getKey()))
-                        .collect(Collectors.toMap(Map.Entry::getKey,
-                                entry -> entry.getValue().runShellCommand(testStep.getCommand(), testStep.getTimeout())));
-
-        if (results.isEmpty()) {
-            throw new TestStepProcessingException(
-                    String.format("Cannot find hosts '%s' in registered hosts '%s'", testStep.getHosts(), hosts.keySet()));
+        if (testStep.getHosts().isEmpty()) {
+            throw new TestStepProcessingException("No hosts were provided to run a command." +
+                    " Registered hosts are: " + hosts.keySet().toString());
         }
-        return results;
+
+        return testStep.getHosts().parallelStream()
+                .collect(Collectors.toMap(host -> host,
+                        host -> {
+                            DefaultSshClient sshClient = getDefaultSshClient(host);
+                            return sshClient.runShellCommand(testStep.getCommand(), testStep.getTimeout());
+                        }));
+    }
+
+    private DefaultSshClient getDefaultSshClient(String host) {
+        if (!hosts.containsKey(host)) {
+            throw new TestStepProcessingException(String.format("No hosts was registered for host name '%s'." +
+                    " Registered hosts are: %s", host, hosts.keySet().toString()));
+        }
+        return hosts.get(host);
     }
 
     @Override
@@ -47,30 +57,27 @@ public class UnixShellTestStepProcessor extends BaseTestStepProcessor<UnixShellT
     public static class Builder extends BaseTestStepProcessor.Builder<UnixShellTestStep> {
 
         private Map<String, DefaultSshClient> hosts;
+        private UnixShellConfigReader unixShellConfigReader;
 
         public Builder() {
             hosts = new HashMap<>();
+            unixShellConfigReader = new UnixShellConfigReader();
         }
 
-        public Builder withHost(String name, String host, int port, String userName, String password) {
-            this.hosts.put(name,
+        public Builder withHost(UnixShellHostDetails unixShellHostDetails) {
+            this.hosts.put(unixShellHostDetails.getHostName(),
                     new DefaultSshClient.Builder()
-                            .withHost(host)
-                            .withPort(port)
-                            .withUser(userName)
-                            .withPassword(password)
+                            .withHost(unixShellHostDetails.getHostAddress())
+                            .withPort(unixShellHostDetails.getPort())
+                            .withUser(unixShellHostDetails.getUserName())
+                            .withPassword(unixShellHostDetails.getPassword())
+                            .withPassword(unixShellHostDetails.getSshKeyPath())
                             .build());
             return this;
         }
 
-        public Builder withHost(String name, String user, String sshKeyPath, String host, int port) {
-            this.hosts.put(name,
-                    new DefaultSshClient.Builder()
-                            .withHost(host)
-                            .withPort(port)
-                            .withUser(user)
-                            .withPrivateSshKeyPath(sshKeyPath)
-                            .build());
+        public Builder withHost(Config config) {
+            unixShellConfigReader.read(config).forEach(this::withHost);
             return this;
         }
 

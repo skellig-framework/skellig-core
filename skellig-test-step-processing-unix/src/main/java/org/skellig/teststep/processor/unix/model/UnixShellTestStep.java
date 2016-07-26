@@ -5,6 +5,7 @@ import org.skellig.teststep.processing.model.TestStepExecutionType;
 import org.skellig.teststep.processing.model.ValidationDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -33,15 +34,22 @@ public class UnixShellTestStep extends TestStep {
     public String getCommand() {
         return args == null ? command :
                 command + " " + args.entrySet().stream()
-                        .map(entry -> entry.getKey() + " " + entry.getValue())
-                        .collect(Collectors.joining(" ", "-", ""));
+                        .map(entry -> "-" + entry.getKey() + " " + entry.getValue())
+                        .collect(Collectors.joining(" "));
     }
 
     public static class Builder extends TestStep.Builder {
 
+        private static final int DEFAULT_TIMEOUT = 30000;
+
         private Collection<String> hosts;
         private String command;
         private Map<String, String> args;
+
+        public Builder() {
+            hosts = Collections.emptyList();
+            timeout = DEFAULT_TIMEOUT;
+        }
 
         public Builder withHosts(Collection<String> hosts) {
             this.hosts = hosts;

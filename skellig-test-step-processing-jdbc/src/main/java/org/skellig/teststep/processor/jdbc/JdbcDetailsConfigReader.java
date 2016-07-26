@@ -21,13 +21,13 @@ class JdbcDetailsConfigReader {
         if (config.hasPath(JDBC_CONFIG_KEYWORD)) {
             List<Map> anyRefList = (List<Map>) config.getAnyRefList(JDBC_CONFIG_KEYWORD);
             jdbcDetails = anyRefList.stream()
-                    .map(this::createCasJdbcDetails)
+                    .map(this::createJdbcDetails)
                     .collect(Collectors.toList());
         }
         return jdbcDetails;
     }
 
-    private JdbcDetails createCasJdbcDetails(Map rawJdbcDetails) {
+    private JdbcDetails createJdbcDetails(Map rawJdbcDetails) {
         String server = (String) rawJdbcDetails.get("server");
         String url = (String) rawJdbcDetails.get("url");
         String driver = (String) rawJdbcDetails.get("driver");
