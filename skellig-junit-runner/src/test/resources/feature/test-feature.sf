@@ -1,0 +1,6 @@
+Name: Test feature
+
+   Test: Test scenario
+   Given something
+   Run something
+   Validate something
