@@ -30,6 +30,7 @@ target/**
 .project
 .settings/
 
+*/build/*
 .idea
 *.iml
 out
