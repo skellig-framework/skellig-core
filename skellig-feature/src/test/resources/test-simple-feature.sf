@@ -1,0 +1,7 @@
+Name: Simple feature
+
+   Test: Simple scenario
+   Given something
+   # run something
+   Run it
+   Check result

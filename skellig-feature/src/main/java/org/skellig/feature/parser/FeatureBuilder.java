@@ -149,7 +149,7 @@ class FeatureBuilder {
         } else {
             // if columns were read then next must be rows of the test data
             String[] rawRow = PARAMETER_SEPARATOR_PATTERN.split(line);
-            Map<String, Object> row = new HashMap<>();
+            Map<String, String> row = new HashMap<>();
             for (int i = 0; i < testScenarioDataColumns.length; i++) {
                 if (testScenarioDataColumns[i].length() > 0 && rawRow[i].length() > 0) {
                     row.put(testScenarioDataColumns[i], rawRow[i]);
@@ -162,14 +162,14 @@ class FeatureBuilder {
     private void addLatestTestScenarioIfExist() {
         if (testScenarioBuilder != null) {
             addLatestTestStepIfExist();
-            featureBuilder.withScenario(testScenarioBuilder.build());
+            featureBuilder.withScenarios(testScenarioBuilder.build());
             isReadingTestScenarioData = false;
         }
     }
 
     private void addLatestTestStepIfExist() {
         if (testStepBuilder != null) {
-            testScenarioBuilder.withStep(testStepBuilder.build());
+            testScenarioBuilder.withStep(testStepBuilder);
             testStepBuilder = null;
         }
     }

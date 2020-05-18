@@ -1,6 +1,7 @@
 package org.skellig.feature;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skellig.feature.parser.DefaultFeatureParser;
 
@@ -22,7 +23,32 @@ class DefaultFeatureParserTest {
     }
 
     @Test
+    @DisplayName("Parse simple valid feature file Then validate parsing is correct")
     void testParseFeatureFile() throws URISyntaxException {
+        List<Feature> features = defaultFeatureParser.parse(getPathToSampleFile("/test-simple-feature.sf"));
+
+        Feature feature = features.get(0);
+        assertAll(
+                () -> assertEquals("Simple feature", feature.getName()),
+                () -> assertFalse(feature.getTestPreRequisites().isPresent()),
+                () -> assertEquals(1, feature.getScenarios().size())
+        );
+
+        TestScenario firstTestScenario = feature.getScenarios().get(0);
+        assertAll(
+                () -> assertFalse(firstTestScenario.getTags().isPresent()),
+                () -> assertEquals("Simple scenario", firstTestScenario.getName()),
+                () -> assertFalse(firstTestScenario.getSteps().get(0).getParameters().isPresent()),
+                () -> assertEquals(3, firstTestScenario.getSteps().size()),
+                () -> assertEquals("Given something", firstTestScenario.getSteps().get(0).getName()),
+                () -> assertEquals("Run it", firstTestScenario.getSteps().get(1).getName()),
+                () -> assertEquals("Check result", firstTestScenario.getSteps().get(2).getName())
+        );
+    }
+
+    @Test
+    @DisplayName("Parse complex valid feature file Then validate parsing is correct")
+    void testParseComplexFeatureFile() throws URISyntaxException {
         List<Feature> features = defaultFeatureParser.parse(getPathToSampleFile("/test-feature.sf"));
 
         Feature feature = features.get(0);
@@ -42,35 +68,39 @@ class DefaultFeatureParserTest {
                         .allMatch(item ->
                                 ((InitDetails)item).getId().equals("default") &&
                                         ((InitDetails)item).getFilePath().equals("file1.std"))),
-                () -> assertEquals(2, feature.getScenarios().size())
+                () -> assertEquals(3, feature.getScenarios().size())
         );
 
         TestScenario firstTestScenario = feature.getScenarios().get(0);
         TestScenario secondTestScenario = feature.getScenarios().get(1);
+        TestScenario thirdTestScenario = feature.getScenarios().get(2);
         assertAll(
                 () -> assertFalse(firstTestScenario.getTags().isPresent()),
-                () -> assertEquals("Sign in user <user> with valid credentials", firstTestScenario.getName()),
-                () -> assertEquals("User <user> exist in system", firstTestScenario.getSteps().get(0).getName()),
+                () -> assertEquals("Sign in user usr_1 with valid credentials", firstTestScenario.getName()),
+                () -> assertEquals("User usr_1 exist in system", firstTestScenario.getSteps().get(0).getName()),
                 () -> assertFalse(firstTestScenario.getSteps().get(0).getParameters().isPresent()),
-                () -> assertEquals("User <user> requests to sign in with <password> password",
+                () -> assertEquals("User usr_1 requests to sign in with 12345 password",
                         firstTestScenario.getSteps().get(1).getName()),
-                () -> assertEquals("User <user> successfully signed in", firstTestScenario.getSteps().get(2).getName()),
-                () -> assertEquals("usr_1", firstTestScenario.getData().get().get(0).get("user")),
-                () -> assertEquals("12345", firstTestScenario.getData().get().get(0).get("password")),
-                () -> assertEquals("usr_2", firstTestScenario.getData().get().get(1).get("user")),
-                () -> assertEquals("pswd1", firstTestScenario.getData().get().get(1).get("password"))
+                () -> assertEquals("User usr_1 successfully signed in", firstTestScenario.getSteps().get(2).getName())
         );
         assertAll(
                 () -> assertFalse(secondTestScenario.getTags().isPresent()),
-                () -> assertEquals("Sign in user with invalid credentials", secondTestScenario.getName()),
-                () -> assertEquals("User <user> exist in system", secondTestScenario.getSteps().get(0).getName()),
-                () -> assertEquals("v1", secondTestScenario.getSteps().get(0).getParameters().get().get("p1")),
-                () -> assertEquals("v2", secondTestScenario.getSteps().get(0).getParameters().get().get("p2")),
-                () -> assertEquals("User <user> requests to sign in with <password> password",
+                () -> assertEquals("Sign in user usr_2 with valid credentials", secondTestScenario.getName()),
+                () -> assertEquals("User usr_2 exist in system", secondTestScenario.getSteps().get(0).getName()),
+                () -> assertFalse(secondTestScenario.getSteps().get(0).getParameters().isPresent()),
+                () -> assertEquals("User usr_2 requests to sign in with pswd1 password",
                         secondTestScenario.getSteps().get(1).getName()),
-                () -> assertEquals("User <user> received error", secondTestScenario.getSteps().get(2).getName()),
-                () -> assertEquals("usr_2", secondTestScenario.getData().get().get(0).get("user")),
-                () -> assertEquals("54321", secondTestScenario.getData().get().get(0).get("password"))
+                () -> assertEquals("User usr_2 successfully signed in", secondTestScenario.getSteps().get(2).getName())
+        );
+        assertAll(
+                () -> assertFalse(thirdTestScenario.getTags().isPresent()),
+                () -> assertEquals("Sign in user with invalid credentials", thirdTestScenario.getName()),
+                () -> assertEquals("User usr_2 exist in system", thirdTestScenario.getSteps().get(0).getName()),
+                () -> assertEquals("v1", thirdTestScenario.getSteps().get(0).getParameters().get().get("p1")),
+                () -> assertEquals("pass: 54321", thirdTestScenario.getSteps().get(0).getParameters().get().get("p2")),
+                () -> assertEquals("User usr_2 requests to sign in with 54321 password",
+                        thirdTestScenario.getSteps().get(1).getName()),
+                () -> assertEquals("User usr_2 received error", thirdTestScenario.getSteps().get(2).getName())
         );
     }
 

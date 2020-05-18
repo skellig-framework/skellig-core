@@ -37,7 +37,6 @@ public class Feature {
 
         public Builder() {
             scenarios = new ArrayList<>();
-            testPreRequisites = new ArrayList<>();
         }
 
         public Builder withName(String name) {
@@ -45,20 +44,13 @@ public class Feature {
             return this;
         }
 
-        public Builder withScenario(TestScenario scenario) {
-            this.scenarios.add(scenario);
+        public Builder withScenarios(List<TestScenario> scenarios) {
+            this.scenarios.addAll(scenarios);
             return this;
         }
 
         public Builder withTestPreRequisites(List<TestPreRequisites<?>> testPreRequisites) {
             this.testPreRequisites = testPreRequisites;
-            return this;
-        }
-
-        public Builder withTestPreRequisite(TestPreRequisites<?> testPreRequisite) {
-            if (testPreRequisite != null) {
-                this.testPreRequisites.add(testPreRequisite);
-            }
             return this;
         }
 

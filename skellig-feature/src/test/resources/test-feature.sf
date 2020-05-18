@@ -1,0 +1,34 @@
+@E2E @SmokeTest
+@User
+@Init
+  (
+     id = default
+     path = file1.std
+  ) @Data()
+@Data(paths = [
+           /content/features/user,
+           /content/features/common
+    ])
+Name: Sign in user
+
+   #@E2E-light
+   Test: Sign in user <user> with valid credentials
+   User <user> exist in system
+   User <user> requests to sign in with <password> password
+   User <user> successfully signed in
+   Data:
+     | user | password |
+     | usr_1| 12345    |
+     | usr_2| pswd1    |
+
+   #@Init(id = default)
+   #@Data(path = [/content/features/user])
+   Test: Sign in user with invalid credentials
+   User <user> exist in system
+     | p1 | v1               |
+     | p2 | pass: <password> |
+   User <user> requests to sign in with <password> password
+   User <user> received error
+   Data:
+     | user | password |
+     | usr_2| 54321    |
