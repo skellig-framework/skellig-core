@@ -5,13 +5,21 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.model.InitializationError;
+import org.skellig.feature.DataDetails;
 import org.skellig.feature.Feature;
+import org.skellig.feature.InitDetails;
 import org.skellig.runner.exception.FeatureRunnerException;
+import org.skellig.runner.tagextractor.RequestedTagExtractor;
+import org.skellig.runner.tagextractor.TagExtractor;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
+
+    private static final TagExtractor tagExtractor = new RequestedTagExtractor();
 
     private Feature feature;
     private List<TestScenarioRunner> testScenarioRunners;
@@ -54,14 +62,23 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
     protected void runChild(TestScenarioRunner child, RunNotifier notifier) {
         Description childDescription = describeChild(child);
         notifier.fireTestStarted(childDescription);
+
+        extractTagFromFeature(InitDetails.class).ifPresent(value -> {
+            //TODO: run init from test data file
+        });
+
         try {
-            child.run(notifier);
+            child.run(notifier, extractTagFromFeature(DataDetails.class).map(DataDetails::getPaths).orElse(null));
         } catch (Throwable e) {
             notifier.fireTestFailure(new Failure(childDescription, e));
             notifier.pleaseStop();
         } finally {
             notifier.fireTestFinished(childDescription);
         }
+    }
+
+    private <T> Optional<T> extractTagFromFeature(Class<T> tagClass) {
+        return tagExtractor.extract(tagClass, feature.getTestPreRequisites().orElse(Collections.emptyList()));
     }
 
     public static FeatureRunner create(Feature feature) {

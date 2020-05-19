@@ -13,8 +13,8 @@ public class Feature {
 
     protected Feature(String name, List<TestScenario> scenarios, List<TestPreRequisites<?>> testPreRequisites) {
         this.name = name;
-        this.scenarios = scenarios;
-        this.testPreRequisites = testPreRequisites;
+        this.scenarios = Collections.unmodifiableList(scenarios);
+        this.testPreRequisites = testPreRequisites == null ? null : Collections.unmodifiableList(testPreRequisites);
     }
 
     public String getName() {
@@ -22,12 +22,11 @@ public class Feature {
     }
 
     public List<TestScenario> getScenarios() {
-        return Collections.unmodifiableList(scenarios);
+        return scenarios;
     }
 
-
     public Optional<List<TestPreRequisites<?>>> getTestPreRequisites() {
-        return Optional.ofNullable(testPreRequisites == null ? null : Collections.unmodifiableList(testPreRequisites));
+        return Optional.ofNullable(testPreRequisites);
     }
 
     public static class Builder {

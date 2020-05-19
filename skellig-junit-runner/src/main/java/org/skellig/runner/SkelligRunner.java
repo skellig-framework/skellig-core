@@ -8,6 +8,7 @@ import org.skellig.feature.parser.DefaultFeatureParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +25,8 @@ public class SkelligRunner extends ParentRunner<FeatureRunner> {
         SkelligOptions skelligOptions = (SkelligOptions) clazz.getDeclaredAnnotation(SkelligOptions.class);
 
         DefaultFeatureParser featureParser = new DefaultFeatureParser();
-        children = featureParser.parse(Paths.get(getClass().getResource(skelligOptions.features()[0]).toURI()).toString()).stream()
+        Path pathToFeatures = Paths.get(getClass().getResource(skelligOptions.features()[0]).toURI());
+        children = featureParser.parse(pathToFeatures.toString()).stream()
                 .map(FeatureRunner::create)
                 .collect(Collectors.toList());
     }
