@@ -4,8 +4,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public enum ValidationType {
+    DEFAULT(null),
     TABLE(null),
-    PLAIN(Pattern.compile("response\\(\\)")),
     XPATH(Pattern.compile("xpath\\((.+)\\)")),
     JSON_PATH(Pattern.compile("json_path\\((.+)\\)"));
 
