@@ -25,7 +25,7 @@ public class ValidationDetailsFactory {
                         .filter(Objects::nonNull)
                         .findFirst();
 
-        final ValidationDetails.Builder builder = new ValidationDetails.Builder();
+        ValidationDetails.Builder builder = new ValidationDetails.Builder();
         if (rawValidationDetails.isPresent()) {
             if (rawValidationDetails.get() instanceof Map) {
                 Object fromTestId = ((Map) rawValidationDetails.get()).get(FROM_TEST);
