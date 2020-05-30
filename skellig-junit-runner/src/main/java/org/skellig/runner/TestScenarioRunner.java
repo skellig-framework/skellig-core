@@ -20,7 +20,6 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
     private final Map<Object, Description> stepDescriptions = new HashMap<>();
     private TestScenario testScenario;
     private TestStepRunner testStepRunner;
-    private String[] testDataPaths;
 
     protected TestScenarioRunner(TestScenario testScenario, TestStepRunner testStepRunner) throws InitializationError {
         super(testScenario.getClass());
@@ -54,17 +53,12 @@ public class TestScenarioRunner extends ParentRunner<TestStep> {
                 Description.createTestDescription(getName(), step.getName(), step.getName()));
     }
 
-    public void run(RunNotifier notifier, String[] testDataPaths) {
-        this.testDataPaths = testDataPaths;
-        super.run(notifier);
-    }
-
     @Override
     protected void runChild(TestStep child, RunNotifier notifier) {
         Description childDescription = describeChild(child);
         notifier.fireTestStarted(childDescription);
         try {
-            testStepRunner.run(child.getName(), child.getParameters().orElse(Collections.emptyMap()), testDataPaths);
+            testStepRunner.run(child.getName(), child.getParameters().orElse(Collections.emptyMap()));
         } catch (Throwable e) {
             notifier.fireTestFailure(new Failure(childDescription, e));
             notifier.pleaseStop();
