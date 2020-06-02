@@ -8,9 +8,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StsFileParserTest {
 
@@ -74,6 +77,27 @@ class StsFileParserTest {
                                 "          value: v1\n" +
                                 "        }",
                         firstTestStep.get("payload"))
+        );
+    }
+
+    @Test
+    void testParseTestStepWithValidations() throws URISyntaxException {
+        Path filePath = Paths.get(getClass().getResource("/test-step-with-validations.sts").toURI());
+
+        List<Map<String, Object>> testSteps = stsFileParser.parse(filePath);
+
+        Map<String, Object> firstTestStep = testSteps.get(0);
+        assertAll(
+                () -> assertEquals("Validate response", firstTestStep.get("name")),
+                () -> assertEquals("T1", getValueFromMap(firstTestStep, "validate", "fromTest")),
+                () -> assertTrue(
+                        ((List) getValueFromMap(firstTestStep, "validate", "contains_expected_values"))
+                                .containsAll(Stream.of(
+                                        "contains(success)",
+                                        "contains(go)",
+                                        "regex(.*get(id).*)").collect(Collectors.toList()))),
+                () -> assertEquals("v1", getValueFromMap(firstTestStep, "validate", "has_fields", "f1")),
+                () -> assertEquals("get(id)", getValueFromMap(firstTestStep, "validate", "has_fields", "json_path(f1.f2)"))
         );
     }
 

@@ -1,0 +1,18 @@
+
+name (Validate response)
+{
+  validate {
+    fromTest = T1
+    contains_expected_values [
+
+       contains(success)
+       contains(go)
+       regex(.*get(id).*)
+    ]
+    has_fields
+    {
+      f1 = v1
+      json_path(f1.f2) = get(id)
+    }
+ }
+ }

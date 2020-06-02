@@ -105,6 +105,12 @@ public class StsFileParser {
                     rawTestStepBuilder.setLength(0);
                     skipAllEmptyCharacters(reader);
                     continue;
+                } else if (character == '[') {
+                    paramName = rawTestStepBuilder.toString();
+                    rawTestStep.put(paramName, readList(fileParsingDetails));
+                    rawTestStepBuilder.setLength(0);
+                    paramName = null;
+                    continue;
                 } else if (character == '\n') {
                     if (paramName != null) {
                         rawTestStep.put(paramName, rawTestStepBuilder.toString());
@@ -123,6 +129,32 @@ public class StsFileParser {
 //            }
         }
         return rawTestStep;
+    }
+
+    private List<String> readList(StsFileParsingDetails fileParsingDetails) throws IOException {
+        StringBuilder rawTestStepBuilder = fileParsingDetails.getRawTestStepBuilder();
+        BufferedReader reader = fileParsingDetails.getBufferedReader();
+        int character;
+        rawTestStepBuilder.setLength(0);
+        List<String> result = new ArrayList<>();
+        while ((character = reader.read()) > 0) {
+            if (character == '#') {
+                readUntilFindCharacter(reader, '\n');
+                continue;
+            } else if (character == '\n' && rawTestStepBuilder.length() > 0) {
+                result.add(rawTestStepBuilder.toString());
+                rawTestStepBuilder.setLength(0);
+                continue;
+            } else if (character == ']') {
+                break;
+            }
+
+            if (rawTestStepBuilder.length() > 0 || character != ' ' && character != '\n') {
+                rawTestStepBuilder.append((char) character);
+            }
+
+        }
+        return result;
     }
 
     private void readUntilFindCharacter(BufferedReader bufferedReader, char c) throws IOException {
