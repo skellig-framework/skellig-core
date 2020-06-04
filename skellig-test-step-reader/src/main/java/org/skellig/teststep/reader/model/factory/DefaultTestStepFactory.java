@@ -1,16 +1,18 @@
 package org.skellig.teststep.reader.model.factory;
 
+import org.skellig.teststep.reader.exception.TestStepReadException;
 import org.skellig.teststep.reader.model.TestStep;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 
-public class DefaultTestStepFactory extends BaseTestStepFactory {
+public class DefaultTestStepFactory implements TestStepFactory {
 
     private Collection<TestStepFactory> factories;
 
-    protected DefaultTestStepFactory(Collection<TestStepFactory> factories) {
+    private DefaultTestStepFactory(Collection<TestStepFactory> factories) {
         this.factories = factories;
     }
 
@@ -20,10 +22,8 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
                 .filter(factory -> factory.isConstructableFrom(rawTestStep))
                 .findFirst()
                 .map(factory -> factory.create(rawTestStep))
-                .orElse(new TestStep.Builder<TestStep>()
-                        .withId(getId(rawTestStep))
-                        .withName(getName(rawTestStep))
-                        .build());
+                .orElseThrow(() ->
+                        new TestStepReadException("No Test Step Factory found for raw test step: " + rawTestStep));
     }
 
     @Override
@@ -37,7 +37,6 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
 
         public Build() {
             factories = new ArrayList<>();
-            factories.add(new HttpTestStepFactory());
         }
 
         public Build withFactory(TestStepFactory factory) {
@@ -45,8 +44,23 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
             return this;
         }
 
+        public Build withDefaultFactories(Properties testStepKeywordProperties) {
+            this.factories.add(new HttpTestStepFactory(testStepKeywordProperties));
+            this.factories.add(new DatabaseTestStepFactory(testStepKeywordProperties));
+            return this;
+        }
+
+        public Build withDefaultFactories() {
+            return withDefaultFactories(null);
+        }
+
         public TestStepFactory build() {
+            addLastTestStepFactory();
             return new DefaultTestStepFactory(factories);
+        }
+
+        private void addLastTestStepFactory() {
+            factories.add(new ValidationTestStepFactory());
         }
     }
 }
