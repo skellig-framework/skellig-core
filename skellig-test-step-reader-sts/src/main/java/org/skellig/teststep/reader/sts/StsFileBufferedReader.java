@@ -6,7 +6,7 @@ import java.io.Reader;
 
 class StsFileBufferedReader extends BufferedReader {
 
-    public StsFileBufferedReader(Reader in) {
+    StsFileBufferedReader(Reader in) {
         super(in);
     }
 

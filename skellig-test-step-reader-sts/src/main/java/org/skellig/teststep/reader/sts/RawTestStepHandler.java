@@ -15,7 +15,7 @@ class RawTestStepHandler implements AutoCloseable {
     private boolean isParameter;
     private StringBuilder rawTestStepBuilder;
 
-    public RawTestStepHandler() {
+    RawTestStepHandler() {
         rawTestStepBuilder = new StringBuilder();
     }
 
