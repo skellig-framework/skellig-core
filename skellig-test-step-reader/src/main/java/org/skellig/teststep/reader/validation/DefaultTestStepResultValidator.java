@@ -8,9 +8,9 @@ import org.skellig.teststep.reader.validation.comparator.ValueComparator;
 
 import java.util.List;
 
-public class DefaultTestResultValidator extends BaseTestResultValidator {
+public class DefaultTestStepResultValidator extends BaseTestStepResultValidator {
 
-    public DefaultTestResultValidator(ValueComparator valueComparator) {
+    public DefaultTestStepResultValidator(ValueComparator valueComparator) {
         super(valueComparator);
     }
 
