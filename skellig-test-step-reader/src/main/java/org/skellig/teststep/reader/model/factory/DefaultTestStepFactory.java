@@ -34,31 +34,31 @@ public class DefaultTestStepFactory extends BaseTestStepFactory {
         return true;
     }
 
-    public static class Build {
+    public static class Builder {
 
-        private Collection<TestStepFactory> factories;
+        private Collection<TestStepFactory> testStepFactories;
 
-        public Build() {
-            factories = new ArrayList<>();
+        public Builder() {
+            testStepFactories = new ArrayList<>();
         }
 
-        public Build withFactory(TestStepFactory factory) {
-            this.factories.add(factory);
+        public Builder withTestStepFactory(TestStepFactory factory) {
+            this.testStepFactories.add(factory);
             return this;
         }
 
-        public Build withDefaultFactories(Properties testStepKeywordProperties) {
-            this.factories.add(new HttpTestStepFactory(testStepKeywordProperties));
-            this.factories.add(new DatabaseTestStepFactory(testStepKeywordProperties));
+        public Builder withDefaultFactories(Properties testStepKeywordProperties) {
+            this.testStepFactories.add(new HttpTestStepFactory(testStepKeywordProperties));
+            this.testStepFactories.add(new DatabaseTestStepFactory(testStepKeywordProperties));
             return this;
         }
 
-        public Build withDefaultFactories() {
+        public Builder withDefaultFactories() {
             return withDefaultFactories(null);
         }
 
         public TestStepFactory build() {
-            return new DefaultTestStepFactory(factories);
+            return new DefaultTestStepFactory(testStepFactories);
         }
     }
 }
