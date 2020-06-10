@@ -3,11 +3,18 @@ package org.skellig.teststep.reader.model.factory;
 import org.skellig.teststep.reader.model.HttpTestStep;
 import org.skellig.teststep.reader.model.TestStep;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class HttpTestStepFactory extends BaseTestStepFactory {
 
+    private static final Pattern PATTERN = Pattern.compile(",");
+
+    private static final String SERVICE_KEYWORD = "test.step.service";
     private static final String URL_KEYWORD = "test.step.url";
     private static final String METHOD_KEYWORD = "test.step.http_method";
     private static final String HEADERS_KEYWORD = "test.step.http_headers";
@@ -26,6 +33,7 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
     @Override
     public TestStep create(Map<String, Object> rawTestStep) {
         return new HttpTestStep.Builder()
+                .withService(getServices(rawTestStep))
                 .withUrl((String) rawTestStep.get(getUrlKeyword()))
                 .withMethod((String) rawTestStep.get(getMethodKeyword()))
                 .withHeaders((Map<String, String>) rawTestStep.get(getKeywordName(HEADERS_KEYWORD, "http_headers")))
@@ -38,6 +46,18 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
                 .withTestData(getTestData(rawTestStep))
                 .withValidationDetails(createValidationDetails(rawTestStep))
                 .build();
+    }
+
+    private Collection<String> getServices(Map<String, Object> rawTestStep) {
+        Object rawServices = rawTestStep.get(getKeywordName(SERVICE_KEYWORD, "service"));
+        if (rawServices != null) {
+            if (rawServices instanceof String) {
+                return Stream.of(PATTERN.split((String) rawServices)).collect(Collectors.toList());
+            } else if (rawServices instanceof Collection) {
+                return (Collection<String>) rawServices;
+            }
+        }
+        return null;
     }
 
     @Override
