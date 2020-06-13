@@ -1,4 +1,4 @@
-package org.skellig.teststep.reader.validation.comparator;
+package org.skellig.teststep.processing.validation.comparator;
 
 public class EqualsValueComparator implements ValueComparator {
 
