@@ -52,6 +52,34 @@ class ValidationDetailsFactoryTest {
     }
 
     @Test
+    @DisplayName("When has properties as index Then verify these properties are not changed")
+    void testWithIndexedProperties() {
+        Map<String, Object> rawValidationDetails =
+                createMap("records",
+                        createMap("[0]", "v1",
+                                "[1]", createMap("a2", "v2")
+                        ),
+                        "records[2]", "v3");
+
+        TestStep testStep = validationDetailsFactory.create(createMap("validate", rawValidationDetails));
+        ValidationDetails validationDetails = testStep.getValidationDetails().get();
+
+        assertAll(
+                () -> assertEquals(ValidationType.ALL_MATCH, validationDetails.getExpectedResult().getValidationType()),
+                () -> assertEquals("records", extractExpectedValue(validationDetails.getExpectedResult(), 0).getProperty()),
+                () -> assertEquals("[1]", extractExpectedValue(validationDetails.getExpectedResult(), 0, 0).getProperty()),
+                () -> assertEquals("a2", extractExpectedValue(validationDetails.getExpectedResult(), 0, 0, 0).getProperty()),
+                () -> assertEquals("v2", extractExpectedValue(validationDetails.getExpectedResult(), 0, 0, 0).getExpectedResult()),
+
+                () -> assertEquals("[0]", extractExpectedValue(validationDetails.getExpectedResult(), 0, 1).getProperty()),
+                () -> assertEquals("v1", extractExpectedValue(validationDetails.getExpectedResult(), 0, 1).getExpectedResult()),
+
+                () -> assertEquals("records[2]", extractExpectedValue(validationDetails.getExpectedResult(), 1).getProperty()),
+                () -> assertEquals("v3", extractExpectedValue(validationDetails.getExpectedResult(), 1).getExpectedResult())
+        );
+    }
+
+    @Test
     @DisplayName("When has array of expected values as Map ")
     void testWithArrayOfMaps() {
         Map<String, Object> rawValidationDetails =
