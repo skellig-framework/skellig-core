@@ -46,7 +46,7 @@ class RawTestStepHandler implements AutoCloseable {
                     handleOpenCurlyBracketCharacter(character, reader, rawTestStep);
                 } else if (character == '=') {
                     handleEqualSignCharacter(reader);
-                } else if (character == '[') {
+                } else if (character == '[' && rawTestStepBuilder.length() > 0) {
                     handleArrayBracketCharacter(reader, rawTestStep);
                 } else if (character == '\n') {
                     handleNewLineCharacter(character, rawTestStep);
