@@ -1,19 +1,21 @@
 package org.skellig.teststep.processing.converter;
 
 import org.skellig.teststep.processing.state.TestScenarioState;
+import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor;
+import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TestStepStateValueConverter implements TestStepValueConverter {
 
-    private static final Pattern GET_PATTERN = Pattern.compile("get\\(([\\w_\\$\\.]+)\\)(\\.([\\w_-]+)\\((.*)\\))?");
+    private static final Pattern GET_PATTERN = Pattern.compile("get\\(([\\w_\\$\\.]+)\\)(\\.?(.+))?");
 
     private TestScenarioState testScenarioState;
-    private DefaultValueExtractor valueExtractor;
+    private TestStepValueExtractor valueExtractor;
 
     protected TestStepStateValueConverter(TestScenarioState testScenarioState,
-                                          DefaultValueExtractor valueExtractor) {
+                                          TestStepValueExtractor valueExtractor) {
         this.testScenarioState = testScenarioState;
         this.valueExtractor = valueExtractor;
     }
@@ -49,11 +51,10 @@ public class TestStepStateValueConverter implements TestStepValueConverter {
         String key = matcher.group(1);
         if (testScenarioState.get(key).isPresent()) {
             String originalValue = matcher.group(0);
-            String functionName = matcher.group(3);
-            String functionParameter = matcher.group(4);
+            String extractionParameter = matcher.group(3);
             Object valueFromState = testScenarioState.get(key).get();
 
-            Object extractedValue = valueExtractor.extract(functionName, valueFromState, functionParameter);
+            Object extractedValue = valueExtractor.extract(valueFromState, extractionParameter);
 
             return value.replace(originalValue, String.valueOf(extractedValue));
         } else {
@@ -62,7 +63,7 @@ public class TestStepStateValueConverter implements TestStepValueConverter {
     }
 
     private boolean hasExtractFunction(Matcher matcher) {
-        return matcher.groupCount() == 4;
+        return matcher.groupCount() == 3;
     }
 
     private boolean hasIdOnly(Matcher matcher) {
@@ -71,23 +72,19 @@ public class TestStepStateValueConverter implements TestStepValueConverter {
 
     public static class Builder {
 
-        private DefaultValueExtractor.Builder valueExtractor;
+        private DefaultValueExtractor.Builder valueExtractorBuilder;
 
         public Builder() {
-            valueExtractor = new DefaultValueExtractor.Builder()
-                    .withValueExtractors(new JsonPathTestStepValueExtractor())
-                    .withValueExtractors(new XPathTestStepValueExtractor())
-                    .withValueExtractors(new RegexTestStepValueExtractor())
-                    .withValueExtractors(new TableTestStepValueExtractor());
+            valueExtractorBuilder = new DefaultValueExtractor.Builder();
         }
 
         public Builder withValueExtractor(TestStepValueExtractor valueExtractor) {
-            this.valueExtractor.withValueExtractors(valueExtractor);
+            this.valueExtractorBuilder.withValueExtractors(valueExtractor);
             return this;
         }
 
         public TestStepValueConverter build(TestScenarioState testScenarioState) {
-            return new TestStepStateValueConverter(testScenarioState, valueExtractor.build());
+            return new TestStepStateValueConverter(testScenarioState, valueExtractorBuilder.build());
         }
     }
 

@@ -5,8 +5,8 @@ import org.skellig.teststep.processing.converter.FileValueConverter;
 import org.skellig.teststep.processing.converter.IncrementValueConverter;
 import org.skellig.teststep.processing.converter.TestStepStateValueConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.converter.TestStepValueExtractor;
 import org.skellig.teststep.processing.state.TestScenarioState;
+import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
 import org.skellig.teststep.reader.model.TestStep;
 
 import java.util.ArrayList;

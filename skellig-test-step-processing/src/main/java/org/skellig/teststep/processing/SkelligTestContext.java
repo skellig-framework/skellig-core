@@ -1,11 +1,11 @@
 package org.skellig.teststep.processing;
 
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.converter.TestStepValueExtractor;
 import org.skellig.teststep.processing.processor.DefaultTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.state.ThreadLocalTestScenarioState;
+import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
 import org.skellig.teststep.reader.TestStepReader;
 import org.skellig.teststep.reader.model.factory.TestStepFactory;
 import org.skellig.teststep.reader.sts.StsTestStepReader;
