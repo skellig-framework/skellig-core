@@ -19,12 +19,4 @@ class StsFileBufferedReader extends BufferedReader {
         }
     }
 
-    void skipAllEmptyCharacters() throws IOException {
-        int c;
-        while ((c = read()) > 0) {
-            if (c != ' ' || c != '\n') {
-                break;
-            }
-        }
-    }
 }

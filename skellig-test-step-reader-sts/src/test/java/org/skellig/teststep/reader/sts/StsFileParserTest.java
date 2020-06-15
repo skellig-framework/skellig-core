@@ -1,6 +1,7 @@
 package org.skellig.teststep.reader.sts;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@DisplayName("Read sts-file")
 class StsFileParserTest {
 
     private StsFileParser stsFileParser;
@@ -25,6 +27,7 @@ class StsFileParserTest {
     }
 
     @Test
+    @DisplayName("When test step is simple with parameters, regex and functions")
     void testParseSimpleTestStep() throws URISyntaxException {
         Path filePath = Paths.get(getClass().getResource("/simple-test-steps.sts").toURI());
 
@@ -63,6 +66,7 @@ class StsFileParserTest {
     }
 
     @Test
+    @DisplayName("When value has text enclosed in single quotes")
     void testParseTestStepWithQuotes() throws URISyntaxException {
         Path filePath = Paths.get(getClass().getResource("/test-step-with-quotes.sts").toURI());
 
@@ -81,6 +85,7 @@ class StsFileParserTest {
     }
 
     @Test
+    @DisplayName("When test step has validations")
     void testParseTestStepWithValidations() throws URISyntaxException {
         Path filePath = Paths.get(getClass().getResource("/test-step-with-validations.sts").toURI());
 
@@ -102,6 +107,7 @@ class StsFileParserTest {
     }
 
     @Test
+    @DisplayName("When test step has array of maps")
     void testParseTestStepWithArrayOfMaps() throws URISyntaxException {
         Path filePath = Paths.get(getClass().getResource("/test-step-with-array-of-maps.sts").toURI());
 
@@ -111,14 +117,17 @@ class StsFileParserTest {
         assertAll(
                 () -> assertEquals("do something big", firstTestStep.get("name")),
                 () -> assertEquals(2, ((List) getValueFromMap(firstTestStep, "data", "values")).size()),
-                () -> assertEquals("v1", ((Map) ((List) getValueFromMap(firstTestStep, "data", "values")).get(0)).get("c1")),
-                () -> assertEquals("v2", ((Map) ((List) getValueFromMap(firstTestStep, "data", "values")).get(0)).get("c2")),
-                () -> assertEquals("v3", ((Map) ((List) getValueFromMap(firstTestStep, "data", "values")).get(1)).get("c1")),
-                () -> assertEquals("v4", ((Map) ((List) getValueFromMap(firstTestStep, "data", "values")).get(1)).get("c2"))
+                () -> assertEquals(2, ((Map) getValueFromMap(firstTestStep, "data", "values", 0)).size()),
+                () -> assertEquals("v1", getValueFromMap(firstTestStep, "data", "values", 0, "c1")),
+                () -> assertEquals("v2", getValueFromMap(firstTestStep, "data", "values", 0, "c2")),
+                () -> assertEquals(2, ((Map) getValueFromMap(firstTestStep, "data", "values", 1)).size()),
+                () -> assertEquals("v3", getValueFromMap(firstTestStep, "data", "values", 1, "c1")),
+                () -> assertEquals("v4", getValueFromMap(firstTestStep, "data", "values", 1, "c2"))
         );
     }
 
     @Test
+    @DisplayName("When step is empty")
     void testParseTestStepWithEmptyStep() throws URISyntaxException {
         Path filePath = Paths.get(getClass().getResource("/empty-step.sts").toURI());
 
@@ -129,6 +138,7 @@ class StsFileParserTest {
     }
 
     @Test
+    @DisplayName("When test step has complex validation details")
     void testParseTestStepWithComplexValidation() throws URISyntaxException {
         Path filePath = Paths.get(getClass().getResource("/test-step-with-complex-validations.sts").toURI());
 
@@ -137,8 +147,8 @@ class StsFileParserTest {
         Map<String, Object> firstTestStep = testSteps.get(0);
         assertAll(
                 () -> assertEquals("application/json", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "headers", "content-type")),
-                () -> assertEquals("contains(fail)", ((List) getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "log", "none_match")).get(0)),
-                () -> assertEquals("contains(error)", ((List) getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "log", "none_match")).get(1)),
+                () -> assertEquals("contains(fail)", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "log", "none_match", 0)),
+                () -> assertEquals("contains(error)", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "log", "none_match", 1)),
                 () -> assertEquals("v3", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "body", "regex(.*f3=(\\\\w+).*)")),
                 () -> assertEquals("v2", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "body", "json_path(f1.f3)")),
                 () -> assertEquals("v1", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "body", "json_path(f1.f2)")),
@@ -146,11 +156,40 @@ class StsFileParserTest {
         );
     }
 
-    private Object getValueFromMap(Map<String, Object> data, String... keys) {
+    @Test
+    @DisplayName("When test step has validation details with array of maps and properties as indexes")
+    void testParseTestStepWithArrayValidation() throws URISyntaxException {
+        Path filePath = Paths.get(getClass().getResource("/test-step-with-array-validations.sts").toURI());
+
+        List<Map<String, Object>> testSteps = stsFileParser.parse(filePath);
+
+        Map<String, Object> firstTestStep = testSteps.get(0);
+        assertAll(
+                () -> assertEquals("3", getValueFromMap(firstTestStep, "validate", "size")),
+                () -> assertEquals("contains(v1)", getValueFromMap(firstTestStep, "validate", "records", "[0]")),
+                () -> assertEquals("contains(v2)", getValueFromMap(firstTestStep, "validate", "records", "[1]")),
+                () -> assertEquals("v1", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c1", "none_match", 0)),
+                () -> assertEquals("v2", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c1", "none_match", 1)),
+                () -> assertEquals("v3", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c1", "none_match", 2)),
+
+                () -> assertEquals("v5", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c2", "any_match", 0)),
+                () -> assertEquals("v6", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c2", "any_match", 1)),
+
+                () -> assertEquals("v2", getValueFromMap(firstTestStep, "validate", "all_match", 1, "c1")),
+
+                () -> assertEquals("v1", getValueFromMap(firstTestStep, "validate", "[0]", "c1"))
+        );
+    }
+
+    private Object getValueFromMap(Map<String, Object> data, Object... keys) {
         Object value = data;
-        for (String key : keys) {
-            if (value instanceof Map) {
-                value = ((Map) value).get(key);
+        for (Object key : keys) {
+            if (key instanceof String) {
+                if (value instanceof Map) {
+                    value = ((Map) value).get(key);
+                }
+            } else if (key instanceof Integer) {
+                value = ((List) value).get((Integer) key);
             }
         }
         return value;
