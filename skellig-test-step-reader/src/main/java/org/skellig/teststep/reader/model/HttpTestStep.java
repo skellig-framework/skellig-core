@@ -60,7 +60,7 @@ public class HttpTestStep extends TestStep {
         return form;
     }
 
-    public static class Builder extends TestStep.Builder<HttpTestStep> {
+    public static class Builder extends TestStep.Builder {
 
         private Collection<String> services;
         private String url;
