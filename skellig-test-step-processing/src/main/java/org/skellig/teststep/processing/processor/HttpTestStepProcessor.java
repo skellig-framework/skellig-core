@@ -5,30 +5,25 @@ import org.skellig.connection.http.HttpChannel;
 import org.skellig.connection.http.model.HttpMethodName;
 import org.skellig.connection.http.model.HttpRequestDetails;
 import org.skellig.connection.http.model.HttpResponse;
+import org.skellig.teststep.processing.model.HttpTestStep;
 import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.reader.model.HttpTestStep;
-import org.skellig.teststep.reader.model.TestStep;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpTestStepProcessor implements TestStepProcessor {
+public class HttpTestStepProcessor extends BaseTestStepProcessor<HttpTestStep> {
 
     private Map<String, SendingChannel> httpChannelPerService;
-    private TestScenarioState testScenarioState;
 
     private HttpTestStepProcessor(Map<String, SendingChannel> httpChannelPerService,
                                   TestScenarioState testScenarioState) {
+        super(testScenarioState);
         this.httpChannelPerService = httpChannelPerService;
     }
 
     @Override
-    public void process(TestStep testStep) {
-        HttpTestStep httpTestStep = (HttpTestStep) testStep;
-
-        Object result = callHttpServices(httpTestStep);
-
-        testScenarioState.set(httpTestStep.getId(), result);
+    protected Object processTestStep(HttpTestStep testStep) {
+        return callHttpServices(testStep);
     }
 
     private Object callHttpServices(HttpTestStep httpTestStep) {
@@ -81,7 +76,7 @@ public class HttpTestStepProcessor implements TestStepProcessor {
             return this;
         }
 
-        public TestStepProcessor build() {
+        public TestStepProcessor<HttpTestStep> build() {
             return new HttpTestStepProcessor(httpChannelPerService, testScenarioState);
         }
     }

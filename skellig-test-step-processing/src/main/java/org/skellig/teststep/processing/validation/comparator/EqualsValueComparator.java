@@ -2,7 +2,7 @@ package org.skellig.teststep.processing.validation.comparator;
 
 import java.util.Objects;
 
-public class EqualsValueComparator implements ValueComparator {
+class EqualsValueComparator implements ValueComparator {
 
     @Override
     public boolean compare(Object actualValue, Object expectedValue) {

@@ -1,9 +1,9 @@
 package org.skellig.teststep.processing.validation;
 
+import org.skellig.teststep.processing.model.ExpectedResult;
+import org.skellig.teststep.processing.model.ValidationType;
 import org.skellig.teststep.processing.validation.comparator.ValueComparator;
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
-import org.skellig.teststep.reader.model.ExpectedResult;
-import org.skellig.teststep.reader.model.ValidationType;
 
 import java.util.List;
 

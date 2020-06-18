@@ -4,9 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
+import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.reader.TestStepReader;
-import org.skellig.teststep.reader.model.TestStep;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -88,12 +88,11 @@ class DefaultTestStepRunnerTest {
                 .build();
 
         when(testStepReader.read(any(Path.class)))
-                .thenReturn(Stream.of(testStep).collect(Collectors.toList()));
+                .thenReturn(Stream.of(Collections.<String, Object>emptyMap()).collect(Collectors.toList()));
     }
 
     private void initializeTestStepRunner() throws URISyntaxException {
         testStepRunner = new DefaultTestStepRunner.Builder()
-                .withClassLoader(getClass().getClassLoader())
                 .withTestStepProcessor(testStepProcessor)
                 .withTestStepReader(testStepReader, Collections.singletonList(Paths.get(getClass().getResource("/steps").toURI())))
                 .build();

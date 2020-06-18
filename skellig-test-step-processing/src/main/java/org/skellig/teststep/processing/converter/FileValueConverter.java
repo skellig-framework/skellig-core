@@ -10,14 +10,14 @@ import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FileValueConverter implements TestStepValueConverter {
+class FileValueConverter implements TestStepValueConverter {
 
     private static final String FILE_REGEX = "file\\((.+)\\)";
 
     private final Pattern filePathPattern;
     private final ClassLoader classLoader;
 
-    public FileValueConverter(ClassLoader classLoader) {
+    FileValueConverter(ClassLoader classLoader) {
         this.classLoader = classLoader;
         filePathPattern = Pattern.compile(FILE_REGEX);
     }

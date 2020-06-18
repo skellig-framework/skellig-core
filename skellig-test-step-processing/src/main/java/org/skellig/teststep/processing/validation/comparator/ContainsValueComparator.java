@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ContainsValueComparator implements ValueComparator {
+class ContainsValueComparator implements ValueComparator {
 
     private static final Pattern CONTAINS_PATTERN = Pattern.compile("contains\\((.+)\\)");
 

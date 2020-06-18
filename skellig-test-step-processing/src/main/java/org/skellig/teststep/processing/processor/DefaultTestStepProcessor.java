@@ -1,16 +1,16 @@
 package org.skellig.teststep.processing.processor;
 
+import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
 import org.skellig.teststep.reader.exception.ValidationException;
-import org.skellig.teststep.reader.model.TestStep;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class DefaultTestStepProcessor implements TestStepProcessor {
+public class DefaultTestStepProcessor implements TestStepProcessor<TestStep> {
 
     private List<TestStepProcessor> testStepProcessors;
     private TestScenarioState testScenarioState;
@@ -27,7 +27,7 @@ public class DefaultTestStepProcessor implements TestStepProcessor {
     @Override
     public void process(TestStep testStep) {
         Optional<TestStepProcessor> testStepProcessor = testStepProcessors.stream()
-                .filter(processor -> processor.getTestStepClass().equals(testStep.getClass()))
+                .filter(processor -> testStep.getClass().equals(processor.getTestStepClass()))
                 .findFirst();
 
         testStepProcessor.ifPresent(stepProcessor -> stepProcessor.process(testStep));
@@ -49,12 +49,12 @@ public class DefaultTestStepProcessor implements TestStepProcessor {
     }
 
     private Object getResultByTestStepId(String testStepId) {
-        return testScenarioState.get(testStepId)
+        return testScenarioState.get(testStepId + ".result")
                 .orElseThrow(() -> new ValidationException(String.format("Result of the test step '%s' not found", testStepId)));
     }
 
     @Override
-    public Class<? extends TestStep> getTestStepClass() {
+    public Class<TestStep> getTestStepClass() {
         return TestStep.class;
     }
 
@@ -68,7 +68,7 @@ public class DefaultTestStepProcessor implements TestStepProcessor {
             testStepProcessors = new ArrayList<>();
         }
 
-        public Builder withTestStepProcessor(TestStepProcessor testStepProcessor) {
+        public Builder withTestStepProcessor(TestStepProcessor<? extends TestStep> testStepProcessor) {
             this.testStepProcessors.add(testStepProcessor);
             return this;
         }
@@ -83,7 +83,7 @@ public class DefaultTestStepProcessor implements TestStepProcessor {
             return this;
         }
 
-        public TestStepProcessor build() {
+        public TestStepProcessor<TestStep> build() {
             Objects.requireNonNull(testScenarioState, "TestScenarioState must be provided");
 
             return new DefaultTestStepProcessor(testStepProcessors, testScenarioState, validator);

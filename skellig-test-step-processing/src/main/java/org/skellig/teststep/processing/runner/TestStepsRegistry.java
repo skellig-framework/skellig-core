@@ -1,9 +1,8 @@
 package org.skellig.teststep.processing.runner;
 
 import org.skellig.teststep.processing.exception.TestStepRegistryException;
+import org.skellig.teststep.processing.model.TestStepFileExtension;
 import org.skellig.teststep.reader.TestStepReader;
-import org.skellig.teststep.reader.model.TestStep;
-import org.skellig.teststep.reader.model.TestStepFileExtension;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 
 class TestStepsRegistry {
 
-    private Collection<TestStep> testSteps;
+    private Collection<Map<String, Object>> testSteps;
     private TestStepFileExtension testStepFileExtension;
     private Map<String, Pattern> stepNamePatternsCache;
     private TestStepReader testStepReader;
@@ -37,21 +36,25 @@ class TestStepsRegistry {
         testSteps = getTestStepsFromPath(testStepsPaths);
     }
 
-    Optional<TestStep> getByName(String testStepName) {
+    Optional<Map<String, Object>> getByName(String testStepName) {
         return testSteps.parallelStream()
-                .filter(testStep -> getPatternOfTestStep(testStep.getName()).matcher(testStepName).matches())
+                .filter(testStep -> getPatternOfTestStep(getTestStepName(testStep)).matcher(testStepName).matches())
                 .findFirst();
     }
 
-    Map<String, String> extractParametersFromTestStepName(TestStep testStep, String testStepName) {
+    Map<String, String> extractParametersFromTestStepName(Map<String, Object> rawTestStep, String testStepName) {
         Map<String, String> parameters = new HashMap<>();
-        Matcher matcher = getPatternOfTestStep(testStep.getName()).matcher(testStepName);
+        Matcher matcher = getPatternOfTestStep(getTestStepName(rawTestStep)).matcher(testStepName);
         if (matcher.find()) {
             for (int i = 1; i <= matcher.groupCount(); i++) {
                 parameters.put("$" + i, matcher.group(i));
             }
         }
         return parameters;
+    }
+
+    private String getTestStepName(Map<String, Object> rawTestStep) {
+        return String.valueOf(rawTestStep.get("name"));
     }
 
     Collection<Path> getTestStepsRootPath() {
@@ -62,7 +65,7 @@ class TestStepsRegistry {
         return stepNamePatternsCache.computeIfAbsent(testStepName, v -> Pattern.compile(testStepName));
     }
 
-    private Collection<TestStep> getTestStepsFromPath(Collection<Path> rootPaths) {
+    private Collection<Map<String, Object>> getTestStepsFromPath(Collection<Path> rootPaths) {
         return rootPaths.stream()
                 .map(rootPath -> {
                     try {
