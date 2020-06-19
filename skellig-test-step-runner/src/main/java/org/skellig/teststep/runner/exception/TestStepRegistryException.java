@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.exception;
+package org.skellig.teststep.runner.exception;
 
 public class TestStepRegistryException extends RuntimeException {
 

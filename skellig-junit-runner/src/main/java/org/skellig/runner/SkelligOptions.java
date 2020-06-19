@@ -1,6 +1,6 @@
 package org.skellig.runner;
 
-import org.skellig.teststep.processing.SkelligTestContext;
+import org.skellig.teststep.runner.context.SkelligTestContext;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

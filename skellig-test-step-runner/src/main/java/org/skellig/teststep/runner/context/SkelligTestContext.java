@@ -1,16 +1,12 @@
-package org.skellig.teststep.processing;
+package org.skellig.teststep.runner.context;
 
 import org.skellig.teststep.processing.converter.DefaultValueConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.model.HttpTestStep;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory;
 import org.skellig.teststep.processing.model.factory.TestStepFactory;
 import org.skellig.teststep.processing.processor.DefaultTestStepProcessor;
-import org.skellig.teststep.processing.processor.HttpTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.runner.DefaultTestStepRunner;
-import org.skellig.teststep.processing.runner.TestStepRunner;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.state.ThreadLocalTestScenarioState;
 import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator;
@@ -21,6 +17,8 @@ import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor;
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
 import org.skellig.teststep.reader.TestStepReader;
 import org.skellig.teststep.reader.sts.StsTestStepReader;
+import org.skellig.teststep.runner.DefaultTestStepRunner;
+import org.skellig.teststep.runner.TestStepRunner;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -70,18 +68,11 @@ public class SkelligTestContext {
                         .withValueComparator(valueComparatorBuilder.build())
                         .build();
 
-        //TODO: find a way to provide http services and urls
-        TestStepProcessor<HttpTestStep> testStepProcessor = new HttpTestStepProcessor.Builder()
-                .withHttpService("", "")
-                .withTestScenarioState(testScenarioState)
-                .build();
-
         DefaultTestStepProcessor.Builder testStepProcessorBuilder = new DefaultTestStepProcessor.Builder();
         additionalTestStepProcessors.forEach(item -> testStepProcessorBuilder.withTestStepProcessor(item.getTestStepProcessor()));
         return testStepProcessorBuilder
                 .withTestScenarioState(testScenarioState)
                 .withValidator(validator)
-                .withTestStepProcessor(testStepProcessor)
                 .build();
     }
 
@@ -137,15 +128,15 @@ public class SkelligTestContext {
     }
 
     public static final class TestStepProcessorDetails {
-        private TestStepProcessor<? super TestStep> testStepProcessor;
+        private TestStepProcessor testStepProcessor;
         private TestStepFactory testStepFactory;
 
-        public TestStepProcessorDetails(TestStepProcessor<? super TestStep> testStepProcessor, TestStepFactory testStepFactory) {
+        public TestStepProcessorDetails(TestStepProcessor testStepProcessor, TestStepFactory testStepFactory) {
             this.testStepProcessor = testStepProcessor;
             this.testStepFactory = testStepFactory;
         }
 
-        public TestStepProcessor<? super TestStep> getTestStepProcessor() {
+        public TestStepProcessor getTestStepProcessor() {
             return testStepProcessor;
         }
 
