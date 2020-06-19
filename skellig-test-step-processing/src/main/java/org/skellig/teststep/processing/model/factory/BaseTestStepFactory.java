@@ -22,7 +22,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     private static final Pattern GROUPED_PROPERTIES_PATTERN = Pattern.compile("\\[([\\w,\\s]+)\\]");
     private static final Pattern INDEX_PROPERTY_PATTERN = Pattern.compile("\\[\\s*\\d+\\s*\\]");
     private static final Pattern SPLIT_PATTERN = Pattern.compile(",");
-    private static final String TEST_STEP_NAME_KEYWORD = "test.step.name";
+    private static final String TEST_STEP_NAME_KEYWORD = "test.step.keyword.name";
 
     private static Set<String> testDataKeywords;
     private static Set<String> validationKeywords;
@@ -31,36 +31,35 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     private Properties keywordsProperties;
     private TestStepValueConverter testStepValueConverter;
 
-    public BaseTestStepFactory(TestStepValueConverter testStepValueConverter) {
-        this(null, testStepValueConverter);
-    }
-
     public BaseTestStepFactory(Properties keywordsProperties, TestStepValueConverter testStepValueConverter) {
         this.keywordsProperties = keywordsProperties;
         this.testStepValueConverter = testStepValueConverter;
 
         if (testDataKeywords == null) {
-            testDataKeywords = Stream.of(getKeywordName("test.step.data", "data"),
-                    getKeywordName("test.step.payload", "payload"),
-                    getKeywordName("test.step.body", "body"),
-                    getKeywordName("test.step.request", "request"),
-                    getKeywordName("test.step.response", "response"),
-                    getKeywordName("test.step.message", "message"))
+            testDataKeywords = Stream.of(
+                    getKeywordName("test.step.keyword.data", "data"),
+                    getKeywordName("test.step.keyword.payload", "payload"),
+                    getKeywordName("test.step.keyword.body", "body"),
+                    getKeywordName("test.step.keyword.request", "request"),
+                    getKeywordName("test.step.keyword.response", "response"),
+                    getKeywordName("test.step.keyword.message", "message"))
                     .collect(Collectors.toSet());
         }
         if (validationKeywords == null) {
-            validationKeywords = Stream.of(getKeywordName("test.step.validate", "validate"),
-                    getKeywordName("test.step.expected_result", "expected result"),
-                    getKeywordName("test.step.expected_response", "expected response"),
-                    getKeywordName("test.step.expected_message", "expected message"),
-                    getKeywordName("test.step.assert", "assert"))
+            validationKeywords = Stream.of(
+                    getKeywordName("test.step.keyword.validate", "validate"),
+                    getKeywordName("test.step.keyword.expected_result", "expected result"),
+                    getKeywordName("test.step.keyword.expected_response", "expected response"),
+                    getKeywordName("test.step.keyword.expected_message", "expected message"),
+                    getKeywordName("test.step.keyword.assert", "assert"))
                     .collect(Collectors.toSet());
         }
         if (validationTypeKeywords == null) {
-            validationTypeKeywords = Stream.of(getKeywordName("test.step.all_match", "all_match"),
-                    getKeywordName("test.step.any_match", "any_match"),
-                    getKeywordName("test.step.none_match", "none_match"),
-                    getKeywordName("test.step.any_none_match", "any_none_match"))
+            validationTypeKeywords = Stream.of(
+                    getKeywordName("test.step.keyword.all_match", "all_match"),
+                    getKeywordName("test.step.keyword.any_match", "any_match"),
+                    getKeywordName("test.step.keyword.none_match", "none_match"),
+                    getKeywordName("test.step.keyword.any_none_match", "any_none_match"))
                     .collect(Collectors.toSet());
         }
     }
@@ -188,7 +187,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     }
 
     protected String getFromTestKeyword() {
-        return getKeywordName("test.step.from_test", "from_test");
+        return getKeywordName("test.step.keyword.from_test", "from_test");
     }
 
     protected String getKeywordName(String keywordName, String defaultValue) {

@@ -16,18 +16,14 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
 
     private static final Pattern PATTERN = Pattern.compile(",");
 
-    private static final String SERVICE_KEYWORD = "test.step.service";
-    private static final String URL_KEYWORD = "test.step.url";
-    private static final String METHOD_KEYWORD = "test.step.http_method";
-    private static final String HEADERS_KEYWORD = "test.step.http_headers";
-    private static final String QUERY_KEYWORD = "test.step.http_query";
-    private static final String FORM_KEYWORD = "test.step.form";
-    private static final String USER_KEYWORD = "test.step.username";
-    private static final String PASSWORD_KEYWORD = "test.step.password";
-
-    public HttpTestStepFactory(TestStepValueConverter testStepValueConverter) {
-        this(null, testStepValueConverter);
-    }
+    private static final String SERVICE_KEYWORD = "test.step.keyword.service";
+    private static final String URL_KEYWORD = "test.step.keyword.url";
+    private static final String METHOD_KEYWORD = "test.step.keyword.http_method";
+    private static final String HEADERS_KEYWORD = "test.step.keyword.http_headers";
+    private static final String QUERY_KEYWORD = "test.step.keyword.http_query";
+    private static final String FORM_KEYWORD = "test.step.keyword.form";
+    private static final String USER_KEYWORD = "test.step.keyword.username";
+    private static final String PASSWORD_KEYWORD = "test.step.keyword.password";
 
     public HttpTestStepFactory(Properties keywordsProperties, TestStepValueConverter testStepValueConverter) {
         super(keywordsProperties, testStepValueConverter);
