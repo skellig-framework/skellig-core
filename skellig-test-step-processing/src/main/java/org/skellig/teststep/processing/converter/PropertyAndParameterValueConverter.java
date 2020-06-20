@@ -17,14 +17,14 @@ class PropertyAndParameterValueConverter implements TestStepValueConverter {
     private static final String PARAMETERS_KEY = "parameters";
 
     private TestScenarioState testScenarioState;
-    private Function<String, String> getPropertyExtractorFunction;
+    private Function<String, String> propertyExtractorFunction;
     private List<TestStepValueConverter> valueConverters;
 
     PropertyAndParameterValueConverter(TestScenarioState testScenarioState,
                                        List<TestStepValueConverter> valueConverters,
-                                       Function<String, String> getPropertyExtractorFunction) {
+                                       Function<String, String> propertyExtractorFunction) {
         this.testScenarioState = testScenarioState;
-        this.getPropertyExtractorFunction = getPropertyExtractorFunction;
+        this.propertyExtractorFunction = propertyExtractorFunction;
         // It's important to add this converter at the beginning of the list
         // to make sure that parameters and other properties are processes first before other functions
         if (valueConverters.stream().noneMatch(item -> getClass().equals(item.getClass()))) {
@@ -60,8 +60,8 @@ class PropertyAndParameterValueConverter implements TestStepValueConverter {
             propertyValue = String.valueOf(parameters.get(propertyKey));
         }
 
-        if (propertyValue == null && getPropertyExtractorFunction != null) {
-            propertyValue = getPropertyExtractorFunction.apply(propertyKey);
+        if (propertyValue == null && propertyExtractorFunction != null) {
+            propertyValue = propertyExtractorFunction.apply(propertyKey);
         }
         if (propertyValue == null) {
             propertyValue = System.getProperty(propertyKey);
