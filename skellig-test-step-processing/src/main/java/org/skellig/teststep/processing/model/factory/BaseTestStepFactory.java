@@ -176,6 +176,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
     }
 
     private ExpectedResult createExpectedResult(String propertyName, Object expectedResult, Map<String, Object> parameters) {
+        expectedResult = convertValue(expectedResult, parameters);
         if (expectedResult instanceof Map) {
             Map<String, Object> expectedResultAsMap = (Map) expectedResult;
 
@@ -196,7 +197,7 @@ public abstract class BaseTestStepFactory implements TestStepFactory {
             expectedResult = createExpectedResults((List<Object>) expectedResult, parameters);
             return new ExpectedResult(propertyName, expectedResult, ValidationType.ALL_MATCH);
         } else {
-            return new ExpectedResult(propertyName, convertValue(expectedResult, parameters), null);
+            return new ExpectedResult(propertyName, expectedResult, null);
         }
     }
 
