@@ -15,6 +15,10 @@ dependencies {
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }
 
+test {
+    useJUnitPlatform()
+}
+
 modifyPom {
     project {
         name = 'Skellig Framework JUnit Runner'
