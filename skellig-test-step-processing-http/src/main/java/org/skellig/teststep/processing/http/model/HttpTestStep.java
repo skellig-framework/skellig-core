@@ -17,7 +17,7 @@ public class HttpTestStep extends TestStep {
     private Map<String, String> query;
     private Map<String, String> form;
 
-    protected HttpTestStep(String id, String name, Map<String, String> variables, Object testData, ValidationDetails validationDetails,
+    protected HttpTestStep(String id, String name, Map<String, Object> variables, Object testData, ValidationDetails validationDetails,
                            Collection<String> services, String url, String method, String username, String password,
                            Map<String, String> headers, Map<String, String> query, Map<String, String> form) {
         super(id, name, variables, testData, validationDetails);

@@ -24,7 +24,7 @@ public class DefaultValueConverter implements TestStepValueConverter {
                 result = valueConverter.convert((String) result);
             }
         }
-        return value;
+        return result;
     }
 
     public static class Builder {

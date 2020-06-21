@@ -48,22 +48,22 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
                         .build();
     }
 
-    private Map<String, String> getForm(Map<String, Object> rawTestStep, Map<String, String> parameters) {
+    private Map<String, String> getForm(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
         return ((Map<String, String>) rawTestStep.get(getKeywordName(FORM_KEYWORD, "form"))).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue(), parameters)));
     }
 
-    private Map<String, String> getHttpQuery(Map<String, Object> rawTestStep, Map<String, String> parameters) {
+    private Map<String, String> getHttpQuery(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
         return ((Map<String, String>) rawTestStep.get(getKeywordName(QUERY_KEYWORD, "http_query"))).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue(), parameters)));
     }
 
-    private Map<String, String> getHttpHeaders(Map<String, Object> rawTestStep, Map<String, String> parameters) {
+    private Map<String, String> getHttpHeaders(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
         return ((Map<String, String>) rawTestStep.get(getKeywordName(HEADERS_KEYWORD, "http_headers"))).entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> convertValue(entry.getValue(), parameters)));
     }
 
-    private Collection<String> getServices(Map<String, Object> rawTestStep, Map<String, String> parameters) {
+    private Collection<String> getServices(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
         Object rawServices = rawTestStep.get(getKeywordName(SERVICE_KEYWORD, "service"));
         if (rawServices != null) {
             if (rawServices instanceof String) {
