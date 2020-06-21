@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.http.model.factory;
 
+import org.skellig.teststep.processing.converter.TestDataConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.http.model.HttpTestStep;
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
@@ -24,8 +25,10 @@ public class HttpTestStepFactory extends BaseTestStepFactory {
     private static final String USER_KEYWORD = "test.step.keyword.username";
     private static final String PASSWORD_KEYWORD = "test.step.keyword.password";
 
-    public HttpTestStepFactory(Properties keywordsProperties, TestStepValueConverter testStepValueConverter) {
-        super(keywordsProperties, testStepValueConverter);
+    public HttpTestStepFactory(Properties keywordsProperties,
+                               TestStepValueConverter testStepValueConverter,
+                               TestDataConverter testDataConverter) {
+        super(keywordsProperties, testStepValueConverter, testDataConverter);
     }
 
     @Override

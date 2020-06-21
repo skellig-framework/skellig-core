@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.db.model.factory;
 
+import org.skellig.teststep.processing.converter.TestDataConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.db.model.DatabaseTestStep;
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
@@ -13,13 +14,10 @@ public class DatabaseTestStepFactory extends BaseTestStepFactory {
     private static final String COMMAND_KEYWORD = "test.step.keyword.command";
     private static final String QUERY_KEYWORD = "test.step.keyword.query";
 
-    public DatabaseTestStepFactory(TestStepValueConverter testStepValueConverter) {
-        this(null, testStepValueConverter);
-    }
-
     public DatabaseTestStepFactory(Properties keywordsProperties,
-                                   TestStepValueConverter testStepValueConverter) {
-        super(keywordsProperties, testStepValueConverter);
+                                   TestStepValueConverter testStepValueConverter,
+                                   TestDataConverter testDataConverter) {
+        super(keywordsProperties, testStepValueConverter, testDataConverter);
     }
 
     @Override

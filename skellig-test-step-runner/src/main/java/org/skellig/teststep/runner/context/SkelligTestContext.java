@@ -1,6 +1,8 @@
 package org.skellig.teststep.runner.context;
 
+import org.skellig.teststep.processing.converter.DefaultTestDataConverter;
 import org.skellig.teststep.processing.converter.DefaultValueConverter;
+import org.skellig.teststep.processing.converter.TestDataConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory;
@@ -30,6 +32,7 @@ import java.util.function.Function;
 public class SkelligTestContext {
 
     private TestStepValueConverter testStepValueConverter;
+    private TestDataConverter testDataConverter;
     private TestScenarioState testScenarioState;
 
     public TestStepRunner initialize(ClassLoader classLoader, List<Path> testStepPaths) {
@@ -38,6 +41,8 @@ public class SkelligTestContext {
 
         TestStepValueExtractor valueExtractor = createTestStepValueExtractor();
         testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState);
+
+        testDataConverter = createTestDataConverter(classLoader);
 
         List<TestStepProcessorDetails> testStepProcessors = getTestStepProcessors();
         TestStepProcessor<TestStep> testStepProcessor = createTestStepProcessor(valueExtractor, testStepProcessors, testScenarioState);
@@ -58,6 +63,7 @@ public class SkelligTestContext {
         return testStepFactoryBuilder
                 .withKeywordsProperties(getTestStepKeywordsProperties())
                 .withTestStepValueConverter(testStepValueConverter)
+                .withTestDataConverter(testDataConverter)
                 .build();
     }
 
@@ -102,6 +108,13 @@ public class SkelligTestContext {
                 .build();
     }
 
+    private TestDataConverter createTestDataConverter(ClassLoader classLoader) {
+        final DefaultTestDataConverter.Builder builder = new DefaultTestDataConverter.Builder();
+        getAdditionalTestDataConverters().forEach(builder::withTestDataConverter);
+
+        return builder.withClassLoader(classLoader).build();
+    }
+
     private TestStepValueExtractor createTestStepValueExtractor() {
         DefaultValueExtractor.Builder valueExtractorBuilder = new DefaultValueExtractor.Builder();
         getAdditionalTestStepValueExtractors().forEach(valueExtractorBuilder::withValueExtractor);
@@ -128,6 +141,10 @@ public class SkelligTestContext {
         return Collections.emptyList();
     }
 
+    protected List<TestDataConverter> getAdditionalTestDataConverters() {
+        return Collections.emptyList();
+    }
+
     protected List<TestStepProcessorDetails> getTestStepProcessors() {
         return Collections.emptyList();
     }
@@ -142,8 +159,9 @@ public class SkelligTestContext {
 
     protected TestStepFactory createTestStepFactoryFrom(TestStepFactoryCreationDelegate delegate) {
         Objects.requireNonNull(testStepValueConverter, "TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?");
+        Objects.requireNonNull(testDataConverter, "TestDataConverter must be initialized first. Did you forget to call 'initialize'?");
 
-        return delegate.create(getTestStepKeywordsProperties(), testStepValueConverter);
+        return delegate.create(getTestStepKeywordsProperties(), testStepValueConverter, testDataConverter);
     }
 
     protected static final class TestStepProcessorDetails {
@@ -167,6 +185,7 @@ public class SkelligTestContext {
     }
 
     protected interface TestStepFactoryCreationDelegate {
-        TestStepFactory create(Properties keywordsProperties, TestStepValueConverter testStepValueConverter);
+        TestStepFactory create(Properties keywordsProperties, TestStepValueConverter testStepValueConverter,
+                               TestDataConverter testDataConverter);
     }
 }
