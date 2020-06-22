@@ -97,9 +97,7 @@ class DefaultTestStepFactoryTest {
                         )
                 );
 
-        final long start = System.currentTimeMillis();
         TestStep testStep = testStepFactory.create("test 1", rawTestStep, Collections.emptyMap());
-        System.out.println(System.currentTimeMillis() - start);
 
         assertAll(
                 () -> assertEquals(generatedId, ((Map) testStep.getTestData()).get("id")),
@@ -139,6 +137,16 @@ class DefaultTestStepFactoryTest {
                 () -> assertEquals("id", extractExpectedValue(validationDetails.getExpectedResult(), 1).getProperty()),
                 () -> assertEquals(generatedId, extractExpectedValue(validationDetails.getExpectedResult(), 1).getExpectedResult())
         );
+    }
+
+    @Test
+    void testWithNestedParameters() {
+        Map<String, Object> rawTestStep =
+                createMap("payload", "${key_1 : ${key_2 : v3}}");
+
+        TestStep testStep = testStepFactory.create("test 1", rawTestStep, Collections.singletonMap("key_2", "v2"));
+
+        assertEquals("v2", testStep.getTestData());
     }
 
 }

@@ -67,7 +67,7 @@ public class DefaultValueConverter implements TestStepValueConverter {
         public TestStepValueConverter build() {
             Objects.requireNonNull(testScenarioState, "Test Scenario State must be provided");
 
-            valueConverters.add(0, new PropertyAndParameterValueConverter(testScenarioState, valueConverters, getPropertyFunction));
+            valueConverters.add(0, new PropertyValueConverter(valueConverters, getPropertyFunction));
             withValueConverter(new TestStepStateValueConverter(testScenarioState, testStepValueExtractor));
             if (classLoader != null) {
                 withValueConverter(new FileValueConverter(classLoader));

@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.converter;
 
 
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
+import org.skellig.teststep.processing.exception.TestValueConversionException;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -37,10 +37,10 @@ class FileValueConverter implements TestStepValueConverter {
             try {
                 return new String(Files.readAllBytes(Paths.get(resource.toURI())), StandardCharsets.UTF_8);
             } catch (Exception e) {
-                throw new TestStepProcessingException(String.format("Failed to read file '%s'", pathToFile), e);
+                throw new TestValueConversionException(String.format("Failed to read file '%s'", pathToFile), e);
             }
         } else {
-            throw new TestStepProcessingException(String.format("File '%s' doesn't exist", pathToFile));
+            throw new TestValueConversionException(String.format("File '%s' doesn't exist", pathToFile));
         }
     }
 }

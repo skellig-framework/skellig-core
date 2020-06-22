@@ -17,12 +17,12 @@ import java.util.Optional;
 
 public class DefaultTestStepRunner implements TestStepRunner {
 
-    private TestStepProcessor testStepProcessor;
+    private TestStepProcessor<TestStep> testStepProcessor;
     private TestStepsRegistry testStepsRegistry;
     private TestStepFactory testStepFactory;
     private TestScenarioState testScenarioState;
 
-    protected DefaultTestStepRunner(TestStepProcessor testStepProcessor,
+    protected DefaultTestStepRunner(TestStepProcessor<TestStep> testStepProcessor,
                                     TestStepsRegistry testStepsRegistry,
                                     TestStepFactory testStepFactory,
                                     TestScenarioState testScenarioState) {
@@ -46,8 +46,6 @@ public class DefaultTestStepRunner implements TestStepRunner {
             testScenarioState.set(testStep.getId(), testStep);
 
             testStepProcessor.process(testStep);
-
-            testScenarioState.set(testStep.getId(), testStep);
         } else {
             throw new TestStepProcessingException(
                     String.format("Test step '%s' is not found in any of registered test data files from: %s",
@@ -57,7 +55,7 @@ public class DefaultTestStepRunner implements TestStepRunner {
 
     public static class Builder {
 
-        private TestStepProcessor testStepProcessor;
+        private TestStepProcessor<TestStep> testStepProcessor;
         private TestStepReader testStepReader;
         private TestScenarioState testScenarioState;
         private Collection<Path> testStepPaths;
@@ -68,7 +66,7 @@ public class DefaultTestStepRunner implements TestStepRunner {
             return this;
         }
 
-        public Builder withTestStepProcessor(TestStepProcessor testStepProcessor) {
+        public Builder withTestStepProcessor(TestStepProcessor<TestStep> testStepProcessor) {
             this.testStepProcessor = testStepProcessor;
             return this;
         }
