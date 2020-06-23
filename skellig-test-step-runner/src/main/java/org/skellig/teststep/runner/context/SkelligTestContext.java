@@ -22,7 +22,6 @@ import org.skellig.teststep.reader.sts.StsTestStepReader;
 import org.skellig.teststep.runner.DefaultTestStepRunner;
 import org.skellig.teststep.runner.TestStepRunner;
 
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -34,8 +33,9 @@ public class SkelligTestContext {
     private TestStepValueConverter testStepValueConverter;
     private TestDataConverter testDataConverter;
     private TestScenarioState testScenarioState;
+    private TestStepResultValidator testStepResultValidator;
 
-    public TestStepRunner initialize(ClassLoader classLoader, List<Path> testStepPaths) {
+    public TestStepRunner initialize(ClassLoader classLoader, List<String> testStepPaths) {
         TestStepReader testStepReader = createTestStepReader();
         testScenarioState = createTestScenarioState();
 
@@ -43,6 +43,7 @@ public class SkelligTestContext {
         testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState);
 
         testDataConverter = createTestDataConverter(classLoader);
+        testStepResultValidator = createTestStepValidator(valueExtractor);
 
         List<TestStepProcessorDetails> testStepProcessors = getTestStepProcessors();
         TestStepProcessor<TestStep> testStepProcessor = createTestStepProcessor(valueExtractor, testStepProcessors, testScenarioState);
@@ -52,7 +53,7 @@ public class SkelligTestContext {
                 .withTestScenarioState(testScenarioState)
                 .withTestStepProcessor(testStepProcessor)
                 .withTestStepFactory(testStepFactory)
-                .withTestStepReader(testStepReader, testStepPaths)
+                .withTestStepReader(testStepReader, classLoader, testStepPaths)
                 .build();
     }
 
@@ -72,6 +73,11 @@ public class SkelligTestContext {
         return testScenarioState;
     }
 
+    public TestStepResultValidator getTestStepResultValidator() {
+        Objects.requireNonNull(testStepResultValidator, "TestStepResultValidator must be initialized first. Did you forget to call 'initialize'?");
+        return testStepResultValidator;
+    }
+
     private TestStepProcessor<TestStep> createTestStepProcessor(TestStepValueExtractor valueExtractor,
                                                                 List<TestStepProcessorDetails> additionalTestStepProcessors,
                                                                 TestScenarioState testScenarioState) {
@@ -80,7 +86,7 @@ public class SkelligTestContext {
         additionalTestStepProcessors.forEach(item -> testStepProcessorBuilder.withTestStepProcessor(item.getTestStepProcessor()));
         return testStepProcessorBuilder
                 .withTestScenarioState(testScenarioState)
-                .withValidator(createTestStepValidator(valueExtractor))
+                .withValidator(getTestStepResultValidator())
                 .build();
     }
 
@@ -169,7 +175,7 @@ public class SkelligTestContext {
         private TestStepProcessor testStepProcessor;
         private TestStepFactory testStepFactory;
 
-        protected TestStepProcessorDetails(TestStepProcessor testStepProcessor, TestStepFactory testStepFactory) {
+        public TestStepProcessorDetails(TestStepProcessor testStepProcessor, TestStepFactory testStepFactory) {
             this.testStepProcessor = testStepProcessor;
             this.testStepFactory = testStepFactory;
         }

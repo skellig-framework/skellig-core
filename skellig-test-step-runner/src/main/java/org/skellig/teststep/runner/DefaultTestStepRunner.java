@@ -6,30 +6,41 @@ import org.skellig.teststep.processing.model.factory.TestStepFactory;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.reader.TestStepReader;
+import org.skellig.teststep.runner.exception.TestStepRegistryException;
 import org.skellig.teststep.runner.model.TestStepFileExtension;
 
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class DefaultTestStepRunner implements TestStepRunner {
 
     private TestStepProcessor<TestStep> testStepProcessor;
     private TestStepsRegistry testStepsRegistry;
+    private ClassTestStepsRegistry classTestStepsRegistry;
     private TestStepFactory testStepFactory;
     private TestScenarioState testScenarioState;
+    private TestStepDefMethodRunner testStepDefMethodRunner;
 
     protected DefaultTestStepRunner(TestStepProcessor<TestStep> testStepProcessor,
                                     TestStepsRegistry testStepsRegistry,
+                                    ClassTestStepsRegistry classTestStepsRegistry,
                                     TestStepFactory testStepFactory,
                                     TestScenarioState testScenarioState) {
         this.testStepProcessor = testStepProcessor;
         this.testStepsRegistry = testStepsRegistry;
+        this.classTestStepsRegistry = classTestStepsRegistry;
         this.testStepFactory = testStepFactory;
         this.testScenarioState = testScenarioState;
+
+        testStepDefMethodRunner = new TestStepDefMethodRunner();
     }
 
     @Override
@@ -47,9 +58,14 @@ public class DefaultTestStepRunner implements TestStepRunner {
 
             testStepProcessor.process(testStep);
         } else {
-            throw new TestStepProcessingException(
-                    String.format("Test step '%s' is not found in any of registered test data files from: %s",
-                            testStepName, testStepsRegistry.getTestStepsRootPath()));
+            Optional<ClassTestStepsRegistry.TestStepDefDetails> testStep = classTestStepsRegistry.getTestStep(testStepName);
+            if (testStep.isPresent()) {
+                testStepDefMethodRunner.invoke(testStepName, testStep.get(), parameters);
+            } else {
+                throw new TestStepProcessingException(
+                        String.format("Test step '%s' is not found in any of registered test data files from: %s",
+                                testStepName, testStepsRegistry.getTestStepsRootPath()));
+            }
         }
     }
 
@@ -58,7 +74,8 @@ public class DefaultTestStepRunner implements TestStepRunner {
         private TestStepProcessor<TestStep> testStepProcessor;
         private TestStepReader testStepReader;
         private TestScenarioState testScenarioState;
-        private Collection<Path> testStepPaths;
+        private ClassLoader classLoader;
+        private Collection<String> testStepPaths;
         private TestStepFactory testStepFactory;
 
         public Builder withTestScenarioState(TestScenarioState testScenarioState) {
@@ -76,8 +93,9 @@ public class DefaultTestStepRunner implements TestStepRunner {
             return this;
         }
 
-        public Builder withTestStepReader(TestStepReader testStepReader, Collection<Path> testStepPaths) {
+        public Builder withTestStepReader(TestStepReader testStepReader, ClassLoader classLoader, Collection<String> testStepPaths) {
             this.testStepReader = testStepReader;
+            this.classLoader = classLoader;
             this.testStepPaths = testStepPaths;
             return this;
         }
@@ -86,10 +104,36 @@ public class DefaultTestStepRunner implements TestStepRunner {
             Objects.requireNonNull(testStepReader, "Test Step Reader is mandatory");
             Objects.requireNonNull(testStepProcessor, "Test Step processor is mandatory");
 
+            Collection<Path> testStepPaths = extractTestStepPaths();
+            Collection<String> testStepClassPaths = extractTestStepPackages();
+
             TestStepsRegistry testStepsRegistry = new TestStepsRegistry(TestStepFileExtension.STS, testStepReader);
             testStepsRegistry.registerFoundTestStepsInPath(testStepPaths);
 
-            return new DefaultTestStepRunner(testStepProcessor, testStepsRegistry, testStepFactory, testScenarioState);
+            ClassTestStepsRegistry classTestStepsRegistry = new ClassTestStepsRegistry();
+            classTestStepsRegistry.registerFoundTestStepInClasses(testStepClassPaths, classLoader);
+
+            return new DefaultTestStepRunner(testStepProcessor, testStepsRegistry, classTestStepsRegistry, testStepFactory, testScenarioState);
+        }
+
+        private Collection<String> extractTestStepPackages() {
+            return this.testStepPaths.stream()
+                            .filter(path -> !path.contains("/"))
+                            .collect(Collectors.toSet());
+        }
+
+        private Collection<Path> extractTestStepPaths() {
+            return this.testStepPaths.stream()
+                            .filter(path -> !path.contains("."))
+                            .map(path -> {
+                                try {
+                                    URL resource = classLoader.getResource(path);
+                                    return Paths.get(resource.toURI());
+                                } catch (URISyntaxException e) {
+                                    throw new TestStepRegistryException(e.getMessage(), e);
+                                }
+                            })
+                            .collect(Collectors.toList());
         }
     }
 }

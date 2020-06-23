@@ -1,0 +1,23 @@
+name(Given something) {
+
+}
+
+name(Run something) {
+
+}
+
+name(Validate something) {
+
+}
+
+name(Given value is .*) {
+
+}
+
+name(Run function with .*) {
+
+}
+
+name(Validate result is .*) {
+
+}
