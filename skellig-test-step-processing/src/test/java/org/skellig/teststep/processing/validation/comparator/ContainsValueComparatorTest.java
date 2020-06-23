@@ -17,31 +17,31 @@ class ContainsValueComparatorTest {
 
     @Test
     void testContainsInString() {
-        assertTrue(containsValueComparator.compare("test value 1", "contains(value 1)"));
+        assertTrue(containsValueComparator.compare("contains(value 1)", "test value 1"));
     }
 
     @Test
     void testNotContainsInString() {
-        assertFalse(containsValueComparator.compare("test value 1", "contains(boo)"));
+        assertFalse(containsValueComparator.compare("contains(boo)", "test value 1"));
     }
 
     @Test
     void testContainsWhenActualIsNull() {
-        assertFalse(containsValueComparator.compare(null, "contains(value 1)"));
+        assertFalse(containsValueComparator.compare("contains(value 1)", null));
     }
 
     @Test
     void testContainsWhenActualIsObject() {
-        assertFalse(containsValueComparator.compare(new Object(), "contains(value 1)"));
+        assertFalse(containsValueComparator.compare("contains(value 1)", new Object()));
     }
 
     @Test
     void testContainsWhenActualIsArray() {
-        assertTrue(containsValueComparator.compare(new String[]{"v1", "v2"}, "contains(v1)"));
+        assertTrue(containsValueComparator.compare("contains(v1)", new String[]{"v1", "v2"}));
     }
 
     @Test
     void testContainsWhenActualIsArrayOfInteger() {
-        assertTrue(containsValueComparator.compare(new Integer[]{1, 2, 3}, "contains(2)"));
+        assertTrue(containsValueComparator.compare("contains(2)", new Integer[]{1, 2, 3}));
     }
 }

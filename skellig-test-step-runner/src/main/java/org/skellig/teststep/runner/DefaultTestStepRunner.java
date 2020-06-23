@@ -4,7 +4,6 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.TestStepFactory;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.reader.TestStepReader;
 import org.skellig.teststep.runner.exception.TestStepRegistryException;
 import org.skellig.teststep.runner.model.TestStepFileExtension;
@@ -26,19 +25,16 @@ public class DefaultTestStepRunner implements TestStepRunner {
     private TestStepsRegistry testStepsRegistry;
     private ClassTestStepsRegistry classTestStepsRegistry;
     private TestStepFactory testStepFactory;
-    private TestScenarioState testScenarioState;
     private TestStepDefMethodRunner testStepDefMethodRunner;
 
     protected DefaultTestStepRunner(TestStepProcessor<TestStep> testStepProcessor,
                                     TestStepsRegistry testStepsRegistry,
                                     ClassTestStepsRegistry classTestStepsRegistry,
-                                    TestStepFactory testStepFactory,
-                                    TestScenarioState testScenarioState) {
+                                    TestStepFactory testStepFactory) {
         this.testStepProcessor = testStepProcessor;
         this.testStepsRegistry = testStepsRegistry;
         this.classTestStepsRegistry = classTestStepsRegistry;
         this.testStepFactory = testStepFactory;
-        this.testScenarioState = testScenarioState;
 
         testStepDefMethodRunner = new TestStepDefMethodRunner();
     }
@@ -53,8 +49,6 @@ public class DefaultTestStepRunner implements TestStepRunner {
         Optional<Map<String, Object>> rawTestStep = testStepsRegistry.getByName(testStepName);
         if (rawTestStep.isPresent()) {
             TestStep testStep = testStepFactory.create(testStepName, rawTestStep.get(), parameters);
-
-            testScenarioState.set(testStep.getId(), testStep);
 
             testStepProcessor.process(testStep);
         } else {
@@ -73,15 +67,9 @@ public class DefaultTestStepRunner implements TestStepRunner {
 
         private TestStepProcessor<TestStep> testStepProcessor;
         private TestStepReader testStepReader;
-        private TestScenarioState testScenarioState;
         private ClassLoader classLoader;
         private Collection<String> testStepPaths;
         private TestStepFactory testStepFactory;
-
-        public Builder withTestScenarioState(TestScenarioState testScenarioState) {
-            this.testScenarioState = testScenarioState;
-            return this;
-        }
 
         public Builder withTestStepProcessor(TestStepProcessor<TestStep> testStepProcessor) {
             this.testStepProcessor = testStepProcessor;
@@ -113,7 +101,7 @@ public class DefaultTestStepRunner implements TestStepRunner {
             ClassTestStepsRegistry classTestStepsRegistry = new ClassTestStepsRegistry();
             classTestStepsRegistry.registerFoundTestStepInClasses(testStepClassPaths, classLoader);
 
-            return new DefaultTestStepRunner(testStepProcessor, testStepsRegistry, classTestStepsRegistry, testStepFactory, testScenarioState);
+            return new DefaultTestStepRunner(testStepProcessor, testStepsRegistry, classTestStepsRegistry, testStepFactory);
         }
 
         private Collection<String> extractTestStepPackages() {
