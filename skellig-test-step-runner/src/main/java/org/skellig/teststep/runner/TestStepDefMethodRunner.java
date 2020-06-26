@@ -29,8 +29,14 @@ class TestStepDefMethodRunner {
 
         try {
             testStepMethod.invoke(testStepDefInstance, methodParameters);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
             throw new TestStepMethodInvocationException("Unexpected failure when running a test step method", e);
+        } catch (InvocationTargetException e) {
+            Throwable targetException = e;
+            if (e.getTargetException() != null) {
+                targetException = e.getTargetException();
+            }
+            throw new TestStepMethodInvocationException(targetException.getMessage(), targetException);
         }
     }
 }

@@ -8,8 +8,10 @@ import org.junit.runners.model.InitializationError;
 import org.skellig.feature.Feature;
 import org.skellig.feature.InitDetails;
 import org.skellig.runner.exception.FeatureRunnerException;
+import org.skellig.runner.junit.report.model.FeatureReportDetails;
 import org.skellig.runner.tagextractor.RequestedTagExtractor;
 import org.skellig.runner.tagextractor.TagExtractor;
+import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.runner.TestStepRunner;
 
 import java.util.Collections;
@@ -25,14 +27,16 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
     private List<TestScenarioRunner> testScenarioRunners;
     private TestStepRunner testStepRunner;
     private Description description;
+    private TestScenarioState testScenarioState;
 
-    protected FeatureRunner(Feature feature, TestStepRunner testStepRunner) throws InitializationError {
+    protected FeatureRunner(Feature feature, TestStepRunner testStepRunner, TestScenarioState testScenarioState) throws InitializationError {
         super(feature.getClass());
         this.feature = feature;
         this.testStepRunner = testStepRunner;
+        this.testScenarioState = testScenarioState;
         testScenarioRunners =
                 feature.getScenarios().stream()
-                        .map(testScenario -> TestScenarioRunner.create(testScenario, testStepRunner))
+                        .map(testScenario -> TestScenarioRunner.create(testScenario, testStepRunner, testScenarioState))
                         .collect(Collectors.toList());
     }
 
@@ -43,6 +47,13 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
             getChildren().forEach(child -> description.addChild(describeChild(child)));
         }
         return description;
+    }
+
+    public FeatureReportDetails getFeatureReportDetails() {
+        return new FeatureReportDetails(getName(),
+                getChildren().stream()
+                        .map(TestScenarioRunner::getTestScenarioReportDetails)
+                        .collect(Collectors.toList()));
     }
 
     @Override
@@ -74,6 +85,7 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
             notifier.pleaseStop();
         } finally {
             notifier.fireTestFinished(childDescription);
+            testScenarioState.clean();
         }
     }
 
@@ -81,9 +93,9 @@ public class FeatureRunner extends ParentRunner<TestScenarioRunner> {
         return tagExtractor.extract(tagClass, feature.getTestPreRequisites().orElse(Collections.emptyList()));
     }
 
-    public static FeatureRunner create(Feature feature, TestStepRunner testStepRunner) {
+    public static FeatureRunner create(Feature feature, TestStepRunner testStepRunner, TestScenarioState testScenarioState) {
         try {
-            return new FeatureRunner(feature, testStepRunner);
+            return new FeatureRunner(feature, testStepRunner, testScenarioState);
         } catch (InitializationError e) {
             throw new FeatureRunnerException(e.getMessage(), e);
         }
