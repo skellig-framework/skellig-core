@@ -1,4 +1,4 @@
-package org.skellig.teststep.reader.exception;
+package org.skellig.teststep.processing.exception;
 
 public class ValidationException extends RuntimeException {
 

@@ -2,12 +2,12 @@ package org.skellig.teststep.processing.validation;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.skellig.teststep.processing.exception.ValidationException;
 import org.skellig.teststep.processing.model.ExpectedResult;
 import org.skellig.teststep.processing.model.ValidationDetails;
 import org.skellig.teststep.processing.model.ValidationType;
 import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator;
 import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor;
-import org.skellig.teststep.reader.exception.ValidationException;
 
 import java.util.Arrays;
 import java.util.Collections;
