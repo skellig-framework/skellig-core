@@ -42,6 +42,7 @@ public class DatabaseChannel implements SendingChannel {
         try {
             Class.forName(details.getDriverName());
             connection = DriverManager.getConnection(details.getUrl(), details.getUserName(), details.getPassword());
+            connection.setAutoCommit(false);
         } catch (Exception e) {
             throw new DatabaseChannelException(e.getMessage(), e);
         }
