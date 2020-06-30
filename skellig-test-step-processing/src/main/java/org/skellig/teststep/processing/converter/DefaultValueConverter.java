@@ -72,8 +72,9 @@ public class DefaultValueConverter implements TestStepValueConverter {
             if (classLoader != null) {
                 withValueConverter(new FileValueConverter(classLoader));
             }
+            withValueConverter(new NumberValueConverter());
             withValueConverter(new IncrementValueConverter());
-            withValueConverter(new DateValueConverter());
+            withValueConverter(new DateTimeValueConverter());
 
             return new DefaultValueConverter(valueConverters);
         }

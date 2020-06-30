@@ -12,13 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @DisplayName("Convert to current date")
-class DateValueConverterTest {
+class DateTimeValueConverterTest {
 
-    private DateValueConverter dateValueConverter;
+    private DateTimeValueConverter dateTimeValueConverter;
 
     @BeforeEach
     void setUp() {
-        dateValueConverter = new DateValueConverter();
+        dateTimeValueConverter = new DateTimeValueConverter();
     }
 
     @Test
@@ -26,7 +26,7 @@ class DateValueConverterTest {
     void testCurrentDateTime() {
         LocalDateTime expectedTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
 
-        LocalDateTime dateTime = (LocalDateTime) dateValueConverter.convert("now()");
+        LocalDateTime dateTime = (LocalDateTime) dateTimeValueConverter.convert("now()");
 
         assertEquals(expectedTime, dateTime.truncatedTo(ChronoUnit.MINUTES));
     }
@@ -34,9 +34,9 @@ class DateValueConverterTest {
     @Test
     @DisplayName("When calling several times Then check dates are different")
     void testCallTwiceCurrentDateTime() throws InterruptedException {
-        LocalDateTime dateTime = (LocalDateTime) dateValueConverter.convert("now()");
+        LocalDateTime dateTime = (LocalDateTime) dateTimeValueConverter.convert("now()");
         Thread.sleep(10);
-        LocalDateTime sameDateTime = (LocalDateTime) dateValueConverter.convert("now()");
+        LocalDateTime sameDateTime = (LocalDateTime) dateTimeValueConverter.convert("now()");
 
         assertNotEquals(dateTime, sameDateTime);
     }
@@ -45,7 +45,7 @@ class DateValueConverterTest {
     @DisplayName("With provided timezone Then check date with correct timezone returned")
     void testGetDateTimeWithTimezone() {
         LocalDateTime expectedTime = LocalDateTime.now(ZoneId.of("UTC")).truncatedTo(ChronoUnit.MINUTES);
-        LocalDateTime dateTime = (LocalDateTime) dateValueConverter.convert("now(UTC)");
+        LocalDateTime dateTime = (LocalDateTime) dateTimeValueConverter.convert("now(UTC)");
 
         assertEquals(expectedTime, dateTime.truncatedTo(ChronoUnit.MINUTES));
     }
@@ -54,7 +54,7 @@ class DateValueConverterTest {
     @DisplayName("With invalid timezone Then check date with default timezone returned")
     void testGetDateTimeWithInvalidTimezone() {
         LocalDateTime expectedTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-        LocalDateTime dateTime = (LocalDateTime) dateValueConverter.convert("now(invalid)");
+        LocalDateTime dateTime = (LocalDateTime) dateTimeValueConverter.convert("now(invalid)");
 
         assertEquals(expectedTime, dateTime.truncatedTo(ChronoUnit.MINUTES));
     }
