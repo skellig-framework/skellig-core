@@ -6,7 +6,10 @@ import org.skellig.teststep.processing.model.ValidationType;
 import org.skellig.teststep.processing.validation.comparator.ValueComparator;
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DefaultTestStepResultValidator implements TestStepResultValidator {
 
@@ -27,31 +30,18 @@ public class DefaultTestStepResultValidator implements TestStepResultValidator {
     }
 
     private boolean validate(ExpectedResult expectedResult, Object actualResult, StringBuilder errorBuilder) {
-
         if (expectedResult.getValidationType() == ValidationType.ANY_MATCH) {
             return expectedResult.<List<ExpectedResult>>getExpectedResult().stream()
-                    .anyMatch(item -> {
-                        Object actualValue = extractActualValueFromExpectedResult(actualResult, item);
-                        return validate(item, actualValue, errorBuilder);
-                    });
+                    .anyMatch(item -> validate2(item, actualResult, errorBuilder));
         } else if (expectedResult.getValidationType() == ValidationType.ANY_NONE_MATCH) {
             return expectedResult.<List<ExpectedResult>>getExpectedResult().stream()
-                    .anyMatch(item -> {
-                        Object actualValue = extractActualValueFromExpectedResult(actualResult, item);
-                        return !validate(item, actualValue, errorBuilder);
-                    });
+                    .anyMatch(item -> !validate2(item, actualResult, errorBuilder));
         } else if (expectedResult.getValidationType() == ValidationType.NONE_MATCH) {
             return expectedResult.<List<ExpectedResult>>getExpectedResult().stream()
-                    .noneMatch(item -> {
-                        Object actualValue = extractActualValueFromExpectedResult(actualResult, item);
-                        return validate(item, actualValue, errorBuilder);
-                    });
+                    .noneMatch(item -> validate2(item, actualResult, errorBuilder));
         } else if (expectedResult.getValidationType() == ValidationType.ALL_MATCH) {
             return expectedResult.<List<ExpectedResult>>getExpectedResult().stream()
-                    .allMatch(item -> {
-                        Object actualValue = extractActualValueFromExpectedResult(actualResult, item);
-                        return validate(item, actualValue, errorBuilder);
-                    });
+                    .allMatch(item -> validate2(item, actualResult, errorBuilder));
         } else {
             boolean isValid = valueComparator.compare(expectedResult.getExpectedResult(), actualResult);
 
@@ -60,6 +50,23 @@ public class DefaultTestStepResultValidator implements TestStepResultValidator {
                 constructErrorMessage(expectedResult, actualResult, errorBuilder);
             }
             return isValid;
+        }
+    }
+
+    private boolean validate2(ExpectedResult expectedResult, Object actualResult, StringBuilder errorBuilder) {
+        Object actualValue = extractActualValueFromExpectedResult(actualResult, expectedResult);
+        if (expectedResult.getProperty() == null && actualValue instanceof Collection) {
+            if (expectedResult.getValidationType() == ValidationType.NONE_MATCH) {
+                return ((Collection) actualValue).stream().allMatch(actualResultItem ->
+                        validate(expectedResult, actualResultItem, errorBuilder));
+            } else {
+                return ((Collection) actualValue).stream().anyMatch(actualResultItem ->
+                        validate(expectedResult, actualResultItem, errorBuilder));
+            }
+        } else if (actualResult.getClass().isArray()) {
+            return validate2(expectedResult, Arrays.stream((Object[]) actualResult).collect(Collectors.toList()), errorBuilder);
+        } else {
+            return validate(expectedResult, actualValue, errorBuilder);
         }
     }
 

@@ -17,7 +17,6 @@ public enum ValidationType {
 
     public static ValidationType getValidationTypeFor(String actualValue) {
         return Stream.of(values())
-                .filter(validationType -> validationType.pattern != null)
                 .filter(validationType -> validationType.pattern.matcher(actualValue).matches())
                 .findFirst()
                 .orElse(ValidationType.ALL_MATCH);
