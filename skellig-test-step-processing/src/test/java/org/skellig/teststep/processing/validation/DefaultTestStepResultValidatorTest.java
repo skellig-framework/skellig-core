@@ -265,7 +265,7 @@ class DefaultTestStepResultValidatorTest {
                         ),
                         ValidationType.ANY_MATCH);
 
-        new ValidationDetails.Builder().withExpectedResult(expectedResult).build();
+        initializeParentsOfExpectedResult(expectedResult);
 
         validator.validate(expectedResult, new Object[]{actualResult1, actualResult2});
     }
@@ -288,7 +288,7 @@ class DefaultTestStepResultValidatorTest {
                         ),
                         ValidationType.ALL_MATCH);
 
-        new ValidationDetails.Builder().withExpectedResult(expectedResult).build();
+        initializeParentsOfExpectedResult(expectedResult);
 
         ValidationException e = assertThrows(ValidationException.class,
                 () -> validator.validate(expectedResult, Arrays.asList(actualResult1, actualResult2)));
@@ -357,7 +357,7 @@ class DefaultTestStepResultValidatorTest {
                                 new ExpectedResult("k2", "v2", null)),
                         ValidationType.NONE_MATCH);
 
-        new ValidationDetails.Builder().withExpectedResult(expectedResult).build();
+        initializeParentsOfExpectedResult(expectedResult);
 
         ValidationException e = assertThrows(ValidationException.class,
                 () -> validator.validate(expectedResult, actualResult));
@@ -378,13 +378,17 @@ class DefaultTestStepResultValidatorTest {
                                         ValidationType.ALL_MATCH)),
                         ValidationType.ALL_MATCH);
 
-        new ValidationDetails.Builder().withExpectedResult(expectedResult).build();
+        initializeParentsOfExpectedResult(expectedResult);
 
         ValidationException e = assertThrows(ValidationException.class,
                 () -> validator.validate(expectedResult, actualResult));
 
         assertEquals("Validation failed!\n" +
                 "k1.k2 is not valid. Expected: v3 Actual: v2\n", e.getMessage());
+    }
+
+    private void initializeParentsOfExpectedResult(ExpectedResult expectedResult) {
+        new ValidationDetails.Builder().withExpectedResult(expectedResult).build();
     }
 
     private Map<String, Object> createActualResult() {
