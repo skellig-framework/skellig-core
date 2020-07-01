@@ -4,6 +4,7 @@ import org.skellig.connection.database.DatabaseChannel;
 import org.skellig.connection.database.model.DatabaseChannelDetails;
 import org.skellig.connection.database.model.DatabaseRequest;
 import org.skellig.teststep.processing.db.model.DatabaseTestStep;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -33,7 +34,7 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
 
         servers.parallelStream()
                 .forEach(serverName -> {
-                    DatabaseChannel databaseChannel = dbServers.get(serverName);
+                    DatabaseChannel databaseChannel = getDatabaseChannel(serverName);
                     DatabaseRequest request;
                     if (testStep.getQuery() != null) {
                         request = new DatabaseRequest(testStep.getQuery());
@@ -46,6 +47,13 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
                     result.put(serverName, response.orElse(null));
                 });
         return result.size() == 1 ? result.values().stream().findFirst().orElse(null) : result;
+    }
+
+    private DatabaseChannel getDatabaseChannel(String serverName) {
+        if(!dbServers.containsKey(serverName)){
+            throw new TestStepProcessingException(String.format("No database channel was registered for server name '%s'", serverName));
+        }
+        return dbServers.get(serverName);
     }
 
     @Override

@@ -18,8 +18,8 @@ class DatabaseRequestExecutorFactory {
 
     BaseDatabaseRequestExecutor get(DatabaseRequest databaseRequest) {
         String command = databaseRequest.getCommand();
-        if (command == null && databaseRequest.getQuery().isPresent()) {
-            String query = databaseRequest.getQuery().get();
+        if (isQueryOnlyProvided(databaseRequest, command)) {
+            String query = databaseRequest.getQuery();
             command = databaseRequestExecutors.keySet().stream()
                     .filter(item -> query.toLowerCase().contains(item))
                     .findFirst()
@@ -29,11 +29,15 @@ class DatabaseRequestExecutorFactory {
         if (databaseRequestExecutors.containsKey(command)) {
             return databaseRequestExecutors.get(command);
         } else {
-            if (command == null && databaseRequest.getQuery().isPresent()) {
-                throw new DatabaseChannelException("No database query executors found for query: " + databaseRequest.getQuery().get());
+            if (isQueryOnlyProvided(databaseRequest, command)) {
+                throw new DatabaseChannelException("No database query executors found for query: " + databaseRequest.getQuery());
             } else {
                 throw new DatabaseChannelException("No database query executors found for command: " + command);
             }
         }
+    }
+
+    private boolean isQueryOnlyProvided(DatabaseRequest databaseRequest, String command) {
+        return command == null && databaseRequest.getQuery() != null;
     }
 }
