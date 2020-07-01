@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+
+    compile project(':skellig-connection-channel')
+}
+
+test {
+    useJUnitPlatform()
+}
