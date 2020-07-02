@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compile group: 'com.typesafe', name: 'config'
+    compile project(':skellig-connection-channel')
+    compile project(':skellig-test-step-processing')
+
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
