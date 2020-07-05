@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.skellig.task.TaskUtils.runTask;
+import static org.skellig.task.async.AsyncTaskUtils.runTaskAsync;
+
 public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
 
     private Map<String, TcpChannel> tcpChannels;
@@ -22,6 +25,15 @@ public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
                                  TestStepResultValidator validator) {
         super(testScenarioState, validator);
         this.tcpChannels = tcpChannels;
+    }
+
+    @Override
+    public void process(TcpTestStep testStep) {
+        runTaskAsync(() -> {
+                    super.process(testStep);
+                    return Optional.empty();
+                }
+        );
     }
 
     @Override
@@ -35,7 +47,7 @@ public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
             tcpChannel.send(testStep.getTestData());
         } else if (readFrom.isPresent()) {
             TcpChannel tcpChannel = tcpChannels.get(readFrom.get());
-            response = tcpChannel.read().orElse(null);
+            response = runTask(tcpChannel::read, r -> r.isPresent() || tcpChannel.isClosed(), 5, 30).orElse(null);
         }
         return response;
     }

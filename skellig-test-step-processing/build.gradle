@@ -6,6 +6,7 @@ dependencies {
     compile 'de.siegmar:fastcsv:1.0.3'
     compile 'org.freemarker:freemarker:2.3.30'
     compile group: 'org.junit.platform', name: 'junit-platform-runner'
+    compile project(':skellig-task')
     compile project(':skellig-test-step-reader-sts')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'

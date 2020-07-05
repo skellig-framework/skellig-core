@@ -2,6 +2,7 @@ package org.skellig.runner.config;
 
 import org.skellig.teststep.processing.converter.TestDataConverter;
 import org.skellig.teststep.processing.converter.TestStepValueConverter;
+import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
 
 import java.util.Map;
@@ -15,16 +16,9 @@ public class SimpleMessageTestStepFactory extends BaseTestStepFactory {
     }
 
     @Override
-    protected CreateTestStepDelegate createTestStep(Map<String, Object> rawTestStep) {
-        return (id, name, testData, validationDetails, parameters, variables) ->
-                new SimpleMessageTestStep.Builder()
-                        .withReceiver(convertValue(rawTestStep.get("receiver"), parameters))
-                        .withId(id)
-                        .withName(name)
-                        .withVariables(variables)
-                        .withTestData(testData)
-                        .withValidationDetails(validationDetails)
-                        .build();
+    protected TestStep.Builder createTestStepBuilder(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
+        return new SimpleMessageTestStep.Builder()
+                .withReceiver(convertValue(rawTestStep.get("receiver"), parameters));
     }
 
     @Override

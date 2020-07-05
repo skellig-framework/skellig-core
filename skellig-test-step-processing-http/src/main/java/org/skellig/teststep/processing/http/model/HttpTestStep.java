@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.http.model;
 
 import org.skellig.teststep.processing.model.TestStep;
+import org.skellig.teststep.processing.model.TestStepExecutionType;
 import org.skellig.teststep.processing.model.ValidationDetails;
 
 import java.util.Collection;
@@ -17,12 +18,13 @@ public class HttpTestStep extends TestStep {
     private Map<String, String> query;
     private Map<String, String> form;
 
-    protected HttpTestStep(String id, String name, Map<String, Object> variables, Object testData, ValidationDetails validationDetails,
-                           Collection<String> services, String url, String method, String username, String password,
+    protected HttpTestStep(String id, String name, TestStepExecutionType execution, int timeout, int delay,
+                           Map<String, Object> variables, Object testData, ValidationDetails validationDetails,
+                           String url, Collection<String> services, String method, String username, String password,
                            Map<String, String> headers, Map<String, String> query, Map<String, String> form) {
-        super(id, name, variables, testData, validationDetails);
-        this.services = services;
+        super(id, name, execution, timeout, delay, variables, testData, validationDetails);
         this.url = url;
+        this.services = services;
         this.method = method;
         this.username = username;
         this.password = password;
@@ -117,8 +119,8 @@ public class HttpTestStep extends TestStep {
 
         @Override
         public HttpTestStep build() {
-            return new HttpTestStep(id, name, variables, testData, validationDetails, services, url, method, username, password,
-                    headers, query, form);
+            return new HttpTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails,
+                    url, services, method, username, password, headers, query, form);
         }
     }
 }
