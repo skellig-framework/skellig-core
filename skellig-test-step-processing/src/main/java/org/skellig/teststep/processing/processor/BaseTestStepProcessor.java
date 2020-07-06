@@ -1,5 +1,7 @@
 package org.skellig.teststep.processing.processor;
 
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
+import org.skellig.teststep.processing.exception.ValidationException;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.model.TestStepExecutionType;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -14,24 +16,36 @@ public abstract class BaseTestStepProcessor<T extends TestStep> extends Validata
     }
 
     @Override
-    public void process(T testStep) {
+    public TestStepRunResult process(T testStep) {
+        TestStepRunResult testStepRunResult = new TestStepRunResult(testStep);
         testScenarioState.set(testStep.getId(), testStep);
 
         if (testStep.getExecution() == TestStepExecutionType.ASYNC) {
-            runTaskAsync(() -> processAndValidate(testStep));
+            runTaskAsync(() -> processAndValidate(testStep, testStepRunResult));
         } else {
-            processAndValidate(testStep);
+            processAndValidate(testStep, testStepRunResult);
         }
+        return testStepRunResult;
     }
 
     protected abstract Object processTestStep(T testStep);
 
-    private void processAndValidate(T testStep) {
-        Object result = processTestStep(testStep);
+    private void processAndValidate(T testStep, TestStepRunResult testStepRunResult) {
+        Object result = null;
+        RuntimeException error = null;
+        try {
+            result = processTestStep(testStep);
 
-        testScenarioState.set(testStep.getId() + RESULT_SAVE_SUFFIX, result);
+            testScenarioState.set(testStep.getId() + RESULT_SAVE_SUFFIX, result);
 
-        validate(testStep, result);
+            validate(testStep, result);
+        } catch (ValidationException | TestStepProcessingException ex) {
+            error = ex;
+        } catch (Throwable ex) {
+            error = new TestStepProcessingException(ex.getMessage(), ex);
+        } finally {
+            testStepRunResult.notify(result, error);
+        }
     }
 
 

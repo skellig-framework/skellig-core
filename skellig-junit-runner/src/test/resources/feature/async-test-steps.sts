@@ -2,6 +2,9 @@ name(User (\w+) is waiting for request from (\w+)) {
    id = step2
    execution = async
    receiveFrom = ${2}
+   validate {
+         status = success
+   }
 }
 
 name(User .* sends the message to (\w+)) {

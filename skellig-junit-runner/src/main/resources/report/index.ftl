@@ -58,7 +58,7 @@
                                                     <a data-toggle="collapse" data-parent="#testStepsPanel${i}"
                                                        href="#testStepPanel${si}" aria-expanded="false"
                                                        aria-controls="testStepsPanel${si}"
-                                                       class="collapsed <#if step.passed>passed-color<#else>failed-color</#if>">
+                                                       class="collapsed <#if step.ignored>ignored-color<#elseif step.passed>passed-color<#else>failed-color</#if>">
                                                         ${step.name}
                                                         <i class="tim-icons icon-minimal-down"></i>
                                                     </a>

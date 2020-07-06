@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.processor;
 
+import org.skellig.teststep.processing.exception.ValidationException;
 import org.skellig.teststep.processing.model.TestStep;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
@@ -21,19 +22,32 @@ public class DefaultTestStepProcessor extends ValidatableTestStepProcessor<TestS
     }
 
     @Override
-    public void process(TestStep testStep) {
+    public TestStepRunResult process(TestStep testStep) {
         Objects.requireNonNull(testStep, "Test step must not be null");
         Optional<TestStepProcessor> testStepProcessor = testStepProcessors.stream()
                 .filter(processor -> testStep.getClass().equals(processor.getTestStepClass()))
                 .findFirst();
 
         if (testStepProcessor.isPresent()) {
-            testStepProcessor.get().process(testStep);
+            return testStepProcessor.get().process(testStep);
         } else {
+            TestStepRunResult testStepRunResult = new TestStepRunResult(testStep);
             testScenarioState.set(testStep.getId(), testStep);
+            validate(testStep, testStepRunResult);
+            return testStepRunResult;
+        }
+    }
+
+    private void validate(TestStep testStep, TestStepRunResult testStepRunResult) {
+        RuntimeException error = null;
+        try {
             if (testStep.getValidationDetails().isPresent()) {
-                validate(testStep);
+                super.validate(testStep);
             }
+        } catch (ValidationException ex) {
+            error = ex;
+        } finally {
+            testStepRunResult.notify(null, error);
         }
     }
 

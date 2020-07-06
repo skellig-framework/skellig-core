@@ -8,7 +8,7 @@ import org.skellig.connection.database.DatabaseChannel;
 import org.skellig.connection.database.model.DatabaseRequest;
 import org.skellig.teststep.processing.db.model.DatabaseTestStep;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processing.state.ThreadLocalTestScenarioState;
+import org.skellig.teststep.processing.state.DefaultTestScenarioState;
 import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator;
 
 import java.util.Arrays;
@@ -43,7 +43,7 @@ class DatabaseTestStepProcessorTest {
         dbChannels.put("srv2", databaseChannel2);
 
         databaseTestStepProcessor = new DatabaseTestStepProcessor(
-                dbChannels, new ThreadLocalTestScenarioState(),
+                dbChannels, new DefaultTestScenarioState(),
                 new DefaultTestStepResultValidator.Builder()
                         .build()
         );

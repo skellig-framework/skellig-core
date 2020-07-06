@@ -40,24 +40,21 @@ public class DefaultTestStepRunner implements TestStepRunner {
     }
 
     @Override
-    public String run(String testStepName) {
+    public TestStepProcessor.TestStepRunResult run(String testStepName) {
         return run(testStepName, Collections.emptyMap());
     }
 
     @Override
-    public String run(String testStepName, Map<String, String> parameters) {
+    public TestStepProcessor.TestStepRunResult run(String testStepName, Map<String, String> parameters) {
         Optional<Map<String, Object>> rawTestStep = testStepsRegistry.getByName(testStepName);
         if (rawTestStep.isPresent()) {
             TestStep testStep = testStepFactory.create(testStepName, rawTestStep.get(), parameters);
 
-            testStepProcessor.process(testStep);
-
-            return testStep.getId();
+            return testStepProcessor.process(testStep);
         } else {
             Optional<ClassTestStepsRegistry.TestStepDefDetails> testStep = classTestStepsRegistry.getTestStep(testStepName);
             if (testStep.isPresent()) {
-                testStepDefMethodRunner.invoke(testStepName, testStep.get(), parameters);
-                return null;
+                return testStepDefMethodRunner.invoke(testStepName, testStep.get(), parameters);
             } else {
                 throw new TestStepProcessingException(
                         String.format("Test step '%s' is not found in any of registered test data files from: %s",

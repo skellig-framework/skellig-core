@@ -71,6 +71,10 @@ body {
     color: #dc3545;
 }
 
+.ignored-color {
+    color: #c7c7c754;
+}
+
 .failed-content-color {
     color: #dc3545a6;
 }
