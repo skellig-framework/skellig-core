@@ -1,4 +1,4 @@
-package org.skellig.connection.http.model;
+package org.skellig.teststep.processor.http.model;
 
 public enum HttpMethodName {
     GET,
