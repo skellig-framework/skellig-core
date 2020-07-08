@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.db.processor;
+package org.skellig.teststep.processor.db;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.skellig.connection.database.DatabaseChannel;
 import org.skellig.connection.database.model.DatabaseRequest;
-import org.skellig.teststep.processing.db.model.DatabaseTestStep;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.state.DefaultTestScenarioState;
 import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator;
+import org.skellig.teststep.processor.db.model.DatabaseTestStep;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +53,7 @@ class DatabaseTestStepProcessorTest {
     @DisplayName("When no channel is registered Then throw exception")
     void testProcessDatabaseTestStepWhenNoChannelFound() {
         Object responseFromDb = new Object();
-        when(databaseChannel1.send(argThat(new ArgumentMatcher<Object>() {
+        when(databaseChannel1.send(argThat(new ArgumentMatcher<DatabaseRequest>() {
             @Override
             public boolean matches(Object o) {
                 return false;
@@ -82,14 +82,14 @@ class DatabaseTestStepProcessorTest {
                         .build();
 
         Object responseFromDb = new Object();
-        when(databaseChannel1.send(argThat(new ArgumentMatcher<Object>() {
+        when(databaseChannel1.send(argThat(new ArgumentMatcher<DatabaseRequest>() {
             @Override
             public boolean matches(Object request) {
                 DatabaseRequest databaseRequest = (DatabaseRequest) request;
                 return databaseRequest.getCommand().equals(testStep.getCommand()) &&
                         databaseRequest.getTable().equals(testStep.getTable());
             }
-        }))).thenReturn(Optional.of(responseFromDb));
+        }))).thenReturn(responseFromDb);
 
 
         assertEquals(responseFromDb, databaseTestStepProcessor.processTestStep(testStep));
@@ -106,22 +106,22 @@ class DatabaseTestStepProcessorTest {
 
         // return results from all 2 db servers
         Object responseFromDb1 = new Object();
-        when(databaseChannel1.send(argThat(new ArgumentMatcher<Object>() {
+        when(databaseChannel1.send(argThat(new ArgumentMatcher<DatabaseRequest>() {
             @Override
             public boolean matches(Object request) {
                 DatabaseRequest databaseRequest = (DatabaseRequest) request;
                 return databaseRequest.getQuery().equals(testStep.getQuery());
             }
-        }))).thenReturn(Optional.of(responseFromDb1));
+        }))).thenReturn(responseFromDb1);
 
         Object responseFromDb2 = new Object();
-        when(databaseChannel2.send(argThat(new ArgumentMatcher<Object>() {
+        when(databaseChannel2.send(argThat(new ArgumentMatcher<DatabaseRequest>() {
             @Override
             public boolean matches(Object request) {
                 DatabaseRequest databaseRequest = (DatabaseRequest) request;
                 return databaseRequest.getQuery().equals(testStep.getQuery());
             }
-        }))).thenReturn(Optional.of(responseFromDb2));
+        }))).thenReturn(responseFromDb2);
 
         assertEquals(responseFromDb1, ((Map) databaseTestStepProcessor.processTestStep(testStep)).get(SRV_1));
         assertEquals(responseFromDb2, ((Map) databaseTestStepProcessor.processTestStep(testStep)).get(SRV_2));
