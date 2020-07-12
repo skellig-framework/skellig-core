@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
-import org.skellig.connection.database.DatabaseChannel;
+import org.skellig.connection.database.DatabaseRequestExecutor;
 import org.skellig.connection.database.model.DatabaseRequest;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.state.DefaultTestScenarioState;
@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,17 +29,17 @@ class DatabaseTestStepProcessorTest {
     private static final String SRV_1 = "srv1";
 
     private DatabaseTestStepProcessor databaseTestStepProcessor;
-    private DatabaseChannel databaseChannel1;
-    private DatabaseChannel databaseChannel2;
+    private DatabaseRequestExecutor dbRequestExecutor1;
+    private DatabaseRequestExecutor dbRequestExecutor2;
 
     @BeforeEach
     void setUp() {
-        databaseChannel1 = mock(DatabaseChannel.class);
-        databaseChannel2 = mock(DatabaseChannel.class);
+        dbRequestExecutor1 = mock(DatabaseRequestExecutor.class);
+        dbRequestExecutor2 = mock(DatabaseRequestExecutor.class);
 
-        Map<String, DatabaseChannel> dbChannels = new HashMap<>();
-        dbChannels.put("srv1", databaseChannel1);
-        dbChannels.put("srv2", databaseChannel2);
+        Map<String, DatabaseRequestExecutor> dbChannels = new HashMap<>();
+        dbChannels.put("srv1", dbRequestExecutor1);
+        dbChannels.put("srv2", dbRequestExecutor2);
 
         databaseTestStepProcessor = new DatabaseTestStepProcessor(
                 dbChannels, new DefaultTestScenarioState(),
@@ -53,12 +52,12 @@ class DatabaseTestStepProcessorTest {
     @DisplayName("When no channel is registered Then throw exception")
     void testProcessDatabaseTestStepWhenNoChannelFound() {
         Object responseFromDb = new Object();
-        when(databaseChannel1.send(argThat(new ArgumentMatcher<DatabaseRequest>() {
+        when(dbRequestExecutor1.execute(argThat(new ArgumentMatcher<DatabaseRequest>() {
             @Override
             public boolean matches(Object o) {
                 return false;
             }
-        }))).thenReturn(Optional.of(responseFromDb));
+        }))).thenReturn(responseFromDb);
 
         DatabaseTestStep testStep =
                 new DatabaseTestStep.Builder()
@@ -82,7 +81,7 @@ class DatabaseTestStepProcessorTest {
                         .build();
 
         Object responseFromDb = new Object();
-        when(databaseChannel1.send(argThat(new ArgumentMatcher<DatabaseRequest>() {
+        when(dbRequestExecutor1.execute(argThat(new ArgumentMatcher<DatabaseRequest>() {
             @Override
             public boolean matches(Object request) {
                 DatabaseRequest databaseRequest = (DatabaseRequest) request;
@@ -106,7 +105,7 @@ class DatabaseTestStepProcessorTest {
 
         // return results from all 2 db servers
         Object responseFromDb1 = new Object();
-        when(databaseChannel1.send(argThat(new ArgumentMatcher<DatabaseRequest>() {
+        when(dbRequestExecutor1.execute(argThat(new ArgumentMatcher<DatabaseRequest>() {
             @Override
             public boolean matches(Object request) {
                 DatabaseRequest databaseRequest = (DatabaseRequest) request;
@@ -115,7 +114,7 @@ class DatabaseTestStepProcessorTest {
         }))).thenReturn(responseFromDb1);
 
         Object responseFromDb2 = new Object();
-        when(databaseChannel2.send(argThat(new ArgumentMatcher<DatabaseRequest>() {
+        when(dbRequestExecutor2.execute(argThat(new ArgumentMatcher<DatabaseRequest>() {
             @Override
             public boolean matches(Object request) {
                 DatabaseRequest databaseRequest = (DatabaseRequest) request;

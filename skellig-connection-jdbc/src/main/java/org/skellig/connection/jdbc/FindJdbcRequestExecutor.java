@@ -1,4 +1,4 @@
-package org.skellig.connection.database;
+package org.skellig.connection.jdbc;
 
 import org.skellig.connection.database.exception.DatabaseChannelException;
 import org.skellig.connection.database.model.DatabaseRequest;
@@ -16,11 +16,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-class FindDatabaseRequestExecutor extends BaseDatabaseRequestExecutor {
+class FindJdbcRequestExecutor extends BaseJdbcRequestExecutor {
 
     private static final String COMPARATOR = "comparator";
+    private Connection connection;
 
-    Object executeRequest(Connection connection, DatabaseRequest databaseRequest) {
+    public FindJdbcRequestExecutor(Connection connection) {
+        this.connection = connection;
+    }
+
+    public Object execute(DatabaseRequest databaseRequest) {
         try {
             String query;
             if (databaseRequest.getQuery() != null) {
