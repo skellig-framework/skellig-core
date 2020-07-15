@@ -8,8 +8,6 @@ import java.util.function.Predicate;
 
 public final class TaskUtils {
 
-    private static final double MS_CONSTANT = 1000;
-
     private TaskUtils() {
     }
 
@@ -17,7 +15,7 @@ public final class TaskUtils {
         return runTaskUntil(task, stopCondition, delay, timeout);
     }
 
-    private static <T> T runTaskUntil(Callable<T> task, Predicate<T> stopCondition, int delay, double timeout) throws TaskRunException {
+    private static <T> T runTaskUntil(Callable<T> task, Predicate<T> stopCondition, int delay, int timeout) throws TaskRunException {
         T result = null;
 
         while (timeout > 0) {
@@ -35,7 +33,7 @@ public final class TaskUtils {
                 if (delay > 0) {
                     delay(delay);
                 }
-                timeout = timeout - delay / MS_CONSTANT - totalExecutionTime;
+                timeout = timeout - delay - totalExecutionTime;
             }
         }
         return result;
