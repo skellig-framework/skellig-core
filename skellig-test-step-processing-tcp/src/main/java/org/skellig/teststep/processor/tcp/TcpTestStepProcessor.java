@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.tcp;
 
 import com.typesafe.config.Config;
+import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
@@ -21,8 +22,9 @@ public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
 
     private TcpTestStepProcessor(Map<String, TcpChannel> tcpChannels,
                                  TestScenarioState testScenarioState,
-                                 TestStepResultValidator validator) {
-        super(testScenarioState, validator);
+                                 TestStepResultValidator validator,
+                                 TestStepResultConverter testStepResultConverter) {
+        super(testScenarioState, validator, testStepResultConverter);
         this.tcpChannels = tcpChannels;
     }
 
@@ -59,13 +61,11 @@ public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
         tcpChannels.values().forEach(TcpChannel::close);
     }
 
-    public static class Builder {
+    public static class Builder extends BaseTestStepProcessor.Builder<TcpTestStep> {
 
         private static final String TCP_CONFIG_KEYWORD = "tcp";
 
         private Map<String, TcpChannel> tcpChannels;
-        private TestScenarioState testScenarioState;
-        private TestStepResultValidator validator;
 
         public Builder() {
             tcpChannels = new HashMap<>();
@@ -86,18 +86,8 @@ public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
             return this;
         }
 
-        public Builder withTestScenarioState(TestScenarioState testScenarioState) {
-            this.testScenarioState = testScenarioState;
-            return this;
-        }
-
-        public Builder withValidator(TestStepResultValidator validator) {
-            this.validator = validator;
-            return this;
-        }
-
         public TestStepProcessor<TcpTestStep> build() {
-            return new TcpTestStepProcessor(tcpChannels, testScenarioState, validator);
+            return new TcpTestStepProcessor(tcpChannels, testScenarioState, validator, testStepResultConverter);
         }
     }
 

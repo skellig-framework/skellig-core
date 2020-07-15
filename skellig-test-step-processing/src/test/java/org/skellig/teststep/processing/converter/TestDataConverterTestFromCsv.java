@@ -14,13 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.skellig.teststep.processing.utils.UnitTestUtils.createMap;
 
 @DisplayName("Convert csv test data")
-class CsvTestDataConverterTest {
+class TestDataConverterTestFromCsv {
 
-    private CsvTestDataConverter csvTestDataConverter;
+    private TestDataFromCsvConverter testDataFromCsvConverter;
 
     @BeforeEach
     void setUp() {
-        csvTestDataConverter = new CsvTestDataConverter(getClass().getClassLoader());
+        testDataFromCsvConverter = new TestDataFromCsvConverter(getClass().getClassLoader());
     }
 
     @Test
@@ -30,7 +30,7 @@ class CsvTestDataConverterTest {
                 createMap("csv",
                         createMap("file", "csv/test-file.csv"));
 
-        Object result = csvTestDataConverter.convert(csvDetails);
+        Object result = testDataFromCsvConverter.convert(csvDetails);
 
         assertAll(
                 () -> assertEquals("1", ((Map) ((List) result).get(0)).get("id")),
@@ -58,7 +58,7 @@ class CsvTestDataConverterTest {
                                 createMap("id", "2", "name", "n2"))
                 );
 
-        Object result = csvTestDataConverter.convert(csvDetails);
+        Object result = testDataFromCsvConverter.convert(csvDetails);
 
         assertAll(
                 () -> assertEquals(1, ((List) result).size()),
@@ -76,6 +76,6 @@ class CsvTestDataConverterTest {
                 createMap("csv", createMap("file", "csv/missing.csv"));
 
         assertThrows(TestDataConversionException.class,
-                () -> csvTestDataConverter.convert(csvDetails));
+                () -> testDataFromCsvConverter.convert(csvDetails));
     }
 }

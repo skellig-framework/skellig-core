@@ -32,6 +32,30 @@ class ValidationDetailsFactoryTest {
     }
 
     @Test
+    void testSimpleEquals() {
+        String expectedResult = "something";
+        TestStep testStep = createTestStepWithoutParameters(expectedResult);
+
+        ValidationDetails validationDetails = testStep.getValidationDetails().get();
+
+        assertEquals("", validationDetails.getExpectedResult().getProperty());
+        assertEquals(expectedResult, validationDetails.getExpectedResult().getExpectedResult());
+    }
+
+    @Test
+    void testSimpleEqualsFromManySources() {
+        String expectedResult = "something";
+        TestStep testStep = createTestStepWithoutParameters(createMap("[s1,s2]", expectedResult));
+
+        ValidationDetails validationDetails = testStep.getValidationDetails().get();
+
+        assertEquals("s1", extractExpectedValue(validationDetails.getExpectedResult(), 0).getProperty());
+        assertEquals(expectedResult, extractExpectedValue(validationDetails.getExpectedResult(), 0).getExpectedResult());
+        assertEquals("s2", extractExpectedValue(validationDetails.getExpectedResult(), 1).getProperty());
+        assertEquals(expectedResult, extractExpectedValue(validationDetails.getExpectedResult(), 1).getExpectedResult());
+    }
+
+    @Test
     @DisplayName("When has few expected values")
     void testSimpleExpectedResult() {
         Map<String, Object> rawValidationDetails =
@@ -47,7 +71,6 @@ class ValidationDetailsFactoryTest {
 
                 () -> assertEquals("status", extractExpectedValue(validationDetails.getExpectedResult(), 1).getProperty()),
                 () -> assertEquals("200", extractExpectedValue(validationDetails.getExpectedResult(), 1).getExpectedResult())
-
         );
     }
 
@@ -302,7 +325,7 @@ class ValidationDetailsFactoryTest {
     }
 
 
-    private TestStep createTestStepWithoutParameters(Map<String, Object> rawValidationDetails) {
+    private TestStep createTestStepWithoutParameters(Object rawValidationDetails) {
         return validationDetailsFactory.create("step1", createMap("validate", rawValidationDetails), Collections.emptyMap());
     }
 }

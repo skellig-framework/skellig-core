@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-class CsvTestDataConverter implements TestDataConverter {
+class TestDataFromCsvConverter implements TestDataConverter {
 
     private static final String ROW_KEYWORD = "row";
     private static final String CSV_KEYWORD = "csv";
@@ -25,7 +25,7 @@ class CsvTestDataConverter implements TestDataConverter {
 
     private ClassLoader classLoader;
 
-    CsvTestDataConverter(ClassLoader classLoader) {
+    TestDataFromCsvConverter(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
