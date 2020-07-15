@@ -98,11 +98,12 @@ class StsFileParserTest {
                 () -> assertTrue(
                         ((List) getValueFromMap(firstTestStep, "validate", "contains_expected_values"))
                                 .containsAll(Stream.of(
+                                        "equals to something",
                                         "contains(success)",
-                                        "contains(go)",
+                                        "contains(go go go)",
                                         "regex(.*get(id).*)").collect(Collectors.toList()))),
                 () -> assertEquals("v1", getValueFromMap(firstTestStep, "validate", "has_fields", "f1")),
-                () -> assertEquals("get(id)", getValueFromMap(firstTestStep, "validate", "has_fields", "json_path(f1.f2)"))
+                () -> assertEquals("get(id) and more", getValueFromMap(firstTestStep, "validate", "has_fields", "json_path(f1.f2)"))
         );
     }
 
@@ -146,13 +147,15 @@ class StsFileParserTest {
 
         Map<String, Object> firstTestStep = testSteps.get(0);
         assertAll(
-                () -> assertEquals("application/json", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "headers", "content-type")),
-                () -> assertEquals("contains(fail)", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "log", "none_match", 0)),
-                () -> assertEquals("contains(error)", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "log", "none_match", 1)),
-                () -> assertEquals("v3", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "body", "regex(.*f3=(\\\\w+).*)")),
-                () -> assertEquals("v2", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "body", "json_path(f1.f3)")),
-                () -> assertEquals("v1", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "body", "json_path(f1.f2)")),
-                () -> assertEquals("200", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1,srv2,srv3]", "status"))
+                () -> assertEquals("T 1 2 3", getValueFromMap(firstTestStep, "validate", "from test")),
+                () -> assertEquals("application/json", getValueFromMap(firstTestStep, "validate", "any match", "[srv1, srv2, srv3]", "headers", "content-type")),
+                // spaced inside the value must be preserved
+                () -> assertEquals("contains(fail  1 )", getValueFromMap(firstTestStep, "validate", "any match", "[srv1, srv2, srv3]", "log", "none_match", 0)),
+                () -> assertEquals("contains( error)", getValueFromMap(firstTestStep, "validate", "any match", "[srv1, srv2, srv3]", "log", "none_match", 1)),
+                () -> assertEquals("v3", getValueFromMap(firstTestStep, "validate", "any match", "[srv1, srv2, srv3]", "body", "regex(.*f3=(\\\\w+).*)")),
+                () -> assertEquals("v2", getValueFromMap(firstTestStep, "validate", "any match", "[srv1, srv2, srv3]", "body", "json_path(f1.f3)")),
+                () -> assertEquals("v1", getValueFromMap(firstTestStep, "validate", "any match", "[srv1, srv2, srv3]", "body", "json_path(f1.f2)")),
+                () -> assertEquals("200", getValueFromMap(firstTestStep, "validate", "any match", "[srv1, srv2, srv3]", "status"))
         );
     }
 

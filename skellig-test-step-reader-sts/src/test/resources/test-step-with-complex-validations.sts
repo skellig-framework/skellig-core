@@ -2,9 +2,9 @@
 name (Validate response)
 {
   validate {
-    fromTest = T1
+    from test = T 1 2 3
 
-    any_match {
+    any match {
 
       [srv1, srv2, srv3] {
          status = 200
@@ -18,8 +18,8 @@ name (Validate response)
          }
          log {
             none_match [
-              contains(fail)
-              contains(error)
+              contains(fail  1 )
+              contains( error)
             ]
          }
       }
