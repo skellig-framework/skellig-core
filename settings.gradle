@@ -16,4 +16,5 @@ include 'skellig-task'
 include 'skellig-connection-database'
 include 'skellig-connection-jdbc'
 include 'skellig-connection-cassandra'
+include 'skellig-test-step-processing-unix'
 
