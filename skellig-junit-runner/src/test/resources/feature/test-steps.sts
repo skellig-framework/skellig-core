@@ -34,3 +34,34 @@ name(User (\w+) receives valid response from (\w+)) {
       status = success
    }
 }
+
+name(Send a message with if statement) {
+  id = if_test_1
+  receiver = user1
+  message {
+     f1 = 0
+     if {
+        condition = '${num} == 1'
+        then {
+          f2 = 1
+          f3 = 11
+        }
+        else {
+          f2 = 2
+          f3 = 22
+        }
+     }
+  }
+
+}
+
+name(Validate test with if statement) {
+  validate {
+     from_test = if_test_1
+     originalRequest [
+        contains(f2=${expected_f2})
+        contains(f3=${expected_f3})
+     ]
+     status = success
+  }
+}
