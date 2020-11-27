@@ -9,20 +9,21 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Optional;
+import java.util.Arrays;
 
 class TcpChannel implements AutoCloseable {
+
+    private static final int DEFAULT_TIMEOUT = 30000;
 
     private Socket socket;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
-    private boolean isClosed;
 
     TcpChannel(TcpDetails tcpDetails) {
         try {
             socket = new Socket();
-            socket.setKeepAlive(true);
-            socket.setSoTimeout(0);
+            socket.setKeepAlive(tcpDetails.isKeepAlive());
+            socket.setSoTimeout(DEFAULT_TIMEOUT);
             socket.connect(new InetSocketAddress(InetAddress.getByName(tcpDetails.getHostName()), tcpDetails.getPort()));
 
             inputStream = new DataInputStream(socket.getInputStream());
@@ -33,28 +34,27 @@ class TcpChannel implements AutoCloseable {
     }
 
     public void send(Object request) {
-        if (socket.isConnected()) {
-            try {
-                byte[] messageAsBytes = (byte[]) request;
-                outputStream.write(messageAsBytes, 0, messageAsBytes.length);
-                outputStream.flush();
-            } catch (Exception e) {
-                // log later
-            }
+        try {
+            byte[] messageAsBytes = (byte[]) request;
+            outputStream.write(messageAsBytes, 0, messageAsBytes.length);
+            outputStream.flush();
+        } catch (Exception e) {
+            // log later
         }
     }
 
-    public Optional<Object> read() {
+    public Object read(int timeout, int bufferSize) {
         try {
-            if (inputStream.available() > 0) {
-                byte[] bytes = new byte[inputStream.available()];
-                inputStream.readFully(bytes, 0, bytes.length);
-                return Optional.of(bytes);
+            if (timeout > 0) {
+                socket.setSoTimeout(timeout);
+            } else {
+                socket.setSoTimeout(DEFAULT_TIMEOUT);
             }
+            return readAllBytes(bufferSize);
         } catch (Exception e) {
             //log later
         }
-        return Optional.empty();
+        return null;
     }
 
     @Override
@@ -67,13 +67,24 @@ class TcpChannel implements AutoCloseable {
                 }
                 socket.close();
             }
-            isClosed = true;
         } catch (Exception e) {
             //log later
         }
     }
 
-    boolean isClosed() {
-        return isClosed;
+    private byte[] readAllBytes(int bufferSize) throws IOException {
+        int read;
+        byte[] response = new byte[0];
+        byte[] bytes = new byte[bufferSize];
+        if ((read = inputStream.read(bytes)) != -1) {
+            int shift = response.length;
+            response = Arrays.copyOf(response, read + response.length);
+            for (int i = shift, j = 0; j < read; i++, j++) {
+                response[i] = bytes[j];
+            }
+        }
+
+        return response.length == 0 ? null : response;
     }
+
 }

@@ -8,6 +8,8 @@ dependencies {
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+    testImplementation group: 'org.mockito', name: 'mockito-all'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
 }
 
 test {
