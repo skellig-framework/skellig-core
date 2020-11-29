@@ -19,6 +19,8 @@ class RmqDetailsConfigReader {
     private static final String RMQ_CONFIG_KEYWORD = "rmq";
 
     Collection<RmqDetails> read(Config config) {
+        Objects.requireNonNull(config, "RMQ config cannot be null");
+
         Collection<RmqDetails> rmqDetails = Collections.emptyList();
         if (config.hasPath(RMQ_CONFIG_KEYWORD)) {
             List<Map> anyRefList = (List<Map>) config.getAnyRefList(RMQ_CONFIG_KEYWORD);
@@ -80,7 +82,8 @@ class RmqDetailsConfigReader {
         String name = (String) item.get("name");
         String exchange = (String) item.get("exchange");
 
-        Objects.requireNonNull(channelId, "Channel ID was not declared for RMQ details");
+        Objects.requireNonNull(channelId, "Channel ID was not declared for RMQ details. " +
+                "It can be any unique name which you would use in tests as a reference");
         Objects.requireNonNull(name, "Queue name was not declared for RMQ details");
         Objects.requireNonNull(exchange, "Exchange name was not declared for RMQ details");
         Objects.requireNonNull(exchanges.get(exchange), String.format("No exchange name '%s' was declared", exchange));
