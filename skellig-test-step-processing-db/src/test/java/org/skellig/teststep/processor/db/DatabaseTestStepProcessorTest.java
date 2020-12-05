@@ -4,12 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
-import org.skellig.connection.database.DatabaseRequestExecutor;
-import org.skellig.connection.database.model.DatabaseRequest;
 import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.state.DefaultTestScenarioState;
 import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator;
+import org.skellig.teststep.processor.db.model.DatabaseRequest;
 import org.skellig.teststep.processor.db.model.DatabaseTestStep;
 
 import java.util.Arrays;
@@ -26,8 +25,8 @@ import static org.mockito.Mockito.when;
 @DisplayName("Process database test step")
 class DatabaseTestStepProcessorTest {
 
-    private static final String SRV_2 = "srv2";
     private static final String SRV_1 = "srv1";
+    private static final String SRV_2 = "srv2";
 
     private DatabaseTestStepProcessor databaseTestStepProcessor;
     private DatabaseRequestExecutor dbRequestExecutor1;
@@ -40,21 +39,34 @@ class DatabaseTestStepProcessorTest {
         dbRequestExecutor2 = mock(DatabaseRequestExecutor.class);
         testStepResultConverter = mock(TestStepResultConverter.class);
 
-        Map<String, DatabaseRequestExecutor> dbChannels = new HashMap<>();
-        dbChannels.put("srv1", dbRequestExecutor1);
-        dbChannels.put("srv2", dbRequestExecutor2);
+        Map<String, DatabaseRequestExecutor> dbServers = new HashMap<>();
+        dbServers.put("srv1", dbRequestExecutor1);
+        dbServers.put("srv2", dbRequestExecutor2);
 
         databaseTestStepProcessor = new DatabaseTestStepProcessor(
-                dbChannels, new DefaultTestScenarioState(),
-                new DefaultTestStepResultValidator.Builder()
-                        .build(),
+                dbServers, new DefaultTestScenarioState(),
+                new DefaultTestStepResultValidator.Builder().build(),
                 testStepResultConverter
-        );
+        ) {
+        };
     }
 
     @Test
-    @DisplayName("When no channel is registered Then throw exception")
-    void testProcessDatabaseTestStepWhenNoChannelFound() {
+    @DisplayName("When no servers are provided Then throw exception")
+    void testProcessDatabaseTestStepWhenNoServersProvided() {
+        DatabaseTestStep testStep =
+                new DatabaseTestStep.Builder().build();
+
+        TestStepProcessingException ex = assertThrows(TestStepProcessingException.class,
+                () -> databaseTestStepProcessor.processTestStep(testStep));
+
+        assertEquals("No DB servers were provided to run a query." +
+                " Registered servers are: [srv1, srv2]", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("When no server is registered Then throw exception")
+    void testProcessDatabaseTestStepWhenNoServerIsRegistered() {
         Object responseFromDb = new Object();
         when(dbRequestExecutor1.execute(argThat(new ArgumentMatcher<DatabaseRequest>() {
             @Override
@@ -71,12 +83,13 @@ class DatabaseTestStepProcessorTest {
         TestStepProcessingException ex = assertThrows(TestStepProcessingException.class,
                 () -> databaseTestStepProcessor.processTestStep(testStep));
 
-        assertEquals("No database channel was registered for server name 'default'", ex.getMessage());
+        assertEquals("No database was registered for server name 'default'." +
+                " Registered servers are: [srv1, srv2]", ex.getMessage());
     }
 
     @Test
     @DisplayName("When run only on one db server Then verify single response returned")
-    void testProcessDatabaseTestStepForSingleChannel() {
+    void testProcessDatabaseTestStepForSingleServer() {
         DatabaseTestStep testStep =
                 new DatabaseTestStep.Builder()
                         .withServers(Collections.singletonList(SRV_1))
@@ -100,7 +113,7 @@ class DatabaseTestStepProcessorTest {
 
     @Test
     @DisplayName("When run on 2 db servers And only query provided Then verify grouped response returned")
-    void testProcessDatabaseTestStepForTwoChannelsWhenQueryProvided() {
+    void testProcessDatabaseTestStepForTwoServersWhenQueryProvided() {
         DatabaseTestStep testStep =
                 new DatabaseTestStep.Builder()
                         .withServers(Arrays.asList(SRV_1, SRV_2))
@@ -126,8 +139,10 @@ class DatabaseTestStepProcessorTest {
             }
         }))).thenReturn(responseFromDb2);
 
-        assertEquals(responseFromDb1, ((Map) databaseTestStepProcessor.processTestStep(testStep)).get(SRV_1));
-        assertEquals(responseFromDb2, ((Map) databaseTestStepProcessor.processTestStep(testStep)).get(SRV_2));
+        Map response = (Map) databaseTestStepProcessor.processTestStep(testStep);
+
+        assertEquals(responseFromDb1, response.get(SRV_1));
+        assertEquals(responseFromDb2, response.get(SRV_2));
     }
 
 }

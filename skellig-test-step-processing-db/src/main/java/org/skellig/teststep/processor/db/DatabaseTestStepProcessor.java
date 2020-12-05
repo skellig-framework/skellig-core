@@ -1,24 +1,24 @@
 package org.skellig.teststep.processor.db;
 
-import org.skellig.connection.database.DatabaseRequestExecutor;
-import org.skellig.connection.database.model.DatabaseRequest;
+import com.typesafe.config.Config;
 import org.skellig.teststep.processing.converter.TestStepResultConverter;
 import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
 import org.skellig.teststep.processing.processor.TestStepProcessor;
 import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.TestStepResultValidator;
+import org.skellig.teststep.processor.db.model.DatabaseDetails;
+import org.skellig.teststep.processor.db.model.DatabaseRequest;
 import org.skellig.teststep.processor.db.model.DatabaseTestStep;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTestStep> {
+public abstract class DatabaseTestStepProcessor<T extends DatabaseRequestExecutor> extends BaseTestStepProcessor<DatabaseTestStep> {
 
-    private Map<String, DatabaseRequestExecutor> dbServers;
+    private Map<String, T> dbServers;
 
-    protected DatabaseTestStepProcessor(Map<String, DatabaseRequestExecutor> dbServers,
+    protected DatabaseTestStepProcessor(Map<String, T> dbServers,
                                         TestScenarioState testScenarioState, TestStepResultValidator validator,
                                         TestStepResultConverter testStepResultConverter) {
         super(testScenarioState, validator, testStepResultConverter);
@@ -27,32 +27,35 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
 
     @Override
     protected Object processTestStep(DatabaseTestStep testStep) {
-        Map<String, Object> result = new HashMap<>();
-        Collection<String> servers = testStep.getServers();
-        if (servers == null || servers.isEmpty()) {
-            servers = dbServers.keySet();
+        if (testStep.getServers().isEmpty()) {
+            throw new TestStepProcessingException("No DB servers were provided to run a query." +
+                    " Registered servers are: " + dbServers.keySet().toString());
         }
 
-        servers.parallelStream()
+        Map<String, Object> result = new HashMap<>();
+
+        testStep.getServers()
                 .forEach(serverName -> {
-                    DatabaseRequestExecutor databaseChannel = getDatabaseChannel(serverName);
-                    DatabaseRequest request;
-                    if (testStep.getQuery() != null) {
-                        request = new DatabaseRequest(testStep.getQuery());
-                    } else {
-                        request = new DatabaseRequest(testStep.getCommand(), testStep.getTable(), (Map<String, Object>) testStep.getTestData());
-                    }
-
-                    Object response = databaseChannel.execute(request);
-
+                    Object response = getDatabaseServer(serverName).execute(getDatabaseRequest(testStep));
                     result.put(serverName, response);
                 });
         return result.size() == 1 ? result.values().stream().findFirst().orElse(null) : result;
     }
 
-    private DatabaseRequestExecutor getDatabaseChannel(String serverName) {
+    private DatabaseRequest getDatabaseRequest(DatabaseTestStep testStep) {
+        DatabaseRequest request;
+        if (testStep.getQuery() != null) {
+            request = new DatabaseRequest(testStep.getQuery());
+        } else {
+            request = new DatabaseRequest(testStep.getCommand(), testStep.getTable(), (Map<String, Object>) testStep.getTestData());
+        }
+        return request;
+    }
+
+    private DatabaseRequestExecutor getDatabaseServer(String serverName) {
         if (!dbServers.containsKey(serverName)) {
-            throw new TestStepProcessingException(String.format("No database channel was registered for server name '%s'", serverName));
+            throw new TestStepProcessingException(String.format("No database was registered for server name '%s'." +
+                    " Registered servers are: %s", serverName, dbServers.keySet().toString()));
         }
         return dbServers.get(serverName);
     }
@@ -67,20 +70,24 @@ public class DatabaseTestStepProcessor extends BaseTestStepProcessor<DatabaseTes
         dbServers.values().forEach(DatabaseRequestExecutor::close);
     }
 
-    public static class Builder extends BaseTestStepProcessor.Builder<DatabaseTestStep> {
-        private Map<String, DatabaseRequestExecutor> dbServers;
+    public static abstract class Builder<D extends DatabaseDetails, RE extends DatabaseRequestExecutor>
+            extends BaseTestStepProcessor.Builder<DatabaseTestStep> {
+
+        protected Map<String, RE> dbServers;
 
         public Builder() {
             dbServers = new HashMap<>();
         }
 
-        public Builder withDbServer(String name, DatabaseRequestExecutor databaseRequestExecutor) {
-            dbServers.put(name, databaseRequestExecutor);
+        public Builder<D, RE> withDbServer(D databaseDetails) {
+            dbServers.put(databaseDetails.getServerName(), createRequestExecutor(databaseDetails));
             return this;
         }
 
-        public TestStepProcessor<DatabaseTestStep> build() {
-            return new DatabaseTestStepProcessor(dbServers, testScenarioState, validator, testStepResultConverter);
-        }
+        public abstract Builder<D, RE> withDbServers(Config config);
+
+        protected abstract RE createRequestExecutor(D databaseDetails);
+
+        public abstract TestStepProcessor<DatabaseTestStep> build();
     }
 }

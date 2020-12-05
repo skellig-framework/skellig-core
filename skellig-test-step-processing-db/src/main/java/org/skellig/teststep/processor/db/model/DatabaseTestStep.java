@@ -5,6 +5,7 @@ import org.skellig.teststep.processing.model.TestStepExecutionType;
 import org.skellig.teststep.processing.model.ValidationDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 public class DatabaseTestStep extends TestStep {
@@ -43,7 +44,7 @@ public class DatabaseTestStep extends TestStep {
 
     public static class Builder extends TestStep.Builder {
 
-        private Collection<String> servers;
+        private Collection<String> servers = Collections.emptyList();
         private String command;
         private String table;
         private String query;
