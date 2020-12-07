@@ -4,7 +4,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-import org.skellig.teststep.processor.db.exception.DatabaseChannelException;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processor.db.model.DatabaseRequest;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ class CassandraSelectRequestExecutor extends BaseCassandraRequestExecutor {
             }
 
         } catch (Exception ex) {
-            throw new DatabaseChannelException(ex.getMessage(), ex);
+            throw new TestStepProcessingException(ex.getMessage(), ex);
         }
     }
 

@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.jdbc;
 
-import org.skellig.teststep.processor.db.exception.DatabaseChannelException;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processor.db.model.DatabaseRequest;
 
 import java.sql.Connection;
@@ -45,7 +45,7 @@ class InsertJdbcRequestExecutor extends BaseJdbcRequestExecutor {
             } catch (SQLException e) {
                 //log later
             }
-            throw new DatabaseChannelException(ex.getMessage(), ex);
+            throw new TestStepProcessingException(ex.getMessage(), ex);
         }
         return result;
     }

@@ -1,13 +1,12 @@
 package org.skellig.teststep.processor.db;
 
-import org.skellig.teststep.processor.db.exception.DatabaseChannelException;
-import org.skellig.teststep.processor.db.model.DatabaseDetails;
+import org.skellig.teststep.processing.exception.TestStepProcessingException;
 import org.skellig.teststep.processor.db.model.DatabaseRequest;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class DatabaseRequestExecutorFactory {
+public class DatabaseRequestExecutorFactory {
 
     private Map<String, DatabaseRequestExecutor> databaseRequestExecutors;
 
@@ -18,14 +17,12 @@ public abstract class DatabaseRequestExecutorFactory {
         databaseRequestExecutors.put("insert", insert);
     }
 
-    public abstract DatabaseRequestExecutor create(DatabaseDetails databaseDetails);
-
     public DatabaseRequestExecutor get(DatabaseRequest databaseRequest) {
         String command = databaseRequest.getCommand();
         if (isQueryOnlyProvided(databaseRequest, command)) {
             String query = databaseRequest.getQuery();
             command = databaseRequestExecutors.keySet().stream()
-                    .filter(item -> query.toLowerCase().contains(item))
+                    .filter(item -> query.toLowerCase().trim().startsWith(item))
                     .findFirst()
                     .orElse(null);
         }
@@ -34,9 +31,9 @@ public abstract class DatabaseRequestExecutorFactory {
             return databaseRequestExecutors.get(command);
         } else {
             if (isQueryOnlyProvided(databaseRequest, command)) {
-                throw new DatabaseChannelException("No database query executors found for query: " + databaseRequest.getQuery());
+                throw new TestStepProcessingException("No database query executors found for query: " + databaseRequest.getQuery());
             } else {
-                throw new DatabaseChannelException("No database query executors found for command: " + command);
+                throw new TestStepProcessingException("No database query executors found for command: " + command);
             }
         }
     }
