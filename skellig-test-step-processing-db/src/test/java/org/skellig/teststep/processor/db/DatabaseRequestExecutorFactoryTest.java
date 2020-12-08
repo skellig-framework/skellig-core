@@ -72,6 +72,19 @@ class DatabaseRequestExecutorFactoryTest {
         TestStepProcessingException ex =
                 assertThrows(TestStepProcessingException.class, () -> factory.get(databaseRequest));
 
-        assertEquals("No database query executors found for query: some query", ex.getMessage());
+        assertEquals("No database query executors found for query: 'some query'." +
+                " Supported types of queries: [select, insert]", ex.getMessage());
+    }
+
+    @Test
+    void testGetRequestExecutorForUndefinedCommand() {
+        DatabaseRequest databaseRequest = mock(DatabaseRequest.class);
+        when(databaseRequest.getCommand()).thenReturn("wrong command");
+
+        TestStepProcessingException ex =
+                assertThrows(TestStepProcessingException.class, () -> factory.get(databaseRequest));
+
+        assertEquals("No database query executors found for command: 'wrong command'." +
+                " Supported commands: [select, insert]", ex.getMessage());
     }
 }
