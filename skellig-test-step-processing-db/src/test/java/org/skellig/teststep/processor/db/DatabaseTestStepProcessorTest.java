@@ -5,8 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.skellig.teststep.processing.converter.TestStepResultConverter;
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processing.state.DefaultTestScenarioState;
+import org.skellig.teststep.processing.state.TestScenarioState;
 import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator;
 import org.skellig.teststep.processor.db.model.DatabaseRequest;
 import org.skellig.teststep.processor.db.model.DatabaseTestStep;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,7 +42,7 @@ class DatabaseTestStepProcessorTest {
         dbServers.put("srv2", dbRequestExecutor2);
 
         databaseTestStepProcessor = new DatabaseTestStepProcessor(
-                dbServers, new DefaultTestScenarioState(),
+                dbServers, mock(TestScenarioState.class),
                 new DefaultTestStepResultValidator.Builder().build(),
                 testStepResultConverter
         ) {
@@ -57,11 +55,11 @@ class DatabaseTestStepProcessorTest {
         DatabaseTestStep testStep =
                 new DatabaseTestStep.Builder().build();
 
-        TestStepProcessingException ex = assertThrows(TestStepProcessingException.class,
-                () -> databaseTestStepProcessor.processTestStep(testStep));
-
-        assertEquals("No DB servers were provided to run a query." +
-                " Registered servers are: [srv1, srv2]", ex.getMessage());
+        databaseTestStepProcessor.process(testStep)
+                .subscribe((t, r, e) -> {
+                    assertEquals("No DB servers were provided to run a query." +
+                            " Registered servers are: [srv1, srv2]", e.getMessage());
+                });
     }
 
     @Test
@@ -80,11 +78,12 @@ class DatabaseTestStepProcessorTest {
                         .withServers(Collections.singletonList("default"))
                         .build();
 
-        TestStepProcessingException ex = assertThrows(TestStepProcessingException.class,
-                () -> databaseTestStepProcessor.processTestStep(testStep));
+        databaseTestStepProcessor.process(testStep)
+                .subscribe((t, r, e) -> {
+                    assertEquals("No database was registered for server name 'default'." +
+                            " Registered servers are: [srv1, srv2]", e.getMessage());
+                });
 
-        assertEquals("No database was registered for server name 'default'." +
-                " Registered servers are: [srv1, srv2]", ex.getMessage());
     }
 
     @Test
@@ -108,7 +107,10 @@ class DatabaseTestStepProcessorTest {
         }))).thenReturn(responseFromDb);
 
 
-        assertEquals(responseFromDb, databaseTestStepProcessor.processTestStep(testStep));
+        databaseTestStepProcessor.process(testStep)
+                .subscribe((t, r, e) -> {
+                    assertEquals(responseFromDb, ((Map)r).get(SRV_1));
+                });
     }
 
     @Test
@@ -139,10 +141,11 @@ class DatabaseTestStepProcessorTest {
             }
         }))).thenReturn(responseFromDb2);
 
-        Map response = (Map) databaseTestStepProcessor.processTestStep(testStep);
-
-        assertEquals(responseFromDb1, response.get(SRV_1));
-        assertEquals(responseFromDb2, response.get(SRV_2));
+        databaseTestStepProcessor.process(testStep)
+                .subscribe((t, r, e) -> {
+                    assertEquals(responseFromDb1, ((Map) r).get(SRV_1));
+                    assertEquals(responseFromDb2, ((Map) r).get(SRV_2));
+                });
     }
 
 }
