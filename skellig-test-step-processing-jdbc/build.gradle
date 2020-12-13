@@ -10,6 +10,11 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-all'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+
+    testCompile group: 'org.postgresql', name: 'postgresql', version: '42.2.18'
+    testCompile 'org.testcontainers:testcontainers:1.15.0'
+    testCompile "org.testcontainers:junit-jupiter:1.15.0"
+    testCompile "org.testcontainers:postgresql:1.15.0"
 }
 
 test {
