@@ -1,5 +1,6 @@
 package org.skellig.task
 
+import org.skellig.task.exception.TaskRunException
 import java.util.concurrent.Callable
 import java.util.function.Predicate
 

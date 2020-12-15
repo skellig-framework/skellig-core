@@ -4,10 +4,10 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.task.TaskRunException
 import org.skellig.task.async.AsyncTaskUtils.Companion.runCallableAsync
 import org.skellig.task.async.AsyncTaskUtils.Companion.runTaskAsync
 import org.skellig.task.async.AsyncTaskUtils.Companion.shutdown
+import org.skellig.task.exception.TaskRunException
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutionException
