@@ -35,6 +35,22 @@ internal class DefaultTestStepRunnerTest {
     }
 
     @Test
+    @DisplayName("When steps not found in the resources Then throw correct exception")
+    fun testRunTestStepWhenNoFound() {
+        val testStepName = "test1"
+        initializeTestSteps(testStepName, emptyMap<String, String>())
+        testStepRunner = DefaultTestStepRunner.Builder()
+                .withTestStepFactory(testStepFactory!!)
+                .withTestStepProcessor(testStepProcessor)
+                .withTestStepReader(testStepReader!!, javaClass.classLoader, listOf("wrong path"))
+                .build()
+
+        Assertions.assertThrows(TestStepProcessingException::class.java) { testStepRunner!!.run(testStepName) }
+
+        Mockito.verifyZeroInteractions(testStepProcessor)
+    }
+
+    @Test
     @DisplayName("When step doesn't exist Then throw exception")
     fun testRunTestStepWhenNotExist() {
         initializeTestSteps("test1", emptyMap<String, String>())

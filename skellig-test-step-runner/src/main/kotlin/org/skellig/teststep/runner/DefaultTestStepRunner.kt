@@ -65,6 +65,8 @@ internal class DefaultTestStepRunner private constructor(private val testStepPro
         }
 
         fun build(): TestStepRunner {
+            Objects.requireNonNull(classLoader, "Class Loader must be provided. Did you forget to call the method 'testStepReader'?")
+
             val testStepPaths = extractTestStepPaths()
             val testStepClassPaths = extractTestStepPackages()
             val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader
@@ -79,23 +81,24 @@ internal class DefaultTestStepRunner private constructor(private val testStepPro
         }
 
         private fun extractTestStepPackages(): Collection<String> {
-            return testStepPaths!!
-                    .filter { !it.contains("/") }
-                    .toSet()
+            return testStepPaths
+                    ?.filter { !it.contains("/") }
+                    ?.toSet() ?: emptySet()
         }
 
         private fun extractTestStepPaths(): Collection<Path> {
-            return testStepPaths!!
-                    .filter { !it.contains(".") }
-                    .map {
+            return testStepPaths
+                    ?.filter { !it.contains(".") }
+                    ?.map {
                         try {
                             val resource = classLoader!!.getResource(it)
-                            return@map Paths.get(resource!!.toURI())
+                            return@map resource?.let { Paths.get(resource.toURI()) }
                         } catch (e: URISyntaxException) {
                             throw TestStepRegistryException(e.message, e)
                         }
                     }
-                    .toList()
+                    ?.filterNotNull()
+                    ?.toSet() ?: emptySet()
         }
     }
 
