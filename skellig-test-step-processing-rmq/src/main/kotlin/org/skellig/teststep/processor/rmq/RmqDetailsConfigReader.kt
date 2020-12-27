@@ -1,94 +1,84 @@
-package org.skellig.teststep.processor.rmq;
+package org.skellig.teststep.processor.rmq
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processor.rmq.model.RmqDetails;
-import org.skellig.teststep.processor.rmq.model.RmqExchangeDetails;
-import org.skellig.teststep.processor.rmq.model.RmqHostDetails;
-import org.skellig.teststep.processor.rmq.model.RmqQueueDetails;
+import com.typesafe.config.Config
+import org.skellig.teststep.processor.rmq.model.RmqDetails
+import org.skellig.teststep.processor.rmq.model.RmqExchangeDetails
+import org.skellig.teststep.processor.rmq.model.RmqHostDetails
+import org.skellig.teststep.processor.rmq.model.RmqQueueDetails
+import java.util.*
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+internal class RmqDetailsConfigReader {
 
+    fun read(config: Config?): Collection<RmqDetails> {
+        Objects.requireNonNull(config, "RMQ config cannot be null")
 
-class RmqDetailsConfigReader {
-
-    private static final String RMQ_CONFIG_KEYWORD = "rmq";
-
-    Collection<RmqDetails> read(Config config) {
-        Objects.requireNonNull(config, "RMQ config cannot be null");
-
-        Collection<RmqDetails> rmqDetails = Collections.emptyList();
-        if (config.hasPath(RMQ_CONFIG_KEYWORD)) {
-            List<Map> anyRefList = (List<Map>) config.getAnyRefList(RMQ_CONFIG_KEYWORD);
-            rmqDetails = anyRefList.stream()
-                    .map(this::createRmqDetails)
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toList());
+        var rmqDetails: Collection<RmqDetails> = emptyList()
+        if (config!!.hasPath(RMQ_CONFIG_KEYWORD)) {
+            val anyRefList = config.getAnyRefList(RMQ_CONFIG_KEYWORD) as List<Map<*, *>>
+            rmqDetails = anyRefList
+                    .map { rawRmqDetails: Map<*, *> -> createRmqDetails(rawRmqDetails) }
+                    .flatten()
+                    .toList()
         }
-        return rmqDetails;
+        return rmqDetails
     }
 
-    private Collection<RmqDetails> createRmqDetails(Map rawRmqDetails) {
-        RmqHostDetails hostDetails = createRmqHostDetails(rawRmqDetails);
-        List<Map> queues = (List<Map>) rawRmqDetails.get("queues");
-        Map<String, RmqExchangeDetails> exchanges = createExchanges(rawRmqDetails);
-
-        return queues.stream()
-                .map(queue -> createQueueDetails(queue, exchanges, hostDetails))
-                .collect(Collectors.toList());
+    private fun createRmqDetails(rawRmqDetails: Map<*, *>): Collection<RmqDetails> {
+        val hostDetails = createRmqHostDetails(rawRmqDetails)
+        val queues = rawRmqDetails["queues"] as List<Map<*, *>>?
+        val exchanges = createExchanges(rawRmqDetails)
+        return queues!!
+                .map { createQueueDetails(it, exchanges, hostDetails) }
+                .toList()
     }
 
-    private RmqHostDetails createRmqHostDetails(Map rawRmqDetails) {
-        String host = (String) rawRmqDetails.get("host");
-        int port = (int) rawRmqDetails.get("port");
-        String user = (String) rawRmqDetails.get("username");
-        String password = (String) rawRmqDetails.get("password");
-        return new RmqHostDetails(host, port, user, password);
+    private fun createRmqHostDetails(rawRmqDetails: Map<*, *>): RmqHostDetails {
+        val host = rawRmqDetails["host"] as String
+        val port = rawRmqDetails["port"] as Int
+        val user = rawRmqDetails["username"] as String?
+        val password = rawRmqDetails["password"] as String?
+
+        return RmqHostDetails(host, port, user, password)
     }
 
-    private Map<String, RmqExchangeDetails> createExchanges(Map rawExchangesDetails) {
-        List<Map> exchanges = (List<Map>) rawExchangesDetails.get("exchanges");
+    private fun createExchanges(rawExchangesDetails: Map<*, *>): Map<String, RmqExchangeDetails> {
+        val exchanges = rawExchangesDetails["exchanges"] as List<Map<*, *>>?
+        Objects.requireNonNull(exchanges, "No exchanges were declared for RMQ")
 
-        Objects.requireNonNull(exchanges, "No exchanges were declared for RMQ");
-
-        return exchanges.stream()
-                .map(this::createExchange)
-                .collect(Collectors.toMap(RmqExchangeDetails::getName, e -> e));
+        return exchanges!!
+                .map { createExchange(it) }
+                .map { it.name to it }
+                .toMap()
     }
 
-    private RmqExchangeDetails createExchange(Map rawExchangeDetails) {
-        String name = (String) rawExchangeDetails.get("name");
-        String type = (String) rawExchangeDetails.get("type");
+    private fun createExchange(rawExchangeDetails: Map<*, *>): RmqExchangeDetails {
+        val name = rawExchangeDetails["name"] as String?
+        val type = rawExchangeDetails["type"] as String?
+        Objects.requireNonNull(name, "Name was not declared for RMQ Exchange")
 
-        Objects.requireNonNull(name, "Name was not declared for RMQ Exchange");
-
-        return new RmqExchangeDetails.Builder()
+        return RmqExchangeDetails.Builder()
                 .withName(name)
                 .withType(type)
                 .withDurable(extractIsDurable(rawExchangeDetails))
                 .withAutoDelete(extractIsAutoDelete(rawExchangeDetails))
                 .withCreateIfNew(extractCreateIfNew(rawExchangeDetails))
                 .withParameters(extractParameters(rawExchangeDetails))
-                .build();
+                .build()
     }
 
-    private RmqDetails createQueueDetails(Map item, Map<String, RmqExchangeDetails> exchanges,
-                                          RmqHostDetails hostDetails) {
-        String channelId = (String) item.get("channelId");
-        String name = (String) item.get("name");
-        String exchange = (String) item.get("exchange");
+    private fun createQueueDetails(item: Map<*, *>, exchanges: Map<String, RmqExchangeDetails>,
+                                   hostDetails: RmqHostDetails): RmqDetails {
+        val channelId = item["channelId"] as String?
+        val name = item["name"] as String?
+        val exchange = item["exchange"] as String?
 
         Objects.requireNonNull(channelId, "Channel ID was not declared for RMQ details. " +
-                "It can be any unique name which you would use in tests as a reference");
-        Objects.requireNonNull(name, "Queue name was not declared for RMQ details");
-        Objects.requireNonNull(exchange, "Exchange name was not declared for RMQ details");
-        Objects.requireNonNull(exchanges.get(exchange), String.format("No exchange name '%s' was declared", exchange));
+                "It can be any unique name which you would use in tests as a reference")
+        Objects.requireNonNull(name, "Queue name was not declared for RMQ details")
+        Objects.requireNonNull(exchange, "Exchange name was not declared for RMQ details")
+        Objects.requireNonNull(exchanges[exchange], String.format("No exchange name '%s' was declared", exchange))
 
-        RmqQueueDetails queue = new RmqQueueDetails.Builder()
+        val queue = RmqQueueDetails.Builder()
                 .withName(name)
                 .withRoutingKey(extractRoutingKey(item))
                 .withDurable(extractIsDurable(item))
@@ -96,43 +86,46 @@ class RmqDetailsConfigReader {
                 .withCreateIfNew(extractCreateIfNew(item))
                 .withExclusive(extractIsExclusive(item))
                 .withParameters(extractParameters(item))
-                .build();
+                .build()
 
-        return new RmqDetails.Builder()
+        return RmqDetails.Builder()
                 .withChannelId(channelId)
                 .withHostDetails(hostDetails)
                 .withQueue(queue)
-                .withExchange(exchanges.get(exchange))
-                .build();
+                .withExchange(exchanges[exchange])
+                .build()
     }
 
-    private String extractRoutingKey(Map rawQueueDetails) {
-        String routingKey = (String) rawQueueDetails.get("routingKey");
-        return routingKey == null ? "#" : routingKey;
+    private fun extractRoutingKey(rawQueueDetails: Map<*, *>): String {
+        val routingKey = rawQueueDetails["routingKey"] as String?
+        return routingKey ?: "#"
     }
 
-    private boolean extractIsExclusive(Map rawQueueDetails) {
-        Boolean isExclusive = (Boolean) rawQueueDetails.get("exclusive");
-        return isExclusive == null ? false : isExclusive;
+    private fun extractIsExclusive(rawQueueDetails: Map<*, *>): Boolean {
+        val isExclusive = rawQueueDetails["exclusive"] as Boolean?
+        return isExclusive ?: false
     }
 
-    private boolean extractIsAutoDelete(Map rawQueueDetails) {
-        Boolean autoDelete = (Boolean) rawQueueDetails.get("autoDelete");
-        return autoDelete == null ? false : autoDelete;
+    private fun extractIsAutoDelete(rawQueueDetails: Map<*, *>): Boolean {
+        val autoDelete = rawQueueDetails["autoDelete"] as Boolean?
+        return autoDelete ?: false
     }
 
-    private boolean extractCreateIfNew(Map rawQueueDetails) {
-        Boolean create = (Boolean) rawQueueDetails.get("create");
-        return create == null ? false : create;
+    private fun extractCreateIfNew(rawQueueDetails: Map<*, *>): Boolean {
+        val create = rawQueueDetails["create"] as Boolean?
+        return create ?: false
     }
 
-    private boolean extractIsDurable(Map rawQueueDetails) {
-        Boolean isDurable = (Boolean) rawQueueDetails.get("durable");
-        return isDurable == null ? false : isDurable;
+    private fun extractIsDurable(rawQueueDetails: Map<*, *>): Boolean {
+        val isDurable = rawQueueDetails["durable"] as Boolean?
+        return isDurable ?: false
     }
 
-    private Map<String, Object> extractParameters(Map rawQueueDetails) {
-        Map<String, Object> parameters = (Map<String, Object>) rawQueueDetails.get("parameters");
-        return parameters == null ? Collections.emptyMap() : parameters;
+    private fun extractParameters(rawQueueDetails: Map<*, *>): MutableMap<String, Any>? {
+        return rawQueueDetails["parameters"] as MutableMap<String, Any>?
+    }
+
+    companion object {
+        private const val RMQ_CONFIG_KEYWORD = "rmq"
     }
 }

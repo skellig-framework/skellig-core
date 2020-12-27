@@ -1,153 +1,130 @@
-package org.skellig.teststep.processor.rmq;
+package org.skellig.teststep.processor.rmq
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-import com.rabbitmq.client.MessageProperties;
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processor.rmq.model.RmqDetails;
-import org.skellig.teststep.processor.rmq.model.RmqExchangeDetails;
-import org.skellig.teststep.processor.rmq.model.RmqHostDetails;
-import org.skellig.teststep.processor.rmq.model.RmqQueueDetails;
+import com.rabbitmq.client.*
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processor.rmq.model.RmqDetails
+import java.io.Closeable
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
 
-class RmqChannel implements AutoCloseable {
+    private var conn: Connection? = null
+    private var channel: Channel? = null
 
-    private Connection conn;
-    private Channel channel;
-    private RmqDetails rmqDetails;
-
-    RmqChannel(RmqDetails rmqDetails) {
-        this.rmqDetails = rmqDetails;
-        connectToQueue(createConnectionFactory(rmqDetails));
+    init {
+        connectToQueue(createConnectionFactory(rmqDetails))
     }
 
-    void send(Object request, String routingKey) {
+    fun send(request: Any?, routingKey: String?) {
         try {
-            channel.basicPublish(
-                    rmqDetails.getExchange().getName(),
-                    routingKey == null ? rmqDetails.getQueue().getRoutingKey() : routingKey,
+            channel!!.basicPublish(
+                    rmqDetails.exchange.name,
+                    routingKey ?: rmqDetails.queue.routingKey,
                     MessageProperties.TEXT_PLAIN,
                     convertRequestToBytes(request)
-            );
-
-        } catch (Exception ex) {
+            )
+        } catch (ex: Exception) {
             //log later
         }
     }
 
-    byte[] read(Object acknowledgeResponse, int timeout) {
-        AtomicReference<byte[]> response = new AtomicReference<>();
+    fun read(acknowledgeResponse: Any?, timeout: Int): ByteArray? {
+        val response = AtomicReference<ByteArray?>()
         try {
-            CountDownLatch countDownLatch = new CountDownLatch(1);
+            val countDownLatch = CountDownLatch(1)
+            channel!!.basicConsume(rmqDetails.queue.name, true,
+                    createConsumer(acknowledgeResponse, response, countDownLatch))
 
-            channel.basicConsume(rmqDetails.getQueue().getName(), true,
-                    createConsumer(acknowledgeResponse, response, countDownLatch));
-
-            countDownLatch.await(timeout, TimeUnit.SECONDS);
-        } catch (Exception e) {
+            countDownLatch.await(timeout.toLong(), TimeUnit.SECONDS)
+        } catch (e: Exception) {
             //log later
         }
-        return response.get();
+        return response.get()
     }
 
-    private DefaultConsumer createConsumer(Object acknowledgeResponse, AtomicReference<byte[]> response, CountDownLatch countDownLatch) {
-        return new DefaultConsumer(channel) {
-            @Override
-            public void handleDelivery(String consumerTag, Envelope envelope,
-                                       AMQP.BasicProperties properties, byte[] body) {
+    private fun createConsumer(acknowledgeResponse: Any?, response: AtomicReference<ByteArray?>, countDownLatch: CountDownLatch): DefaultConsumer {
+        return object : DefaultConsumer(channel) {
+            override fun handleDelivery(consumerTag: String, envelope: Envelope,
+                                        properties: AMQP.BasicProperties, body: ByteArray) {
                 if (response.get() == null) {
-                    response.set(body);
-
+                    response.set(body)
                     try {
-                        if (acknowledgeResponse != null) {
-                            sendResponse(properties, acknowledgeResponse);
-                        }
+                        acknowledgeResponse?.let { sendResponse(properties, it) }
                     } finally {
-                        countDownLatch.countDown();
+                        countDownLatch.countDown()
                     }
                 }
             }
-        };
+        }
     }
 
-    private void sendResponse(AMQP.BasicProperties properties, Object message) {
+    private fun sendResponse(properties: AMQP.BasicProperties, message: Any) {
         try {
-            channel.basicPublish(
+            channel!!.basicPublish(
                     "",
-                    properties.getReplyTo(),
+                    properties.replyTo,
                     MessageProperties.TEXT_PLAIN,
                     convertRequestToBytes(message)
-            );
-        } catch (IOException e) {
+            )
+        } catch (e: IOException) {
             // log later
         }
     }
 
-    private byte[] convertRequestToBytes(Object request) {
-        byte[] requestAsBytes;
-        if (request instanceof byte[]) {
-            requestAsBytes = (byte[]) request;
+    private fun convertRequestToBytes(request: Any?): ByteArray {
+        return if (request is ByteArray) {
+            request
         } else {
-            requestAsBytes = String.valueOf(request).getBytes(StandardCharsets.UTF_8);
-        }
-        return requestAsBytes;
-    }
-
-    private ConnectionFactory createConnectionFactory(RmqDetails rmqDetails) {
-        RmqHostDetails hostDetails = rmqDetails.getHostDetails();
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setUsername(hostDetails.getUser());
-        factory.setPassword(hostDetails.getPassword());
-        factory.setHost(hostDetails.getHost());
-        factory.setPort(hostDetails.getPort());
-
-        return factory;
-    }
-
-    private void connectToQueue(ConnectionFactory connectionFactory) {
-
-        try {
-            conn = connectionFactory.newConnection();
-            channel = conn.createChannel();
-
-            RmqExchangeDetails exchange = rmqDetails.getExchange();
-            if (exchange.isCreateIfNew()) {
-                channel.exchangeDeclare(exchange.getName(),
-                        exchange.getType(),
-                        exchange.isDurable(),
-                        exchange.isAutoDelete(),
-                        exchange.getParameters());
-            }
-
-            RmqQueueDetails queueDetails = rmqDetails.getQueue();
-            if (queueDetails.isCreateIfNew()) {
-                channel.queueDeclare(queueDetails.getName(),
-                        queueDetails.isDurable(),
-                        queueDetails.isExclusive(),
-                        queueDetails.isAutoDelete(),
-                        queueDetails.getParameters());
-            }
-            channel.queueBind(queueDetails.getName(), exchange.getName(), queueDetails.getRoutingKey());
-        } catch (Exception e) {
-            throw new TestStepProcessingException(e.getMessage(), e);
+            request.toString().toByteArray(StandardCharsets.UTF_8)
         }
     }
 
-    @Override
-    public void close() {
+    private fun createConnectionFactory(rmqDetails: RmqDetails): ConnectionFactory {
+        val hostDetails = rmqDetails.hostDetails
+        val factory = ConnectionFactory()
+        factory.username = hostDetails.user
+        factory.password = hostDetails.password
+        factory.host = hostDetails.host
+        factory.port = hostDetails.port
+
+        return factory
+    }
+
+    private fun connectToQueue(connectionFactory: ConnectionFactory) {
         try {
-            channel.close();
-            conn.close();
-        } catch (Exception e) {
+            conn = connectionFactory.newConnection()
+            channel = conn!!.createChannel()
+            val exchange = rmqDetails.exchange
+            if (exchange.isCreateIfNew) {
+                channel!!.exchangeDeclare(exchange.name,
+                        exchange.type,
+                        exchange.isDurable,
+                        exchange.isAutoDelete,
+                        exchange.parameters)
+            }
+            val queueDetails = rmqDetails.queue
+            if (queueDetails.isCreateIfNew) {
+                channel!!.queueDeclare(queueDetails.name,
+                        queueDetails.isDurable,
+                        queueDetails.isExclusive,
+                        queueDetails.isAutoDelete,
+                        queueDetails.parameters)
+            }
+            channel!!.queueBind(queueDetails.name, exchange.name, queueDetails.routingKey)
+        } catch (e: Exception) {
+            throw TestStepProcessingException(e.message, e)
+        }
+    }
+
+    override fun close() {
+        try {
+            channel!!.close()
+            conn!!.close()
+        } catch (e: Exception) {
             // log later
         }
     }

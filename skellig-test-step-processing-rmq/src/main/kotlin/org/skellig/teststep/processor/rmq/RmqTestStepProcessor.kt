@@ -1,95 +1,74 @@
-package org.skellig.teststep.processor.rmq;
+package org.skellig.teststep.processor.rmq
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processing.converter.TestStepResultConverter;
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
-import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.validation.TestStepResultValidator;
-import org.skellig.teststep.processor.rmq.model.RmqDetails;
-import org.skellig.teststep.processor.rmq.model.RmqTestStep;
+import com.typesafe.config.Config
+import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.processor.BaseTestStepProcessor
+import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processor.rmq.model.RmqDetails
+import org.skellig.teststep.processor.rmq.model.RmqTestStep
+import java.util.function.Consumer
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+open class RmqTestStepProcessor(protected val rmqChannels: Map<String, RmqChannel>,
+                                testScenarioState: TestScenarioState?,
+                                validator: TestStepResultValidator?,
+                                testStepResultConverter: TestStepResultConverter?)
+    : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
-public class RmqTestStepProcessor extends BaseTestStepProcessor<RmqTestStep> {
+    protected override fun processTestStep(testStep: RmqTestStep): Any? {
+        var response: Any? = null
+        val sendTo = testStep.sendTo
+        val receiveFrom = testStep.receiveFrom
+        val routingKey = testStep.routingKey
+        sendTo?.let { send(testStep.testData, it, routingKey) }
 
-    private Map<String, RmqChannel> rmqChannels;
+        receiveFrom?.let {
+            val channel = rmqChannels[receiveFrom]
+            val respondTo = testStep.respondTo
+            val responseTestData = testStep.testData
+            response = channel!!.read(if (respondTo != null) null else responseTestData, testStep.timeout)
 
-    protected RmqTestStepProcessor(Map<String, RmqChannel> rmqChannels,
-                                   TestScenarioState testScenarioState,
-                                   TestStepResultValidator validator,
-                                   TestStepResultConverter testStepResultConverter) {
-        super(testScenarioState, validator, testStepResultConverter);
-        this.rmqChannels = rmqChannels;
-    }
+            validate(testStep, response)
 
-    @Override
-    protected Object processTestStep(RmqTestStep testStep) {
-        Object response = null;
-        Optional<String> sendTo = testStep.getSendTo();
-        Optional<String> receiveFrom = testStep.getReceiveFrom();
-        String routingKey = testStep.getRoutingKey();
-
-        sendTo.ifPresent(channelId -> send(testStep.getTestData(), channelId, routingKey));
-
-        if (receiveFrom.isPresent()) {
-            RmqChannel channel = rmqChannels.get(receiveFrom.get());
-            Optional<String> respondTo = testStep.getRespondTo();
-            Object responseTestData = testStep.getTestData();
-            response = channel.read(respondTo.isPresent() ? null : responseTestData, testStep.getTimeout());
-
-            validate(testStep, response);
-            respondTo.ifPresent(c -> send(responseTestData, c, routingKey));
+            respondTo?.let { send(responseTestData, it, routingKey) }
         }
-        return response;
+        return response
     }
 
-    private void send(Object testData, String channelId, String routingKey) {
+    private fun send(testData: Any?, channelId: String?, routingKey: String?) {
         if (rmqChannels.containsKey(channelId)) {
-            RmqChannel channel = rmqChannels.get(channelId);
-            channel.send(testData, routingKey);
+            rmqChannels[channelId]?.send(testData, routingKey)
         } else {
-            throw new TestStepProcessingException(String.format("Channel '%s' was not registered " +
-                    "in RMQ Test Step Processor", channelId));
+            throw TestStepProcessingException(String.format("Channel '%s' was not registered " +
+                    "in RMQ Test Step Processor", channelId))
         }
     }
 
-    @Override
-    public void close() {
-        rmqChannels.values().forEach(RmqChannel::close);
+    override fun close() {
+        rmqChannels.values.forEach(Consumer { obj: RmqChannel -> obj.close() })
     }
 
-    @Override
-    public Class<RmqTestStep> getTestStepClass() {
-        return RmqTestStep.class;
+    override fun getTestStepClass(): Class<RmqTestStep> {
+        return RmqTestStep::class.java
     }
 
-    public static class Builder extends BaseTestStepProcessor.Builder<RmqTestStep> {
+    class Builder : BaseTestStepProcessor.Builder<RmqTestStep>() {
 
-        private Map<String, RmqChannel> rmqChannels;
-        private RmqDetailsConfigReader rmqDetailsConfigReader;
+        private val rmqChannels = hashMapOf<String, RmqChannel>()
+        private val rmqDetailsConfigReader: RmqDetailsConfigReader = RmqDetailsConfigReader()
 
-        public Builder() {
-            rmqDetailsConfigReader = new RmqDetailsConfigReader();
-            rmqChannels = new HashMap<>();
+        fun withRmqChannel(rmqDetails: RmqDetails) = apply {
+            rmqChannels.putIfAbsent(rmqDetails.channelId, RmqChannel(rmqDetails))
         }
 
-        public Builder withRmqChannel(RmqDetails rmqDetails) {
-            this.rmqChannels.putIfAbsent(rmqDetails.getChannelId(), new RmqChannel(rmqDetails));
-            return this;
+        fun withRmqChannels(config: Config) = apply {
+            rmqDetailsConfigReader.read(config).filterNotNull().forEach { withRmqChannel(it) }
         }
 
-        public Builder withRmqChannels(Config config) {
-            rmqDetailsConfigReader.read(config).forEach(this::withRmqChannel);
-            return this;
-        }
-
-        @Override
-        public TestStepProcessor<RmqTestStep> build() {
-            return new RmqTestStepProcessor(rmqChannels, testScenarioState, validator, testStepResultConverter);
+        override fun build(): TestStepProcessor<RmqTestStep> {
+            return RmqTestStepProcessor(rmqChannels, testScenarioState, validator, testStepResultConverter)
         }
     }
 }
