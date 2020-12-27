@@ -1,90 +1,99 @@
-package org.skellig.teststep.processor.tcp;
+package org.skellig.teststep.processor.tcp
 
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processor.tcp.model.TcpDetails;
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processor.tcp.model.TcpDetails
+import java.io.Closeable
+import java.io.DataInputStream
+import java.io.DataOutputStream
+import java.io.IOException
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.Socket
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.util.Arrays;
+class TcpChannel(tcpDetails: TcpDetails) : Closeable {
 
-class TcpChannel implements AutoCloseable {
+    private var socket: Socket? = null
+    private var inputStream: DataInputStream? = null
+    private var outputStream: DataOutputStream? = null
 
-    private static final int DEFAULT_TIMEOUT = 30000;
-
-    private Socket socket;
-    private DataInputStream inputStream;
-    private DataOutputStream outputStream;
-
-    TcpChannel(TcpDetails tcpDetails) {
-        try {
-            socket = new Socket();
-            socket.setKeepAlive(tcpDetails.isKeepAlive());
-            socket.setSoTimeout(DEFAULT_TIMEOUT);
-            socket.connect(new InetSocketAddress(InetAddress.getByName(tcpDetails.getHostName()), tcpDetails.getPort()));
-
-            inputStream = new DataInputStream(socket.getInputStream());
-            outputStream = new DataOutputStream(socket.getOutputStream());
-        } catch (IOException e) {
-            throw new TestStepProcessingException(e.getMessage(), e);
-        }
-    }
-
-    public void send(Object request) {
-        try {
-            byte[] messageAsBytes = (byte[]) request;
-            outputStream.write(messageAsBytes, 0, messageAsBytes.length);
-            outputStream.flush();
-        } catch (Exception e) {
-            // log later
-        }
-    }
-
-    public Object read(int timeout, int bufferSize) {
-        try {
-            if (timeout > 0) {
-                socket.setSoTimeout(timeout);
-            } else {
-                socket.setSoTimeout(DEFAULT_TIMEOUT);
-            }
-            return readAllBytes(bufferSize);
-        } catch (Exception e) {
-            //log later
-        }
-        return null;
-    }
-
-    @Override
-    public synchronized void close() {
-        try {
-            if (socket != null && socket.isConnected()) {
-                if (!socket.isClosed()) {
-                    inputStream.close();
-                    outputStream.close();
+    fun send(request: Any?) {
+        request?.let {
+            try {
+                val messageAsBytes = request as ByteArray
+                outputStream?.let {
+                    it.write(messageAsBytes, 0, messageAsBytes.size)
+                    it.flush()
                 }
-                socket.close();
+            } catch (e: Exception) {
+                // log later
             }
-        } catch (Exception e) {
+        }
+    }
+
+    fun read(timeout: Int, bufferSize: Int): Any? {
+        try {
+            return socket?.let {
+                if (timeout > 0) {
+                    it.soTimeout = timeout
+                } else {
+                    it.soTimeout = DEFAULT_TIMEOUT
+                }
+                readAllBytes(bufferSize)
+            }
+        } catch (e: Exception) {
+            //log later
+        }
+        return null
+    }
+
+    @Synchronized
+    override fun close() {
+        try {
+            socket?.let {
+                if (it.isConnected) {
+                    if (!it.isClosed) {
+                        inputStream!!.close()
+                        outputStream!!.close()
+                    }
+                    it.close()
+                }
+            }
+        } catch (e: Exception) {
             //log later
         }
     }
 
-    private byte[] readAllBytes(int bufferSize) throws IOException {
-        int read;
-        byte[] response = new byte[0];
-        byte[] bytes = new byte[bufferSize];
-        if ((read = inputStream.read(bytes)) != -1) {
-            int shift = response.length;
-            response = Arrays.copyOf(response, read + response.length);
-            for (int i = shift, j = 0; j < read; i++, j++) {
-                response[i] = bytes[j];
+    @Throws(IOException::class)
+    private fun readAllBytes(bufferSize: Int): ByteArray? {
+        var read: Int
+        var response = ByteArray(0)
+        val bytes = ByteArray(bufferSize)
+        if (inputStream!!.read(bytes).also { read = it } != -1) {
+            val shift = response.size
+            response = response.copyOf(read + response.size)
+            var i = shift
+            var j = 0
+            while (j < read) {
+                response[i++] = bytes[j++]
             }
         }
-
-        return response.length == 0 ? null : response;
+        return if (response.isEmpty()) null else response
     }
 
+    companion object {
+        private const val DEFAULT_TIMEOUT = 30000
+    }
+
+    init {
+        try {
+            socket = Socket()
+            socket!!.keepAlive = tcpDetails.isKeepAlive
+            socket!!.soTimeout = DEFAULT_TIMEOUT
+            socket!!.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
+            inputStream = DataInputStream(socket!!.getInputStream())
+            outputStream = DataOutputStream(socket!!.getOutputStream())
+        } catch (e: IOException) {
+            throw TestStepProcessingException(e.message, e)
+        }
+    }
 }

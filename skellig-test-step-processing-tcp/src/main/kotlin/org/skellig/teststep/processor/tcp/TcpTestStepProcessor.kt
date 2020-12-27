@@ -1,108 +1,93 @@
-package org.skellig.teststep.processor.tcp;
+package org.skellig.teststep.processor.tcp
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processing.converter.TestStepResultConverter;
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
-import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.validation.TestStepResultValidator;
-import org.skellig.teststep.processor.tcp.model.TcpDetails;
-import org.skellig.teststep.processor.tcp.model.TcpTestStep;
+import com.typesafe.config.Config
+import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.processor.BaseTestStepProcessor
+import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processor.tcp.model.TcpDetails
+import org.skellig.teststep.processor.tcp.model.TcpTestStep
+import java.lang.Boolean
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>,
+                                testScenarioState: TestScenarioState?,
+                                validator: TestStepResultValidator?,
+                                testStepResultConverter: TestStepResultConverter?)
+    : BaseTestStepProcessor<TcpTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
-public class TcpTestStepProcessor extends BaseTestStepProcessor<TcpTestStep> {
+    protected override fun processTestStep(testStep: TcpTestStep): Any? {
+        var response: Any? = null
+        val sendTo = testStep.sendTo
+        val receiveFrom = testStep.receiveFrom
+        val respondTo = testStep.respondTo
 
-    private Map<String, TcpChannel> tcpChannels;
+        sendTo?.let { send(testStep.testData, it) }
 
-    protected TcpTestStepProcessor(Map<String, TcpChannel> tcpChannels,
-                                   TestScenarioState testScenarioState,
-                                   TestStepResultValidator validator,
-                                   TestStepResultConverter testStepResultConverter) {
-        super(testScenarioState, validator, testStepResultConverter);
-        this.tcpChannels = tcpChannels;
-    }
+        receiveFrom?.let {
+            response = tcpChannels[receiveFrom]?.read(testStep.timeout, testStep.readBufferSize)
 
-    @Override
-    protected Object processTestStep(TcpTestStep testStep) {
-        Object response = null;
-        Optional<String> sendTo = testStep.getSendTo();
-        Optional<String> receiveFrom = testStep.getReceiveFrom();
-        Optional<String> respondTo = testStep.getRespondTo();
+            validate(testStep, response)
 
-        sendTo.ifPresent(channel -> send(testStep.getTestData(), channel));
-
-        if (receiveFrom.isPresent()) {
-            TcpChannel tcpChannel = tcpChannels.get(receiveFrom.get());
-            response = tcpChannel.read(testStep.getTimeout(), testStep.getReadBufferSize());
-            validate(testStep, response);
-
-            respondTo.ifPresent(c -> send(testStep.getTestData(), c));
+            respondTo?.let { send(testStep.testData, it) }
         }
-        return response;
+        return response
     }
 
-    private void send(Object testData, String channel) {
+    private fun send(testData: Any?, channel: String?) {
         if (tcpChannels.containsKey(channel)) {
-            tcpChannels.get(channel).send(testData);
+            tcpChannels[channel]?.send(testData)
         } else {
-            throw new TestStepProcessingException(String.format("Channel '%s' was not registered " +
-                    "in TCP Test Step Processor", channel));
+            throw TestStepProcessingException(String.format("Channel '%s' was not registered " +
+                    "in TCP Test Step Processor", channel))
         }
     }
 
-    @Override
-    public Class<TcpTestStep> getTestStepClass() {
-        return TcpTestStep.class;
+    override fun getTestStepClass(): Class<TcpTestStep> {
+        return TcpTestStep::class.java
     }
 
-    @Override
-    public void close() {
-        tcpChannels.values().forEach(TcpChannel::close);
+    override fun close() {
+        tcpChannels.values.forEach { it.close() }
     }
 
-    public static class Builder extends BaseTestStepProcessor.Builder<TcpTestStep> {
+    class Builder : BaseTestStepProcessor.Builder<TcpTestStep>() {
 
-        private static final String TCP_CONFIG_KEYWORD = "tcp";
-        public static final String HOST = "host";
-        public static final String CHANNEL_ID = "channelId";
-        public static final String PORT = "port";
-        public static final String KEEP_ALIVE = "keepAlive";
-
-        private Map<String, TcpChannel> tcpChannels;
-
-        public Builder() {
-            tcpChannels = new HashMap<>();
+        companion object {
+            private const val TCP_CONFIG_KEYWORD = "tcp"
+            const val HOST = "host"
+            const val CHANNEL_ID = "channelId"
+            const val PORT = "port"
+            const val KEEP_ALIVE = "keepAlive"
         }
 
-        public Builder withTcpChannel(TcpDetails tcpDetails) {
-            this.tcpChannels.putIfAbsent(tcpDetails.getChannelId(), new TcpChannel(tcpDetails));
-            return this;
+        private val tcpChannels = mutableMapOf<String, TcpChannel>()
+
+        fun withTcpChannel(tcpDetails: TcpDetails): Builder {
+            tcpChannels.putIfAbsent(tcpDetails.channelId, TcpChannel(tcpDetails))
+            return this
         }
 
-        public Builder withTcpChannels(Config config) {
+        fun withTcpChannels(config: Config): Builder {
             if (config.hasPath(TCP_CONFIG_KEYWORD)) {
-                ((List<Map<String, String>>) config.getAnyRefList(TCP_CONFIG_KEYWORD))
-                        .forEach(item -> {
+                (config.getAnyRefList(TCP_CONFIG_KEYWORD) as List<Map<String, String>>)
+                        .forEach {
                             try {
-                                int port = Integer.parseInt(item.get(PORT));
-                                boolean keepAlive = item.containsKey(KEEP_ALIVE) ? Boolean.parseBoolean(item.get(KEEP_ALIVE)) : true;
-                                withTcpChannel(new TcpDetails(item.get(CHANNEL_ID), item.get(HOST), port, keepAlive));
-                            } catch (NumberFormatException e) {
-                                throw new NumberFormatException("Invalid number assigned to TCP port in configuration");
+                                val port = it[PORT]?.toInt() ?: 0
+                                val keepAlive = if (it.containsKey(KEEP_ALIVE)) Boolean.parseBoolean(it[KEEP_ALIVE]) else true
+                                withTcpChannel(TcpDetails(it[CHANNEL_ID] ?: error("TCP Channel ID must not be null"),
+                                        it[HOST] ?: error("TCP host must not be null"), port, keepAlive))
+                            } catch (e: NumberFormatException) {
+                                throw NumberFormatException("Invalid number assigned to TCP port in configuration")
                             }
-                        });
+                        }
             }
-            return this;
+            return this
         }
 
-        public TestStepProcessor<TcpTestStep> build() {
-            return new TcpTestStepProcessor(tcpChannels, testScenarioState, validator, testStepResultConverter);
+        override fun build(): TestStepProcessor<TcpTestStep> {
+            return TcpTestStepProcessor(tcpChannels, testScenarioState, validator, testStepResultConverter)
         }
     }
-
 }

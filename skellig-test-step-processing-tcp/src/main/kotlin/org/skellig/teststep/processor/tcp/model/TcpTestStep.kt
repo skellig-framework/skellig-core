@@ -1,75 +1,49 @@
-package org.skellig.teststep.processor.tcp.model;
+package org.skellig.teststep.processor.tcp.model
 
-import org.skellig.teststep.processing.model.TestStep;
-import org.skellig.teststep.processing.model.TestStepExecutionType;
-import org.skellig.teststep.processing.model.ValidationDetails;
+import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.model.ValidationDetails
 
-import java.util.Map;
-import java.util.Optional;
+open class TcpTestStep protected constructor(id: String?,
+                                             name: String,
+                                             execution: TestStepExecutionType?,
+                                             timeout: Int,
+                                             delay: Int,
+                                             variables: Map<String, Any?>?,
+                                             testData: Any?,
+                                             validationDetails: ValidationDetails?,
+                                             val sendTo: String?,
+                                             val receiveFrom: String?,
+                                             val respondTo: String?,
+                                             val readBufferSize: Int)
+    : TestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
 
-public class TcpTestStep extends TestStep {
+    class Builder : TestStep.Builder() {
 
-    private String sendTo;
-    private String receiveFrom;
-    private String respondTo;
-    private int readBufferSize;
+        private var sendTo: String? = null
+        private var receiveFrom: String? = null
+        private var respondTo: String? = null
+        private var readBufferSize = 1024 * 1024
 
-    protected TcpTestStep(String id, String name, TestStepExecutionType execution, int timeout, int delay,
-                          Map<String, Object> variables, Object testData, ValidationDetails validationDetails,
-                          String sendTo, String receiveFrom, String respondTo, int readBufferSize) {
-        super(id, name, execution, timeout, delay, variables, testData, validationDetails);
-        this.sendTo = sendTo;
-        this.respondTo = respondTo;
-        this.receiveFrom = receiveFrom;
-        this.readBufferSize = readBufferSize;
-    }
-
-    public Optional<String> getSendTo() {
-        return Optional.ofNullable(sendTo);
-    }
-
-    public Optional<String> getReceiveFrom() {
-        return Optional.ofNullable(receiveFrom);
-    }
-
-    public Optional<String> getRespondTo() {
-        return Optional.ofNullable(respondTo);
-    }
-
-    public int getReadBufferSize() {
-        return readBufferSize;
-    }
-
-    public static class Builder extends TestStep.Builder {
-
-        private String sendTo;
-        private String receiveFrom;
-        private String respondTo;
-        private int readBufferSize = 1024 * 1024;
-
-        public Builder withReceiveFrom(String receiveFrom) {
-            this.receiveFrom = receiveFrom;
-            return this;
+        fun withReceiveFrom(receiveFrom: String?) = apply {
+            this.receiveFrom = receiveFrom
         }
 
-        public Builder withRespondTo(String respondTo) {
-            this.respondTo = respondTo;
-            return this;
+        fun withRespondTo(respondTo: String?) = apply {
+            this.respondTo = respondTo
         }
 
-        public Builder withSendTo(String sendTo) {
-            this.sendTo = sendTo;
-            return this;
+        fun withSendTo(sendTo: String?) = apply {
+            this.sendTo = sendTo
         }
 
-        public Builder withReadBufferSize(int readBufferSize) {
-            this.readBufferSize = readBufferSize;
-            return this;
+        fun withReadBufferSize(readBufferSize: Int) = apply {
+            this.readBufferSize = readBufferSize
         }
 
-        public TcpTestStep build() {
-            return new TcpTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails,
-                    sendTo, receiveFrom, respondTo, readBufferSize);
+        override fun build(): TcpTestStep {
+            return TcpTestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails,
+                    sendTo, receiveFrom, respondTo, readBufferSize)
         }
     }
 }
