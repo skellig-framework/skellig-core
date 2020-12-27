@@ -16,15 +16,15 @@ open class TestStep(
     var getId: String? = id
         get() = field ?: name
 
-    data class Builder(
-            var id: String? = null,
-            var name: String? = null,
-            var variables: Map<String, Any?>? = null,
-            var testData: Any? = null,
-            var validationDetails: ValidationDetails? = null,
-            var execution: TestStepExecutionType? = null,
-            var timeout: Int = 0,
-            var delay: Int = 0) {
+    open class Builder(
+            protected var id: String? = null,
+            protected var name: String? = null,
+            protected var variables: Map<String, Any?>? = null,
+            protected var testData: Any? = null,
+            protected var validationDetails: ValidationDetails? = null,
+            protected var execution: TestStepExecutionType? = null,
+            protected var timeout: Int = 0,
+            protected var delay: Int = 0) {
 
         fun withId(id: String?) = apply { this.id = id }
 
@@ -42,7 +42,7 @@ open class TestStep(
 
         fun withDelay(delay: Int) = apply { this.delay = delay }
 
-        fun build(): TestStep {
+        open fun build(): TestStep {
             Objects.requireNonNull(name, "Name of the Test Step must be set")
             return TestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails)
         }

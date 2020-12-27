@@ -26,6 +26,13 @@ class ValidationDetailsFactoryTest {
     }
 
     @Test
+    fun testWhenNoValidationDetails() {
+        val testStep = validationDetailsFactory!!.create("step1", emptyMap(), emptyMap<String, String>())
+
+        Assertions.assertNull(testStep.validationDetails)
+    }
+
+    @Test
     fun testSimpleEquals() {
         val expectedResult = "something"
 
