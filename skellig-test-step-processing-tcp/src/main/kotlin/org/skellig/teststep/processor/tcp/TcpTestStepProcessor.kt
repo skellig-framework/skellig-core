@@ -9,7 +9,6 @@ import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.tcp.model.TcpDetails
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
-import java.lang.Boolean
 
 open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>,
                                 testScenarioState: TestScenarioState?,
@@ -75,7 +74,7 @@ open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>
                         .forEach {
                             try {
                                 val port = it[PORT]?.toInt() ?: 0
-                                val keepAlive = if (it.containsKey(KEEP_ALIVE)) Boolean.parseBoolean(it[KEEP_ALIVE]) else true
+                                val keepAlive = if (it.containsKey(KEEP_ALIVE)) it[KEEP_ALIVE].toBoolean() else true
                                 withTcpChannel(TcpDetails(it[CHANNEL_ID] ?: error("TCP Channel ID must not be null"),
                                         it[HOST] ?: error("TCP host must not be null"), port, keepAlive))
                             } catch (e: NumberFormatException) {
