@@ -1,12 +1,10 @@
-package org.skellig.teststep.runner;
+package org.skellig.teststep.runner
 
-import org.skellig.teststep.processing.processor.TestStepProcessor;
+import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 
-import java.util.Map;
+interface TestStepRunner {
 
-public interface TestStepRunner {
+    fun run(testStepName: String): TestStepRunResult
 
-    TestStepProcessor.TestStepRunResult run(String testStepName);
-
-    TestStepProcessor.TestStepRunResult run(String testStepName, Map<String, String> parameters);
+    fun run(testStepName: String, parameters: Map<String, String?>): TestStepRunResult
 }

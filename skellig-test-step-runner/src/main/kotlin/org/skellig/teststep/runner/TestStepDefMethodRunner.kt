@@ -1,50 +1,60 @@
-package org.skellig.teststep.runner;
+package org.skellig.teststep.runner
 
-import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.runner.exception.TestStepMethodInvocationException;
+import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
+import org.skellig.teststep.runner.ClassTestStepsRegistry.TestStepDefDetails
+import org.skellig.teststep.runner.exception.TestStepMethodInvocationException
+import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Method
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+internal class TestStepDefMethodRunner {
 
-class TestStepDefMethodRunner {
+    @Throws(TestStepMethodInvocationException::class)
+    operator fun invoke(testStepName: String, testStepDefDetails: TestStepDefDetails, parameters: Map<String, String?>): TestStepRunResult {
+        val methodParameters = getMethodParameters(testStepName, testStepDefDetails, parameters)
 
-    TestStepProcessor.TestStepRunResult invoke(String testStepName, ClassTestStepsRegistry.TestStepDefDetails testStepDefDetails,
-                                               Map<String, String> parameters) throws TestStepMethodInvocationException {
-        Method testStepMethod = testStepDefDetails.getTestStepMethod();
-        Pattern testStepNamePattern = testStepDefDetails.getTestStepNamePattern();
-        Matcher matcher = testStepNamePattern.matcher(testStepName);
-        Object[] methodParameters = new Object[testStepMethod.getParameterCount()];
-        int index = 0;
-        if (matcher.find() && matcher.groupCount() > 0) {
-            index += 1;
-            methodParameters[index - 1] = matcher.group(index);
-            if (matcher.groupCount() < testStepMethod.getParameterCount()) {
-                methodParameters[index] = parameters;
-            }
-        }
+        return invokeMethod(testStepDefDetails, testStepDefDetails.testStepMethod, methodParameters)
+    }
 
-        TestStepProcessor.TestStepRunResult result = new TestStepProcessor.TestStepRunResult(null);
-        Object testStepDefInstance = testStepDefDetails.getTestStepDefInstance();
-        Object response = null;
-        TestStepMethodInvocationException error = null;
+    private fun invokeMethod(testStepDefDetails: TestStepDefDetails,
+                             testStepMethod: Method,
+                             methodParameters: Array<Any?>): TestStepRunResult {
+        val result = TestStepRunResult(null)
+        val testStepDefInstance = testStepDefDetails.testStepDefInstance
+        var response: Any? = null
+        var error: TestStepMethodInvocationException? = null
+
         try {
-            response = testStepMethod.invoke(testStepDefInstance, methodParameters);
-        } catch (IllegalAccessException e) {
-            error = new TestStepMethodInvocationException("Unexpected failure when running a test step method", e);
-            throw error;
-        } catch (InvocationTargetException e) {
-            Throwable targetException = e;
-            if (e.getTargetException() != null) {
-                targetException = e.getTargetException();
+            response = testStepMethod.invoke(testStepDefInstance, *methodParameters)
+        } catch (e: IllegalAccessException) {
+            error = TestStepMethodInvocationException("Unexpected failure when running a test step method", e)
+            throw error
+        } catch (e: InvocationTargetException) {
+            var targetException: Throwable = e
+            if (e.targetException != null) {
+                targetException = e.targetException
             }
-            error = new TestStepMethodInvocationException(targetException.getMessage(), targetException);
-            throw error;
+            error = TestStepMethodInvocationException(targetException.message, targetException)
+            throw error
         } finally {
-            result.notify(response, error);
+            result.notify(response, error)
         }
-        return result;
+        return result
+    }
+
+    private fun getMethodParameters(testStepName: String, testStepDefDetails: TestStepDefDetails, parameters: Map<String, String?>): Array<Any?> {
+        val testStepMethod = testStepDefDetails.testStepMethod
+        val testStepNamePattern = testStepDefDetails.testStepNamePattern
+        val matcher = testStepNamePattern.matcher(testStepName)
+        val methodParameters = arrayOfNulls<Any>(testStepMethod.parameterCount)
+
+        var index = 0
+        if (matcher.find() && matcher.groupCount() > 0) {
+            index += 1
+            methodParameters[index - 1] = matcher.group(index)
+            if (matcher.groupCount() < testStepMethod.parameterCount) {
+                methodParameters[index] = parameters
+            }
+        }
+        return methodParameters
     }
 }
