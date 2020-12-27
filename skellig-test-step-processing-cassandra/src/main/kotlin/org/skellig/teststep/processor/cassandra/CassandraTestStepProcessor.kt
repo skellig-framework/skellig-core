@@ -1,47 +1,34 @@
-package org.skellig.teststep.processor.cassandra;
+package org.skellig.teststep.processor.cassandra
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processing.converter.TestStepResultConverter;
-import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.validation.TestStepResultValidator;
-import org.skellig.teststep.processor.cassandra.model.CassandraDetails;
-import org.skellig.teststep.processor.db.DatabaseTestStepProcessor;
-import org.skellig.teststep.processor.db.model.DatabaseTestStep;
+import com.typesafe.config.Config
+import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processor.cassandra.model.CassandraDetails
+import org.skellig.teststep.processor.db.DatabaseTestStepProcessor
+import org.skellig.teststep.processor.db.model.DatabaseTestStep
 
-import java.util.Map;
+open class CassandraTestStepProcessor protected constructor(dbServers: Map<String, CassandraRequestExecutor>,
+                                                            testScenarioState: TestScenarioState,
+                                                            validator: TestStepResultValidator,
+                                                            testStepResultConverter: TestStepResultConverter?)
+    : DatabaseTestStepProcessor<CassandraRequestExecutor>(dbServers, testScenarioState, validator, testStepResultConverter) {
 
-class CassandraTestStepProcessor extends DatabaseTestStepProcessor<CassandraRequestExecutor> {
+    class Builder : DatabaseTestStepProcessor.Builder<CassandraDetails, CassandraRequestExecutor>() {
 
-    protected CassandraTestStepProcessor(Map<String, CassandraRequestExecutor> dbServers,
-                                         TestScenarioState testScenarioState,
-                                         TestStepResultValidator validator,
-                                         TestStepResultConverter testStepResultConverter) {
-        super(dbServers, testScenarioState, validator, testStepResultConverter);
-    }
+        private val cassandraDetailsConfigReader = CassandraDetailsConfigReader()
 
-    public static class Builder extends DatabaseTestStepProcessor.Builder<CassandraDetails, CassandraRequestExecutor> {
-
-        private CassandraDetailsConfigReader cassandraDetailsConfigReader;
-
-        public Builder() {
-            cassandraDetailsConfigReader = new CassandraDetailsConfigReader();
+        override fun withDbServers(config: Config) = apply {
+            cassandraDetailsConfigReader.read(config).forEach { withDbServer(it) }
         }
 
-        @Override
-        public DatabaseTestStepProcessor.Builder<CassandraDetails, CassandraRequestExecutor> withDbServers(Config config) {
-            cassandraDetailsConfigReader.read(config).forEach(this::withDbServer);
-            return this;
+        protected override fun createRequestExecutor(databaseDetails: CassandraDetails): CassandraRequestExecutor {
+            return CassandraRequestExecutor(databaseDetails)
         }
 
-        @Override
-        protected CassandraRequestExecutor createRequestExecutor(CassandraDetails databaseDetails) {
-            return new CassandraRequestExecutor(databaseDetails);
-        }
-
-        @Override
-        public TestStepProcessor<DatabaseTestStep> build() {
-            return new CassandraTestStepProcessor(dbServers, testScenarioState, validator, testStepResultConverter);
+        override fun build(): TestStepProcessor<DatabaseTestStep> {
+            return CassandraTestStepProcessor(dbServers, testScenarioState!!, validator!!, testStepResultConverter)
         }
     }
 }
