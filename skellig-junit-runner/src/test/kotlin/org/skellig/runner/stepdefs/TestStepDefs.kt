@@ -1,18 +1,15 @@
-package org.skellig.runner.stepdefs;
+package org.skellig.runner.stepdefs
 
-import org.skellig.teststep.runner.annotation.TestStep;
+import org.junit.jupiter.api.Assertions
+import org.skellig.teststep.runner.annotation.TestStep
 
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-public class TestStepDefs {
+class TestStepDefs {
 
     @TestStep(name = "Log (.*)")
-    public void logResult(String value, Map<String, String> parameters) {
-        assertNotNull(value);
-        assertEquals(1, parameters.size());
-        System.out.println(value);
+    fun logResult(value: String?, parameters: Map<String, String?>) {
+        Assertions.assertNotNull(value)
+        Assertions.assertEquals(1, parameters.size)
+
+        println(value)
     }
 }

@@ -1,68 +1,54 @@
-package org.skellig.runner.config;
+package org.skellig.runner.config
 
-import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
-import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.validation.TestStepResultValidator;
+import org.skellig.task.TaskUtils.Companion.runTask
+import org.skellig.teststep.processing.processor.BaseTestStepProcessor
+import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.validation.TestStepResultValidator
+import java.util.*
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+class SimpleMessageTestStepProcessor private constructor(testScenarioState: TestScenarioState?,
+                                                         validator: TestStepResultValidator?)
+    : BaseTestStepProcessor<SimpleMessageTestStep>(testScenarioState!!, validator!!, null) {
 
-import static org.skellig.task.TaskUtils.runTask;
+    private var latestReceivedMessage: MutableMap<Any, Any?>? = null
 
-public class SimpleMessageTestStepProcessor extends BaseTestStepProcessor<SimpleMessageTestStep> {
-
-    private Map<Object, Object> latestReceivedMessage;
-
-    protected SimpleMessageTestStepProcessor(TestScenarioState testScenarioState,
-                                             TestStepResultValidator validator) {
-        super(testScenarioState, validator, null);
-    }
-
-    @Override
-    protected Object processTestStep(SimpleMessageTestStep testStep) {
-        if (testStep.getReceiveFrom() != null) {
-             Map<Object, Object> response =
-                    runTask(() -> latestReceivedMessage, Objects::nonNull, 500, 3000);
-            response.put("receivedFrom", testStep.getReceiveFrom());
-            return response;
+    protected override fun processTestStep(testStep: SimpleMessageTestStep): Any? {
+        return if (testStep.receiveFrom != null) {
+            val response = runTask({ latestReceivedMessage }, { Objects.nonNull(it) }, 500, 3000)
+            response!!["receivedFrom"] = testStep.receiveFrom
+            response
         } else {
-            latestReceivedMessage = createResponse(testStep);
-            return latestReceivedMessage;
+            latestReceivedMessage = createResponse(testStep)
+            latestReceivedMessage
         }
     }
 
-    private Map<Object, Object> createResponse(SimpleMessageTestStep testStep) {
-        Map<Object, Object> response = new HashMap<>();
-        response.put("originalRequest", testStep.getTestData());
-        response.put("receivedBy", testStep.getReceiver());
-        response.put("status", "success");
-        return response;
+    private fun createResponse(testStep: SimpleMessageTestStep): MutableMap<Any, Any?> {
+        return hashMapOf(
+                Pair("originalRequest", testStep.testData),
+                Pair("receivedBy", testStep.receiver),
+                Pair("status", "success"))
     }
 
-    @Override
-    public Class<SimpleMessageTestStep> getTestStepClass() {
-        return SimpleMessageTestStep.class;
+    override fun getTestStepClass(): Class<SimpleMessageTestStep> {
+        return SimpleMessageTestStep::class.java
     }
 
+    class Builder {
+        private var testScenarioState: TestScenarioState? = null
+        private var validator: TestStepResultValidator? = null
 
-    public static class Builder {
-        private TestScenarioState testScenarioState;
-        private TestStepResultValidator validator;
-
-        public Builder withTestScenarioState(TestScenarioState testScenarioState) {
-            this.testScenarioState = testScenarioState;
-            return this;
+        fun withTestScenarioState(testScenarioState: TestScenarioState?) = apply {
+            this.testScenarioState = testScenarioState
         }
 
-        public Builder withValidator(TestStepResultValidator validator) {
-            this.validator = validator;
-            return this;
+        fun withValidator(validator: TestStepResultValidator?) = apply {
+            this.validator = validator
         }
 
-        public TestStepProcessor<SimpleMessageTestStep> build() {
-            return new SimpleMessageTestStepProcessor(testScenarioState, validator);
+        fun build(): TestStepProcessor<SimpleMessageTestStep> {
+            return SimpleMessageTestStepProcessor(testScenarioState, validator)
         }
     }
 }
