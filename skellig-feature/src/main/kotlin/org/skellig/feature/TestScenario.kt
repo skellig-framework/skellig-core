@@ -23,14 +23,13 @@ class TestScenario protected constructor(val name: String, val steps: List<TestS
 
         fun build(): List<TestScenario> {
             return data?.let {
-                data!!.map {
+                return data!!.map {
                     TestScenario(ParametersUtils.replaceParametersIfFound(name!!, it),
                             getTestStepsWithAppliedTestData(it), tags)
-                }
-                        .toList()
+                }.toList()
             } ?: run {
                 val steps = stepBuilders.map { it.build() }.toList()
-                listOf(TestScenario(name!!, steps, tags))
+                return listOf(TestScenario(name!!, steps, tags))
             }
         }
 
