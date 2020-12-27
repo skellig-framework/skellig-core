@@ -1,89 +1,69 @@
-package org.skellig.teststep.processor.unix;
+package org.skellig.teststep.processor.unix
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processing.converter.TestStepResultConverter;
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
-import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.validation.TestStepResultValidator;
-import org.skellig.teststep.processor.unix.model.UnixShellHostDetails;
-import org.skellig.teststep.processor.unix.model.UnixShellTestStep;
+import com.typesafe.config.Config
+import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.processor.BaseTestStepProcessor
+import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processor.unix.model.UnixShellHostDetails
+import org.skellig.teststep.processor.unix.model.UnixShellTestStep
+import java.util.stream.Collectors
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+open class UnixShellTestStepProcessor(testScenarioState: TestScenarioState,
+                                      validator: TestStepResultValidator,
+                                      testStepResultConverter: TestStepResultConverter?,
+                                      private val hosts: Map<String, DefaultSshClient>)
+    : BaseTestStepProcessor<UnixShellTestStep>(testScenarioState, validator, testStepResultConverter) {
 
-public class UnixShellTestStepProcessor extends BaseTestStepProcessor<UnixShellTestStep> {
-
-    private Map<String, DefaultSshClient> hosts;
-
-    protected UnixShellTestStepProcessor(TestScenarioState testScenarioState,
-                                         TestStepResultValidator validator,
-                                         TestStepResultConverter testStepResultConverter,
-                                         Map<String, DefaultSshClient> hosts) {
-        super(testScenarioState, validator, testStepResultConverter);
-        this.hosts = hosts;
-    }
-
-    @Override
-    protected Object processTestStep(UnixShellTestStep testStep) {
-        if (testStep.getHosts().isEmpty()) {
-            throw new TestStepProcessingException("No hosts were provided to run a command." +
-                    " Registered hosts are: " + hosts.keySet().toString());
+    protected override fun processTestStep(testStep: UnixShellTestStep): Any? {
+        if (testStep.hosts.isEmpty()) {
+            throw TestStepProcessingException("No hosts were provided to run a command." +
+                    " Registered hosts are: " + hosts.keys.toString())
         }
 
-        return testStep.getHosts().parallelStream()
-                .collect(Collectors.toMap(host -> host,
-                        host -> {
-                            DefaultSshClient sshClient = getDefaultSshClient(host);
-                            return sshClient.runShellCommand(testStep.getCommand(), testStep.getTimeout());
-                        }));
+        return testStep.hosts.parallelStream()
+                .collect(Collectors.toMap({ it },
+                        {
+                            val sshClient = getDefaultSshClient(it)
+                            sshClient!!.runShellCommand(testStep.getCommand(), testStep.timeout)
+                        }))
     }
 
-    private DefaultSshClient getDefaultSshClient(String host) {
+    private fun getDefaultSshClient(host: String): DefaultSshClient? {
         if (!hosts.containsKey(host)) {
-            throw new TestStepProcessingException(String.format("No hosts was registered for host name '%s'." +
-                    " Registered hosts are: %s", host, hosts.keySet().toString()));
+            throw TestStepProcessingException(String.format("No hosts was registered for host name '%s'." +
+                    " Registered hosts are: %s", host, hosts.keys.toString()))
         }
-        return hosts.get(host);
+        return hosts[host]
     }
 
-    @Override
-    public Class<UnixShellTestStep> getTestStepClass() {
-        return UnixShellTestStep.class;
+    override fun getTestStepClass(): Class<UnixShellTestStep> {
+        return UnixShellTestStep::class.java
     }
 
-    public static class Builder extends BaseTestStepProcessor.Builder<UnixShellTestStep> {
+    class Builder : BaseTestStepProcessor.Builder<UnixShellTestStep>() {
 
-        private Map<String, DefaultSshClient> hosts;
-        private UnixShellConfigReader unixShellConfigReader;
+        private val hosts = hashMapOf<String, DefaultSshClient>()
+        private val unixShellConfigReader = UnixShellConfigReader()
 
-        public Builder() {
-            hosts = new HashMap<>();
-            unixShellConfigReader = new UnixShellConfigReader();
+        fun withHost(unixShellHostDetails: UnixShellHostDetails) = apply {
+            hosts[unixShellHostDetails.hostName] = DefaultSshClient.Builder()
+                    .withHost(unixShellHostDetails.hostAddress)
+                    .withPort(unixShellHostDetails.port)
+                    .withUser(unixShellHostDetails.userName)
+                    .withPassword(unixShellHostDetails.password)
+                    .withPassword(unixShellHostDetails.sshKeyPath)
+                    .build()
         }
 
-        public Builder withHost(UnixShellHostDetails unixShellHostDetails) {
-            this.hosts.put(unixShellHostDetails.getHostName(),
-                    new DefaultSshClient.Builder()
-                            .withHost(unixShellHostDetails.getHostAddress())
-                            .withPort(unixShellHostDetails.getPort())
-                            .withUser(unixShellHostDetails.getUserName())
-                            .withPassword(unixShellHostDetails.getPassword())
-                            .withPassword(unixShellHostDetails.getSshKeyPath())
-                            .build());
-            return this;
+        fun withHost(config: Config) = apply {
+            unixShellConfigReader.read(config).forEach { withHost(it) }
         }
 
-        public Builder withHost(Config config) {
-            unixShellConfigReader.read(config).forEach(this::withHost);
-            return this;
-        }
-
-        @Override
-        public TestStepProcessor<UnixShellTestStep> build() {
-            return new UnixShellTestStepProcessor(testScenarioState, validator, testStepResultConverter, hosts);
+        override fun build(): TestStepProcessor<UnixShellTestStep> {
+            return UnixShellTestStepProcessor(testScenarioState!!, validator!!, testStepResultConverter, hosts)
         }
     }
 }
