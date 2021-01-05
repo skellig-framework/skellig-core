@@ -67,7 +67,8 @@ class DefaultTestStepResultValidatorTest {
         val expectedResult = ExpectedResult("",
                 listOf(
                         ExpectedResult("jsonPath(a)", "1", null),
-                        ExpectedResult("jsonPath(c.d)", "4", null)),
+                        ExpectedResult("jsonPath(c.d)", "4", null),
+                        ExpectedResult("jsonPath(b[1])", "2", null)),
                 MatchingType.ALL_MATCH)
 
         validator!!.validate(expectedResult, actualResult)
