@@ -12,6 +12,7 @@ class DefaultValueConverter private constructor(val valueConverters: List<TestSt
         for (valueConverter in valueConverters) {
             if (result != null && result.javaClass == String::class.java) {
                 result = valueConverter.convert(result as String?)
+                //TODO: probably worth to use value extractors over here
             }
         }
         return result
