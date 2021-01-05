@@ -4,6 +4,7 @@ Name: Sign in user
 
    #@E2E-light
    Test: Sign in user <user> with valid credentials
+   Steps:
    User <user> exist in system
    User <user> requests to sign in with <password> password
    User <user> successfully signed in
@@ -15,8 +16,9 @@ Name: Sign in user
    #@Init(id = default)
    #@Data
    Test: Sign in user with invalid credentials
+   Steps:
    User <user> exist in system
-     | p1 | v1               |
+     | p1 | v1                 |
      | p2 | pass: <password> |
    User <user> requests to sign in with <password> password
    User <user> received error

@@ -1,7 +1,8 @@
 Name: Simple feature
 
-   Test: Simple scenario
-   Given something
-   # run something
-   Run it
-   Check result
+    Test: Simple scenario
+    Steps:
+    Given something
+    # run something
+    Run it
+    Check result

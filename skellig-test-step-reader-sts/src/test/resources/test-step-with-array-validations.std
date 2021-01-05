@@ -1,4 +1,4 @@
-name (Validate response)
+name ('Validate response')
 {
   validate {
        size = 3
@@ -31,7 +31,7 @@ name (Validate response)
          [1] = contains(v2)
        }
 
-      # records[0] = contains(v1) - ignore as invalid structure
+      // records[0] = contains(v1) - ignore as invalid structure
 
        [0] {
          c1 = v1

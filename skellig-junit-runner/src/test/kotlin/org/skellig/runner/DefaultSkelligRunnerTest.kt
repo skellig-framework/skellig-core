@@ -9,4 +9,4 @@ import org.skellig.runner.config.TestSkelligContext
 @SkelligOptions(features = ["feature"],
         testSteps = ["feature", "org.skellig.runner.stepdefs"],
         context = TestSkelligContext::class)
-class DefaultSkelligRunner 
+class DefaultSkelligRunnerTest

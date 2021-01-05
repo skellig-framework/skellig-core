@@ -5,4 +5,5 @@ import kotlin.reflect.KClass
 
 annotation class SkelligOptions(val features: Array<String>,
                                 val testSteps: Array<String>,
+                                val config: String = "",
                                 val context: KClass<out SkelligTestContext> = SkelligTestContext::class)
