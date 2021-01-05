@@ -35,6 +35,7 @@ class DefaultTestStepResultValidatorTest {
                         ExpectedResult("k1", "v1", null),
                         ExpectedResult("k2", "v2", null)),
                 MatchingType.ALL_MATCH)
+
         validator!!.validate(expectedResult, actualResult)
     }
 
@@ -47,6 +48,28 @@ class DefaultTestStepResultValidatorTest {
                         ExpectedResult(null, "contains(v1)", null),
                         ExpectedResult(null, "contains(v2)", null)),
                 MatchingType.ALL_MATCH)
+
+        validator!!.validate(expectedResult, actualResult)
+    }
+
+    @Test
+    @DisplayName("When actual Json And expect json paths Then pass validation")
+    fun testValidateJsonPathsWhenValid() {
+        val actualResult = """
+            {
+               "a": "1",
+               "b": [1, 2, 3],
+               "c": {
+                  "d": 4
+               }
+            }
+        """.trimIndent()
+        val expectedResult = ExpectedResult("",
+                listOf(
+                        ExpectedResult("jsonPath(a)", "1", null),
+                        ExpectedResult("jsonPath(c.d)", "4", null)),
+                MatchingType.ALL_MATCH)
+
         validator!!.validate(expectedResult, actualResult)
     }
 
