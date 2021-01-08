@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.state
 
-interface TestScenarioState {
+interface TestScenarioState : Iterable<Pair<String, Any?>> {
 
     fun get(key: String?): Any?
 
