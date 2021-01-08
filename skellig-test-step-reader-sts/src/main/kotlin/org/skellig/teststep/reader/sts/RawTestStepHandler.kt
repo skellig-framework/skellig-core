@@ -6,6 +6,10 @@ import kotlin.collections.set
 
 class RawTestStepHandler : Closeable {
 
+    companion object {
+        private const val NULL = "null"
+    }
+
     private var openedBrackets = 0
     private var bracketsNumber = 0
     private var propertyName: String? = null
@@ -182,7 +186,8 @@ class RawTestStepHandler : Closeable {
     }
 
     private fun addParameterWithValue(rawTestStep: MutableMap<String, Any?>) {
-        rawTestStep[propertyName!!] = rawTestStepBuilder.toString()
+        val value = rawTestStepBuilder.toString()
+        rawTestStep[propertyName!!] = if(value == NULL) null else value
         emptyBuffer()
         propertyName = null
     }

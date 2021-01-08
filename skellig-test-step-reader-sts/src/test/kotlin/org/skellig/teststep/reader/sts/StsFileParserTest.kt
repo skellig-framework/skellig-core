@@ -1,6 +1,7 @@
 package org.skellig.teststep.reader.sts
 
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URISyntaxException
@@ -184,15 +185,26 @@ class StsFileParserTest {
         )
     }
 
-    private fun getValueFromMap(data: Map<String, Any?>, vararg keys: Any): Any {
-        var value: Any = data
+    @Test
+    @DisplayName("When test step has null values Then verify null is preserved")
+    @Throws(URISyntaxException::class)
+    fun testParseTestStepWithNullValues() {
+        val filePath = Paths.get(javaClass.getResource("/test-step-with-null.std").toURI())
+
+        val testSteps = stsFileParser.parse(filePath)
+
+        assertNull(getValueFromMap(testSteps[0], "payload", "a"))
+    }
+
+    private fun getValueFromMap(data: Map<String, Any?>, vararg keys: Any): Any? {
+        var value: Any? = data
         for (key in keys) {
             if (key is String) {
                 if (value is Map<*, *>) {
-                    value = value[key]!!
+                    value = value[key]
                 }
             } else if (key is Int) {
-                value = (value as List<*>)[key]!!
+                value = (value as List<*>)[key]
             }
         }
         return value

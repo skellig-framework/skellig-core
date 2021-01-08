@@ -1,0 +1,5 @@
+name('Test step with null values'){
+ payload {
+      a = null
+ }
+}
