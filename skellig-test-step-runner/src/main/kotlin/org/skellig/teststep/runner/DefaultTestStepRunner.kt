@@ -69,7 +69,7 @@ internal class DefaultTestStepRunner private constructor(private val testStepPro
 
             val testStepPaths = extractTestStepPaths()
             val testStepClassPaths = extractTestStepPackages()
-            val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader
+            val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STD, testStepReader
                     ?: error("Test Step Reader is mandatory"))
             testStepsRegistry.registerFoundTestStepsInPath(testStepPaths)
 
