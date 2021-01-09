@@ -3,16 +3,17 @@ plugins {
 }
 
 dependencies {
-    compile 'de.siegmar:fastcsv:1.0.1'
-    compile 'org.freemarker:freemarker:2.3.22'
-    compile 'log4j:log4j:1.2.17'
-    compile 'org.slf4j:slf4j-log4j12:1.7.25'
+    compile 'de.siegmar:fastcsv:1.0.3'
+    compile 'org.freemarker:freemarker:2.3.30'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.12.0'
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.0'
     compile group: 'org.junit.platform', name: 'junit-platform-runner'
     compile project(':skellig-task')
     compile project(':skellig-test-step-reader-sts')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'org.mockito', name: 'mockito-all'
+    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }
 
@@ -26,4 +27,8 @@ modifyPom {
         licenses(projectLicenses)
         developers(projectDevelopers)
     }
+}
+
+test {
+    useJUnitPlatform()
 }

@@ -2,19 +2,24 @@ plugins {
     id 'java'
 }
 
+test {
+    useJUnitPlatform()
+}
+
 dependencies {
     compile group: 'com.typesafe', name: 'config'
     compile group: 'org.junit.platform', name: 'junit-platform-runner'
-    compile 'com.rabbitmq:amqp-client:3.6.0'
+    compile 'com.rabbitmq:amqp-client:3.6.6'
     compile project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'org.mockito', name: 'mockito-all'
+    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 
-    testCompile 'org.testcontainers:testcontainers:1.0.0'
-    testCompile "org.testcontainers:junit-jupiter:1.0.0"
-    testCompile "org.testcontainers:rabbitmq:1.0.0"
+    testCompile 'org.testcontainers:testcontainers:1.15.0'
+    testCompile "org.testcontainers:junit-jupiter:1.15.0"
+    testCompile "org.testcontainers:rabbitmq:1.15.0"
 }
 
 modifyPom {
