@@ -11,7 +11,13 @@ class HttpRequestDetails(val verb: HttpMethodName,
                          val timeout: Int) {
 
     override fun toString(): String {
-        return url
+        return "$verb:$url" +
+                (if (headers.isNotEmpty()) ("\nheaders: $headers") else "") +
+                (if (formParams.isNotEmpty()) ("\nformParams: $formParams") else "") +
+                (if (queryParams.isNotEmpty()) ("\nqueryParams: $queryParams") else "") +
+                body?.let { ("\nbody: $body") } +
+                username?.let { ("\nusername: $username") } +
+                password?.let { ("\npassword: $password") }
     }
 
     class Builder(private val verb: HttpMethodName) {

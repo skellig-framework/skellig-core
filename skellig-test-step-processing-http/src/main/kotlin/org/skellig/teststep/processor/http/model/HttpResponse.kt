@@ -4,6 +4,12 @@ class HttpResponse(val statusCode: Int,
                    val headers: Map<String, String>,
                    val body: String?) {
 
+    override fun toString(): String {
+        return "statusCode: $statusCode" +
+                (if (headers.isNotEmpty()) ("\nheaders: $headers") else "") +
+                body?.let { ("\nbody: $body") }
+    }
+
     class Builder {
 
         private var statusCode = 0
