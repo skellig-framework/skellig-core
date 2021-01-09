@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.model.factory
 
+import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -37,11 +38,11 @@ class DefaultTestStepFactoryTest {
     @DisplayName("With variables And parameters And payload has reference to variable")
     fun testCreateTestStepWithVariablesAndAppliedParameters() {
         val generatedId = "0001"
-        Mockito.`when`(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
+        whenever(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
         val rawTestStep = UnitTestUtils.createMap("variables",
                 UnitTestUtils.createMap(
                         "id", "get(gen_id)",
-                        "names", Arrays.asList("n1", "\${name:n2}"),
+                        "names", listOf("n1", "\${name:n2}"),
                         "amount", "\${amt:500}"
                 ),
                 "payload", "\${names}")
@@ -50,9 +51,9 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, parameters)
 
         Assertions.assertAll(
-                { Assertions.assertTrue((testStep.testData as List<*>?)!!.containsAll(Arrays.asList("n1", "n2"))) },
+                { Assertions.assertTrue((testStep.testData as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
                 { Assertions.assertEquals(generatedId, testStep.variables!!["id"]) },
-                { Assertions.assertTrue((testStep.variables!!["names"] as List<*>?)!!.containsAll(Arrays.asList("n1", "n2"))) },
+                { Assertions.assertTrue((testStep.variables!!["names"] as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
                 { Assertions.assertEquals("100", testStep.variables!!["amount"]) }
         )
     }
@@ -61,13 +62,13 @@ class DefaultTestStepFactoryTest {
     @DisplayName("When payload is Map with simple fields")
     fun testCreateTestStepWithPayloadAsMap() {
         val generatedId = "0001"
-        Mockito.`when`(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
+        whenever(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
 
         val rawTestStep = UnitTestUtils.createMap(
                 "variables",
                 UnitTestUtils.createMap(
                         "id", generatedId,
-                        "rows", Arrays.asList(
+                        "rows", listOf(
                         UnitTestUtils.createMap("c1", "v1", "c2", "v2"),
                         UnitTestUtils.createMap("c1", "v3", "c2", "v4")
                 )
@@ -96,7 +97,7 @@ class DefaultTestStepFactoryTest {
     @DisplayName("With variables And validation details has reference to variable")
     fun testCreateTestStepWithVariablesAndValidationDetails() {
         val generatedId = "0001"
-        Mockito.`when`(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
+        whenever(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
 
         val rawTestStep = UnitTestUtils.createMap("variables",
                 UnitTestUtils.createMap(
@@ -128,5 +129,15 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, Collections.singletonMap("key_2", "v2"))
 
         Assertions.assertEquals("v2", testStep.testData)
+    }
+
+    @Test
+    @DisplayName("With test data as simple string")
+    fun testCreateTestStepWithTestDataAsEmptyString() {
+        val rawTestStep = UnitTestUtils.createMap("data", "")
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf())
+
+        Assertions.assertEquals("", testStep.testData)
     }
 }
