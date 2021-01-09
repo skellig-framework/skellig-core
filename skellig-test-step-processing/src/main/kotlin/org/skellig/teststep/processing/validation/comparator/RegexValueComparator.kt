@@ -9,7 +9,7 @@ class RegexValueComparator : ValueComparator {
         private const val REGEX_PREFIX = "regex("
     }
 
-    override fun compare(expectedValue: Any, actualValue: Any?): Boolean {
+    override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
         return actualValue?.let {
             val matcher = PATTERN.matcher(expectedValue.toString())
             if (matcher.find()) {
@@ -31,7 +31,7 @@ class RegexValueComparator : ValueComparator {
         }
     }
 
-    override fun isApplicable(expectedValue: Any): Boolean {
-        return expectedValue.toString().contains(REGEX_PREFIX)
+    override fun isApplicable(expectedValue: Any?): Boolean {
+        return (expectedValue?.toString() ?: "").contains(REGEX_PREFIX)
     }
 }

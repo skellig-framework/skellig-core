@@ -33,7 +33,6 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
                 .filter { it.getExtractFunctionName() == extractFunctionName }
                 .map { it.extract(value, parameter) }
                 .first()
-                ?: value
     }
 
     override fun getExtractFunctionName(): String? {
