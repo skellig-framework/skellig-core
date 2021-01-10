@@ -1,0 +1,124 @@
+body {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+
+    margin: 0;
+    font-family: Poppins,sans-serif;
+    font-size: .875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #525f7f;
+    text-align: left;
+    background: #1e1e2f
+}
+
+.card {
+    background: #27293d;
+    border: 0;
+    position: relative;
+    width: 100%;
+    margin-bottom: 30px;
+    box-shadow: 0 1px 20px 0 rgba(0, 0, 0, .1);
+    border-radius: .3rem;
+    word-wrap: break-word;
+}
+
+.small-text-panel {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    min-height: 1px;
+    padding: 1.25rem;
+    font-size: 18px;
+}
+
+.medium-text-panel {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    min-height: 1px;
+    padding: 1.25rem;
+    font-size: 22px;
+    color: #ffffff8f;
+}
+
+.card-collapse .card {
+    margin-bottom: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.card .card-header .card-title {
+    color: #fff;
+    font-weight: 100;
+}
+
+.card-collapse .card .card-header a[data-toggle=collapse] i {
+    float: right;
+    position: relative;
+    top: 1px;
+    font-size: 22px;
+}
+
+.card-collapse .card .card-header a[data-toggle=collapse] {
+    display: block;
+    font-size: 22px;
+}
+
+.passed-color {
+    color: #08cd95;
+}
+
+.failed-color {
+    color: #dc3545;
+}
+
+.ignored-color {
+    color: #c7c7c754;
+}
+
+.failed-content-color {
+    color: #dc3545a6;
+}
+
+.test-step-progress {
+    display: -ms-flexbox;
+    display: flex;
+    height: 1.5rem;
+    overflow: hidden;
+    line-height: 0;
+    font-size: 0.75rem;
+    background-color: #dc3545;
+    border-radius: 0.25rem;
+}
+
+.test-step-progress-bar {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -ms-flex-pack: center;
+    justify-content: center;
+    overflow: hidden;
+    color: #27293d;
+    text-align: center;
+    white-space: nowrap;
+    background-color: #08cd95;
+    transition: width 0.6s ease;
+}
+
+a, a:hover {
+    text-decoration: none;
+}
+
+.tim-icons {
+    display: inline-block;
+    font: normal normal normal 1em/1 'Nucleo';
+    vertical-align: middle;
+    speak: none;
+    text-transform: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-minimal-down::before {
+    content: "\ea33";
+}
