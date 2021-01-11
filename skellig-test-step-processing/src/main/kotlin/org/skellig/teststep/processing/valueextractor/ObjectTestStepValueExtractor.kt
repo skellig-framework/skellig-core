@@ -12,22 +12,24 @@ import java.util.regex.Pattern
 class ObjectTestStepValueExtractor : TestStepValueExtractor {
 
     companion object {
-        private val PATH_SEPARATOR = Pattern.compile("\\.")
+        private val PATH_SEPARATOR = Pattern.compile("\\.(?=(?:[^\"']*['\"][^'\"]*['\"])*[^'\"]*\$)")
         private val INDEX_PATTERN = Pattern.compile("\\[(\\d+)\\]")
     }
 
     override fun extract(value: Any?, extractionParameter: String?): Any? {
         value?.let {
-            var newValue = value
-            for (key in PATH_SEPARATOR.split(extractionParameter)) {
-                if (newValue is Map<*, *>) {
-                    newValue = extractValueFromMap(newValue, key)
-                } else if (newValue is List<*> || newValue != null && newValue.javaClass.isArray) {
-                    newValue = extractValueFromListOrArray(newValue, key)
-                } else if (newValue != null) {
-                    newValue = extractValueFromObject(key, newValue)
-                }
-            }
+            var newValue: Any? = it
+            PATH_SEPARATOR.split(extractionParameter)
+                    .mapNotNull { key -> processKey(key) }
+                    .forEach { key ->
+                        if (newValue is Map<*, *>) {
+                            newValue = extractValueFromMap(newValue as Map<*, *>, key)
+                        } else if (newValue is List<*> || newValue != null && newValue!!.javaClass.isArray) {
+                            newValue = extractValueFromListOrArray(newValue!!, key)
+                        } else if (newValue != null) {
+                            newValue = extractValueFromObject(key, newValue)
+                        }
+                    }
             return newValue
         } ?: throw ValueExtractionException(format("Cannot extract '%s' from null value", extractionParameter))
     }
@@ -82,7 +84,7 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor {
                 result = try {
                     method.invoke(actualResult)
                 } catch (e: IllegalAccessException) {
-                     throw ValueExtractionException(String.format("Failed to call method '%s' of '%s'",
+                    throw ValueExtractionException(String.format("Failed to call method '%s' of '%s'",
                             propertyName, actualResult), e)
                 } catch (e: InvocationTargetException) {
                     throw ValueExtractionException(String.format("Failed to call method '%s' of '%s'",
@@ -117,7 +119,19 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor {
         return method
     }
 
-    override fun getExtractFunctionName(): String? {
+    private fun processKey(key: String?): String? {
+        return key?.let {
+            return if (key.startsWith('\'') && key.endsWith('\'')) {
+                key.substringAfter('\'').substringBeforeLast('\'')
+            } else if (key.startsWith('\"') && key.endsWith('\"')) {
+                key.substringAfter('\"').substringBeforeLast('\"')
+            } else {
+                key
+            }
+        }
+    }
+
+    override fun getExtractFunctionName(): String {
         return ""
     }
 }

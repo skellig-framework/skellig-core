@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.converter
 
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -16,6 +17,14 @@ import java.util.regex.Pattern
 class DateTimeValueConverterTest {
 
     private var valueConverter = DateTimeValueConverter()
+
+    @Test
+    @DisplayName("Then other value is provided")
+    fun testOtherValue() {
+        val value = "value"
+
+        assertEquals(value, valueConverter.convert(value))
+    }
 
     @Nested
     inner class NoFormatDateTime {

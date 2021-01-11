@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.converter
 
+import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,7 +25,7 @@ class TestStepStateValueConverterTest {
     @Test
     fun testGetSimpleValueFromState() {
         val expectedResult = "v1"
-        Mockito.`when`(testScenarioState!!.get("key")).thenReturn(expectedResult)
+        whenever(testScenarioState!!.get("key")).thenReturn(expectedResult)
 
         Assertions.assertEquals(expectedResult, testStepStateValueConverter!!.convert("get(key)"))
     }
@@ -32,14 +33,14 @@ class TestStepStateValueConverterTest {
     @Test
     fun testGetObjectValueFromState() {
         val expectedResult = Any()
-        Mockito.`when`(testScenarioState!!.get("key")).thenReturn(expectedResult)
+        whenever(testScenarioState!!.get("key")).thenReturn(expectedResult)
 
         Assertions.assertEquals(expectedResult, testStepStateValueConverter!!.convert("get(key)"))
     }
 
     @Test
     fun testGetValueFromStateWithAttachedString() {
-        Mockito.`when`(testScenarioState!!.get("key")).thenReturn(listOf("_"))
+        whenever(testScenarioState!!.get("key")).thenReturn(listOf("_"))
 
         Assertions.assertEquals("^[_]^", testStepStateValueConverter!!.convert("^get(key)^"))
     }
@@ -47,8 +48,8 @@ class TestStepStateValueConverterTest {
     @Test
     fun testGetValueFromStateWithExtractorAndAttachedString() {
         val value = listOf("_")
-        Mockito.`when`(valueExtractor!!.extract(value, "([0])")).thenReturn(value[0])
-        Mockito.`when`(testScenarioState!!.get("key")).thenReturn(value)
+        whenever(valueExtractor!!.extract(value, "([0])")).thenReturn(value[0])
+        whenever(testScenarioState!!.get("key")).thenReturn(value)
 
         Assertions.assertEquals("^_^", testStepStateValueConverter!!.convert("^get(key).([0])^"))
     }
@@ -56,15 +57,15 @@ class TestStepStateValueConverterTest {
     @Test
     fun testGetValueFromStateWithExtractor() {
         val value = "value"
-        Mockito.`when`(valueExtractor!!.extract(value, "(length)")).thenReturn(value.length)
-        Mockito.`when`(testScenarioState!!.get("key")).thenReturn(value)
+        whenever(valueExtractor!!.extract(value, "(length)")).thenReturn(value.length)
+        whenever(testScenarioState!!.get("key")).thenReturn(value)
 
         Assertions.assertEquals(value.length, testStepStateValueConverter!!.convert("get(key).(length)"))
     }
 
     @Test
     fun testGetValueFromStateWhenNotExist() {
-        Mockito.`when`(testScenarioState!!.get("key")).thenReturn(null)
+        whenever(testScenarioState!!.get("key")).thenReturn(null)
 
         Assertions.assertThrows(TestDataConversionException::class.java) { testStepStateValueConverter!!.convert("get(key).(length)") }
     }

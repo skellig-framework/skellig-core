@@ -8,17 +8,23 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
 
     companion object {
         private val EXTRACTION_PARAMETER_PATTERN = Pattern.compile("([\\w_-]+)\\((.+)\\)|\\((.+)\\)")
+        private val EXTRACTION_PATTERN = Pattern.compile("\\.(?=(?:[^()\"']*['\"(][^'\"()]*['\")])*[^'\"()]*\$)")
     }
 
     override fun extract(value: Any?, extractionParameter: String?): Any? {
         return extractionParameter?.let {
-            val matcher = EXTRACTION_PARAMETER_PATTERN.matcher(it)
-            return if (matcher.find()) {
-                val functionName = matcher.group(1)
-                extract(functionName ?: "", value, getExtractionParameter(matcher))
-            } else {
-                extract("", value, extractionParameter)
-            }
+            var newValue : Any? = value
+            EXTRACTION_PATTERN.split(extractionParameter)
+                    .forEach { p ->
+                        val matcher = EXTRACTION_PARAMETER_PATTERN.matcher(p)
+                        newValue =  if (matcher.find()) {
+                            val functionName = matcher.group(1)
+                            extract(functionName ?: "", newValue, getExtractionParameter(matcher))
+                        } else {
+                            extract("", newValue, p)
+                        }
+                    }
+            return newValue
         } ?: value
     }
 
