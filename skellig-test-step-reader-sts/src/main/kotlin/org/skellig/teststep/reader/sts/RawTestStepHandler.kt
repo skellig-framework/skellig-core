@@ -72,6 +72,9 @@ class RawTestStepHandler : Closeable {
                 result.add(rawTestStepBuilder.toString())
                 emptyBuffer()
             } else if (character == ']') {
+                if (rawTestStepBuilder.isNotEmpty()) {
+                    result.add(rawTestStepBuilder.toString())
+                }
                 break
             } else {
                 addCharacter(character)
@@ -187,7 +190,7 @@ class RawTestStepHandler : Closeable {
 
     private fun addParameterWithValue(rawTestStep: MutableMap<String, Any?>) {
         val value = rawTestStepBuilder.toString()
-        rawTestStep[propertyName!!] = if(value == NULL) null else value
+        rawTestStep[propertyName!!] = if (value == NULL) null else value
         emptyBuffer()
         propertyName = null
     }

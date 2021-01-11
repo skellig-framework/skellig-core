@@ -59,7 +59,8 @@ class PropertyValueConverterTest {
     @Test
     fun testWithNestedFunctionsWithAttachedText() {
         whenever(testScenarioState!!.get("id")).thenReturn("10")
-        Assertions.assertEquals("_10_", valueConverter!!.convert("\${key_1 : _get(id)_}"))
+        Assertions.assertEquals("_10_-$DEFAULT_CUSTOM_PROPERTY_VALUE",
+                valueConverter!!.convert("\${key_1 : _get(id)_-\${$CUSTOM_PROPERTY_KEY}}"))
     }
 
     @Test
@@ -69,7 +70,8 @@ class PropertyValueConverterTest {
 
     @Test
     fun testWithCustomProperties() {
-        Assertions.assertEquals(DEFAULT_CUSTOM_PROPERTY_VALUE, valueConverter!!.convert("\${$CUSTOM_PROPERTY_KEY}"))
+        Assertions.assertEquals("$DEFAULT_CUSTOM_PROPERTY_VALUE - $DEFAULT_CUSTOM_PROPERTY_VALUE",
+                valueConverter!!.convert("\${$CUSTOM_PROPERTY_KEY} - \${$CUSTOM_PROPERTY_KEY}"))
     }
 
     @Test

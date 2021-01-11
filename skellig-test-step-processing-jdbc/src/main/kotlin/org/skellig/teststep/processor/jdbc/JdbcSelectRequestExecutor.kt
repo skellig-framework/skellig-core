@@ -46,10 +46,10 @@ internal class JdbcSelectRequestExecutor(private val connection: Connection?) : 
 
     @Throws(SQLException::class)
     private fun extractFromResultSet(resultSet: ResultSet): List<Map<String, Any?>> {
-        val result = mutableListOf<Map<String, Any>>()
+        val result = mutableListOf<Map<String, Any?>>()
         val columns = extractColumns(resultSet)
         while (resultSet.next()) {
-            val row = linkedMapOf<String, Any>()
+            val row = linkedMapOf<String, Any?>()
             for (column in columns) {
                 row[column] = resultSet.getObject(column)
             }
