@@ -1,7 +1,7 @@
 package org.skellig.task.async
 
-import org.skellig.task.TaskRunException
 import org.skellig.task.TaskUtils.Companion.runTask
+import org.skellig.task.exception.TaskRunException
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
