@@ -1,30 +1,23 @@
-package org.skellig.runner.config;
+package org.skellig.runner.config
 
-import org.skellig.teststep.processing.converter.TestDataConverter;
-import org.skellig.teststep.runner.context.SkelligTestContext;
+import org.skellig.teststep.processing.converter.TestDataConverter
+import org.skellig.teststep.runner.context.SkelligTestContext
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+class TestSkelligContext : SkelligTestContext() {
 
-public class TestSkelligContext extends SkelligTestContext {
+    override val additionalTestDataConverters: List<TestDataConverter>
+        get() = listOf(CustomMessageTestDataConverter())
 
-    @Override
-    protected List<TestDataConverter> getAdditionalTestDataConverters() {
-        return Collections.singletonList(new CustomMessageTestDataConverter());
-    }
-
-    @Override
-    protected List<TestStepProcessorDetails> getTestStepProcessors() {
-        return Stream.of(
-                new TestStepProcessorDetails(
-                        new SimpleMessageTestStepProcessor.Builder()
+    override val testStepProcessors: List<TestStepProcessorDetails>
+        get() = listOf(
+                TestStepProcessorDetails(
+                        SimpleMessageTestStepProcessor.Builder()
                                 .withTestScenarioState(getTestScenarioState())
                                 .withValidator(getTestStepResultValidator())
                                 .build(),
-                        createTestStepFactoryFrom(SimpleMessageTestStepFactory::new)
+                        createTestStepFactoryFrom { keywordsProperties, testStepValueConverter, testDataConverter ->
+                            SimpleMessageTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter)
+                        }
                 )
-        ).collect(Collectors.toList());
-    }
+        )
 }
