@@ -13,9 +13,11 @@ import org.skellig.teststep.processor.http.model.HttpResponse
 import org.slf4j.LoggerFactory
 import java.io.IOException
 
-open class HttpChannel(private val baseUrl: String) {
+open class HttpChannel(baseUrl: String) {
 
-    private val logger = LoggerFactory.getLogger(HttpChannel::class.java)
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(HttpChannel::class.java)
+    }
 
     private var httpRequestFactory = HttpRequestFactory(baseUrl)
 
@@ -31,12 +33,13 @@ open class HttpChannel(private val baseUrl: String) {
             try {
                 httpClientBuilder.build().use { httpClient ->
                     val httpRequest = createHttpRequest(request)
-                    logger.info("Run HTTP request {}", httpRequest.uri)
+                    LOGGER.info("Run HTTP request {}", request.toString())
 
                     val response: org.apache.http.HttpResponse = httpClient.execute(httpRequest)
 
-                    logger.info("Received HTTP response from {}: {}", httpRequest.uri, response.statusLine)
-                    convertToLocalResponse(response)
+                    val localResponse = convertToLocalResponse(response)
+                    LOGGER.info("Received HTTP response from {}: {}", httpRequest.uri, localResponse.toString())
+                    localResponse
                 }
             } catch (e: Exception) {
                 throw TestStepProcessingException("Failed to send HTTP request to " + request.url, e)
