@@ -1,63 +1,161 @@
 package org.skellig.teststep.processing.converter
 
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.skellig.teststep.processing.exception.TestDataConversionException
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import java.util.regex.Pattern
 
 @DisplayName("Convert to current date")
 class DateTimeValueConverterTest {
 
-    private var dateTimeValueConverter: DateTimeValueConverter? = null
+    private var valueConverter = DateTimeValueConverter()
 
-    @BeforeEach
-    fun setUp() {
-        dateTimeValueConverter = DateTimeValueConverter()
+    @Nested
+    inner class NoFormatDateTime {
+
+        @Test
+        @DisplayName("Then check current date is returned")
+        fun testCurrentDateTime() {
+            val expectedTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)
+
+            val dateTime = valueConverter.convert("now()") as LocalDateTime?
+
+            Assertions.assertEquals(expectedTime, dateTime!!.truncatedTo(ChronoUnit.MINUTES))
+        }
+
+        @Test
+        @DisplayName("When calling several times Then check dates are different")
+        @Throws(InterruptedException::class)
+        fun testCallTwiceCurrentDateTime() {
+            val dateTime = valueConverter.convert("now()") as LocalDateTime?
+
+            Thread.sleep(10)
+
+            val sameDateTime = valueConverter.convert("now()") as LocalDateTime?
+
+            Assertions.assertNotEquals(dateTime, sameDateTime)
+        }
+
+        @Test
+        @DisplayName("With provided timezone Then check date with correct timezone returned")
+        fun testGetDateTimeWithTimezone() {
+            val expectedTime = LocalDateTime.now(ZoneId.of("UTC")).truncatedTo(ChronoUnit.MINUTES)
+
+            val dateTime = valueConverter.convert("now(UTC)") as LocalDateTime?
+
+            Assertions.assertEquals(expectedTime, dateTime!!.truncatedTo(ChronoUnit.MINUTES))
+        }
+
+        @Test
+        @DisplayName("With invalid timezone Then check date with default timezone returned")
+        fun testGetDateTimeWithInvalidTimezone() {
+            val expectedTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)
+
+            val ex = Assertions.assertThrows(TestDataConversionException::class.java)
+            { valueConverter.convert("now(invalid)") as LocalDateTime? }
+
+            Assertions.assertEquals("Cannot get current date for the timezone 'invalid'", ex.message)
+        }
     }
 
-    @Test
-    @DisplayName("Then check current date is returned")
-    fun testCurrentDateTime() {
-        val expectedTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)
+    @Nested
+    @DisplayName("And format")
+    inner class FormattedDateTime {
 
-        val dateTime = dateTimeValueConverter!!.convert("now()") as LocalDateTime?
+        @Test
+        @DisplayName("When date pattern is invalid Then throw exception")
+        fun testNoFormat() {
+            assertNotNull(valueConverter.convert("now().format()"))
+        }
 
-        Assertions.assertEquals(expectedTime, dateTime!!.truncatedTo(ChronoUnit.MINUTES))
-    }
+        @Test
+        @DisplayName("When date pattern is invalid Then throw exception")
+        fun testInvalidFormat() {
+            val formatPattern = "invalid"
+            val ex = Assertions.assertThrows(TestDataConversionException::class.java)
+            { valueConverter.convert("now().format($formatPattern)") }
 
-    @Test
-    @DisplayName("When calling several times Then check dates are different")
-    @Throws(InterruptedException::class)
-    fun testCallTwiceCurrentDateTime() {
-        val dateTime = dateTimeValueConverter!!.convert("now()") as LocalDateTime?
+            Assertions.assertEquals("Cannot format current date with the format 'invalid'", ex.message)
+        }
 
-        Thread.sleep(10)
+        @Test
+        @DisplayName("When date pattern is yyyyMMdd")
+        fun testFormatSimpleDate() {
+            val formatPattern = "yyyyMMdd"
 
-        val sameDateTime = dateTimeValueConverter!!.convert("now()") as LocalDateTime?
+            val result = valueConverter.convert("now().format($formatPattern)")
 
-        Assertions.assertNotEquals(dateTime, sameDateTime)
-    }
+            Assertions.assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
+        }
 
-    @Test
-    @DisplayName("With provided timezone Then check date with correct timezone returned")
-    fun testGetDateTimeWithTimezone() {
-        val expectedTime = LocalDateTime.now(ZoneId.of("UTC")).truncatedTo(ChronoUnit.MINUTES)
+        @Test
+        @DisplayName("When time pattern is hh:MM:ss")
+        fun testFormatSimpleTime() {
+            val formatPattern = "hh:MM:ss"
 
-        val dateTime = dateTimeValueConverter!!.convert("now(UTC)") as LocalDateTime?
+            val result = valueConverter.convert("now().format($formatPattern)")
 
-        Assertions.assertEquals(expectedTime, dateTime!!.truncatedTo(ChronoUnit.MINUTES))
-    }
+            Assertions.assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
+        }
 
-    @Test
-    @DisplayName("With invalid timezone Then check date with default timezone returned")
-    fun testGetDateTimeWithInvalidTimezone() {
-        val expectedTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)
+        @Test
+        @DisplayName("When date pattern is dd/MM/yyyy'T'HH:mm:ss'Z'")
+        fun testFormatSimpleDateTime() {
+            val formatPattern = "dd/MM/yyyy'T'HH:mm:ss'Z'"
 
-        val dateTime = dateTimeValueConverter!!.convert("now(invalid)") as LocalDateTime?
+            val result = valueConverter.convert("now().format($formatPattern)")
 
-        Assertions.assertEquals(expectedTime, dateTime!!.truncatedTo(ChronoUnit.MINUTES))
+            Assertions.assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
+        }
+
+        @Test
+        @DisplayName("When date pattern is yyyy.MM.dd'T'HH:mm:ss:SSS")
+        fun testFormatSimpleDateTime2() {
+            val formatPattern = "yyyy.MM.dd'T'HH:mm:ss:SSS"
+
+            val result = valueConverter.convert("now().format($formatPattern)")
+            val pattern = Pattern.compile("\\d{4}.\\d{2}.\\d{2}T\\d{2}:\\d{2}:\\d{2}:\\d+")
+            val matcher = pattern.matcher(result.toString())
+
+            Assertions.assertTrue(matcher.matches(), "Result didn't match the expected pattern: $pattern")
+        }
+
+        @Test
+        @DisplayName("When date pattern is yyyy-MM-dd'T'00:00:00")
+        fun testFormatSimpleDateWithFixedTime() {
+            val formatPattern = "yyyy-MM-dd'T'00:00:00"
+
+            val result = valueConverter.convert("now().format($formatPattern)")
+
+            Assertions.assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
+        }
+
+        @Test
+        @DisplayName("When date pattern is yyyy-MM-dd'T'HH:mm with timezone UTC")
+        fun testFormatSimpleDateTimeWithTimezone() {
+            val formatPattern = "yyyy-MM-dd'T'HH:mm"
+            val timezone = "UTC"
+
+            val result = valueConverter.convert("now($timezone).format($formatPattern)")
+
+            Assertions.assertEquals(LocalDateTime.now(ZoneId.of(timezone)).format(DateTimeFormatter.ofPattern(formatPattern)), result)
+        }
+
+        @Test
+        @DisplayName("When has prefix Then check date preserves the prefix")
+        fun testFormatSimpleDateWithPrefix() {
+            val formatPattern = "yyyy/MM/dd"
+
+            val result = valueConverter.convert("_now().format($formatPattern)_")
+
+            Assertions.assertEquals("_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)) + "_", result)
+        }
     }
 }
