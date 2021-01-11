@@ -18,7 +18,7 @@ abstract class BaseTestStepProcessor<T : TestStep>(
 
     override fun process(testStep: T): TestStepRunResult {
         val testStepRunResult = TestStepRunResult(testStep)
-        testScenarioState.set(testStep.id, testStep)
+        testScenarioState.set(testStep.getId, testStep)
 
         when (testStep.execution) {
             TestStepExecutionType.ASYNC -> runTaskAsync { processAndValidate(testStep, testStepRunResult) }
@@ -35,7 +35,7 @@ abstract class BaseTestStepProcessor<T : TestStep>(
         var error: RuntimeException? = null
         try {
             result = processTestStep(testStep)
-            testScenarioState.set(testStep.id + RESULT_SAVE_SUFFIX, result)
+            testScenarioState.set(testStep.getId + RESULT_SAVE_SUFFIX, result)
             validate(testStep, result)
         } catch (ex: ValidationException) {
             error = ex

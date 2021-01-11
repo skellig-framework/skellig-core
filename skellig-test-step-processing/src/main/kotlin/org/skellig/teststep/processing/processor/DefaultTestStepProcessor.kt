@@ -22,14 +22,13 @@ class DefaultTestStepProcessor private constructor(
                 .find { testStep.javaClass == it.getTestStepClass() }
 
         return testStepProcessor?.let { ts ->
-            val step: TestStep = testStep
-            ts.process(step)
+            return ts.process(testStep)
         } ?: run {
             val testStepRunResult = TestStepRunResult(testStep)
-            testScenarioState.set(testStep.id, testStep)
+            testScenarioState.set(testStep.getId, testStep)
             validate(testStep, testStepRunResult)
 
-            testStepRunResult
+            return testStepRunResult
         }
     }
 
