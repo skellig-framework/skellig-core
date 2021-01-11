@@ -26,7 +26,7 @@ abstract class ValidatableTestStepProcessor<T : TestStep>(
             validationDetails.testStepId?.let { testStepId ->
                 getLatestResultOfTestStep(testStepId, testStep.delay, testStep.timeout)?.let {
                     validate(testStep.id, validationDetails, it)
-                } ?: {
+                } ?: run {
                     throw ValidationException(String.format("Result from test step with id '%s' was not found " +
                             "in Test Scenario State", testStepId))
                 }

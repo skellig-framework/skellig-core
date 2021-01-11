@@ -1,14 +1,5 @@
 @E2E @SmokeTest
 @User
-@Init
-  (
-     id = default
-     path = file1.std
-  ) @Data()
-@Data(paths = [
-           /content/features/user,
-           /content/features/common
-    ])
 Name: Sign in user
 
    #@E2E-light
@@ -22,7 +13,7 @@ Name: Sign in user
      | usr_2| pswd1    |
 
    #@Init(id = default)
-   #@Data(path = [/content/features/user])
+   #@Data
    Test: Sign in user with invalid credentials
    User <user> exist in system
      | p1 | v1               |
