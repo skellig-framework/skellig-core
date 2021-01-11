@@ -4,7 +4,7 @@ import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.utils.CachedPattern
+import org.skellig.teststep.processing.util.CachedPattern
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.HashMap
@@ -138,7 +138,7 @@ abstract class BaseTestStepFactory(
         return getInteger(rawTestStep, parameters, getKeywordName(DELAY_KEYWORD, "delay"), DEFAULT_DELAY)
     }
 
-    protected open fun getName(rawTestStep: Map<String, Any?>): String? {
+    protected open fun getName(rawTestStep: Map<String, Any?>): String {
         return rawTestStep[getKeywordName(TEST_STEP_NAME_KEYWORD, "name")].toString()
     }
 
