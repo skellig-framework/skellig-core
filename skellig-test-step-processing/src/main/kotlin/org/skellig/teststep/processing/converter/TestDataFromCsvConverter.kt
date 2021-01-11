@@ -21,17 +21,17 @@ class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestDataConverter
         private const val FILE_KEYWORD = "file"
     }
 
-    override fun convert(value: Any?): Any? {
-        var newValue = value
-        if (value is Map<*, *>) {
-            val valueAsMap = value as Map<*, *>
+    override fun convert(testData: Any?): Any? {
+        var newTestData = testData
+        if (newTestData is Map<*, *>) {
+            val valueAsMap = newTestData as Map<*, *>
             if (valueAsMap.containsKey(CSV_KEYWORD)) {
                 val csv = valueAsMap[CSV_KEYWORD] as Map<String, Any?>
                 val csvFile = csv[FILE_KEYWORD] as String?
-                newValue = readCsvFile(csvFile, getRowFilter(csv))
+                newTestData = readCsvFile(csvFile, getRowFilter(csv))
             }
         }
-        return newValue
+        return newTestData
     }
 
     private fun getRowFilter(csvDetails: Map<String, Any?>): Predicate<Map<String, String>> {
