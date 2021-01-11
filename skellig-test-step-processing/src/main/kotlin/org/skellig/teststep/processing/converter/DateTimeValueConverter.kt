@@ -22,7 +22,7 @@ class DateTimeValueConverter : TestStepValueConverter {
                 val format = matcher.group(3)
                 return if (format == null) getLocalDateTime(timezone)
                 else it.replace(matcher.group(0), getLocalDateTime(format, timezone))
-            }
+            } else value
         }
     }
 

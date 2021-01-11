@@ -144,7 +144,7 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
     }
 
     private fun getFromTestKeyword(): String {
-        return getKeywordName("test.step.keyword.from_test", "from_test")
+        return getKeywordName("test.step.keyword.from_test", "fromTest")
     }
 
     private fun getConvertToKeyword(): String {

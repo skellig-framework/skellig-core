@@ -35,7 +35,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         skelligOptions.features
                 .forEach { featureResourcePath: String ->
                     try {
-                        val featuresResource = javaClass.classLoader.getResource(featureResourcePath)
+                        val featuresResource = clazz.classLoader.getResource(featureResourcePath)
                         featuresResource?.let {
                             val pathToFeatures = Paths.get(featuresResource.toURI())
                             featureParser.parse(pathToFeatures.toString())
