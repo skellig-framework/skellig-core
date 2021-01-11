@@ -1,29 +1,32 @@
 Name: Test feature
 
-   Test: Test scenario
-      Given something
-      Run something
-      Validate something
-      Log result
-       | k1 | v1  |
+    Test: Test scenario
+    Steps:
+    Given something
+    Run something
+    Validate something
+    Log result
+      |k1|v1|
 
-   Test: Another test scenario
-      Given value is <value>
-      Run function with <value>
-      Validate result is <expected>
-   Data:
+    Test: Another test scenario
+    Steps:
+    Given value is <value>
+    Run function with <value>
+    Validate result is <expected>
+    Data:
       |value|expected|
-      | v1  | e1     |
-      | v2  | e2     |
+      |v1   |e1      |
+      |v2   |e2      |
 
-   Test: Check If statement in test step
-      Send a message with if statement
-      | num | <num>  |
-      Validate test with if statement
-      | num         | <num>  |
-      | expected_f2 | <expected_f2>  |
-      | expected_f3 | <expected_f3>  |
-   Data:
-      | num | expected_f2 | expected_f3 |
-      | 1   |    1        |    11       |
-      | 2   |    2        |    22       |
+    Test: Check If statement in test step
+    Steps:
+    Send a message with if statement
+      |num|<num>|
+    Validate test with if statement
+      |num        |<num>        |
+      |expected_f2|<expected_f2>|
+      |expected_f3|<expected_f3>|
+    Data:
+      |num|expected_f2|expected_f3|
+      |1  |1          |11         |
+      |2  |2          |22         |

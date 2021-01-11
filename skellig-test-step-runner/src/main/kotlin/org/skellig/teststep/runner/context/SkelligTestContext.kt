@@ -1,5 +1,7 @@
 package org.skellig.teststep.runner.context
 
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
 import org.skellig.teststep.processing.converter.*
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory
@@ -31,7 +33,8 @@ open class SkelligTestContext : Closeable {
     private var testStepResultValidator: TestStepResultValidator? = null
     private var defaultTestStepProcessor: TestStepProcessor<TestStep>? = null
 
-    fun initialize(classLoader: ClassLoader, testStepPaths: List<String>): TestStepRunner {
+    fun initialize(classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null): TestStepRunner {
+        config = createConfig(configPath)
         val testStepReader = createTestStepReader()
         testScenarioState = createTestScenarioState()
         val valueExtractor = createTestStepValueExtractor()
@@ -48,6 +51,10 @@ open class SkelligTestContext : Closeable {
                 .withTestStepFactory(testStepFactory)
                 .withTestStepReader(testStepReader, classLoader, testStepPaths)
                 .build()
+    }
+
+    private fun createConfig(configPath: String?): Config? {
+        return configPath?.let { ConfigFactory.load(configPath) }
     }
 
     private fun createTestStepFactory(testStepProcessors: List<TestStepProcessorDetails>): TestStepFactory {
@@ -165,9 +172,13 @@ open class SkelligTestContext : Closeable {
     protected open val testStepKeywordsProperties: Properties?
         protected get() = null
 
-    protected fun createTestStepFactoryFrom(delegate : (keywordsProperties: Properties?,
-                                            testStepValueConverter: TestStepValueConverter?,
-                                            testDataConverter: TestDataConverter?) -> TestStepFactory): TestStepFactory {
+    protected var config: Config? = null
+        protected get() = field
+        private set
+
+    protected fun createTestStepFactoryFrom(delegate: (keywordsProperties: Properties?,
+                                                       testStepValueConverter: TestStepValueConverter?,
+                                                       testDataConverter: TestDataConverter?) -> TestStepFactory): TestStepFactory {
         return delegate(testStepKeywordsProperties,
                 testStepValueConverter
                         ?: error("TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?"),

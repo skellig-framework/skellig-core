@@ -1,7 +1,7 @@
 # simple test step
 
-name(Simple test step){
- url = ${baseUrl}/a/b/c
+name('Simple test step'){
+ url = '${baseUrl}/a/b/c'
  method = POST
  payload {
       type = json

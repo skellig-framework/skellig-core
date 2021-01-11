@@ -6,6 +6,10 @@ import java.util.*
 
 internal class JdbcDetailsConfigReader {
 
+    companion object {
+        private const val JDBC_CONFIG_KEYWORD = "jdbc"
+    }
+
     fun read(config: Config): Collection<JdbcDetails> {
         Objects.requireNonNull(config, "JDBC config cannot be null")
         var jdbcDetails = emptyList<JdbcDetails>()
@@ -31,9 +35,5 @@ internal class JdbcDetailsConfigReader {
         Objects.requireNonNull(driver, "Driver class name must be declared for JDBC instance")
 
         return JdbcDetails(server!!, driver!!, url!!, userName, password)
-    }
-
-    companion object {
-        private const val JDBC_CONFIG_KEYWORD = "jdbc"
     }
 }

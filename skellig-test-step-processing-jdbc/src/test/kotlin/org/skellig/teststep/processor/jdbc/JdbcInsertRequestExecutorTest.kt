@@ -14,15 +14,15 @@ import java.sql.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-internal class InsertJdbcRequestExecutorTest {
+internal class JdbcInsertRequestExecutorTest {
 
-    private var executor: InsertJdbcRequestExecutor? = null
+    private var executorInsert: JdbcInsertRequestExecutor? = null
     private var connection: Connection? = null
 
     @BeforeEach
     fun setUp() {
         connection = Mockito.mock(Connection::class.java)
-        executor = InsertJdbcRequestExecutor(connection)
+        executorInsert = JdbcInsertRequestExecutor(connection)
     }
 
     @Test
@@ -35,7 +35,7 @@ internal class InsertJdbcRequestExecutorTest {
         whenever(statement.executeUpdate(databaseRequest.query)).thenReturn(1)
         whenever(connection!!.createStatement()).thenReturn(statement)
 
-        Assertions.assertEquals(1, executor!!.execute(databaseRequest))
+        Assertions.assertEquals(1, executorInsert!!.execute(databaseRequest))
     }
 
     @Test
@@ -54,7 +54,7 @@ internal class InsertJdbcRequestExecutorTest {
         whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
 
         Assertions.assertAll(
-                Executable { Assertions.assertEquals(1, executor!!.execute(databaseRequest)) },
+                Executable { Assertions.assertEquals(1, executorInsert!!.execute(databaseRequest)) },
                 Executable {
                     Mockito.verify(statement).setObject(eq(1), argThat { o ->
                         o is Timestamp &&
@@ -75,7 +75,7 @@ internal class InsertJdbcRequestExecutorTest {
     fun testInsertUsingCommandWithoutData() {
         val databaseRequest = DatabaseRequest("insert", "t1", null)
 
-        val ex = Assertions.assertThrows(TestStepProcessingException::class.java) { executor!!.execute(databaseRequest) }
+        val ex = Assertions.assertThrows(TestStepProcessingException::class.java) { executorInsert!!.execute(databaseRequest) }
 
         Assertions.assertEquals("Cannot insert empty data to table t1", ex.message)
     }

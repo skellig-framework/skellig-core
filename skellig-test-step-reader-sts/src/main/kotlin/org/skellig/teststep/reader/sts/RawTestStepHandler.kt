@@ -2,8 +2,6 @@ package org.skellig.teststep.reader.sts
 
 import java.io.Closeable
 import java.io.IOException
-import java.util.*
-import kotlin.collections.HashMap
 import kotlin.collections.set
 
 class RawTestStepHandler : Closeable {
@@ -19,18 +17,10 @@ class RawTestStepHandler : Closeable {
     @Throws(IOException::class)
     fun handle(character: Char, reader: StsFileBufferedReader, rawTestSteps: MutableList<Map<String, Any?>>) {
         when (character) {
-            '#' -> {
-                handleCommentCharacter(reader)
-            }
-            '(' -> {
-                handleOpenParenthesis(character)
-            }
-            ')' -> {
-                handleClosedParenthesis(character, reader, rawTestSteps)
-            }
-            else -> {
-                addCharacter(character)
-            }
+            '#' -> handleCommentCharacter(reader)
+            '(' -> handleOpenParenthesis(character)
+            ')' -> handleClosedParenthesis(character, reader, rawTestSteps)
+            else -> addCharacter(character)
         }
     }
 
@@ -41,9 +31,9 @@ class RawTestStepHandler : Closeable {
         while (reader.read().also { character = it.toChar() } > 0) {
             if (character == '#') {
                 handleCommentCharacter(reader)
-            } else if (character == '\'') {
+            } else if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
                 handleSingleQuoteCharacter(rawTestStep)
-            } else if (!isEnclosedText) {
+            } else if (!isEnclosedText) {  // skip handling special characters if enclosed in single quotes
                 if (character == '}') {
                     if (handleClosedBracketCharacter(character, rawTestStep)) break
                 } else if (character == '{') {
@@ -68,7 +58,7 @@ class RawTestStepHandler : Closeable {
     private fun readList(reader: StsFileBufferedReader): List<Any> {
         emptyBuffer()
         var character: Char
-        val result: MutableList<Any> = ArrayList()
+        val result = mutableListOf<Any>()
         while (reader.read().also { character = it.toChar() } > 0) {
             if (character == '#') {
                 handleCommentCharacter(reader)
@@ -91,7 +81,7 @@ class RawTestStepHandler : Closeable {
         // '{' for list-type value means that its item will be Map
         if (rawTestStepBuilder.isEmpty() || isPreviousCharacterNotParameterSign()) {
             openedBrackets++
-            result.add(readMap(reader, HashMap()))
+            result.add(readMap(reader, hashMapOf()))
             emptyBuffer()
         } else {
             addCharacter(character)
@@ -148,16 +138,16 @@ class RawTestStepHandler : Closeable {
             addCharacter(character)
         } else {
             openedBrackets++
-            rawTestStep[rawTestStepBuilder.toString()] = readMap(reader, HashMap())
+            rawTestStep[rawTestStepBuilder.toString()] = readMap(reader, hashMapOf())
             emptyBuffer()
         }
     }
 
     private fun handleSingleQuoteCharacter(rawTestStep: MutableMap<String, Any?>) {
-        // Single quote character means that we need to read the value till next single quote
+        // Single quote character means that we need to read the value till the next single quote
         isEnclosedText = !isEnclosedText
         if (!isEnclosedText && propertyName != null) {
-            addParameterWithValue(rawTestStep)
+            //addParameterWithValue(rawTestStep)
         }
     }
 
@@ -180,7 +170,7 @@ class RawTestStepHandler : Closeable {
     private fun handleClosedParenthesis(character: Char, reader: StsFileBufferedReader, rawTestSteps: MutableList<Map<String, Any?>>) {
         // usually after it read name of test step, the next char must be '{'
         if (--bracketsNumber == 0) {
-            val rawTestStep: MutableMap<String, Any?> = HashMap()
+            val rawTestStep = hashMapOf<String, Any?>()
             rawTestStep[propertyName!!] = rawTestStepBuilder.toString()
             reader.readUntilFindCharacter('{')
             openedBrackets++
@@ -197,18 +187,43 @@ class RawTestStepHandler : Closeable {
         propertyName = null
     }
 
+    // ",',\,n,r,t,
+    private var isSpecialCharacter: Boolean = false
+
     private fun addCharacter(character: Char) {
-        if (isValueOfPropertyUnderConstruction() || character != ' ' && character != '\n') {
-            if (!isValueOfPropertyUnderConstruction() && spacesBuilder.isNotEmpty()) {
-                rawTestStepBuilder.append(spacesBuilder.toString())
-                spacesBuilder.setLength(0)
-            }
-            rawTestStepBuilder.append(character.toChar())
+        if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
+            return
         }
-        if (rawTestStepBuilder.isNotEmpty() && character == ' ') {
-            spacesBuilder.append(character.toChar())
+
+        if (!isSpecialCharacter && isEnclosedText && character == '\\') {
+            isSpecialCharacter = true
+        } else if (isSpecialCharacter) {
+            isSpecialCharacter = false
+            when (character) {
+                'n' -> rawTestStepBuilder.append("\n")
+                't' -> rawTestStepBuilder.append("\t")
+                'r' -> rawTestStepBuilder.append("\r")
+                '"' -> rawTestStepBuilder.append("\"")
+                '\'' -> rawTestStepBuilder.append("'")
+                '\\' -> rawTestStepBuilder.append("\\")
+                else -> rawTestStepBuilder.append("\\").append(character)
+            }
+        } else {
+            if (isValueOfPropertyUnderConstruction() || character != ' ' && character != '\n') {
+                // add leftover spaces before the character
+                if (!isValueOfPropertyUnderConstruction() && spacesBuilder.isNotEmpty()) {
+                    rawTestStepBuilder.append(spacesBuilder.toString())
+                    spacesBuilder.setLength(0)
+                }
+                rawTestStepBuilder.append(character)
+            }
+            if (rawTestStepBuilder.isNotEmpty() && character == ' ') {
+                spacesBuilder.append(character)
+            }
         }
     }
+
+    private fun isEnclosedStringCharacter(character: Char) = character == '\'' || character == '\"'
 
     private fun isValueOfPropertyUnderConstruction(): Boolean {
         return propertyName != null && rawTestStepBuilder.isNotEmpty()

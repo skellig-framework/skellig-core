@@ -30,7 +30,7 @@ class XPathTestStepValueExtractor : TestStepValueExtractor {
         return xPathExpression.evaluate(document, XPathConstants.STRING).toString().trim { it <= ' ' }
     }
 
-    override fun getExtractFunctionName(): String? {
+    override fun getExtractFunctionName(): String {
         return "xpath"
     }
 }

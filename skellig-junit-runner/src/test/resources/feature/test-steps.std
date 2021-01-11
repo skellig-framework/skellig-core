@@ -1,4 +1,4 @@
-name(User (\w+) prepares a message with score (\w+)) {
+name('User (\w+) prepares a message with score (\w+)') {
    id = step1
    variables {
       id = 00001
@@ -7,7 +7,7 @@ name(User (\w+) prepares a message with score (\w+)) {
    }
 }
 
-name(The user sends the message to (\w+)) {
+name('The user sends the message to (\w+)') {
     id = step2
     receiver = ${1}
     message {
@@ -19,13 +19,13 @@ name(The user sends the message to (\w+)) {
     }
 }
 
-name(User (\w+) receives valid response from (\w+)) {
+name('User (\w+) receives valid response from (\w+)') {
    variables {
       # get function with extraction cannot be embedded into regex-comparator at the moment
       score = get(step1).(variables.score)
    }
    validate {
-      from_test = step2
+      fromTest = step2
       originalRequest [
          regex(.*score=${score}.*)
          contains(${2})
@@ -35,7 +35,7 @@ name(User (\w+) receives valid response from (\w+)) {
    }
 }
 
-name(Send a message with if statement) {
+name('Send a message with if statement') {
   id = if_test_1
   receiver = user1
   message {
@@ -55,12 +55,12 @@ name(Send a message with if statement) {
 
 }
 
-name(Validate test with if statement) {
+name('Validate test with if statement') {
   validate {
-     from_test = if_test_1
+     fromTest = if_test_1
      originalRequest [
-        contains(f2=${expected_f2})
-        contains(f3=${expected_f3})
+        contains('f2=${expected_f2}')
+        contains('f3=${expected_f3}')
      ]
      status = success
   }

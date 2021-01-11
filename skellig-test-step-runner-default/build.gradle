@@ -9,6 +9,11 @@ sourceSets {
 dependencies {
     compile project(':skellig-test-step-runner')
     compile project(':skellig-test-step-processing-http')
+    compile project(':skellig-test-step-processing-jdbc')
+    compile project(':skellig-test-step-processing-cassandra')
+    compile project(':skellig-test-step-processing-rmq')
+    compile project(':skellig-test-step-processing-ibmmq')
+    compile project(':skellig-test-step-processing-unix')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'

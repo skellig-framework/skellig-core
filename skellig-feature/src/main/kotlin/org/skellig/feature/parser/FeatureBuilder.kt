@@ -13,6 +13,7 @@ internal class FeatureBuilder {
         private const val TEST_SCENARIO_DATA_PREFIX = "Data:"
         private const val TEST_SCENARIO_PREFIX = "Test:"
         private const val FEATURE_NAME_PREFIX = "Name:"
+        private const val STEPS_PREFIX = "Steps:"
         private val PARAMETER_SEPARATOR_PATTERN = Pattern.compile("\\s*\\|\\s*")
     }
 
@@ -29,14 +30,11 @@ internal class FeatureBuilder {
      */
     fun withLine(line: String) {
         val newLine = line.trim { it <= ' ' }
-        if (line.startsWith(FEATURE_NAME_PREFIX)) {
-            handleFeatureLine(newLine)
-        } else if (newLine.startsWith(TEST_SCENARIO_PREFIX)) {
-            handleTestScenarioLine(newLine)
-        } else if (newLine.startsWith(TEST_SCENARIO_DATA_PREFIX)) {
-            handleTestScenarioDataLine()
-        } else if (newLine.isNotEmpty() && !newLine.startsWith(COMMENT_PREFIX)) {
-            handleNonCommentLine(newLine)
+        when {
+            newLine.startsWith(FEATURE_NAME_PREFIX) -> handleFeatureLine(newLine)
+            newLine.startsWith(TEST_SCENARIO_PREFIX) -> handleTestScenarioLine(newLine)
+            newLine.startsWith(TEST_SCENARIO_DATA_PREFIX) -> handleTestScenarioDataLine()
+            newLine.isNotEmpty() && !newLine.startsWith(COMMENT_PREFIX) -> handleNonCommentLine(newLine)
         }
     }
 
@@ -76,7 +74,7 @@ internal class FeatureBuilder {
      */
     private fun handleNonCommentLine(line: String) {
         // if we already read the line with test scenario then this one should be its test step
-        if (testScenarioBuilder != null && !line.startsWith(TAG_PREFIX)) {
+        if (testScenarioBuilder != null && !line.startsWith(TAG_PREFIX) && line != STEPS_PREFIX) {
             handleTestScenarioStepsLine(line)
         } else {
             // read tags and their relevant data. Append space to avoid unnecessary merging of values
@@ -136,15 +134,19 @@ internal class FeatureBuilder {
             testScenarioDataColumns = PARAMETER_SEPARATOR_PATTERN.split(line)
         } else {
             // if columns were read then next must be rows of the test data
-            val rawRow = PARAMETER_SEPARATOR_PATTERN.split(line)
-            val row: MutableMap<String, String> = HashMap()
-            for (i in testScenarioDataColumns!!.indices) {
-                if (testScenarioDataColumns!![i].isNotEmpty() && rawRow[i].isNotEmpty()) {
-                    row[testScenarioDataColumns!![i]] = rawRow[i]
-                }
-            }
-            testScenarioBuilder!!.withDataRow(row)
+            testScenarioBuilder!!.withDataRow(getDataRow(line))
         }
+    }
+
+    private fun getDataRow(line: String): HashMap<String, String> {
+        val rawRow = PARAMETER_SEPARATOR_PATTERN.split(line)
+        val row = hashMapOf<String, String>()
+        for (i in testScenarioDataColumns!!.indices) {
+            if (testScenarioDataColumns!![i].isNotEmpty() && rawRow[i].isNotEmpty()) {
+                row[testScenarioDataColumns!![i]] = rawRow[i]
+            }
+        }
+        return row
     }
 
     private fun addLatestTestScenarioIfExist() {

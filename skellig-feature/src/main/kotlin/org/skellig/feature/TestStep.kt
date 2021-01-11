@@ -1,6 +1,6 @@
 package org.skellig.feature
 
-class TestStep protected constructor(val name: String, val parameters: Map<String, String?>?) {
+class TestStep private constructor(val name: String, val parameters: Map<String, String?>?) {
 
     class Builder {
         private var name: String? = null

@@ -13,7 +13,7 @@ class HttpTestStepFactory(keywordsProperties: Properties?,
     : BaseTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     companion object {
-        private const val SERVICE_KEYWORD = "test.step.keyword.service"
+        private const val SERVICE_KEYWORD = "test.step.keyword.services"
         private const val URL_KEYWORD = "test.step.keyword.url"
         private const val METHOD_KEYWORD = "test.step.keyword.http_method"
         private const val HEADERS_KEYWORD = "test.step.keyword.http_headers"
@@ -24,7 +24,7 @@ class HttpTestStepFactory(keywordsProperties: Properties?,
     }
 
     protected override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
-        val services = getStringArrayDataFromRawTestStep(getKeywordName(SERVICE_KEYWORD, "service"), rawTestStep, parameters)
+        val services = getStringArrayDataFromRawTestStep(getKeywordName(SERVICE_KEYWORD, "services"), rawTestStep, parameters)
         return HttpTestStep.Builder()
                 .withService(services!!)
                 .withUrl(convertValue<String>(rawTestStep[getUrlKeyword()], parameters))

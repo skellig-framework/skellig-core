@@ -5,5 +5,5 @@ import java.sql.Connection
 
 internal class JdbcRequestExecutorFactory(connection: Connection?)
     : DatabaseRequestExecutorFactory(
-        FindJdbcRequestExecutor(connection),
-        InsertJdbcRequestExecutor(connection))
+        JdbcSelectRequestExecutor(connection),
+        JdbcInsertRequestExecutor(connection))
