@@ -26,7 +26,7 @@ class HttpTestStepFactory(keywordsProperties: Properties?,
     protected override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
         val services = getStringArrayDataFromRawTestStep(getKeywordName(SERVICE_KEYWORD, "services"), rawTestStep, parameters)
         return HttpTestStep.Builder()
-                .withService(services!!)
+                .withService(services?:error("At least one name of registered HTTP Services must be supplied in the test step"))
                 .withUrl(convertValue<String>(rawTestStep[getUrlKeyword()], parameters))
                 .withMethod(rawTestStep[getMethodKeyword()] as String?)
                 .withHeaders(getHttpHeaders(rawTestStep, parameters))
@@ -36,27 +36,27 @@ class HttpTestStepFactory(keywordsProperties: Properties?,
                 .withPassword(convertValue<String>(rawTestStep[getKeywordName(PASSWORD_KEYWORD, "password")], parameters))
     }
 
-    private fun getForm(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Map<String, String?> {
-        return (rawTestStep[getKeywordName(FORM_KEYWORD, "form")] as Map<String, String?>).entries
-                .map { it.key to convertValue<String>(it.value, parameters) }
-                .toMap()
+    private fun getForm(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Map<String, String?>? {
+        return (rawTestStep[getKeywordName(FORM_KEYWORD, "form")] as Map<String, String?>?)?.entries
+                ?.map { it.key to convertValue<String>(it.value, parameters) }
+                ?.toMap()
     }
 
-    private fun getHttpQuery(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Map<String, String?> {
-        return (rawTestStep[getKeywordName(QUERY_KEYWORD, "http_query")] as Map<String, String?>).entries
-                .map { it.key to convertValue<String>(it.value, parameters) }
-                .toMap()
+    private fun getHttpQuery(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Map<String, String?>? {
+        return (rawTestStep[getKeywordName(QUERY_KEYWORD, "http_query")] as Map<String, String?>?)?.entries
+                ?.map { it.key to convertValue<String>(it.value, parameters) }
+                ?.toMap()
     }
 
-    private fun getHttpHeaders(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Map<String, String?> {
-        return (rawTestStep[getKeywordName(HEADERS_KEYWORD, "http_headers")] as Map<String, String?>).entries
-                .map { it.key to convertValue<String>(it.value, parameters) }
-                .toMap()
+    private fun getHttpHeaders(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Map<String, String?>? {
+        return (rawTestStep[getKeywordName(HEADERS_KEYWORD, "http_headers")] as Map<String, String?>?)?.entries
+                ?.map { it.key to convertValue<String>(it.value, parameters) }
+                ?.toMap()
     }
 
 
     override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
-        return rawTestStep.containsKey(URL_KEYWORD)
+        return rawTestStep.containsKey(getUrlKeyword())
     }
 
     private fun getMethodKeyword(): String {
