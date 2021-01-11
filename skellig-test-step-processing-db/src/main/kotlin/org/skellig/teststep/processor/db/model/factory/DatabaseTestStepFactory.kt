@@ -3,7 +3,7 @@ package org.skellig.teststep.processor.db.model.factory
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.exception.TestDataConversionException
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 import java.util.*
@@ -11,7 +11,7 @@ import java.util.*
 class DatabaseTestStepFactory(keywordsProperties: Properties?,
                               testStepValueConverter: TestStepValueConverter?,
                               testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseTestStepFactory<DatabaseTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     companion object {
         private const val SERVERS_KEYWORD = "test.step.keyword.servers"
@@ -26,7 +26,7 @@ class DatabaseTestStepFactory(keywordsProperties: Properties?,
             getKeywordName(WHERE_KEYWORD, "where"),
             getKeywordName(VALUES_KEYWORD, "values"))
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): TestStep {
+    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): DatabaseTestStep {
         val testStep = super.create(testStepName, rawTestStep, parameters)
         if (testStep.testData != null && testStep.testData !is Map<*, *>) {
             throw TestDataConversionException("Test Data of Database Test Step must be class of Map<String,Object>")
@@ -34,7 +34,7 @@ class DatabaseTestStepFactory(keywordsProperties: Properties?,
         return testStep
     }
 
-    protected override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
+    protected override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<DatabaseTestStep> {
         val servers = getStringArrayDataFromRawTestStep(getKeywordName(SERVERS_KEYWORD, "servers"), rawTestStep, parameters)
         return DatabaseTestStep.Builder()
                 .withServers(servers!!)

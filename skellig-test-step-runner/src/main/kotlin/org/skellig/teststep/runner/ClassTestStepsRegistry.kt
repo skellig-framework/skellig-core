@@ -1,19 +1,22 @@
 package org.skellig.teststep.runner
 
+import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import java.io.File
-import java.lang.reflect.Method
 import java.util.*
 import java.util.regex.Pattern
 
-internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader: ClassLoader) {
+internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader: ClassLoader) : TestStepRegistry {
 
     companion object {
         private const val CLASS_EXTENSION = ".class"
+        private const val TEST_STEP_NAME_PATTERN = "testStepNamePattern"
+        private const val TEST_STEP_DEF_INSTANCE = "testStepDefInstance"
+        private const val TEST_STEP_METHOD = "testStepMethod"
     }
 
-    private val testStepsPerClass = mutableListOf<TestStepDefDetails>()
+    private val testStepsPerClass = mutableListOf<Map<String, Any?>>()
 
     init {
         packages.forEach { resourcePath: String ->
@@ -28,9 +31,9 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
         }
     }
 
-    fun getTestStep(testStepName: String): TestStepDefDetails? {
+    override fun getByName(testStepName: String): Map<String, Any?>? {
         return testStepsPerClass
-                .firstOrNull { it.testStepNamePattern.matcher(testStepName).matches() }
+                .firstOrNull { (it[TEST_STEP_NAME_PATTERN] as Pattern).matcher(testStepName).matches() }
     }
 
     @Throws(Exception::class)
@@ -49,7 +52,10 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
                             foundClassInstance.let {
                                 foundClassInstance = foundClass.newInstance()
                             }
-                            testStepsPerClass.add(TestStepDefDetails(testStepNamePattern, foundClassInstance!!, it))
+                            testStepsPerClass.add(mapOf(
+                                    Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
+                                    Pair(TEST_STEP_DEF_INSTANCE, foundClassInstance!!),
+                                    Pair(TEST_STEP_METHOD, it)))
                         }
             } else {
                 val subDir = File(file, fileName)
@@ -60,7 +66,5 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
         }
     }
 
-    class TestStepDefDetails(val testStepNamePattern: Pattern,
-                             val testStepDefInstance: Any,
-                             val testStepMethod: Method)
+
 }

@@ -5,14 +5,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.MatchingType
-import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.utils.UnitTestUtils
 
 @DisplayName("Create validation details")
 class ValidationDetailsFactoryTest {
 
-    private var validationDetailsFactory: TestStepFactory? = null
+    private var validationDetailsFactory: TestStepFactory<DefaultTestStep>? = null
 
     @BeforeEach
     fun setUp() {
@@ -360,7 +360,7 @@ class ValidationDetailsFactoryTest {
     }
 
 
-    private fun createTestStepWithoutParameters(rawValidationDetails: Any?): TestStep {
+    private fun createTestStepWithoutParameters(rawValidationDetails: Any?): DefaultTestStep {
         return validationDetailsFactory!!.create("step1", UnitTestUtils.createMap("validate", rawValidationDetails), emptyMap<String, String>())
     }
 }

@@ -2,7 +2,7 @@ package org.skellig.teststep.processor.unix.model.factory
 
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 import java.util.*
@@ -10,7 +10,7 @@ import java.util.*
 class UnixShellTestStepFactory(keywordsProperties: Properties?,
                                testStepValueConverter: TestStepValueConverter?,
                                testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseTestStepFactory<UnixShellTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     companion object {
         private const val HOSTS_KEYWORD = "test.step.keyword.hosts"
@@ -18,7 +18,7 @@ class UnixShellTestStepFactory(keywordsProperties: Properties?,
         private const val ARGS_KEYWORD = "test.step.keyword.args"
     }
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
+    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<UnixShellTestStep> {
         val services = getStringArrayDataFromRawTestStep(getKeywordName(HOSTS_KEYWORD, "hosts"), rawTestStep, parameters)
         return UnixShellTestStep.Builder()
                 .withHosts(services)

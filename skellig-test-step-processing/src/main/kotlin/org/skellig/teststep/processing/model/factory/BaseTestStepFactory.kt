@@ -2,17 +2,17 @@ package org.skellig.teststep.processing.model.factory
 
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.util.CachedPattern
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.HashMap
 
-abstract class BaseTestStepFactory(
+abstract class BaseTestStepFactory<T : DefaultTestStep>(
         val keywordsProperties: Properties?,
         val testStepValueConverter: TestStepValueConverter?,
-        val testDataConverter: TestDataConverter?) : TestStepFactory {
+        val testDataConverter: TestDataConverter?) : TestStepFactory<T> {
 
     companion object {
         private val COMMA_SPLIT_PATTERN = Pattern.compile(",")
@@ -41,7 +41,7 @@ abstract class BaseTestStepFactory(
                 getKeywordName("test.step.keyword.message", "message"))
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): TestStep {
+    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): T {
         val additionalParameters: MutableMap<String, Any?> = HashMap(parameters)
         val parametersFromTestName = extractParametersFromTestStepName(testStepName, rawTestStep)
         parametersFromTestName?.let {
@@ -55,17 +55,17 @@ abstract class BaseTestStepFactory(
 
         return createTestStepBuilder(rawTestStep, additionalParameters)
                 .withId(getId(rawTestStep, additionalParameters))
-                .withName(testStepName)
+                .withName(convertValue<String>(testStepName, additionalParameters))
                 .withTestData(extractTestData(rawTestStep, additionalParameters))
                 .withValidationDetails(validationDetailsFactory.create(rawTestStep, additionalParameters))
                 .withVariables(variables)
                 .withExecution(getExecutionType(rawTestStep))
                 .withTimeout(getTimeout(rawTestStep, additionalParameters))
                 .withDelay(getTimeout(rawTestStep, additionalParameters))
-                .build()
+                .build() as T
     }
 
-    protected abstract fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder
+    protected abstract fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<T>
 
     protected open fun getStringArrayDataFromRawTestStep(propertyName: String?, rawTestStep: Map<String, Any?>,
                                                          parameters: Map<String, Any?>): Collection<String>? {

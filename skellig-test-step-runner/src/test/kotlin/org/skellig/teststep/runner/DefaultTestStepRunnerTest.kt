@@ -2,25 +2,29 @@ package org.skellig.teststep.runner
 
 import com.nhaarman.mockitokotlin2.argThat
 import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.reader.TestStepReader
+import org.skellig.teststep.runner.model.TestStepFileExtension
+import java.nio.file.Paths
 
 @DisplayName("Run test step")
 internal class DefaultTestStepRunnerTest {
 
     private var testStepRunner: TestStepRunner? = null
     private var testStep: TestStep? = null
-    private var testStepProcessor = Mockito.mock(TestStepProcessor::class.java) as TestStepProcessor<TestStep>
-    private var testStepReader = Mockito.mock(TestStepReader::class.java)
-    private var testStepFactory = Mockito.mock(TestStepFactory::class.java)
+    private var testStepProcessor = mock<TestStepProcessor<TestStep>>()
+    private var testStepReader = mock<TestStepReader>()
+    private var testStepFactory = mock<TestStepFactory<TestStep>>()
 
     @Test
     @DisplayName("When no parameters extracted from name")
@@ -40,9 +44,9 @@ internal class DefaultTestStepRunnerTest {
         val testStepName = "test1"
         initializeTestSteps(testStepName, emptyMap<String, String>())
         testStepRunner = DefaultTestStepRunner.Builder()
-                .withTestStepFactory(testStepFactory!!)
+                .withTestStepFactory(testStepFactory)
                 .withTestStepProcessor(testStepProcessor)
-                .withTestStepReader(testStepReader!!, javaClass.classLoader, listOf("wrong path"))
+                .withTestStepsRegistry(createTestStepsRegistry("wrong path"))
                 .build()
 
         Assertions.assertThrows(TestStepProcessingException::class.java) { testStepRunner!!.run(testStepName) }
@@ -63,7 +67,7 @@ internal class DefaultTestStepRunnerTest {
 
     private fun initializeTestSteps(testStepName: String, parameters: Map<String, String?>) {
         val rawTestStep = mapOf(Pair("name", testStepName))
-        testStep = TestStep.Builder()
+        testStep = DefaultTestStep.DefaultTestStepBuilder()
                 .withId("t1")
                 .withName(testStepName)
                 .build()
@@ -74,9 +78,18 @@ internal class DefaultTestStepRunnerTest {
 
     private fun initializeTestStepRunner() {
         testStepRunner = DefaultTestStepRunner.Builder()
-                .withTestStepFactory(testStepFactory!!)
+                .withTestStepFactory(testStepFactory)
                 .withTestStepProcessor(testStepProcessor)
-                .withTestStepReader(testStepReader!!, javaClass.classLoader, listOf("steps"))
+                .withTestStepsRegistry(createTestStepsRegistry("steps"))
                 .build()
+    }
+
+    private fun createTestStepsRegistry(testStepsPath: String): TestStepsRegistry {
+        val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STD, testStepReader)
+        val resource = javaClass.classLoader.getResource(testStepsPath)
+        resource?.let {
+            testStepsRegistry.registerFoundTestStepsInPath(listOf(Paths.get(it.toURI())))
+        }
+        return testStepsRegistry
     }
 }

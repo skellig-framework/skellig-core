@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.db.model
 
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationDetails
 
@@ -16,9 +16,9 @@ open class DatabaseTestStep protected constructor(id: String?,
                                                   val command: String?,
                                                   val table: String?,
                                                   val query: String?)
-    : TestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
 
-    class Builder : TestStep.Builder() {
+    class Builder : DefaultTestStep.Builder<DatabaseTestStep>() {
 
         private var servers: Collection<String> = emptyList()
         private var command: String? = null

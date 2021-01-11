@@ -4,12 +4,12 @@ import org.skellig.task.TaskUtils.Companion.runTask
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.exception.ValidationException
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ValidationDetails
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 
-abstract class ValidatableTestStepProcessor<T : TestStep>(
+abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
         protected val testScenarioState: TestScenarioState,
         protected val validator: TestStepResultValidator,
         protected val testStepResultConverter: TestStepResultConverter?) : TestStepProcessor<T> {
@@ -18,11 +18,11 @@ abstract class ValidatableTestStepProcessor<T : TestStep>(
         const val RESULT_SAVE_SUFFIX = ".result"
     }
 
-    protected fun validate(testStep: TestStep) {
+    protected fun validate(testStep: DefaultTestStep) {
         validate(testStep, null)
     }
 
-    protected fun validate(testStep: TestStep, actualResult: Any?) {
+    protected fun validate(testStep: DefaultTestStep, actualResult: Any?) {
         testStep.validationDetails?.let { validationDetails ->
             validationDetails.testStepId?.let { testStepId ->
                 getLatestResultOfTestStep(testStepId, testStep.delay, testStep.timeout)?.let {

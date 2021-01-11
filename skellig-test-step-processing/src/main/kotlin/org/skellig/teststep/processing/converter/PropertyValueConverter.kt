@@ -29,7 +29,7 @@ class PropertyValueConverter(var valueConverters: List<TestStepValueConverter>,
         var result: Any? = null
         val propertyValue = getPropertyValue(matcher.group(1))
         if (StringUtils.isNotEmpty(propertyValue) || !hasDefaultValue(matcher)) {
-            return value.replace(matcher.group(0), propertyValue)
+            result = value.replace(matcher.group(0), propertyValue)
         } else if (hasDefaultValue(matcher)) {
             var defaultValue = matcher.group(3)
             if (NULL != defaultValue) {

@@ -4,20 +4,21 @@ import org.skellig.task.async.AsyncTaskUtils.Companion.runTaskAsync
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 
-abstract class BaseTestStepProcessor<T : TestStep>(
+abstract class BaseTestStepProcessor<T : DefaultTestStep>(
         testScenarioState: TestScenarioState,
         validator: TestStepResultValidator,
         testStepResultConverter: TestStepResultConverter?)
     : ValidatableTestStepProcessor<T>(testScenarioState, validator, testStepResultConverter) {
 
     override fun process(testStep: T): TestStepRunResult {
-        val testStepRunResult = TestStepRunResult(testStep)
+        val testStepRunResult = DefaultTestStepRunResult(testStep)
         testScenarioState.set(testStep.getId, testStep)
 
         when (testStep.execution) {
@@ -64,5 +65,13 @@ abstract class BaseTestStepProcessor<T : TestStep>(
                 apply { this.testStepResultConverter = testStepResultConverter }
 
         abstract fun build(): TestStepProcessor<T>
+    }
+
+    class DefaultTestStepRunResult(private val testStep: DefaultTestStep?)
+        : TestStepProcessor.TestStepRunResult(testStep) {
+
+        override fun getTimeout(): Long {
+            return (testStep?.timeout ?: 0).toLong()
+        }
     }
 }

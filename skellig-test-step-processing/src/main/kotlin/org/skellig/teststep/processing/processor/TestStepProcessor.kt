@@ -14,7 +14,7 @@ interface TestStepProcessor<T : TestStep> : Closeable {
 
     override fun close() {}
 
-    class TestStepRunResult(private val testStep: TestStep?) {
+    open class TestStepRunResult(private val testStep: TestStep?) {
 
         private var consumer: ((TestStep?, Any?, RuntimeException?) -> Unit)? = null
         private var response: Any? = null
@@ -41,13 +41,13 @@ interface TestStepProcessor<T : TestStep> : Closeable {
         fun awaitResult() {
             if (testStep != null) {
                 try {
-                    countDownLatch.await(testStep.timeout.toLong(), TimeUnit.SECONDS)
+                    countDownLatch.await(getTimeout(), TimeUnit.SECONDS)
                     if (error != null) {
                         error = TestStepProcessingException(String.format("Failed to process test step '%s'", testStep.name), error)
                     }
                 } catch (ex: InterruptedException) {
                     error = TestStepProcessingException(String.format("Failed to get response from test step '%s' within %d seconds",
-                            testStep.name, testStep.timeout), ex)
+                            testStep.name, getTimeout()), ex)
                     notify(null, error)
                 }
                 if (error != null) {
@@ -55,6 +55,8 @@ interface TestStepProcessor<T : TestStep> : Closeable {
                 }
             }
         }
+
+        protected open fun getTimeout() : Long = 0
 
     }
 }

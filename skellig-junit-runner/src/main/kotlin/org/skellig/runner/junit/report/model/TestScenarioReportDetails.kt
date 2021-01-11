@@ -1,11 +1,11 @@
 package org.skellig.runner.junit.report.model
 
 class TestScenarioReportDetails(val name: String?,
-                                val testStepReportDetails: List<TestStepReportDetails>?) {
+                                val testStepReportDetails: List<TestStepReportDetails<*>>?) {
 
     fun getTotalPassedTestSteps(): Int {
         return testStepReportDetails
-                ?.filter { obj: TestStepReportDetails -> obj.isPassed() }
+                ?.filter { it.isPassed() }
                 ?.count() ?: 0
     }
 

@@ -2,7 +2,7 @@ package org.skellig.teststep.processor.ibmmq.model.factory
 
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 import java.util.*
@@ -10,9 +10,9 @@ import java.util.*
 open class IbmMqTestStepFactory(keywordsProperties: Properties?,
                                 testStepValueConverter: TestStepValueConverter?,
                                 testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseTestStepFactory<IbmMqTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
+    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<IbmMqTestStep> {
         return IbmMqTestStep.Builder()
                 .withSendTo(convertValue<String>(rawTestStep[getKeywordName(SEND_TO_KEYWORD, "sendTo")], parameters))
                 .withReceiveFrom(convertValue<String>(rawTestStep[getKeywordName(RECEIVE_FROM_KEYWORD, "receiveFrom")], parameters))
