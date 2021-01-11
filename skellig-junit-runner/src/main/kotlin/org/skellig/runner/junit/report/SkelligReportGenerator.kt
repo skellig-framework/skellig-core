@@ -13,7 +13,19 @@ import java.net.URL
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 
+
 class SkelligReportGenerator : ReportGenerator {
+
+    companion object {
+        private const val JAR_URL_TYPE = "jar"
+        private const val TARGET_FOLDER = "target"
+        private const val OUT_FOLDER = "out"
+        private const val BUILD_FOLDER = "build"
+        private const val SRC_FOLDER = "src"
+        private const val REPORT_FTL = "report/index.ftl"
+        private const val REPORT_FOLDER_NAME = "skellig-report"
+        private const val REPORT_SRC_PATH = "report/$REPORT_FOLDER_NAME"
+    }
 
     override fun generate(testReportDetails: List<FeatureReportDetails>?) {
         try {
@@ -34,12 +46,22 @@ class SkelligReportGenerator : ReportGenerator {
 
     @Throws(URISyntaxException::class, IOException::class)
     private fun prepareReportFoldersAndFiles(): File {
-        val copyFrom = Paths.get(getUrl("report/skellig-report").toURI())
-        val reportRootDir = Paths.get(getUrl("").toURI()).parent.parent.parent
+        val uri = getUrl(REPORT_SRC_PATH).toURI()
+        if (uri.scheme == JAR_URL_TYPE) {
+            FileSystems.newFileSystem(uri, mapOf<String, String>()).use {
+                return createHtmlReport(it.getPath("/$REPORT_SRC_PATH"))
+            }
+        } else {
+            return createHtmlReport(Paths.get(uri))
+        }
+    }
 
-        Files.walkFileTree(copyFrom, CopyFileVisitor(File(reportRootDir.toFile(), "/skellig-report").toPath()))
+    private fun createHtmlReport(copyFrom: Path): File {
+        val reportRootDir = getReportFolderPath(Paths.get(getUrl("").toURI()))
 
-        val htmlReport = File(reportRootDir.toFile(), "skellig-report/index.html")
+        Files.walkFileTree(copyFrom, CopyFileVisitor(File(reportRootDir.toFile(), "/$REPORT_FOLDER_NAME").toPath()))
+
+        val htmlReport = File(reportRootDir.toFile(), "$REPORT_FOLDER_NAME/index.html")
         htmlReport.createNewFile()
 
         return htmlReport
@@ -55,7 +77,7 @@ class SkelligReportGenerator : ReportGenerator {
 
     private fun loadFtlTemplate(): Template {
         return try {
-            val url = getUrl("report/index.ftl")
+            val url = getUrl(REPORT_FTL)
             val configuration = Configuration(Configuration.VERSION_2_3_30)
             configuration.templateLoader = object : URLTemplateLoader() {
                 override fun getURL(s: String): URL {
@@ -69,6 +91,16 @@ class SkelligReportGenerator : ReportGenerator {
         }
     }
 
+    private fun getReportFolderPath(path: Path): Path {
+        return if (path.endsWith(TARGET_FOLDER) || path.endsWith(BUILD_FOLDER)
+                || path.endsWith(OUT_FOLDER)) {
+            path
+        } else if (path.endsWith(SRC_FOLDER)) {
+            path.parent
+        } else {
+            getReportFolderPath(path.parent)
+        }
+    }
 
     private fun getUrl(filePath: String): URL {
         return javaClass.classLoader.getResource(filePath)!!
@@ -82,14 +114,14 @@ class SkelligReportGenerator : ReportGenerator {
             if (sourcePath == null) {
                 sourcePath = dir
             } else {
-                Files.createDirectories(targetPath.resolve(sourcePath!!.relativize(dir)))
+                Files.createDirectories(targetPath.resolve(sourcePath!!.relativize(dir).toString()))
             }
             return FileVisitResult.CONTINUE
         }
 
         @Throws(IOException::class)
         override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-            Files.copy(file, targetPath.resolve(sourcePath!!.relativize(file)), StandardCopyOption.REPLACE_EXISTING)
+            Files.copy(file, targetPath.resolve(sourcePath!!.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING)
             return FileVisitResult.CONTINUE
         }
     }
