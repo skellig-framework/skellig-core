@@ -6,15 +6,15 @@ import java.lang.String.format
 
 class JsonPathTestStepValueExtractor : TestStepValueExtractor {
 
-    override fun extract(value: Any?, extractionParameter: String?): Any? {
+    override fun extract(value: Any?, extractionParameter: String?): Any {
         return value?.let {
             val json = JsonPath.from(it as String)
             json.getString(extractionParameter)
         } ?: throw ValueExtractionException(format("Cannot extract jsonPath '%s' from null value", extractionParameter))
     }
 
-    override fun getExtractFunctionName(): String? {
-        return "json_path"
+    override fun getExtractFunctionName(): String {
+        return "jsonPath"
     }
 
 }
