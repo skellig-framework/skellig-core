@@ -1,76 +1,49 @@
-package org.skellig.teststep.processor.rmq.model;
+package org.skellig.teststep.processor.rmq.model
 
-import org.skellig.teststep.processing.model.TestStep;
-import org.skellig.teststep.processing.model.TestStepExecutionType;
-import org.skellig.teststep.processing.model.ValidationDetails;
+import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.model.ValidationDetails
 
-import java.util.Map;
-import java.util.Optional;
+open class RmqTestStep protected constructor(id: String?,
+                                             name: String?,
+                                             execution: TestStepExecutionType?,
+                                             timeout: Int, delay: Int,
+                                             variables: Map<String, Any?>?,
+                                             testData: Any?,
+                                             validationDetails: ValidationDetails?,
+                                             val sendTo: String?,
+                                             val receiveFrom: String?,
+                                             val respondTo: String?,
+                                             val routingKey: String?)
+    : TestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
 
-public class RmqTestStep extends TestStep {
 
-    private String sendTo;
-    private String receiveFrom;
-    private String respondTo;
-    private String routingKey;
+    class Builder : TestStep.Builder() {
 
-    protected RmqTestStep(String id, String name, TestStepExecutionType execution, int timeout, int delay,
-                          Map<String, Object> variables, Object testData, ValidationDetails validationDetails,
-                          String sendTo, String receiveFrom, String respondTo, String routingKey) {
-        super(id, name, execution, timeout, delay, variables, testData, validationDetails);
-        this.sendTo = sendTo;
-        this.receiveFrom = receiveFrom;
-        this.respondTo = respondTo;
-        this.routingKey = routingKey;
-    }
+        private var sendTo: String? = null
+        private var receiveFrom: String? = null
+        private var respondTo: String? = null
+        private var routingKey: String? = null
 
-    public Optional<String> getSendTo() {
-        return Optional.ofNullable(sendTo);
-    }
-
-    public Optional<String> getReceiveFrom() {
-        return Optional.ofNullable(receiveFrom);
-    }
-
-    public Optional<String> getRespondTo() {
-        return Optional.ofNullable(respondTo);
-    }
-
-    public String getRoutingKey() {
-        return routingKey;
-    }
-
-    public static class Builder extends TestStep.Builder {
-
-        private String sendTo;
-        private String receiveFrom;
-        private String respondTo;
-        private String routingKey;
-
-        public Builder withSendTo(String sendTo) {
-            this.sendTo = sendTo;
-            return this;
+        fun withSendTo(sendTo: String?) = apply {
+            this.sendTo = sendTo
         }
 
-        public Builder withReceiveFrom(String receiveFrom) {
-            this.receiveFrom = receiveFrom;
-            return this;
+        fun withReceiveFrom(receiveFrom: String?) = apply {
+            this.receiveFrom = receiveFrom
         }
 
-        public Builder withRespondTo(String respondTo) {
-            this.respondTo = respondTo;
-            return this;
+        fun withRespondTo(respondTo: String?) = apply {
+            this.respondTo = respondTo
         }
 
-        public Builder withRoutingKey(String routingKey) {
-            this.routingKey = routingKey;
-            return this;
+        fun withRoutingKey(routingKey: String?) = apply {
+            this.routingKey = routingKey
         }
 
-        @Override
-        public RmqTestStep build() {
-            return new RmqTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails,
-                    sendTo, receiveFrom, respondTo, routingKey);
+        override fun build(): RmqTestStep {
+            return RmqTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails,
+                    sendTo, receiveFrom, respondTo, routingKey)
         }
     }
 }

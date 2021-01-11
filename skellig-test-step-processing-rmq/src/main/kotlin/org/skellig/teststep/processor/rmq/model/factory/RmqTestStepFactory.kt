@@ -1,55 +1,40 @@
-package org.skellig.teststep.processor.rmq.model.factory;
+package org.skellig.teststep.processor.rmq.model.factory
 
-import org.skellig.teststep.processing.converter.TestDataConverter;
-import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.model.TestStep;
-import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
-import org.skellig.teststep.processor.rmq.model.RmqTestStep;
+import org.skellig.teststep.processing.converter.TestDataConverter
+import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
+import org.skellig.teststep.processor.rmq.model.RmqTestStep
+import java.util.*
 
-import java.util.Map;
-import java.util.Properties;
+class RmqTestStepFactory(keywordsProperties: Properties?,
+                         testStepValueConverter: TestStepValueConverter?,
+                         testDataConverter: TestDataConverter?)
+    : BaseTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter) {
 
-public class RmqTestStepFactory extends BaseTestStepFactory {
-
-    private static final String PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol";
-    private static final String ROUTING_KEY_KEYWORD = "test.step.keyword.routingKey";
-    private static final String SEND_TO_KEYWORD = "test.step.keyword.sendTo";
-    private static final String RECEIVE_FROM_KEYWORD = "test.step.keyword.receiveFrom";
-    private static final String RESPOND_TO_KEYWORD = "test.step.keyword.respondTo";
-    private static final String RMQ = "rmq";
-
-    public RmqTestStepFactory(Properties keywordsProperties, TestStepValueConverter testStepValueConverter, TestDataConverter testDataConverter) {
-        super(keywordsProperties, testStepValueConverter, testDataConverter);
+    companion object {
+        private const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"
+        private const val ROUTING_KEY_KEYWORD = "test.step.keyword.routingKey"
+        private const val SEND_TO_KEYWORD = "test.step.keyword.sendTo"
+        private const val RECEIVE_FROM_KEYWORD = "test.step.keyword.receiveFrom"
+        private const val RESPOND_TO_KEYWORD = "test.step.keyword.respondTo"
+        private const val RMQ = "rmq"
     }
 
-    @Override
-    protected TestStep.Builder createTestStepBuilder(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
-        return new RmqTestStep.Builder()
-                .withSendTo(convertValue(rawTestStep.get(getSendToKeyword()), parameters))
-                .withReceiveFrom(convertValue(rawTestStep.get(getReceiveFromKeyword()), parameters))
-                .withRespondTo(convertValue(rawTestStep.get(getRespondToKeyword()), parameters))
-                .withRoutingKey(convertValue(getRoutingKey(rawTestStep), parameters));
+    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
+        return RmqTestStep.Builder()
+                .withSendTo(convertValue(rawTestStep[getKeywordName(SEND_TO_KEYWORD, "sendTo")], parameters))
+                .withReceiveFrom(convertValue(rawTestStep[getKeywordName(RECEIVE_FROM_KEYWORD, "readFrom")], parameters))
+                .withRespondTo(convertValue(rawTestStep[getKeywordName(RESPOND_TO_KEYWORD, "respondTo")], parameters))
+                .withRoutingKey(convertValue(getRoutingKey(rawTestStep), parameters))
     }
 
-    @Override
-    public boolean isConstructableFrom(Map<String, Object> rawTestStep) {
-        return getRoutingKey(rawTestStep) != null ||
-                rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "").equals(RMQ);
+    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+        return getRoutingKey(rawTestStep) != null || rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == RMQ
     }
 
-    private Object getRoutingKey(Map<String, Object> rawTestStep) {
-        return rawTestStep.get(getKeywordName(ROUTING_KEY_KEYWORD, "routingKey"));
+    private fun getRoutingKey(rawTestStep: Map<String, Any?>): Any? {
+        return rawTestStep[getKeywordName(ROUTING_KEY_KEYWORD, "routingKey")]
     }
 
-    private String getSendToKeyword() {
-        return getKeywordName(SEND_TO_KEYWORD, "sendTo");
-    }
-
-    private String getReceiveFromKeyword() {
-        return getKeywordName(RECEIVE_FROM_KEYWORD, "readFrom");
-    }
-
-    private String getRespondToKeyword() {
-        return getKeywordName(RESPOND_TO_KEYWORD, "respondTo");
-    }
 }
