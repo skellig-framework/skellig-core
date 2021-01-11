@@ -6,6 +6,7 @@ buildscript {
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
     }
 }
+
 plugins {
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
 }
@@ -18,6 +19,7 @@ ext {
     mockitoJunitVersion = '2.18.0'
     typesafeConfigVersion = '1.4.0'
     slf4jLogVersion = '1.7.30'
+    kotlinVersion = '1.4.21'
 }
 
 allprojects {
@@ -32,7 +34,7 @@ subprojects {
     apply plugin: 'com.bmuschko.nexus'
     apply plugin: 'io.spring.dependency-management'
 
-    version = '1.0.0'
+    version = '1.0.0-beta'
 
     ext {
         projectUrl = 'http://skellig-framework.org'

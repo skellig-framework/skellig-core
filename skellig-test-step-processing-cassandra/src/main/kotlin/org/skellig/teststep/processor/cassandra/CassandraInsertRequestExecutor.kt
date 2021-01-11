@@ -8,7 +8,7 @@ import org.skellig.teststep.processor.db.model.DatabaseRequest
 internal class CassandraInsertRequestExecutor(private val session: Session) : BaseCassandraRequestExecutor() {
 
     override fun execute(databaseRequest: DatabaseRequest): Any? {
-        return try {
+        try {
             databaseRequest.query?.let {
                 return session.execute(databaseRequest.query)
             } ?: run {

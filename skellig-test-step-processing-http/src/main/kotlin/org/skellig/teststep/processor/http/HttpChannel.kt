@@ -39,7 +39,7 @@ open class HttpChannel(private val baseUrl: String) {
                     convertToLocalResponse(response)
                 }
             } catch (e: Exception) {
-                throw TestStepProcessingException("Failed to send HTTP request to " + request?.url, e)
+                throw TestStepProcessingException("Failed to send HTTP request to " + request.url, e)
             }
         }
     }

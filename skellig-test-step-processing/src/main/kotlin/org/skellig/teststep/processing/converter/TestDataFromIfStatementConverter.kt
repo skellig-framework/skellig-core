@@ -15,9 +15,9 @@ class TestDataFromIfStatementConverter : TestDataConverter {
 
     private val engine = ScriptEngineManager().getEngineByName("JavaScript")
 
-    override fun convert(value: Any?): Any? {
-        if (value is Map<*, *>) {
-            val valueAsMap = value as Map<String, Any>
+    override fun convert(testData: Any?): Any? {
+        if (testData is Map<*, *>) {
+            val valueAsMap = testData as Map<String, Any>
             if (valueAsMap.containsKey(IF_KEYWORD)) {
                 val ifDetails = valueAsMap[IF_KEYWORD] as Map<String, Any>
                 val condition = ifDetails[CONDITION_KEYWORD] as String?
@@ -30,7 +30,7 @@ class TestDataFromIfStatementConverter : TestDataConverter {
                 return if (isConditionSatisfied(condition)) thenContent else elseContent
             }
         }
-        return value
+        return testData
     }
 
     private fun isConditionSatisfied(condition: String?): Boolean {

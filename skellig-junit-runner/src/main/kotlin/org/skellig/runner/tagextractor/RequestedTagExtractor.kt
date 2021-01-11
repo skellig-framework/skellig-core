@@ -8,6 +8,6 @@ class RequestedTagExtractor : TagExtractor {
         return testPreRequisites
                 .filter { tagClass == it.getDetails()!!.javaClass }
                 .map { it.getDetails() as T }
-                .first()
+                .firstOrNull()
     }
 }

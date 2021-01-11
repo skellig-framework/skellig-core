@@ -17,17 +17,17 @@ class TestDataFromFTLConverter(val classLoader: ClassLoader,
 
     private var templateProvider: TemplateProvider = TemplateProvider(classLoader)
 
-    override fun convert(value: Any?): Any? {
-        var newValue = value
-        if (value is Map<*, *>) {
-            val valueAsMap = value as Map<String, Any?>
+    override fun convert(testData: Any?): Any? {
+        var newTestData = testData
+        if (newTestData is Map<*, *>) {
+            val valueAsMap = newTestData as Map<String, Any?>
             if (valueAsMap.containsKey(TEMPLATE_KEYWORD)) {
                 val templateDetails = valueAsMap[TEMPLATE_KEYWORD] as Map<String, Any?>
                 val file = templateDetails[FILE_KEYWORD] as String?
-                newValue = constructFromTemplate(templateProvider.getTemplate(file), getDataModel(templateDetails))
+                newTestData = constructFromTemplate(templateProvider.getTemplate(file), getDataModel(templateDetails))
             }
         }
-        return newValue
+        return newTestData
     }
 
     private fun constructFromTemplate(template: Template, dataModel: Map<String, *>?): Any {
