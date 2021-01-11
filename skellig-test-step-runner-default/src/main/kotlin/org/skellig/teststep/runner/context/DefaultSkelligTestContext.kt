@@ -4,7 +4,6 @@ import com.typesafe.config.ConfigValue
 import org.skellig.teststep.processor.http.HttpTestStepProcessor
 import org.skellig.teststep.processor.http.model.factory.HttpTestStepFactory
 import java.util.*
-import java.util.function.Function
 
 class DefaultSkelligTestContext : SkelligTestContext() {
 
@@ -39,7 +38,4 @@ class DefaultSkelligTestContext : SkelligTestContext() {
                                 createTestStepFactoryFrom { props, c1, c2 -> HttpTestStepFactory(props, c1, c2) })
                 )
             } ?: emptyList()
-
-    override val propertyExtractorFunction: Function<String, String?>
-        get() = Function { key: String? -> config?.getString(key) }
 }

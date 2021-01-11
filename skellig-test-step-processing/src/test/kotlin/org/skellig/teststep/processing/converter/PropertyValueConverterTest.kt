@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.converter
 
+import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -10,7 +11,7 @@ import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 class PropertyValueConverterTest {
 
     companion object {
-        private const val CUSTOM_PROPERTY_KEY = "custom_properties"
+        private const val CUSTOM_PROPERTY_KEY = "custom.properties_1"
         private const val DEFAULT_CUSTOM_PROPERTY_VALUE = "from custom properties"
     }
 
@@ -41,6 +42,11 @@ class PropertyValueConverterTest {
     }
 
     @Test
+    fun testSimpleParameterWithNoValueAndDefaultIsNull() {
+        Assertions.assertNull(valueConverter!!.convert("\${1:null}"))
+    }
+
+    @Test
     fun testWithNestedParametersAndDefault() {
         Assertions.assertEquals("v3", valueConverter!!.convert("\${key_1 : \${key_2 : v3}}"))
     }
@@ -52,7 +58,7 @@ class PropertyValueConverterTest {
 
     @Test
     fun testWithNestedFunctionsWithAttachedText() {
-        Mockito.`when`(testScenarioState!!.get("id")).thenReturn("10")
+        whenever(testScenarioState!!.get("id")).thenReturn("10")
         Assertions.assertEquals("_10_", valueConverter!!.convert("\${key_1 : _get(id)_}"))
     }
 

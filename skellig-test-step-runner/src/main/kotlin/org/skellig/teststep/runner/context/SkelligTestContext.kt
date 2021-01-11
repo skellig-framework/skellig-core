@@ -22,7 +22,6 @@ import org.skellig.teststep.runner.DefaultTestStepRunner
 import org.skellig.teststep.runner.TestStepRunner
 import java.io.Closeable
 import java.util.*
-import java.util.function.Function
 
 open class SkelligTestContext : Closeable {
 
@@ -166,8 +165,8 @@ open class SkelligTestContext : Closeable {
     protected open val testStepProcessors: List<TestStepProcessorDetails>
         protected get() = emptyList()
 
-    protected open val propertyExtractorFunction: Function<String, String?>?
-        protected get() = null
+    protected open val propertyExtractorFunction: ((String) -> String?)?
+        protected get() = { key -> config?.getString(key) }
 
     protected open val testStepKeywordsProperties: Properties?
         protected get() = null
