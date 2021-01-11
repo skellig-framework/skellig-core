@@ -1,29 +1,40 @@
 package org.skellig.teststep.processing.converter
 
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
-import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
+import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
 
-internal class FindFromStateValueConverterTest {
+class FindFromStateValueConverterTest {
 
     private val testScenarioState = DefaultTestScenarioState()
-    private val valueExtractor = mock<TestStepValueExtractor>()
-    private val converter = FindFromStateValueConverter(testScenarioState, valueExtractor)
+    private val converter = FindFromStateValueConverter(testScenarioState, DefaultValueExtractor.Builder().build())
 
     @Test
-    internal fun testFind() {
-        val stateValue1 = mock<Any>()
-        val stateValue2 = mock<Any>()
+    fun testFind() {
+        val stateValue1 = mapOf(Pair("a", mapOf(Pair("b", mapOf(Pair("c", "v1"))))))
+        val stateValue2 = mapOf(Pair("a", mapOf(Pair("b", mapOf(Pair("c", "v2"))))))
         testScenarioState.set("result1", stateValue1)
         testScenarioState.set("result2", stateValue2)
         testScenarioState.set("result3", mock())
 
-        whenever(valueExtractor.extract(stateValue1, "a.b.c")).thenReturn("v1")
-        whenever(valueExtractor.extract(stateValue2, "a.b.c")).thenReturn("v2")
-
         assertEquals("v2", converter.convert("find(a.b.c)"))
+    }
+
+    @Test
+    fun testFindWithDifferentExtractors() {
+        val stateValue1 = mapOf(Pair("a", mapOf(Pair("b", "c/v2"))))
+        testScenarioState.set("result1", stateValue1)
+
+        assertEquals("v2", converter.convert("find(a.b.subStringLast(/))"))
+    }
+
+    @Test
+    fun testFindWithPrefixAndSuffix() {
+        val stateValue1 = mapOf(Pair("a", mapOf(Pair("b", mapOf(Pair("c", "v1"))))))
+        testScenarioState.set("result1", stateValue1)
+
+        assertEquals("prefix_v1-v1_suffix", converter.convert("prefix_find(a.b.c)-find(a.b.c)_suffix"))
     }
 }
