@@ -29,6 +29,7 @@ class DefaultTestDataConverter private constructor(private val testDataConverter
             Objects.requireNonNull(classLoader, "ClassLoader must be provided")
 
             val testDataFromCsvConverter = TestDataFromCsvConverter(classLoader!!)
+            testDataConverters.add(TestDataToJsonConverter())
             testDataConverters.add(TestDataFromFTLConverter(classLoader!!, testDataFromCsvConverter))
             testDataConverters.add(TestDataFromIfStatementConverter())
             testDataConverters.add(testDataFromCsvConverter)
