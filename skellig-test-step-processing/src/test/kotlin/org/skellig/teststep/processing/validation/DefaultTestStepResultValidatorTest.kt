@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.validation
 
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -24,6 +25,38 @@ class DefaultTestStepResultValidatorTest {
                 .withValueComparator(DefaultValueComparator.Builder().build())
                 .withValueExtractor(DefaultValueExtractor.Builder().build())
                 .build()
+    }
+
+    @Test
+    @DisplayName("When expected is null")
+    fun testValidateWhenNull() {
+        val expectedResult = ExpectedResult("",
+                listOf(ExpectedResult(null, null, null)),
+                MatchingType.ALL_MATCH)
+
+        validator!!.validate(expectedResult, null)
+
+        val ex = Assertions.assertThrows(ValidationException::class.java)
+        { validator!!.validate(expectedResult, "data") }
+
+        assertEquals("Validation failed!\n" +
+                "result is not valid. Expected: null Actual: data\n", ex.message)
+    }
+
+    @Test
+    @DisplayName("When expected field is null")
+    fun testValidateWhenFieldNull() {
+        val expectedResult = ExpectedResult("",
+                listOf(ExpectedResult("f1", null, null)),
+                MatchingType.ALL_MATCH)
+
+        validator!!.validate(expectedResult, mapOf(Pair("f1", null)))
+
+        val ex = Assertions.assertThrows(ValidationException::class.java)
+        { validator!!.validate(expectedResult, mapOf(Pair("f1", "v1"))) }
+
+        assertEquals("Validation failed!\n" +
+                "f1 is not valid. Expected: null Actual: v1\n", ex.message)
     }
 
     @Test
@@ -370,14 +403,14 @@ class DefaultTestStepResultValidatorTest {
         ValidationDetails.Builder().withExpectedResult(expectedResult).build()
     }
 
-    private fun createActualResult(): Map<String, Any> {
+    private fun createActualResult(): Map<String, Any?> {
         return UnitTestUtils.createMap(
                 "k1", "v1",
                 "k2", "v2"
         )
     }
 
-    private fun createAnotherActualResult(): Map<String, Any> {
+    private fun createAnotherActualResult(): Map<String, Any?> {
         return UnitTestUtils.createMap(
                 "k1", "v3",
                 "k2", "v4"

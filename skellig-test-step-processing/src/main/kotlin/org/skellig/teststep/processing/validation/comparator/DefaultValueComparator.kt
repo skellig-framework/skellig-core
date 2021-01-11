@@ -4,13 +4,13 @@ import java.util.*
 
 class DefaultValueComparator(private val comparators: Collection<ValueComparator>) : ValueComparator {
 
-    override fun compare(expectedValue: Any, actualValue: Any?): Boolean {
+    override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
         return comparators
-                .filter { comparator: ValueComparator -> comparator.isApplicable(expectedValue) }
-                .any { comparator: ValueComparator -> comparator.compare(expectedValue, actualValue) }
+                .filter { it.isApplicable(expectedValue) }
+                .any { it.compare(expectedValue, actualValue) }
     }
 
-    override fun isApplicable(expectedValue: Any): Boolean {
+    override fun isApplicable(expectedValue: Any?): Boolean {
         return true
     }
 

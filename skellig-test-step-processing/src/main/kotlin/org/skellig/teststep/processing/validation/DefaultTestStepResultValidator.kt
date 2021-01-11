@@ -36,7 +36,7 @@ class DefaultTestStepResultValidator(
                         .all { item: ExpectedResult -> validateFurther(item, actualResult, errorBuilder) }
             }
             else -> {
-                val isValid = valueComparator.compare(expectedResult.expectedResult!!, actualResult)
+                val isValid = valueComparator.compare(expectedResult.expectedResult, actualResult)
                 if (expectedResult.getMatchingTypeOfParent() === MatchingType.NONE_MATCH && isValid ||
                         expectedResult.getMatchingTypeOfParent() !== MatchingType.NONE_MATCH && !isValid) {
                     constructErrorMessage(expectedResult, actualResult, errorBuilder)
@@ -57,7 +57,7 @@ class DefaultTestStepResultValidator(
                 } else {
                     newActualValue.any { validate(expectedResult, it, errorBuilder) }
                 }
-            } else if (actualResult?.javaClass!!.isArray) {
+            } else if (actualResult?.javaClass?.isArray == true) {
                 validateFurther(expectedResult, (actualResult as Array<*>).toList(), errorBuilder)
             } else {
                 validate(expectedResult, newActualValue, errorBuilder)

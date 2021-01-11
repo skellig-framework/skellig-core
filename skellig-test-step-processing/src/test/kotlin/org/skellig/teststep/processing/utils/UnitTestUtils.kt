@@ -5,8 +5,8 @@ import org.skellig.teststep.processing.model.ExpectedResult
 sealed class UnitTestUtils {
 
     companion object {
-        fun createMap(vararg params: Any): Map<String, Any> {
-            val map: MutableMap<String, Any> = HashMap()
+        fun createMap(vararg params: Any?): Map<String, Any?> {
+            val map: MutableMap<String, Any?> = HashMap()
             var i = 0
             while (i < params.size) {
                 map[params[i] as String] = params[i + 1]

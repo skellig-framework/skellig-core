@@ -52,5 +52,5 @@ class DefaultValueExtractorTest {
                 "params.'json.body'.jsonPath(array[1]).subStringLast(=).length"))
     }
 
-    inner class SimpleObject(val params: Map<String, Any>)
+    inner class SimpleObject(val params: Map<String, Any?>)
 }

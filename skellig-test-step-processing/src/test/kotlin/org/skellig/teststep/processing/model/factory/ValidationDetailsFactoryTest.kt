@@ -33,6 +33,22 @@ class ValidationDetailsFactoryTest {
     }
 
     @Test
+    fun testWhenValidationDetailsWithNullAsExpected() {
+        val testStep = createTestStepWithoutParameters(listOf(null))
+        val validationDetails = testStep.validationDetails
+
+        Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult)
+    }
+
+    @Test
+    fun testWhenValidationDetailsWithFieldNullAsExpected() {
+        val testStep = createTestStepWithoutParameters(UnitTestUtils.createMap("log", null))
+        val validationDetails = testStep.validationDetails
+
+        Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult)
+    }
+
+    @Test
     fun testSimpleEquals() {
         val expectedResult = "something"
 
@@ -48,12 +64,14 @@ class ValidationDetailsFactoryTest {
         val expectedResult = "something"
 
         val testStep = createTestStepWithoutParameters(UnitTestUtils.createMap("[s1,s2]", expectedResult))
-        val validationDetails = testStep.validationDetails
+        val validationDetails = testStep.validationDetails!!
 
-        Assertions.assertEquals("s1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property)
-        Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).expectedResult)
-        Assertions.assertEquals("s2", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 1).property)
-        Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 1).expectedResult)
+        Assertions.assertAll(
+                { Assertions.assertEquals("s1", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).property) },
+                { Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).expectedResult) },
+                { Assertions.assertEquals("s2", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 1).property) },
+                { Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 1).expectedResult) }
+        )
     }
 
     @Test
@@ -229,7 +247,7 @@ class ValidationDetailsFactoryTest {
     @DisplayName("When has test id and complex expected results with any_match and none_match")
     fun testComplexExpectedResult() {
         val rawValidationDetails: MutableMap<String, Any> = LinkedHashMap()
-        rawValidationDetails["from_test"] = "t1"
+        rawValidationDetails["fromTest"] = "t1"
         rawValidationDetails["any_match"] = UnitTestUtils.createMap("srv1",
                 UnitTestUtils.createMap("status", "200",
                         "body",
@@ -342,7 +360,7 @@ class ValidationDetailsFactoryTest {
     }
 
 
-    private fun createTestStepWithoutParameters(rawValidationDetails: Any): TestStep {
+    private fun createTestStepWithoutParameters(rawValidationDetails: Any?): TestStep {
         return validationDetailsFactory!!.create("step1", UnitTestUtils.createMap("validate", rawValidationDetails), emptyMap<String, String>())
     }
 }
