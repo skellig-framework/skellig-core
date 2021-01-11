@@ -1,74 +1,56 @@
-package org.skellig.teststep.processor.unix.model;
+package org.skellig.teststep.processor.unix.model
 
-import org.skellig.teststep.processing.model.TestStep;
-import org.skellig.teststep.processing.model.TestStepExecutionType;
-import org.skellig.teststep.processing.model.ValidationDetails;
+import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.model.ValidationDetails
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.stream.Collectors;
+open class UnixShellTestStep protected constructor(id: String?,
+                                                   name: String?,
+                                                   execution: TestStepExecutionType?,
+                                                   timeout: Int,
+                                                   delay: Int,
+                                                   variables: Map<String, Any?>?,
+                                                   testData: Any?,
+                                                   validationDetails: ValidationDetails?,
+                                                   val hosts: Collection<String>,
+                                                   private val command: String,
+                                                   private val args: Map<String, String?>?)
+    : TestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
 
-public class UnixShellTestStep extends TestStep {
-
-    private Collection<String> hosts;
-    private String user;
-    private String password;
-    private String command;
-    private Map<String, String> args;
-
-    protected UnixShellTestStep(String id, String name, TestStepExecutionType execution,
-                                int timeout, int delay, Map<String, Object> variables,
-                                Object testData, ValidationDetails validationDetails,
-                                Collection<String> hosts, String command, Map<String, String> args) {
-        super(id, name, execution, timeout, delay, variables, testData, validationDetails);
-        this.hosts = hosts;
-        this.command = command;
-        this.args = args;
+    fun getCommand(): String {
+        return if (args == null) command else "$command " + args.entries.joinToString(" ") { "-" + it.key + " " + it.value }
     }
 
-    public Collection<String> getHosts() {
-        return hosts;
-    }
+    class Builder : TestStep.Builder() {
 
-    public String getCommand() {
-        return args == null ? command :
-                command + " " + args.entrySet().stream()
-                        .map(entry -> "-" + entry.getKey() + " " + entry.getValue())
-                        .collect(Collectors.joining(" "));
-    }
-
-    public static class Builder extends TestStep.Builder {
-
-        private static final int DEFAULT_TIMEOUT = 30000;
-
-        private Collection<String> hosts;
-        private String command;
-        private Map<String, String> args;
-
-        public Builder() {
-            hosts = Collections.emptyList();
-            timeout = DEFAULT_TIMEOUT;
+        companion object {
+            private const val DEFAULT_TIMEOUT = 30000
         }
 
-        public Builder withHosts(Collection<String> hosts) {
-            this.hosts = hosts;
-            return this;
+        private var hosts: Collection<String>? = null
+        private var command: String? = null
+        private var args: Map<String, String>? = null
+
+        init {
+            timeout = DEFAULT_TIMEOUT
         }
 
-        public Builder withCommand(String command) {
-            this.command = command;
-            return this;
+        fun withHosts(hosts: Collection<String>?) = apply {
+            this.hosts = hosts
         }
 
-        public Builder withArgs(Map<String, String> args) {
-            this.args = args;
-            return this;
+        fun withCommand(command: String?) = apply {
+            this.command = command
         }
 
-        public UnixShellTestStep build() {
-            return new UnixShellTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails,
-                    hosts, command, args);
+        fun withArgs(args: Map<String, String>?) = apply {
+            this.args = args
+        }
+
+        override fun build(): UnixShellTestStep {
+            return UnixShellTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails,
+                    hosts ?: error("Hosts to run Unix Shell Command must not be null"),
+                    command ?: error("Unix Shell Command cannot be null"), args)
         }
     }
 }
