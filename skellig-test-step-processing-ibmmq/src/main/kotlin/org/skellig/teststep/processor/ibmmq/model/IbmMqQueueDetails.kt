@@ -1,59 +1,34 @@
-package org.skellig.teststep.processor.ibmmq.model;
+package org.skellig.teststep.processor.ibmmq.model
 
-import java.util.Objects;
+import java.util.*
 
-public class IbmMqQueueDetails {
+class IbmMqQueueDetails private constructor(val channelId: String,
+                                            val queueName: String,
+                                            val ibmMqManagerDetails: IbmMqManagerDetails) {
 
-    private String channelId;
-    private String queueName;
-    private IbmMqManagerDetails ibmMqManagerDetails;
+    class Builder {
+        private var channelId: String? = null
+        private var queueName: String? = null
+        private var ibmMqManagerDetails: IbmMqManagerDetails? = null
 
-    private IbmMqQueueDetails(String channelId, String queueName, IbmMqManagerDetails ibmMqManagerDetails) {
-        Objects.requireNonNull(channelId, "Channel Id cannot be null");
-        Objects.requireNonNull(queueName, "Queue name cannot be null");
-        Objects.requireNonNull(ibmMqManagerDetails, "Queue manager cannot be null");
-
-        this.channelId = channelId;
-        this.queueName = queueName;
-        this.ibmMqManagerDetails = ibmMqManagerDetails;
-    }
-
-    public String getChannelId() {
-        return channelId;
-    }
-
-    public String getQueueName() {
-        return queueName;
-    }
-
-    public IbmMqManagerDetails getIbmMqManagerDetails() {
-        return ibmMqManagerDetails;
-    }
-
-    public static class Builder {
-
-        private String channelId;
-        private String queueName;
-        private IbmMqManagerDetails ibmMqManagerDetails;
-
-        public Builder withQueueName(String queueName) {
-            this.queueName = queueName;
-            return this;
+        fun withQueueName(queueName: String?) = apply {
+            this.queueName = queueName
         }
 
-        public Builder withChannelId(String channelId) {
-            this.channelId = channelId;
-            return this;
+        fun withChannelId(channelId: String?) = apply {
+            this.channelId = channelId
         }
 
-        public Builder withMqManagerDetails(IbmMqManagerDetails ibmMqManagerDetails) {
-            this.ibmMqManagerDetails = ibmMqManagerDetails;
-            return this;
+        fun withMqManagerDetails(ibmMqManagerDetails: IbmMqManagerDetails?) = apply {
+            this.ibmMqManagerDetails = ibmMqManagerDetails
         }
 
-        public IbmMqQueueDetails build() {
-            return new IbmMqQueueDetails(channelId, queueName, ibmMqManagerDetails);
+        fun build(): IbmMqQueueDetails {
+            Objects.requireNonNull(channelId, "Channel Id cannot be null")
+            Objects.requireNonNull(queueName, "Queue name cannot be null")
+            Objects.requireNonNull(ibmMqManagerDetails, "Queue manager cannot be null")
+
+            return IbmMqQueueDetails(channelId!!, queueName!!, ibmMqManagerDetails!!)
         }
     }
-
 }

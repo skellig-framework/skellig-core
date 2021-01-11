@@ -1,84 +1,67 @@
-package org.skellig.teststep.processor.ibmmq;
+package org.skellig.teststep.processor.ibmmq
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processing.converter.TestStepResultConverter;
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processing.processor.BaseTestStepProcessor;
-import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.validation.TestStepResultValidator;
-import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails;
-import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep;
+import com.typesafe.config.Config
+import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.processor.BaseTestStepProcessor
+import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails
+import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+open class IbmMqTestStepProcessor protected constructor(testScenarioState: TestScenarioState?,
+                                                        validator: TestStepResultValidator?,
+                                                        testStepResultConverter: TestStepResultConverter?,
+                                                        private val ibmMqChannels: Map<String, IbmMqChannel>)
+    : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
-public class IbmMqTestStepProcessor extends BaseTestStepProcessor<IbmMqTestStep> {
+    protected override fun processTestStep(testStep: IbmMqTestStep): Any? {
+        var response: Any? = null
+        val sendTo = testStep.sendTo
+        val receiveFrom = testStep.receiveFrom
+        val respondTo = testStep.respondTo
 
-    private Map<String, IbmMqChannel> ibmMqChannels;
+        sendTo?.let { send(testStep.testData, it) }
 
-    protected IbmMqTestStepProcessor(TestScenarioState testScenarioState, TestStepResultValidator validator,
-                                     TestStepResultConverter testStepResultConverter,
-                                     Map<String, IbmMqChannel> ibmMqChannels) {
-        super(testScenarioState, validator, testStepResultConverter);
-        this.ibmMqChannels = ibmMqChannels;
-    }
+        receiveFrom?.let {
+            response = ibmMqChannels[receiveFrom]?.read(testStep.timeout)
+            validate(testStep, response)
 
-    @Override
-    protected Object processTestStep(IbmMqTestStep testStep) {
-        Object response = null;
-        Optional<String> sendTo = testStep.getSendTo();
-        Optional<String> receiveFrom = testStep.getReceiveFrom();
-        Optional<String> respondTo = testStep.getRespondTo();
-
-        sendTo.ifPresent(channelId -> send(testStep.getTestData(), channelId));
-
-        if (receiveFrom.isPresent()) {
-            IbmMqChannel ibmMqChannel = ibmMqChannels.get(receiveFrom.get());
-            response = ibmMqChannel.read(testStep.getTimeout());
-
-            validate(testStep, response);
-            respondTo.ifPresent(channel -> send(testStep.getTestData(), channel));
+            respondTo?.let { send(testStep.testData, respondTo) }
         }
-        return response;
+        return response
     }
 
-    private void send(Object testData, String channelId) {
-        if (ibmMqChannels.containsKey(channelId)) {
-            IbmMqChannel ibmMqChannel = ibmMqChannels.get(channelId);
-            ibmMqChannel.send(testData);
-        } else {
-            throw new TestStepProcessingException(String.format("Channel '%s' was not registered " +
-                    "in IBMMQ Test Step Processor", channelId));
+    private fun send(testData: Any?, channelId: String) {
+        testData?.let {
+            if (ibmMqChannels.containsKey(channelId)) {
+                ibmMqChannels[channelId]?.send(testData)
+            } else {
+                throw TestStepProcessingException(String.format("Channel '%s' was not registered " +
+                        "in IBMMQ Test Step Processor", channelId))
+            }
         }
     }
 
-    @Override
-    public Class<IbmMqTestStep> getTestStepClass() {
-        return IbmMqTestStep.class;
+    override fun getTestStepClass(): Class<IbmMqTestStep> {
+        return IbmMqTestStep::class.java
     }
 
-    public static class Builder extends BaseTestStepProcessor.Builder<IbmMqTestStep> {
+    class Builder : BaseTestStepProcessor.Builder<IbmMqTestStep>() {
 
-        private Map<String, IbmMqChannel> ibmMqChannels;
+        private val ibmMqChannels = mutableMapOf<String, IbmMqChannel>()
 
-        public Builder() {
-            ibmMqChannels = new HashMap<>();
+        fun withIbmMqChannel(mqQueueDetails: IbmMqQueueDetails) = apply {
+            ibmMqChannels.putIfAbsent(mqQueueDetails.channelId, IbmMqChannel(mqQueueDetails))
         }
 
-        public Builder withIbmMqChannel(IbmMqQueueDetails mqQueueDetails) {
-            this.ibmMqChannels.putIfAbsent(mqQueueDetails.getChannelId(), new IbmMqChannel(mqQueueDetails));
-            return this;
+        fun withIbmMqChannels(config: Config?) = apply {
+            return this
         }
 
-        public Builder withIbmMqChannels(Config config) {
-            return this;
-        }
-
-        @Override
-        public TestStepProcessor<IbmMqTestStep> build() {
-            return new IbmMqTestStepProcessor(testScenarioState, validator, testStepResultConverter, ibmMqChannels);
+        override fun build(): TestStepProcessor<IbmMqTestStep> {
+            return IbmMqTestStepProcessor(testScenarioState, validator, testStepResultConverter, ibmMqChannels)
         }
     }
 }
