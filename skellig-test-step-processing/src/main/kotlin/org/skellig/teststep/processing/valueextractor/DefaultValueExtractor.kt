@@ -39,12 +39,14 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
     }
 
     class Builder {
-        private var valueExtractors =
+        private val valueExtractors =
                 mutableListOf(
                         JsonPathTestStepValueExtractor(),
                         XPathTestStepValueExtractor(),
                         ObjectTestStepValueExtractor(),
-                        RegexTestStepValueExtractor())
+                        RegexTestStepValueExtractor(),
+                        SubStringTestStepValueExtractor(),
+                        SubStringLastTestStepValueExtractor())
 
 
         fun withValueExtractor(valueExtractor: TestStepValueExtractor) = apply {
