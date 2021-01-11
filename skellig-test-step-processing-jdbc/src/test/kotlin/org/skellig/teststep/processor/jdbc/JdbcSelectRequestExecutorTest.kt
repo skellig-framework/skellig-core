@@ -13,15 +13,15 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicInteger
 
-internal class FindJdbcRequestExecutorTest {
+internal class JdbcSelectRequestExecutorTest {
 
-    private var executor: FindJdbcRequestExecutor? = null
+    private var executorSelect: JdbcSelectRequestExecutor? = null
     private var connection: Connection? = null
 
     @BeforeEach
     fun setUp() {
         connection = Mockito.mock(Connection::class.java)
-        executor = FindJdbcRequestExecutor(connection)
+        executorSelect = JdbcSelectRequestExecutor(connection)
     }
 
     @Test
@@ -35,7 +35,7 @@ internal class FindJdbcRequestExecutorTest {
         whenever(statement.executeQuery(databaseRequest.query)).thenReturn(resultSet)
         whenever(connection!!.createStatement()).thenReturn(statement)
 
-        val response = executor!!.execute(databaseRequest) as List<Map<*, *>>?
+        val response = executorSelect!!.execute(databaseRequest) as List<Map<*, *>>?
 
         Assertions.assertAll(
                 { Assertions.assertEquals(1, response!!.size) },
@@ -56,7 +56,7 @@ internal class FindJdbcRequestExecutorTest {
         whenever(statement.executeQuery()).thenReturn(resultSet)
         whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
 
-        val response = executor!!.execute(databaseRequest) as List<Map<*, *>>?
+        val response = executorSelect!!.execute(databaseRequest) as List<Map<*, *>>?
 
         Assertions.assertEquals(1, response!!.size)
     }
@@ -91,7 +91,7 @@ internal class FindJdbcRequestExecutorTest {
         whenever(statement.executeQuery()).thenReturn(resultSet)
         whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
 
-        val response = executor!!.execute(databaseRequest) as List<Map<*, *>>
+        val response = executorSelect!!.execute(databaseRequest) as List<Map<*, *>>
 
         Assertions.assertAll(
                 { Assertions.assertEquals(1, response.size) },

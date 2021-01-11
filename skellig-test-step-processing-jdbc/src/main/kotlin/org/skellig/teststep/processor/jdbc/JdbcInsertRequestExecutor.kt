@@ -5,7 +5,7 @@ import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.sql.Connection
 import java.sql.SQLException
 
-internal class InsertJdbcRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
+internal class JdbcInsertRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
 
     override fun execute(databaseRequest: DatabaseRequest): Any? {
         var result: Int

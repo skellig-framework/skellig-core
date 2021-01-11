@@ -17,7 +17,7 @@ class RegexTestStepValueExtractor : TestStepValueExtractor {
         } ?: throw ValueExtractionException(format("Cannot extract '%s' from null value", extractionParameter))
     }
 
-    override fun getExtractFunctionName(): String? {
+    override fun getExtractFunctionName(): String {
         return "regex"
     }
 }

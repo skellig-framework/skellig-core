@@ -1,10 +1,10 @@
 
-name (Validate response)
+name ("Validate response")
 {
   validate {
-    from test = T 1 2 3
+    fromTest = 'T 1 2 3'
 
-    any match {
+    any_match {
 
       [srv1, srv2, srv3] {
          status = 200
@@ -25,3 +25,4 @@ name (Validate response)
       }
     }
  }
+}

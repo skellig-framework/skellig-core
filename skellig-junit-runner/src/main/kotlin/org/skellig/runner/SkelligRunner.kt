@@ -26,8 +26,9 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
 
     init {
         val skelligOptions = clazz.getDeclaredAnnotation(SkelligOptions::class.java) as SkelligOptions
+        val config = getConfig(skelligOptions.config)
         skelligTestContext = skelligOptions.context.createInstance()
-        val testStepRunner = skelligTestContext!!.initialize(clazz.classLoader, skelligOptions.testSteps.toList())
+        val testStepRunner = skelligTestContext!!.initialize(clazz.classLoader, skelligOptions.testSteps.toList(), config)
         val testScenarioState = skelligTestContext!!.getTestScenarioState()
         val featureParser = DefaultFeatureParser()
 
@@ -74,6 +75,15 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         return RunSkellig(runFeatures)
     }
 
+    private fun getConfig(config: String): String {
+        val key = config.substringAfter("\${").substringBefore("}")
+        if (key.isNotEmpty()) {
+            val property = System.getProperty(key, "")
+            return config.replace("\${$key}", property)
+        } else {
+            return config
+        }
+    }
 
     private class RunSkellig(private val runFeatures: Statement) : Statement() {
         @Throws(Throwable::class)

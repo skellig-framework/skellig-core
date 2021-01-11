@@ -4,7 +4,7 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.sql.*
 
-internal class FindJdbcRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
+internal class JdbcSelectRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
 
     companion object {
         private const val COMPARATOR = "comparator"
@@ -12,7 +12,7 @@ internal class FindJdbcRequestExecutor(private val connection: Connection?) : Ba
         private const val DEFAULT_COMPARATOR = "="
     }
 
-    override fun execute(databaseRequest: DatabaseRequest): Any? {
+    override fun execute(databaseRequest: DatabaseRequest): Any {
         try {
             val query: String?
             if (databaseRequest.query != null) {
