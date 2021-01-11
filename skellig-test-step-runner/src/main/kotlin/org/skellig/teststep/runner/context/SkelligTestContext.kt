@@ -1,222 +1,183 @@
-package org.skellig.teststep.runner.context;
+package org.skellig.teststep.runner.context
 
-import org.skellig.teststep.processing.converter.DefaultTestDataConverter;
-import org.skellig.teststep.processing.converter.DefaultTestStepResultConverter;
-import org.skellig.teststep.processing.converter.DefaultValueConverter;
-import org.skellig.teststep.processing.converter.TestDataConverter;
-import org.skellig.teststep.processing.converter.TestStepResultConverter;
-import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.model.TestStep;
-import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory;
-import org.skellig.teststep.processing.model.factory.TestStepFactory;
-import org.skellig.teststep.processing.processor.DefaultTestStepProcessor;
-import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.DefaultTestScenarioState;
-import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator;
-import org.skellig.teststep.processing.validation.TestStepResultValidator;
-import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator;
-import org.skellig.teststep.processing.validation.comparator.ValueComparator;
-import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor;
-import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor;
-import org.skellig.teststep.reader.TestStepReader;
-import org.skellig.teststep.reader.sts.StsTestStepReader;
-import org.skellig.teststep.runner.DefaultTestStepRunner;
-import org.skellig.teststep.runner.TestStepRunner;
+import org.skellig.teststep.processing.converter.*
+import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory
+import org.skellig.teststep.processing.model.factory.TestStepFactory
+import org.skellig.teststep.processing.processor.DefaultTestStepProcessor
+import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator
+import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator
+import org.skellig.teststep.processing.validation.comparator.ValueComparator
+import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
+import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
+import org.skellig.teststep.reader.TestStepReader
+import org.skellig.teststep.reader.sts.StsTestStepReader
+import org.skellig.teststep.runner.DefaultTestStepRunner
+import org.skellig.teststep.runner.TestStepRunner
+import java.io.Closeable
+import java.util.*
+import java.util.function.Function
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.function.Function;
+open class SkelligTestContext : Closeable {
 
-public class SkelligTestContext {
+    private var testStepValueConverter: TestStepValueConverter? = null
+    private var testStepResultConverter: TestStepResultConverter? = null
+    private var testDataConverter: TestDataConverter? = null
+    private var testScenarioState: TestScenarioState? = null
+    private var testStepResultValidator: TestStepResultValidator? = null
+    private var defaultTestStepProcessor: TestStepProcessor<TestStep>? = null
 
-    private TestStepValueConverter testStepValueConverter;
-    private TestStepResultConverter testStepResultConverter;
-    private TestDataConverter testDataConverter;
-    private TestScenarioState testScenarioState;
-    private TestStepResultValidator testStepResultValidator;
-    private TestStepProcessor<TestStep> defaultTestStepProcessor;
+    fun initialize(classLoader: ClassLoader, testStepPaths: List<String>): TestStepRunner {
+        val testStepReader = createTestStepReader()
+        testScenarioState = createTestScenarioState()
+        val valueExtractor = createTestStepValueExtractor()
+        testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState)
+        testDataConverter = createTestDataConverter(classLoader)
+        testStepResultConverter = createTestDataResultConverter()
+        testStepResultValidator = createTestStepValidator(valueExtractor)
+        val testStepProcessors = testStepProcessors
+        val testStepProcessor = createTestStepProcessor(testStepProcessors, testScenarioState)
+        val testStepFactory = createTestStepFactory(testStepProcessors)
 
-    public TestStepRunner initialize(ClassLoader classLoader, List<String> testStepPaths) {
-        TestStepReader testStepReader = createTestStepReader();
-        testScenarioState = createTestScenarioState();
-
-        TestStepValueExtractor valueExtractor = createTestStepValueExtractor();
-        testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState);
-
-        testDataConverter = createTestDataConverter(classLoader);
-        testStepResultConverter = createTestDataResultConverter();
-        testStepResultValidator = createTestStepValidator(valueExtractor);
-
-        List<TestStepProcessorDetails> testStepProcessors = getTestStepProcessors();
-        TestStepProcessor<TestStep> testStepProcessor = createTestStepProcessor(testStepProcessors, testScenarioState);
-        TestStepFactory testStepFactory = createTestStepFactory(testStepProcessors);
-
-        return new DefaultTestStepRunner.Builder()
+        return DefaultTestStepRunner.Builder()
                 .withTestStepProcessor(testStepProcessor)
                 .withTestStepFactory(testStepFactory)
                 .withTestStepReader(testStepReader, classLoader, testStepPaths)
-                .build();
+                .build()
     }
 
-    private TestStepFactory createTestStepFactory(List<TestStepProcessorDetails> testStepProcessors) {
-        DefaultTestStepFactory.Builder testStepFactoryBuilder = new DefaultTestStepFactory.Builder();
-        testStepProcessors.forEach(item -> testStepFactoryBuilder.withTestStepFactory(item.getTestStepFactory()));
+    private fun createTestStepFactory(testStepProcessors: List<TestStepProcessorDetails>): TestStepFactory {
+        val testStepFactoryBuilder = DefaultTestStepFactory.Builder()
+        testStepProcessors.forEach { testStepFactoryBuilder.withTestStepFactory(it.testStepFactory) }
 
         return testStepFactoryBuilder
-                .withKeywordsProperties(getTestStepKeywordsProperties())
+                .withKeywordsProperties(testStepKeywordsProperties)
                 .withTestStepValueConverter(testStepValueConverter)
                 .withTestDataConverter(testDataConverter)
-                .build();
+                .build()
     }
 
-    public final TestScenarioState getTestScenarioState() {
-        Objects.requireNonNull(testScenarioState, "TestScenarioState must be initialized first. Did you forget to call 'initialize'?");
-        return testScenarioState;
+    fun getTestScenarioState(): TestScenarioState {
+        return testScenarioState ?: error("TestScenarioState must be initialized first. Did you forget to call 'initialize'?")
     }
 
-    public TestStepResultValidator getTestStepResultValidator() {
-        Objects.requireNonNull(testStepResultValidator, "TestStepResultValidator must be initialized first. Did you forget to call 'initialize'?");
-        return testStepResultValidator;
+    fun getTestStepResultValidator(): TestStepResultValidator {
+        return testStepResultValidator
+                ?: error("TestStepResultValidator must be initialized first. Did you forget to call 'initialize'?")
     }
 
-    public TestStepResultConverter getTestStepResultConverter() {
-        Objects.requireNonNull(testStepResultValidator, "TestStepResultConverter must be initialized first. Did you forget to call 'initialize'?");
-        return testStepResultConverter;
+    fun getTestStepResultConverter(): TestStepResultConverter {
+        return testStepResultConverter
+                ?: error("TestStepResultConverter must be initialized first. Did you forget to call 'initialize'?")
     }
 
-    private TestStepProcessor<TestStep> createTestStepProcessor(List<TestStepProcessorDetails> additionalTestStepProcessors,
-                                                                TestScenarioState testScenarioState) {
+    private fun createTestStepProcessor(additionalTestStepProcessors: List<TestStepProcessorDetails>,
+                                        testScenarioState: TestScenarioState?): TestStepProcessor<TestStep> {
+        val testStepProcessorBuilder = DefaultTestStepProcessor.Builder()
+        additionalTestStepProcessors.forEach { testStepProcessorBuilder.withTestStepProcessor(it.testStepProcessor) }
 
-        DefaultTestStepProcessor.Builder testStepProcessorBuilder = new DefaultTestStepProcessor.Builder();
-        additionalTestStepProcessors.forEach(item -> testStepProcessorBuilder.withTestStepProcessor(item.getTestStepProcessor()));
         defaultTestStepProcessor = testStepProcessorBuilder
                 .withTestScenarioState(testScenarioState)
                 .withValidator(getTestStepResultValidator())
                 .withTestStepResultConverter(getTestStepResultConverter())
-                .build();
-        return defaultTestStepProcessor;
+                .build()
+
+        return defaultTestStepProcessor!!
     }
 
-    private TestStepResultValidator createTestStepValidator(TestStepValueExtractor valueExtractor) {
-        DefaultValueComparator.Builder valueComparatorBuilder = new DefaultValueComparator.Builder();
-        getAdditionalValueComparators().forEach(valueComparatorBuilder::withValueComparator);
+    private fun createTestStepValidator(valueExtractor: TestStepValueExtractor): TestStepResultValidator {
+        val valueComparatorBuilder = DefaultValueComparator.Builder()
+        additionalValueComparators.forEach { valueComparatorBuilder.withValueComparator(it) }
 
-        DefaultTestStepResultValidator.Builder validatorBuilder = new DefaultTestStepResultValidator.Builder();
-        return validatorBuilder
+        return DefaultTestStepResultValidator.Builder()
                 .withValueExtractor(valueExtractor)
                 .withValueComparator(valueComparatorBuilder.build())
-                .build();
+                .build()
     }
 
-    private TestStepValueConverter createTestStepValueConverter(ClassLoader classLoader, TestStepValueExtractor valueExtractor,
-                                                                TestScenarioState testScenarioState) {
-        DefaultValueConverter.Builder valueConverterBuilder = new DefaultValueConverter.Builder();
-        getAdditionalTestStepValueConverters().forEach(valueConverterBuilder::withValueConverter);
+    private fun createTestStepValueConverter(classLoader: ClassLoader, valueExtractor: TestStepValueExtractor,
+                                             testScenarioState: TestScenarioState?): TestStepValueConverter {
+        val valueConverterBuilder = DefaultValueConverter.Builder()
+        additionalTestStepValueConverters.forEach { valueConverterBuilder.withValueConverter(it) }
 
         return valueConverterBuilder
                 .withClassLoader(classLoader)
-                .withGetPropertyFunction(getPropertyExtractorFunction())
+                .withGetPropertyFunction(propertyExtractorFunction)
                 .withTestScenarioState(testScenarioState)
                 .withTestStepValueExtractor(valueExtractor)
-                .build();
+                .build()
     }
 
-    private TestDataConverter createTestDataConverter(ClassLoader classLoader) {
-        DefaultTestDataConverter.Builder builder = new DefaultTestDataConverter.Builder();
-        getAdditionalTestDataConverters().forEach(builder::withTestDataConverter);
+    private fun createTestDataConverter(classLoader: ClassLoader): TestDataConverter {
+        val builder = DefaultTestDataConverter.Builder()
+        additionalTestDataConverters.forEach { builder.withTestDataConverter(it) }
 
-        return builder.withClassLoader(classLoader).build();
+        return builder.withClassLoader(classLoader).build()
     }
 
-    private TestStepResultConverter createTestDataResultConverter() {
-        DefaultTestStepResultConverter.Builder builder = new DefaultTestStepResultConverter.Builder();
-        getAdditionalTestStepResultConverters().forEach(builder::withTestStepResultConverter);
+    private fun createTestDataResultConverter(): TestStepResultConverter {
+        val builder = DefaultTestStepResultConverter.Builder()
+        additionalTestStepResultConverters.forEach { builder.withTestStepResultConverter(it) }
 
-        return builder.build();
+        return builder.build()
     }
 
-    private TestStepValueExtractor createTestStepValueExtractor() {
-        DefaultValueExtractor.Builder valueExtractorBuilder = new DefaultValueExtractor.Builder();
-        getAdditionalTestStepValueExtractors().forEach(valueExtractorBuilder::withValueExtractor);
-        return valueExtractorBuilder.build();
+    private fun createTestStepValueExtractor(): TestStepValueExtractor {
+        val valueExtractorBuilder = DefaultValueExtractor.Builder()
+        additionalTestStepValueExtractors.forEach { valueExtractorBuilder.withValueExtractor(it) }
+
+        return valueExtractorBuilder.build()
     }
 
-    protected TestStepReader createTestStepReader() {
-        return new StsTestStepReader();
+    protected fun createTestStepReader(): TestStepReader {
+        return StsTestStepReader()
     }
 
-    protected TestScenarioState createTestScenarioState() {
-        return new DefaultTestScenarioState();
+    protected fun createTestScenarioState(): TestScenarioState {
+        return DefaultTestScenarioState()
     }
 
-    protected List<TestStepValueExtractor> getAdditionalTestStepValueExtractors() {
-        return Collections.emptyList();
+    protected val additionalTestStepValueExtractors: List<TestStepValueExtractor>
+        protected get() = emptyList()
+
+    protected val additionalValueComparators: List<ValueComparator>
+        protected get() = emptyList()
+
+    protected val additionalTestStepValueConverters: List<TestStepValueConverter>
+        protected get() = emptyList()
+
+    protected open val additionalTestDataConverters: List<TestDataConverter>
+        protected get() = emptyList()
+
+    protected val additionalTestStepResultConverters: List<TestStepResultConverter>
+        protected get() = emptyList()
+
+    protected open val testStepProcessors: List<TestStepProcessorDetails>
+        protected get() = emptyList()
+
+    protected open val propertyExtractorFunction: Function<String, String?>?
+        protected get() = null
+
+    protected open val testStepKeywordsProperties: Properties?
+        protected get() = null
+
+    protected fun createTestStepFactoryFrom(delegate : (keywordsProperties: Properties?,
+                                            testStepValueConverter: TestStepValueConverter?,
+                                            testDataConverter: TestDataConverter?) -> TestStepFactory): TestStepFactory {
+        return delegate(testStepKeywordsProperties,
+                testStepValueConverter
+                        ?: error("TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?"),
+                testDataConverter ?: error("TestDataConverter must be initialized first. Did you forget to call 'initialize'?"))
     }
 
-    protected List<ValueComparator> getAdditionalValueComparators() {
-        return Collections.emptyList();
+    override fun close() {
+        defaultTestStepProcessor!!.close()
     }
 
-    protected List<TestStepValueConverter> getAdditionalTestStepValueConverters() {
-        return Collections.emptyList();
-    }
+    protected class TestStepProcessorDetails(val testStepProcessor: TestStepProcessor<*>, val testStepFactory: TestStepFactory)
 
-    protected List<TestDataConverter> getAdditionalTestDataConverters() {
-        return Collections.emptyList();
-    }
-
-    protected List<TestStepResultConverter> getAdditionalTestStepResultConverters() {
-        return Collections.emptyList();
-    }
-
-    protected List<TestStepProcessorDetails> getTestStepProcessors() {
-        return Collections.emptyList();
-    }
-
-    protected Function<String, String> getPropertyExtractorFunction() {
-        return null;
-    }
-
-    protected Properties getTestStepKeywordsProperties() {
-        return null;
-    }
-
-    protected TestStepFactory createTestStepFactoryFrom(TestStepFactoryCreationDelegate delegate) {
-        Objects.requireNonNull(testStepValueConverter, "TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?");
-        Objects.requireNonNull(testDataConverter, "TestDataConverter must be initialized first. Did you forget to call 'initialize'?");
-
-        return delegate.create(getTestStepKeywordsProperties(), testStepValueConverter, testDataConverter);
-    }
-
-    public void cleanUp() {
-        defaultTestStepProcessor.close();
-    }
-
-    protected static final class TestStepProcessorDetails {
-
-        private TestStepProcessor testStepProcessor;
-        private TestStepFactory testStepFactory;
-
-        public TestStepProcessorDetails(TestStepProcessor testStepProcessor, TestStepFactory testStepFactory) {
-            this.testStepProcessor = testStepProcessor;
-            this.testStepFactory = testStepFactory;
-        }
-
-        protected TestStepProcessor getTestStepProcessor() {
-            return testStepProcessor;
-        }
-
-        protected TestStepFactory getTestStepFactory() {
-            return testStepFactory;
-        }
-
-    }
-
-    protected interface TestStepFactoryCreationDelegate {
-        TestStepFactory create(Properties keywordsProperties, TestStepValueConverter testStepValueConverter,
-                               TestDataConverter testDataConverter);
-    }
 }

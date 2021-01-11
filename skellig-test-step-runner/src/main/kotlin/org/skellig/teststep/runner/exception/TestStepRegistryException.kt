@@ -1,12 +1,5 @@
-package org.skellig.teststep.runner.exception;
+package org.skellig.teststep.runner.exception
 
-public class TestStepRegistryException extends RuntimeException {
-
-    public TestStepRegistryException(String message) {
-        super(message);
-    }
-
-    public TestStepRegistryException(String message, Throwable cause) {
-        super(message, cause);
-    }
+class TestStepRegistryException(message: String?, cause: Throwable?) : RuntimeException(message, cause) {
+    constructor(message: String?) : this(message, null)
 }

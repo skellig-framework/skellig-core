@@ -1,54 +1,41 @@
-package org.skellig.teststep.runner.context;
+package org.skellig.teststep.runner.context
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processor.http.HttpTestStepProcessor;
-import org.skellig.teststep.processor.http.model.factory.HttpTestStepFactory;
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigValue
+import org.skellig.teststep.processor.http.HttpTestStepProcessor
+import org.skellig.teststep.processor.http.model.factory.HttpTestStepFactory
+import java.util.*
+import java.util.function.Function
 
-import java.util.List;
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+class DefaultSkelligTestContext(private val config: Config) : SkelligTestContext() {
 
-public class DefaultSkelligTestContext extends SkelligTestContext {
+    companion object {
+        private const val TEST_STEP_KEYWORD = "test.step.keyword"
+    }
 
-    private static final String TEST_STEP_KEYWORD = "test.step.keyword";
+    override var testStepKeywordsProperties: Properties? = null
 
-    private Config config;
-    private Properties keywordProperties;
-
-    public DefaultSkelligTestContext(Config config) {
-        this.config = config;
-
+    init {
         if (config.hasPath(TEST_STEP_KEYWORD)) {
-            keywordProperties = new Properties();
+            testStepKeywordsProperties = Properties()
             config.getObject(TEST_STEP_KEYWORD)
-                    .forEach((key, value) ->
-                            keywordProperties.setProperty(TEST_STEP_KEYWORD + "." + key, String.valueOf(value)));
+                    .forEach { key: String, value: ConfigValue ->
+                        testStepKeywordsProperties!!.setProperty("$TEST_STEP_KEYWORD.$key", value.toString())
+                    }
         }
     }
 
-    @Override
-    protected List<TestStepProcessorDetails> getTestStepProcessors() {
-        return Stream.of(
-                new TestStepProcessorDetails(
-                        new HttpTestStepProcessor.Builder()
+    override val testStepProcessors: List<TestStepProcessorDetails>
+        get() = listOf(
+                TestStepProcessorDetails(
+                        HttpTestStepProcessor.Builder()
                                 .withHttpService(config)
                                 .withTestScenarioState(getTestScenarioState())
                                 .withValidator(getTestStepResultValidator())
                                 .build(),
-                        createTestStepFactoryFrom(HttpTestStepFactory::new)
-                )
-        ).collect(Collectors.toList());
-    }
+                        createTestStepFactoryFrom { props, c1, c2 -> HttpTestStepFactory(props, c1, c2) })
+        )
 
-    @Override
-    protected Properties getTestStepKeywordsProperties() {
-        return keywordProperties;
-    }
-
-    @Override
-    protected Function<String, String> getPropertyExtractorFunction() {
-        return key -> config.getString(key);
-    }
+    override val propertyExtractorFunction: Function<String, String?>
+        get() = Function { key: String? -> config.getString(key) }
 }

@@ -1,65 +1,54 @@
-package org.skellig.teststep.runner;
+package org.skellig.teststep.runner
 
-import org.skellig.teststep.processing.utils.CachedPattern;
-import org.skellig.teststep.reader.TestStepReader;
-import org.skellig.teststep.runner.exception.TestStepRegistryException;
-import org.skellig.teststep.runner.model.TestStepFileExtension;
+import org.skellig.teststep.processing.util.CachedPattern.Companion.compile
+import org.skellig.teststep.reader.TestStepReader
+import org.skellig.teststep.runner.exception.TestStepRegistryException
+import org.skellig.teststep.runner.model.TestStepFileExtension
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.*
+import java.util.stream.Collectors
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+class TestStepsRegistry(private val testStepFileExtension: TestStepFileExtension,
+                        private val testStepReader: TestStepReader?) {
 
-class TestStepsRegistry {
+    private var testSteps: Collection<Map<String, Any?>>? = null
 
-    private Collection<Map<String, Object>> testSteps;
-    private TestStepFileExtension testStepFileExtension;
-    private TestStepReader testStepReader;
-    private Collection<Path> testStepsPaths;
+    var testStepsRootPath: Collection<Path>? = null
+        private set
 
-    TestStepsRegistry(TestStepFileExtension testStepFileExtension,
-                      TestStepReader testStepReader) {
-        this.testStepFileExtension = testStepFileExtension;
-        this.testStepReader = testStepReader;
+    fun registerFoundTestStepsInPath(testStepsPaths: Collection<Path>) {
+        testStepsRootPath = testStepsPaths
+        testSteps = getTestStepsFromPath(testStepsPaths)
     }
 
-    void registerFoundTestStepsInPath(Collection<Path> testStepsPaths) {
-        this.testStepsPaths = testStepsPaths;
-        testSteps = getTestStepsFromPath(testStepsPaths);
+    fun getByName(testStepName: String): Map<String, Any?>? {
+        return testSteps!!.parallelStream()
+                .filter { testStep: Map<String, Any?> -> compile(getTestStepName(testStep)).matcher(testStepName).matches() }
+                .findFirst()
+                .orElse(null)
     }
 
-    Optional<Map<String, Object>> getByName(String testStepName) {
-        return testSteps.parallelStream()
-                .filter(testStep -> CachedPattern.compile(getTestStepName(testStep)).matcher(testStepName).matches())
-                .findFirst();
+    private fun getTestStepName(rawTestStep: Map<String, Any?>): String {
+        return rawTestStep["name"]?.toString() ?: error("Attribute 'name' was not found it a raw Test Step $rawTestStep")
     }
 
-    private String getTestStepName(Map<String, Object> rawTestStep) {
-        return String.valueOf(rawTestStep.get("name"));
-    }
-
-    Collection<Path> getTestStepsRootPath() {
-        return testStepsPaths;
-    }
-
-    private Collection<Map<String, Object>> getTestStepsFromPath(Collection<Path> rootPaths) {
-        return rootPaths.stream()
-                .map(rootPath -> {
+    private fun getTestStepsFromPath(rootPaths: Collection<Path>): Collection<Map<String, Any?>> {
+        return rootPaths
+                .map {
                     try {
-                        return Files.walk(rootPath)
+                        return@map Files.walk(it)
                                 .parallel()
-                                .filter(path -> String.valueOf(path.getFileName()).endsWith(testStepFileExtension.getName()))
-                                .map(filePath -> testStepReader.read(filePath))
-                                .flatMap(Collection::stream)
-                                .collect(Collectors.toList());
-                    } catch (IOException e) {
-                        throw new TestStepRegistryException(e.getMessage(), e);
+                                .filter { path: Path -> path.fileName.toString().endsWith(testStepFileExtension.extension) }
+                                .map { filePath: Path -> testStepReader!!.read(filePath) }
+                                .flatMap { obj: List<Map<String, Any?>> -> obj.stream() }
+                                .collect(Collectors.toList())
+                    } catch (e: IOException) {
+                        throw TestStepRegistryException(e.message, e)
                     }
-                })
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                }
+                .flatten()
+                .toList()
     }
 }
