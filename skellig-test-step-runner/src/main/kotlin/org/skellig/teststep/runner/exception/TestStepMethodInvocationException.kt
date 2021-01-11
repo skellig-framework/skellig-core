@@ -1,12 +1,5 @@
-package org.skellig.teststep.runner.exception;
+package org.skellig.teststep.runner.exception
 
-public class TestStepMethodInvocationException extends RuntimeException {
-
-    public TestStepMethodInvocationException(String message) {
-        super(message);
-    }
-
-    public TestStepMethodInvocationException(String message, Throwable cause) {
-        super(message, cause);
-    }
+class TestStepMethodInvocationException(message: String?, cause: Throwable?) : RuntimeException(message, cause) {
+    constructor(message: String?) : this(message, null)
 }

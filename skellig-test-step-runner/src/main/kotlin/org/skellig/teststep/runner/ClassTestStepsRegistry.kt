@@ -1,96 +1,69 @@
-package org.skellig.teststep.runner;
+package org.skellig.teststep.runner
 
-import org.skellig.teststep.runner.annotation.TestStep;
-import org.skellig.teststep.runner.exception.TestStepRegistryException;
+import org.skellig.teststep.runner.annotation.TestStep
+import org.skellig.teststep.runner.exception.TestStepRegistryException
+import java.io.File
+import java.lang.reflect.Method
+import java.util.*
+import java.util.function.Consumer
+import java.util.regex.Pattern
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.regex.Pattern;
+internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader: ClassLoader) {
 
-class ClassTestStepsRegistry {
-
-    private static final String CLASS_EXTENSION = ".class";
-
-    private List<TestStepDefDetails> testStepsPerClass;
-
-    public ClassTestStepsRegistry() {
-        testStepsPerClass = new ArrayList<>();
+    companion object {
+        private const val CLASS_EXTENSION = ".class"
     }
 
-    Optional<TestStepDefDetails> getTestStep(String testStepName) {
-        return testStepsPerClass.stream()
-                .filter(entry -> entry.getTestStepNamePattern().matcher(testStepName).matches())
-                .findFirst();
-    }
+    private val testStepsPerClass = mutableListOf<TestStepDefDetails>()
 
-    void registerFoundTestStepInClasses(Collection<String> packages, ClassLoader classLoader) {
-        packages.forEach(resourcePath -> {
-            URL resource = classLoader.getResource(resourcePath.replace('.', '/'));
+    init {
+        packages.forEach(Consumer { resourcePath: String ->
+            val resource = classLoader.getResource(resourcePath.replace('.', '/'))
             if (resource == null) {
-                throw new TestStepRegistryException("No resources found in " + resourcePath);
+                throw TestStepRegistryException("No resources found in $resourcePath")
             } else {
                 try {
-                    processDirectory(new File(resource.getPath()), resourcePath);
-                } catch (Exception e) {
-                    throw new TestStepRegistryException("Can't load the class", e);
+                    processDirectory(File(resource.path), resourcePath)
+                } catch (e: Exception) {
+                    throw TestStepRegistryException("Can't load the class", e)
                 }
             }
-        });
+        })
     }
 
-    private void processDirectory(File file, String packageName) throws Exception {
-        for (String fileName : Objects.requireNonNull(file.list())) {
+    fun getTestStep(testStepName: String): TestStepDefDetails? {
+        return testStepsPerClass
+                .firstOrNull { it.testStepNamePattern.matcher(testStepName).matches() }
+    }
+
+    @Throws(Exception::class)
+    private fun processDirectory(file: File, packageName: String) {
+        for (fileName in Objects.requireNonNull(file.list())) {
             if (fileName.endsWith(CLASS_EXTENSION)) {
-                String className = packageName + '.' + fileName.substring(0, fileName.length() - CLASS_EXTENSION.length());
+                val className = packageName + '.' + fileName.substring(0, fileName.length - CLASS_EXTENSION.length)
+                val foundClass = Class.forName(className)
+                var foundClassInstance: Any? = null
 
-                Class<?> foundClass = Class.forName(className);
-                Object foundClassInstance = null;
-                for (Method method : foundClass.getMethods()) {
-                    if (method.isAnnotationPresent(TestStep.class)) {
-                        TestStep testStepAnnotation = method.getAnnotation(TestStep.class);
-                        Pattern testStepNamePattern = Pattern.compile(testStepAnnotation.name());
-                        if (foundClassInstance == null) {
-                            foundClassInstance = foundClass.newInstance();
+                foundClass.methods
+                        .filter { it.isAnnotationPresent(TestStep::class.java) }
+                        .forEach {
+                            val testStepAnnotation = it.getAnnotation(TestStep::class.java)
+                            val testStepNamePattern = Pattern.compile(testStepAnnotation.name)
+                            foundClassInstance.let {
+                                foundClassInstance = foundClass.newInstance()
+                            }
+                            testStepsPerClass.add(TestStepDefDetails(testStepNamePattern, foundClassInstance!!, it))
                         }
-                        testStepsPerClass.add(new TestStepDefDetails(testStepNamePattern, foundClassInstance, method));
-                    }
-                }
             } else {
-                File subdir = new File(file, fileName);
-                if (subdir.isDirectory()) {
-                    processDirectory(subdir, packageName + '.' + fileName);
+                val subDir = File(file, fileName)
+                if (subDir.isDirectory) {
+                    processDirectory(subDir, "$packageName.$fileName")
                 }
             }
         }
     }
 
-    static final class TestStepDefDetails {
-        private Pattern testStepNamePattern;
-        private Object testStepDefInstance;
-        private Method testStepMethod;
-
-        public TestStepDefDetails(Pattern testStepNamePattern, Object testStepDefInstance, Method testStepMethod) {
-            this.testStepNamePattern = testStepNamePattern;
-            this.testStepDefInstance = testStepDefInstance;
-            this.testStepMethod = testStepMethod;
-        }
-
-        public Pattern getTestStepNamePattern() {
-            return testStepNamePattern;
-        }
-
-        public Object getTestStepDefInstance() {
-            return testStepDefInstance;
-        }
-
-        public Method getTestStepMethod() {
-            return testStepMethod;
-        }
-    }
+    class TestStepDefDetails(val testStepNamePattern: Pattern,
+                             val testStepDefInstance: Any,
+                             val testStepMethod: Method)
 }

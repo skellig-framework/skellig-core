@@ -1,15 +1,5 @@
-package org.skellig.teststep.runner.model;
+package org.skellig.teststep.runner.model
 
-public enum TestStepFileExtension {
+enum class TestStepFileExtension(val extension: String) {
     STS("sts");
-
-    private String extensionName;
-
-    TestStepFileExtension(String extensionName) {
-        this.extensionName = extensionName;
-    }
-
-    public String getName() {
-        return extensionName;
-    }
 }
