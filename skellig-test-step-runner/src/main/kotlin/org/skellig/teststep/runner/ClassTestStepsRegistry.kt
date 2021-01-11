@@ -5,7 +5,6 @@ import org.skellig.teststep.runner.exception.TestStepRegistryException
 import java.io.File
 import java.lang.reflect.Method
 import java.util.*
-import java.util.function.Consumer
 import java.util.regex.Pattern
 
 internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader: ClassLoader) {
@@ -17,18 +16,16 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
     private val testStepsPerClass = mutableListOf<TestStepDefDetails>()
 
     init {
-        packages.forEach(Consumer { resourcePath: String ->
+        packages.forEach { resourcePath: String ->
             val resource = classLoader.getResource(resourcePath.replace('.', '/'))
-            if (resource == null) {
-                throw TestStepRegistryException("No resources found in $resourcePath")
-            } else {
+            resource?.let {
                 try {
                     processDirectory(File(resource.path), resourcePath)
                 } catch (e: Exception) {
                     throw TestStepRegistryException("Can't load the class", e)
                 }
             }
-        })
+        }
     }
 
     fun getTestStep(testStepName: String): TestStepDefDetails? {

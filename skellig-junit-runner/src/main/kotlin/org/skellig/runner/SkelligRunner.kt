@@ -34,11 +34,14 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         skelligOptions.features
                 .forEach { featureResourcePath: String ->
                     try {
-                        val pathToFeatures = Paths.get(javaClass.classLoader.getResource(featureResourcePath).toURI())
-                        featureParser.parse(pathToFeatures.toString())
-                                ?.map { feature: Feature -> FeatureRunner.create(feature, testStepRunner, testScenarioState) }
-                                ?.toCollection(children)
-                                ?:error("Failed to parse features from $featureResourcePath")
+                        val featuresResource = javaClass.classLoader.getResource(featureResourcePath)
+                        featuresResource?.let {
+                            val pathToFeatures = Paths.get(featuresResource.toURI())
+                            featureParser.parse(pathToFeatures.toString())
+                                    ?.map { feature: Feature -> FeatureRunner.create(feature, testStepRunner, testScenarioState) }
+                                    ?.toCollection(children)
+                                    ?: error("Failed to parse features from $featureResourcePath")
+                        }
                     } catch (e: Exception) {
                         throw FeatureRunnerException("Failed to read features from path: $featureResourcePath", e)
                     }
