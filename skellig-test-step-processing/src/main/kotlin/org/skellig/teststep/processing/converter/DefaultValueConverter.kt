@@ -40,12 +40,14 @@ class DefaultValueConverter private constructor(val valueConverters: List<TestSt
 
             valueConverters.add(0, PropertyValueConverter(valueConverters, getPropertyFunction))
             withValueConverter(TestStepStateValueConverter(testScenarioState!!, testStepValueExtractor))
+            withValueConverter(FindFromStateValueConverter(testScenarioState!!, testStepValueExtractor))
             if (classLoader != null) {
                 withValueConverter(FileValueConverter(classLoader!!))
             }
             withValueConverter(NumberValueConverter())
             withValueConverter(IncrementValueConverter())
             withValueConverter(DateTimeValueConverter())
+            withValueConverter(ListOfValueConverter())
 
             return DefaultValueConverter(valueConverters)
         }
