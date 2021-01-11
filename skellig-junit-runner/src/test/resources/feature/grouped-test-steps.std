@@ -1,0 +1,32 @@
+name('Create user .*') {
+    assert {
+        fromTest = t1
+        all_match [
+                 'dude'
+                 ]
+    }
+}
+
+name('Get user name (.*)'){
+    id = t1
+
+    variables {
+        usr = ${1}
+    }
+
+    captureData = ${usr}
+}
+
+name('User exist') {
+    test = 'Check user exist'
+    failed {
+               test = 'Get user name ${usr}'
+               passed {
+                          test = 'Create user ${usr}'
+                      }
+           }
+}
+
+name('User is signed in') {
+    test = 'User exist'
+}

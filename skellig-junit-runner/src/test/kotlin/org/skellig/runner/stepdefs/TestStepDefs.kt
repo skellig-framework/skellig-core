@@ -1,6 +1,7 @@
 package org.skellig.runner.stepdefs
 
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.fail
 import org.skellig.teststep.runner.annotation.TestStep
 
 class TestStepDefs {
@@ -11,5 +12,10 @@ class TestStepDefs {
         Assertions.assertEquals(1, parameters.size)
 
         println(value)
+    }
+
+    @TestStep(name = "Check user exist")
+    fun checkUserExist() {
+        fail("User doesn't exist")
     }
 }

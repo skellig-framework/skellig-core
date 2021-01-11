@@ -1,5 +1,6 @@
 package org.skellig.teststep.runner
 
+import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.util.CachedPattern.Companion.compile
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.runner.exception.TestStepRegistryException
@@ -10,10 +11,10 @@ import java.nio.file.Path
 import java.util.*
 import java.util.stream.Collectors
 
-class TestStepsRegistry(private val testStepFileExtension: TestStepFileExtension,
-                        private val testStepReader: TestStepReader?) {
+internal class TestStepsRegistry(private val testStepFileExtension: TestStepFileExtension,
+                        private val testStepReader: TestStepReader?) : TestStepRegistry {
 
-    private var testSteps: Collection<Map<String, Any?>>? = null
+    private var testSteps: Collection<Map<String, Any?>> = emptyList()
 
     var testStepsRootPath: Collection<Path>? = null
         private set
@@ -23,15 +24,15 @@ class TestStepsRegistry(private val testStepFileExtension: TestStepFileExtension
         testSteps = getTestStepsFromPath(testStepsPaths)
     }
 
-    fun getByName(testStepName: String): Map<String, Any?>? {
-        return testSteps!!.parallelStream()
+    override fun getByName(testStepName: String): Map<String, Any?>? {
+        return testSteps.parallelStream()
                 .filter { testStep: Map<String, Any?> -> compile(getTestStepName(testStep)).matcher(testStepName).matches() }
                 .findFirst()
                 .orElse(null)
     }
 
     private fun getTestStepName(rawTestStep: Map<String, Any?>): String {
-        return rawTestStep["name"]?.toString() ?: error("Attribute 'name' was not found it a raw Test Step $rawTestStep")
+        return rawTestStep["name"]?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
     }
 
     private fun getTestStepsFromPath(rootPaths: Collection<Path>): Collection<Map<String, Any?>> {

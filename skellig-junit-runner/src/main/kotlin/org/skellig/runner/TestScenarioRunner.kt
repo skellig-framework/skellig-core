@@ -102,10 +102,11 @@ open class TestScenarioRunner protected constructor(private val testScenario: Te
     }
 
     fun getTestScenarioReportDetails(): TestScenarioReportDetails {
+        val testStepReportDetails = testStepsDataReport
+                .map { it.build() }
+                .toList()
         return TestScenarioReportDetails(name,
-                testStepsDataReport
-                        .map { it.build() }
-                        .toList())
+                testStepReportDetails)
     }
 
     companion object {

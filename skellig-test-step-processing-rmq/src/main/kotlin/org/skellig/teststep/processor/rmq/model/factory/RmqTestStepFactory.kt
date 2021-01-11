@@ -2,7 +2,7 @@ package org.skellig.teststep.processor.rmq.model.factory
 
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
 import java.util.*
@@ -10,7 +10,7 @@ import java.util.*
 class RmqTestStepFactory(keywordsProperties: Properties?,
                          testStepValueConverter: TestStepValueConverter?,
                          testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseTestStepFactory<RmqTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     companion object {
         private const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"
@@ -21,7 +21,7 @@ class RmqTestStepFactory(keywordsProperties: Properties?,
         private const val RMQ = "rmq"
     }
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
+    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<RmqTestStep> {
         return RmqTestStep.Builder()
                 .withSendTo(convertValue(rawTestStep[getKeywordName(SEND_TO_KEYWORD, "sendTo")], parameters))
                 .withReceiveFrom(convertValue(rawTestStep[getKeywordName(RECEIVE_FROM_KEYWORD, "readFrom")], parameters))

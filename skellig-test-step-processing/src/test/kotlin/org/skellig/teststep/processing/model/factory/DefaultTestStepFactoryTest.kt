@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.skellig.teststep.processing.converter.DefaultTestDataConverter
 import org.skellig.teststep.processing.converter.DefaultValueConverter
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
 import java.util.*
@@ -15,7 +16,7 @@ import java.util.*
 @DisplayName("Create Test Step")
 class DefaultTestStepFactoryTest {
 
-    private var testStepFactory: TestStepFactory? = null
+    private var testStepFactory: TestStepFactory<DefaultTestStep>? = null
     private var testScenarioState: TestScenarioState? = null
 
     @BeforeEach
@@ -126,7 +127,17 @@ class DefaultTestStepFactoryTest {
     fun testWithNestedParameters() {
         val rawTestStep = UnitTestUtils.createMap("payload", "\${key_1 : \${key_2 : v3}}")
 
-        val testStep = testStepFactory!!.create("test 1", rawTestStep, Collections.singletonMap("key_2", "v2"))
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("key_2", "v2")))
+
+        Assertions.assertEquals("v2", testStep.testData)
+    }
+
+    @Test
+    fun testWithNestedParametersWithReferenceToParameters() {
+        val rawTestStep = UnitTestUtils.createMap("payload", "\${key_1}")
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep,
+                mapOf(Pair("key_1", "\${key_2}"), Pair("key_2", "v2")))
 
         Assertions.assertEquals("v2", testStep.testData)
     }

@@ -1,17 +1,19 @@
 package org.skellig.runner.junit.report.model
 
 import org.apache.commons.lang3.StringUtils
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ExpectedResult
+import org.skellig.teststep.processing.model.GroupedTestStep
 import org.skellig.teststep.processing.model.TestStep
 import java.beans.Introspector
 import java.beans.PropertyDescriptor
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
-class TestStepReportDetails(val name: String,
-                            val originalTestStep: Any?,
-                            val result: Any?,
-                            val errorLog: String?) {
+open class TestStepReportDetails<T>(val name: String,
+                                    val originalTestStep: T?,
+                                    val result: Any?,
+                                    val errorLog: String?) {
 
     fun isPassed(): Boolean {
         return errorLog == null || errorLog == ""
@@ -21,22 +23,9 @@ class TestStepReportDetails(val name: String,
         return originalTestStep == null && result == null
     }
 
-    fun getTestData(): String {
-        var result = ""
-        if (originalTestStep is TestStep) {
-            val testData = originalTestStep.testData
-            result = testData?.toString() ?: ""
-        }
-        return result
-    }
+    open fun getTestData(): String = ""
 
-    fun getValidationDetails(): String {
-        val stringBuilder = StringBuilder()
-        if (originalTestStep is TestStep) {
-            originalTestStep.validationDetails?.let { constructValidationDetails(it.expectedResult, stringBuilder) }
-        }
-        return stringBuilder.toString()
-    }
+    open fun getValidationDetails(): String = ""
 
     fun getProperties(): String {
         if (originalTestStep != null && originalTestStep.javaClass != TestStep::class.java && originalTestStep is TestStep) {
@@ -52,23 +41,6 @@ class TestStepReportDetails(val name: String,
 
     fun getResult(): String {
         return result?.toString() ?: ""
-    }
-
-    private fun constructValidationDetails(expectedResult: ExpectedResult, stringBuilder: StringBuilder) {
-        if (StringUtils.isNotEmpty(expectedResult.property)) {
-            stringBuilder.append(expectedResult.property).append(": ")
-        }
-        if (expectedResult.expectedResult is List<*>) {
-            stringBuilder.append(getValidationType(expectedResult)).append("[\n")
-            expectedResult.get<List<ExpectedResult>>()?.forEach { item -> constructValidationDetails(item, stringBuilder) }
-            stringBuilder.append("]\n")
-        } else if (expectedResult.expectedResult != null) {
-            stringBuilder.append(expectedResult.expectedResult.toString()).append("\n")
-        }
-    }
-
-    private fun getValidationType(expectedResult: ExpectedResult): String? {
-        return expectedResult.matchingType?.name?.toLowerCase()
     }
 
     private fun getPropertyWithValue(propertyGetterPair: Map.Entry<String, Method?>): String? {
@@ -117,8 +89,54 @@ class TestStepReportDetails(val name: String,
             this.errorLog = errorLog
         }
 
-        fun build(): TestStepReportDetails {
-            return TestStepReportDetails(name!!, originalTestStep, result, errorLog)
+        fun build(): TestStepReportDetails<*> {
+            return when (originalTestStep) {
+                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog)
+                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog)
+                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog)
+            }
         }
     }
+}
+
+class DefaultTestStepReportDetails(name: String,
+                                   originalTestStep: DefaultTestStep?,
+                                   result: Any?,
+                                   errorLog: String?)
+    : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog) {
+
+    override fun getTestData(): String {
+        return originalTestStep?.testData?.toString() ?: ""
+    }
+
+    override fun getValidationDetails(): String {
+        val stringBuilder = StringBuilder()
+        originalTestStep?.validationDetails?.let { constructValidationDetails(it.expectedResult, stringBuilder) }
+        return stringBuilder.toString()
+    }
+
+    private fun constructValidationDetails(expectedResult: ExpectedResult, stringBuilder: StringBuilder) {
+        if (StringUtils.isNotEmpty(expectedResult.property)) {
+            stringBuilder.append(expectedResult.property).append(": ")
+        }
+        if (expectedResult.expectedResult is List<*>) {
+            stringBuilder.append(getValidationType(expectedResult)).append("[\n")
+            expectedResult.get<List<ExpectedResult>>()?.forEach { item -> constructValidationDetails(item, stringBuilder) }
+            stringBuilder.append("]\n")
+        } else if (expectedResult.expectedResult != null) {
+            stringBuilder.append(expectedResult.expectedResult.toString()).append("\n")
+        }
+    }
+
+    private fun getValidationType(expectedResult: ExpectedResult): String? {
+        return expectedResult.matchingType?.name?.toLowerCase()
+    }
+}
+
+class GroupedTestStepReportDetails(name: String,
+                                   originalTestStep: GroupedTestStep?,
+                                   result: Any?,
+                                   errorLog: String?)
+    : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog) {
+
 }

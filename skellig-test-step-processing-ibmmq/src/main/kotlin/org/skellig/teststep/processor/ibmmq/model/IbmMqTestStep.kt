@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.ibmmq.model
 
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationDetails
 
@@ -15,9 +15,9 @@ open class IbmMqTestStep protected constructor(id: String?,
                                                val sendTo: String?,
                                                val receiveFrom: String?,
                                                val respondTo: String?)
-    : TestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
 
-    class Builder : TestStep.Builder() {
+    class Builder : DefaultTestStep.Builder<IbmMqTestStep>() {
         private var sendTo: String? = null
         private var receiveFrom: String? = null
         private var respondTo: String? = null

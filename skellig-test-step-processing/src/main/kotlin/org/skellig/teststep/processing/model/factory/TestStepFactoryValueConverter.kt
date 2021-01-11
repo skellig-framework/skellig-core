@@ -42,6 +42,10 @@ class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueCon
                     convertValue<Any>(matcher.group(3), parameters)
                 }
             }
+
+            if (result != valueAsString && result is String) {
+                result = applyParameters(result, parameters)
+            }
         }
         return result
     }
