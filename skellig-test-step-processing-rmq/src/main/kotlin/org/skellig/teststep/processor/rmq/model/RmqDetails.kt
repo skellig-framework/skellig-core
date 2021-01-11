@@ -1,65 +1,35 @@
-package org.skellig.teststep.processor.rmq.model;
+package org.skellig.teststep.processor.rmq.model
 
+class RmqDetails private constructor(val channelId: String,
+                                     val hostDetails: RmqHostDetails,
+                                     val exchange: RmqExchangeDetails,
+                                     val queue: RmqQueueDetails) {
 
-public class RmqDetails {
+    class Builder {
 
-    private String channelId;
-    private RmqHostDetails hostDetails;
-    private RmqExchangeDetails exchange;
-    private RmqQueueDetails queue;
+        private var channelId: String? = null
+        private var hostDetails: RmqHostDetails? = null
+        private var exchange: RmqExchangeDetails? = null
+        private var queue: RmqQueueDetails? = null
 
-    private RmqDetails(String channelId, RmqHostDetails hostDetails, RmqExchangeDetails exchange, RmqQueueDetails queue) {
-        this.channelId = channelId;
-        this.hostDetails = hostDetails;
-        this.exchange = exchange;
-        this.queue = queue;
-    }
-
-    public String getChannelId() {
-        return channelId;
-    }
-
-    public RmqHostDetails getHostDetails() {
-        return hostDetails;
-    }
-
-    public RmqExchangeDetails getExchange() {
-        return exchange;
-    }
-
-    public RmqQueueDetails getQueue() {
-        return queue;
-    }
-
-    public static class Builder {
-
-        private String channelId;
-        private RmqHostDetails hostDetails;
-        private RmqExchangeDetails exchange;
-        private RmqQueueDetails queue;
-
-        public Builder withChannelId(String channelId) {
-            this.channelId = channelId;
-            return this;
+        fun withChannelId(channelId: String?) = apply {
+            this.channelId = channelId
         }
 
-        public Builder withHostDetails(RmqHostDetails hostDetails) {
-            this.hostDetails = hostDetails;
-            return this;
+        fun withHostDetails(hostDetails: RmqHostDetails?) = apply {
+            this.hostDetails = hostDetails
         }
 
-        public Builder withExchange(RmqExchangeDetails exchange) {
-            this.exchange = exchange;
-            return this;
+        fun withExchange(exchange: RmqExchangeDetails?) = apply {
+            this.exchange = exchange
         }
 
-        public Builder withQueue(RmqQueueDetails queue) {
-            this.queue = queue;
-            return this;
+        fun withQueue(queue: RmqQueueDetails?) = apply {
+            this.queue = queue
         }
 
-        public RmqDetails build() {
-            return new RmqDetails(channelId, hostDetails, exchange, queue);
+        fun build(): RmqDetails {
+            return RmqDetails(channelId!!, hostDetails!!, exchange!!, queue!!)
         }
     }
 }

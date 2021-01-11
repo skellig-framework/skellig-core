@@ -1,105 +1,69 @@
-package org.skellig.teststep.processor.rmq;
+package org.skellig.teststep.processor.rmq
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.skellig.teststep.processor.rmq.model.RmqDetails;
-import org.skellig.teststep.processor.rmq.model.RmqHostDetails;
-
-import java.util.Collection;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.typesafe.config.ConfigFactory
+import org.junit.Assert
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
+import org.skellig.teststep.processor.rmq.model.RmqDetails
 
 @DisplayName("Read RMQ details")
-class RmqDetailsConfigReaderTest {
+internal class RmqDetailsConfigReaderTest {
 
-    private RmqDetailsConfigReader rmqDetailsConfigReader;
-
-    @BeforeEach
-    public void setUp() {
-        rmqDetailsConfigReader = new RmqDetailsConfigReader();
-    }
+    private var rmqDetailsConfigReader = RmqDetailsConfigReader()
 
     @Test
     @DisplayName("xWhen null provided Then throw exception")
-    public void testReadRmqDetailsWhenConfigIsNull() {
-        NullPointerException ex = assertThrows(NullPointerException.class, () -> rmqDetailsConfigReader.read(null));
+    fun testReadRmqDetailsWhenConfigIsNull() {
+        val ex = Assertions.assertThrows(NullPointerException::class.java) { rmqDetailsConfigReader.read(null) }
 
-        assertEquals("RMQ config cannot be null", ex.getMessage());
+        Assert.assertEquals("RMQ config cannot be null", ex.message)
     }
 
     @Test
     @DisplayName("When valid config provided Then verify all read correctly")
-    public void testReadRmqDetails() {
-        Config config = ConfigFactory.load("rmq-details.conf");
+    fun testReadRmqDetails() {
+        val config = ConfigFactory.load("rmq-details.conf")
 
-        Collection<RmqDetails> mqDetails = rmqDetailsConfigReader.read(config);
+        val mqDetails = rmqDetailsConfigReader.read(config)
 
-        assertEquals(3, mqDetails.size());
-        assertTrue(mqDetails.stream()
-                .anyMatch(item -> {
-                    RmqHostDetails hostDetails = item.getHostDetails();
-                    return item.getExchange().getName().equals("exchange1") &&
-                            item.getExchange().getType().equals("topic") &&
-                            item.getExchange().isCreateIfNew() &&
-                            item.getExchange().isAutoDelete() &&
-                            item.getExchange().isDurable() &&
-
-                            item.getChannelId().equals("Q1") &&
-
-                            item.getQueue().getName().equals("queue1") &&
-                            item.getQueue().getRoutingKey().equals("any") &&
-                            item.getQueue().isCreateIfNew() &&
-                            item.getQueue().isAutoDelete() &&
-                            item.getQueue().isDurable() &&
-                            item.getQueue().isExclusive() &&
-
-                            hostDetails.getHost().equals("localhost") &&
-                            hostDetails.getPort() == 5672 &&
-
-                            hostDetails.getUser().equals("usr1") &&
-                            hostDetails.getPassword().equals("pswd1");
-                }));
-
-        assertTrue(mqDetails.stream()
-                .anyMatch(item -> {
-                    RmqHostDetails hostDetails = item.getHostDetails();
-                    return item.getChannelId().equals("Q2") &&
-                            item.getQueue().getName().equals("queue1") &&
-                            item.getQueue().getRoutingKey().equals("#") &&
-                            !item.getQueue().isCreateIfNew() &&
-                            !item.getQueue().isAutoDelete() &&
-                            !item.getQueue().isDurable() &&
-                            !item.getQueue().isExclusive() &&
-
-                            item.getExchange().getName().equals("exchange2") &&
-
-                            hostDetails.getHost().equals("localhost") &&
-                            hostDetails.getPort() == 5673 &&
-
-                            hostDetails.getUser().equals("usr2") &&
-                            hostDetails.getPassword().equals("pswd2");
-                }));
-
-        assertTrue(mqDetails.stream()
-                .anyMatch(item -> {
-                    RmqHostDetails hostDetails = item.getHostDetails();
-                    return item.getChannelId().equals("Q3") &&
-                            item.getQueue().getName().equals("queue2") &&
-
-                            item.getExchange().getName().equals("exchange2") &&
-                            item.getExchange().getType() == null &&
-
-                            hostDetails.getHost().equals("localhost") &&
-                            hostDetails.getPort() == 5673 &&
-
-                            hostDetails.getUser().equals("usr2") &&
-                            hostDetails.getPassword().equals("pswd2");
-                }));
+        assertAll(
+                { assertEquals(3, mqDetails.size.toLong()) },
+                {
+                    assertTrue(mqDetails
+                            .any { item: RmqDetails? ->
+                                val hostDetails = item!!.hostDetails
+                                item.exchange.name == "exchange1" && item.exchange.type == "topic" &&
+                                        item.exchange.isCreateIfNew &&
+                                        item.exchange.isAutoDelete &&
+                                        item.exchange.isDurable && item.channelId == "Q1" && item.queue.name == "queue1" && item.queue.routingKey == "any" &&
+                                        item.queue.isCreateIfNew &&
+                                        item.queue.isAutoDelete &&
+                                        item.queue.isDurable &&
+                                        item.queue.isExclusive && hostDetails.host == "localhost" && hostDetails.port == 5672 && hostDetails.user == "usr1" && hostDetails.password == "pswd1"
+                            })
+                },
+                {
+                    assertTrue(mqDetails
+                            .any { item: RmqDetails? ->
+                                val hostDetails = item!!.hostDetails
+                                item.channelId == "Q2" && item.queue.name == "queue1" && item.queue.routingKey == "#" &&
+                                        !item.queue.isCreateIfNew &&
+                                        !item.queue.isAutoDelete &&
+                                        !item.queue.isDurable &&
+                                        !item.queue.isExclusive && item.exchange.name == "exchange2" && hostDetails.host == "localhost" && hostDetails.port == 5673 && hostDetails.user == "usr2" && hostDetails.password == "pswd2"
+                            })
+                },
+                {
+                    assertTrue(mqDetails
+                            .any { item: RmqDetails? ->
+                                val hostDetails = item!!.hostDetails
+                                item.channelId == "Q3" && item.queue.name == "queue2" && item.exchange.name == "exchange2" && item.exchange.type == null && hostDetails.host == "localhost" && hostDetails.port == 5673 && hostDetails.user == "usr2" && hostDetails.password == "pswd2"
+                            })
+                }
+        )
     }
-
 }

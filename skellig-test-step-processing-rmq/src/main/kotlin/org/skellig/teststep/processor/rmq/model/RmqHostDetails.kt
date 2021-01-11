@@ -1,64 +1,35 @@
-package org.skellig.teststep.processor.rmq.model;
+package org.skellig.teststep.processor.rmq.model
 
-public class RmqHostDetails {
+class RmqHostDetails(val host: String,
+                     val port: Int,
+                     val user: String?,
+                     val password: String?) {
 
-    private String host;
-    private int port;
-    private String user;
-    private String password;
+    class Builder {
 
-    public RmqHostDetails(String host, int port, String user, String password) {
-        this.host = host;
-        this.port = port;
-        this.user = user;
-        this.password = password;
-    }
+        private var host: String? = null
+        private var port = 5672
+        private var user: String? = null
+        private var password: String? = null
 
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public static class Builder {
-        private String host;
-        private int port;
-        private String user;
-        private String password;
-
-        public Builder withHost(String host) {
-            this.host = host;
-            return this;
+        fun withHost(host: String?) = apply {
+            this.host = host
         }
 
-        public Builder withPort(int port) {
-            this.port = port;
-            return this;
+        fun withPort(port: Int) = apply {
+            this.port = port
         }
 
-        public Builder withUser(String user) {
-            this.user = user;
-            return this;
+        fun withUser(user: String?) = apply {
+            this.user = user
         }
 
-        public Builder withPassword(String password) {
-            this.password = password;
-            return this;
+        fun withPassword(password: String?) = apply {
+            this.password = password
         }
 
-        public RmqHostDetails build() {
-            return new RmqHostDetails(host, port, user, password);
+        fun build(): RmqHostDetails {
+            return RmqHostDetails(host!!, port, user, password)
         }
     }
-
 }

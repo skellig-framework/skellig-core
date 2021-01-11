@@ -1,103 +1,53 @@
-package org.skellig.teststep.processor.rmq.model;
+package org.skellig.teststep.processor.rmq.model
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+class RmqExchangeDetails(val name: String,
+                         val type: String?,
+                         val isDurable: Boolean,
+                         val isAutoDelete: Boolean,
+                         val isCreateIfNew: Boolean,
+                         val parameters: Map<String, Any>?) {
 
-public class RmqExchangeDetails {
+    class Builder {
+        private var name: String? = null
+        private var type: String? = null
+        private var isDurable = false
+        private var isAutoDelete = false
+        private var createIfNew = false
+        private var parameters: MutableMap<String, Any>? = null
 
-    private String name;
-    private String type;
-    private boolean isDurable;
-    private boolean isAutoDelete;
-    private boolean createIfNew;
-    private Map<String, Object> parameters;
-
-    public RmqExchangeDetails(String name, String type, boolean isDurable,
-                              boolean isAutoDelete, boolean createIfNew, Map<String, Object> parameters) {
-        this.name = name;
-        this.type = type;
-        this.isDurable = isDurable;
-        this.isAutoDelete = isAutoDelete;
-        this.createIfNew = createIfNew;
-        this.parameters = parameters;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public boolean isDurable() {
-        return isDurable;
-    }
-
-    public boolean isAutoDelete() {
-        return isAutoDelete;
-    }
-
-    public boolean isCreateIfNew() {
-        return createIfNew;
-    }
-
-    public Map<String, Object> getParameters() {
-        return parameters;
-    }
-
-    public static class Builder {
-        private String name;
-        private String type;
-        private boolean isDurable;
-        private boolean isAutoDelete;
-        private boolean createIfNew;
-        private Map<String, Object> parameters;
-
-        public Builder withName(String name) {
-            this.name = name;
-            return this;
+        fun withName(name: String?) = apply {
+            this.name = name
         }
 
-        public Builder withType(String type) {
-            this.type = type;
-            return this;
+        fun withType(type: String?) = apply {
+            this.type = type
         }
 
-        public Builder withDurable(boolean durable) {
-            isDurable = durable;
-            return this;
+        fun withDurable(durable: Boolean) = apply {
+            isDurable = durable
         }
 
-        public Builder withAutoDelete(boolean autoDelete) {
-            isAutoDelete = autoDelete;
-            return this;
+        fun withAutoDelete(autoDelete: Boolean) = apply {
+            isAutoDelete = autoDelete
         }
 
-        public Builder withCreateIfNew(boolean createIfNew) {
-            this.createIfNew = createIfNew;
-            return this;
+        fun withCreateIfNew(createIfNew: Boolean) = apply {
+            this.createIfNew = createIfNew
         }
 
-        public Builder withParameters(Map<String, Object> parameters) {
-            this.parameters = parameters;
-            return this;
+        fun withParameters(parameters: MutableMap<String, Any>?) = apply {
+            this.parameters = parameters
         }
 
-        public Builder withParameter(String name, Object value) {
-            if(parameters == null){
-                parameters = new HashMap<>();
+        fun withParameter(name: String, value: Any) = apply {
+            if (parameters == null) {
+                parameters = hashMapOf()
             }
-            parameters.put(name, value);
-            return this;
+            parameters!![name] = value
         }
 
-        public RmqExchangeDetails build() {
-            if(parameters == null){
-                parameters = Collections.emptyMap();
-            }
-            return new RmqExchangeDetails(name, type, isDurable, isAutoDelete, createIfNew, parameters);
+        fun build(): RmqExchangeDetails {
+            return RmqExchangeDetails(name!!, type, isDurable, isAutoDelete, createIfNew, parameters)
         }
     }
 }
