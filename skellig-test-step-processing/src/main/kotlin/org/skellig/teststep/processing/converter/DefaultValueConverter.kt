@@ -3,7 +3,6 @@ package org.skellig.teststep.processing.converter
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 import java.util.*
-import java.util.function.Function
 
 class DefaultValueConverter private constructor(val valueConverters: List<TestStepValueConverter>) : TestStepValueConverter {
 
@@ -23,12 +22,12 @@ class DefaultValueConverter private constructor(val valueConverters: List<TestSt
         private val valueConverters = mutableListOf<TestStepValueConverter>()
         private var testScenarioState: TestScenarioState? = null
         private var testStepValueExtractor: TestStepValueExtractor? = null
-        private var getPropertyFunction: Function<String, String?>? = null
+        private var getPropertyFunction: ((String) -> String?)? = null
         private var classLoader: ClassLoader? = null
 
         fun withTestScenarioState(testScenarioState: TestScenarioState?) = apply { this.testScenarioState = testScenarioState }
 
-        fun withGetPropertyFunction(getPropertyFunction: Function<String, String?>?) = apply { this.getPropertyFunction = getPropertyFunction }
+        fun withGetPropertyFunction(getPropertyFunction: ((String) -> String?)?) = apply { this.getPropertyFunction = getPropertyFunction }
 
         fun withClassLoader(classLoader: ClassLoader?) = apply { this.classLoader = classLoader }
 
