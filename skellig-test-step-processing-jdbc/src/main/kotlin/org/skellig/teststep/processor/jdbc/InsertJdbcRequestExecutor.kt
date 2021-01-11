@@ -1,82 +1,69 @@
-package org.skellig.teststep.processor.jdbc;
+package org.skellig.teststep.processor.jdbc
 
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processor.db.model.DatabaseRequest;
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processor.db.model.DatabaseRequest
+import java.sql.Connection
+import java.sql.SQLException
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.stream.Collectors;
+internal class InsertJdbcRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
 
-class InsertJdbcRequestExecutor extends BaseJdbcRequestExecutor {
-
-    private Connection connection;
-
-    InsertJdbcRequestExecutor(Connection connection) {
-        this.connection = connection;
-    }
-
-    @Override
-    public Object execute(DatabaseRequest databaseRequest) {
-        int result;
+    override fun execute(databaseRequest: DatabaseRequest): Any? {
+        var result: Int
         try {
-            String query;
-            if (databaseRequest.getQuery() != null) {
-                query = databaseRequest.getQuery();
-                result = connection.createStatement().executeUpdate(query);
+            val query: String?
+            if (databaseRequest.query != null) {
+                query = databaseRequest.query
+                result = connection!!.createStatement().executeUpdate(query)
             } else {
-                Map<String, Object> insertData = databaseRequest.getColumnValuePairs()
-                        .orElseThrow(() -> new TestStepProcessingException("Cannot insert empty data to table " + databaseRequest.getTable()));
-                query = composeInsertQuery(databaseRequest, insertData);
+                val insertData: Map<String, Any?> = databaseRequest.columnValuePairs
+                        ?: throw TestStepProcessingException("Cannot insert empty data to table " + databaseRequest.table)
+                query = composeInsertQuery(databaseRequest, insertData)
 
-                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                    Object[] rawParameters = convertToRawParameters(insertData);
-                    for (int i = 0; i < rawParameters.length; i++) {
-                        preparedStatement.setObject(i + 1, rawParameters[i]);
+                connection!!.prepareStatement(query).use { preparedStatement ->
+                    val rawParameters = convertToRawParameters(insertData)
+                    for (i in rawParameters.indices) {
+                        preparedStatement.setObject(i + 1, rawParameters[i])
                     }
-                    result = preparedStatement.executeUpdate();
+                    result = preparedStatement.executeUpdate()
                 }
             }
-            connection.commit();
-        } catch (Exception ex) {
+            connection.commit()
+        } catch (ex: Exception) {
             try {
-                connection.rollback();
-            } catch (SQLException e) {
+                connection!!.rollback()
+            } catch (e: SQLException) {
                 //log later
             }
-            throw new TestStepProcessingException(ex.getMessage(), ex);
+            throw TestStepProcessingException(ex.message, ex)
         }
-        return result;
+        return result
     }
 
-    private String composeInsertQuery(DatabaseRequest request, Map<String, Object> columnValuePairs) {
-        StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append(request.getCommand());
-        queryBuilder.append(" INTO ");
-        queryBuilder.append(request.getTable());
-        queryBuilder.append(" (");
-        appendColumns(columnValuePairs, queryBuilder);
-        queryBuilder.append(") VALUES(");
-        appendValues(columnValuePairs, queryBuilder);
-        queryBuilder.append(")");
-
-        return queryBuilder.toString();
+    private fun composeInsertQuery(request: DatabaseRequest?, columnValuePairs: Map<String, Any?>): String {
+        val queryBuilder = StringBuilder()
+        queryBuilder.append(request!!.command)
+        queryBuilder.append(" INTO ")
+        queryBuilder.append(request.table)
+        queryBuilder.append(" (")
+        appendColumns(columnValuePairs, queryBuilder)
+        queryBuilder.append(") VALUES(")
+        appendValues(columnValuePairs, queryBuilder)
+        queryBuilder.append(")")
+        return queryBuilder.toString()
     }
 
-    private void appendColumns(Map<String, Object> columnValuePairs, StringBuilder queryBuilder) {
-        queryBuilder.append(String.join(",", columnValuePairs.keySet()));
+    private fun appendColumns(columnValuePairs: Map<String, Any?>, queryBuilder: StringBuilder) {
+        queryBuilder.append(java.lang.String.join(",", columnValuePairs.keys))
     }
 
-    private Object[] convertToRawParameters(Map<String, Object> columnValuePairs) {
-        return columnValuePairs.values().stream()
-                .map(this::getParameterValue)
-                .toArray();
+    private fun convertToRawParameters(columnValuePairs: Map<String, Any?>): Array<Any?> {
+        return columnValuePairs.values
+                .map { getParameterValue(it) }
+                .toTypedArray()
     }
 
-    private void appendValues(Map<String, Object> columnValuePairs, StringBuilder queryBuilder) {
-        queryBuilder.append(columnValuePairs.values().stream()
-                .map(column -> "?")
-                .collect(Collectors.joining(",")));
+    private fun appendValues(columnValuePairs: Map<String, Any?>, queryBuilder: StringBuilder) {
+        queryBuilder.append(
+                columnValuePairs.values.joinToString(",") { "?" })
     }
 }

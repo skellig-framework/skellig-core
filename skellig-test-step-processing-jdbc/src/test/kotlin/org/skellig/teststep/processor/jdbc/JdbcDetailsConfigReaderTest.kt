@@ -1,40 +1,35 @@
-package org.skellig.teststep.processor.jdbc;
+package org.skellig.teststep.processor.jdbc
 
-import com.typesafe.config.ConfigFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.skellig.teststep.processor.jdbc.model.JdbcDetails;
+import com.typesafe.config.ConfigFactory
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.skellig.teststep.processor.jdbc.model.JdbcDetails
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.List;
+internal class JdbcDetailsConfigReaderTest {
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-class JdbcDetailsConfigReaderTest {
-
-    private JdbcDetailsConfigReader configReader;
+    private var configReader: JdbcDetailsConfigReader? = null
 
     @BeforeEach
-    void setUp() {
-        configReader = new JdbcDetailsConfigReader();
+    fun setUp() {
+        configReader = JdbcDetailsConfigReader()
     }
 
     @Test
-    void testReadJdbcConfig() {
-        List<JdbcDetails> details = new ArrayList<>(configReader.read(ConfigFactory.load("jdbc-test.conf")));
-
-        assertAll(
-                () -> assertEquals(2, details.size()),
-                () -> assertEquals("srv1", details.get(0).getServerName()),
-                () -> assertEquals("jdbc:/mysql", details.get(0).getUrl()),
-                () -> assertEquals("mysql driver class", details.get(0).getDriverName()),
-                () -> assertEquals("usr1", details.get(0).getUserName().orElse("")),
-                () -> assertEquals("pswd1", details.get(0).getPassword().orElse("")),
-
-                () -> assertEquals("srv2", details.get(1).getServerName()),
-                () -> assertEquals("jdbc:/mssql", details.get(1).getUrl()),
-                () -> assertEquals("mssql driver class", details.get(1).getDriverName())
-        );
+    fun testReadJdbcConfig() {
+        val details: List<JdbcDetails> = ArrayList(configReader!!.read(ConfigFactory.load("jdbc-test.conf")))
+        Assertions.assertAll(
+                { assertEquals(2, details.size) },
+                { assertEquals("srv1", details[0].serverName) },
+                { assertEquals("jdbc:/mysql", details[0].url) },
+                { assertEquals("mysql driver class", details[0].driverName) },
+                { assertEquals("usr1", details[0].userName ?: "") },
+                { assertEquals("pswd1", details[0].password ?: "") },
+                { assertEquals("srv2", details[1].serverName) },
+                { assertEquals("jdbc:/mssql", details[1].url) },
+                { assertEquals("mssql driver class", details[1].driverName) }
+        )
     }
 }

@@ -1,91 +1,79 @@
-package org.skellig.teststep.processor.cassandra;
+package org.skellig.teststep.processor.cassandra
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.skellig.teststep.processor.cassandra.model.CassandraDetails;
-import org.skellig.teststep.processor.db.model.DatabaseRequest;
-import org.testcontainers.containers.CassandraContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.net.InetSocketAddress;
-import java.sql.Date;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.skellig.teststep.processor.cassandra.model.CassandraDetails
+import org.skellig.teststep.processor.db.model.DatabaseRequest
+import org.testcontainers.containers.CassandraContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
+import java.net.InetSocketAddress
+import java.sql.Date
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Testcontainers
-class CassandraRequestExecutorCT {
+internal class CassandraRequestExecutorCT {
 
-    private static final String TABLE = "books.book";
-    private static final String USER_NAME = "cassandra";
-    private static final String PASSWORD = "cassandra";
+    companion object {
+        private const val TABLE = "books.book"
+        private const val USER_NAME = "cassandra"
+        private const val PASSWORD = "cassandra"
+    }
 
     @Container
-    private CassandraContainer cassandraContainer =
-            new CassandraContainer<>("cassandra:4.0")
-                    .withExposedPorts(9042);
+    private val cassandraContainer = CassandraContainer<CassandraContainer<*>>("cassandra:4.0")
+            .withExposedPorts(9042)
 
     @AfterEach
-    void tearDown() {
-        cassandraContainer.close();
+    fun tearDown() {
+        cassandraContainer.close()
     }
 
     @Test
     @DisplayName("Insert and read data from table Then verify response is correct")
-    void testInsertAndReadFromDb() {
-        initDatabase();
+    fun testInsertAndReadFromDb() {
+        initDatabase()
+        val requestExecutor = CassandraRequestExecutor(createCassandraDetails())
+        val insertParams = hashMapOf(
+                Pair("id", 1),
+                Pair("date_created", LocalDateTime.now()),
+                Pair("name", "test"))
 
-        CassandraRequestExecutor requestExecutor = new CassandraRequestExecutor(createCassandraDetails());
+        requestExecutor.execute(DatabaseRequest("insert", TABLE, insertParams))
+        val selectParams = hashMapOf(Pair("id", 1))
 
-        Map<String, Object> insertParams = new HashMap<>();
-        insertParams.put("id", 1);
-        insertParams.put("date_created", LocalDateTime.now());
-        insertParams.put("name", "test");
+        val response = requestExecutor.execute(DatabaseRequest("select", TABLE, selectParams))
+        val row = (response as List<*>?)!![0] as Map<*, *>
 
-        requestExecutor.execute(new DatabaseRequest("insert", TABLE, insertParams));
-
-        Map<String, Object> selectParams = new HashMap<>();
-        selectParams.put("id", 1);
-        Object response = requestExecutor.execute(new DatabaseRequest("select", TABLE, selectParams));
-
-        Map row = (Map) ((List) response).get(0);
-        assertAll(
-                () -> assertEquals(insertParams.get("id"), row.get("id")),
-                () -> assertEquals(Date.from(((LocalDateTime) insertParams.get("date_created")).toInstant(ZoneOffset.UTC)), row.get("date_created")),
-                () -> assertEquals(insertParams.get("name"), row.get("name"))
-        );
+        Assertions.assertAll(
+                { Assertions.assertEquals(insertParams["id"], row["id"]) },
+                { Assertions.assertEquals(Date.from((insertParams["date_created"] as LocalDateTime?)!!.toInstant(ZoneOffset.UTC)), row["date_created"]) },
+                { Assertions.assertEquals(insertParams["name"], row["name"]) }
+        )
     }
 
-    private void initDatabase() {
-        Cluster cluster = cassandraContainer.getCluster();
-
-        try (Session session = cluster.connect()) {
-
-            session.execute("CREATE KEYSPACE IF NOT EXISTS books WITH replication = \n" +
-                    "{'class':'SimpleStrategy','replication_factor':'1'};");
-
+    private fun initDatabase() {
+        val cluster = cassandraContainer.cluster
+        cluster.connect().use { session ->
+            session.execute("""
+    CREATE KEYSPACE IF NOT EXISTS books WITH replication = 
+    {'class':'SimpleStrategy','replication_factor':'1'};
+    """.trimIndent())
             session.execute("create table books.book" +
                     "(" +
                     "id int primary key," +
                     "date_created timestamp," +
                     "name text" +
                     ")" +
-                    "with caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}");
+                    "with caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}")
         }
     }
 
-    private CassandraDetails createCassandraDetails() {
-        return new CassandraDetails("s1", Collections.singletonList(new InetSocketAddress("localhost", cassandraContainer.getMappedPort(9042))),
-                USER_NAME, PASSWORD);
+    private fun createCassandraDetails(): CassandraDetails {
+        return CassandraDetails("s1", listOf(InetSocketAddress("localhost", cassandraContainer.getMappedPort(9042))),
+                USER_NAME, PASSWORD)
     }
 }

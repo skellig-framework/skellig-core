@@ -1,12 +1,9 @@
-package org.skellig.teststep.processor.jdbc;
+package org.skellig.teststep.processor.jdbc
 
-import org.skellig.teststep.processor.db.DatabaseRequestExecutorFactory;
+import org.skellig.teststep.processor.db.DatabaseRequestExecutorFactory
+import java.sql.Connection
 
-import java.sql.Connection;
-
-class JdbcRequestExecutorFactory extends DatabaseRequestExecutorFactory {
-
-    JdbcRequestExecutorFactory(Connection connection) {
-        super(new FindJdbcRequestExecutor(connection), new InsertJdbcRequestExecutor(connection));
-    }
-}
+internal class JdbcRequestExecutorFactory(connection: Connection?)
+    : DatabaseRequestExecutorFactory(
+        FindJdbcRequestExecutor(connection),
+        InsertJdbcRequestExecutor(connection))
