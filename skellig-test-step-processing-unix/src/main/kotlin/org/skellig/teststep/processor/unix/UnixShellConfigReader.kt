@@ -1,51 +1,43 @@
-package org.skellig.teststep.processor.unix;
+package org.skellig.teststep.processor.unix
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processor.unix.model.UnixShellHostDetails;
+import com.typesafe.config.Config
+import org.skellig.teststep.processor.unix.model.UnixShellHostDetails
+import java.util.*
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+class UnixShellConfigReader {
 
-public class UnixShellConfigReader {
-
-    private static final String UNIX_SHELL_CONFIG_KEYWORD = "unix-shell";
-
-    Collection<UnixShellHostDetails> read(Config config) {
-        Objects.requireNonNull(config, "Unix Shell config cannot be null");
-
-        Collection<UnixShellHostDetails> unixShellDetails = Collections.emptyList();
-        if (config.hasPath(UNIX_SHELL_CONFIG_KEYWORD)) {
-            List<Map> anyRefList = (List<Map>) config.getAnyRefList(UNIX_SHELL_CONFIG_KEYWORD);
-            unixShellDetails = anyRefList.stream()
-                    .map(this::createUnixShellDetails)
-                    .collect(Collectors.toList());
-        }
-        return unixShellDetails;
+    companion object {
+        private const val UNIX_SHELL_CONFIG_KEYWORD = "unix-shell"
     }
 
-    private UnixShellHostDetails createUnixShellDetails(Map rawJdbcDetails) {
-        String hostName = (String) rawJdbcDetails.get("hostName");
-        String hostAddress = (String) rawJdbcDetails.get("hostAddress");
-        Integer port = (Integer) rawJdbcDetails.getOrDefault("port", 22);
-        String userName = (String) rawJdbcDetails.get("userName");
-        String password = (String) rawJdbcDetails.get("password");
-        String sshKeyPath = (String) rawJdbcDetails.get("sshKeyPath");
+    fun read(config: Config): Collection<UnixShellHostDetails> {
+        Objects.requireNonNull(config, "Unix Shell config cannot be null")
 
-        Objects.requireNonNull(hostName, "Server name must be declared for JDBC instance");
-        Objects.requireNonNull(hostAddress, "Driver class name must be declared for JDBC instance");
+        var unixShellDetails = emptyList<UnixShellHostDetails>()
+        if (config.hasPath(UNIX_SHELL_CONFIG_KEYWORD)) {
+            val anyRefList = config.getAnyRefList(UNIX_SHELL_CONFIG_KEYWORD) as List<Map<*, *>>
+            unixShellDetails = anyRefList
+                    .map { createUnixShellDetails(it) }
+                    .toList()
+        }
+        return unixShellDetails
+    }
 
-        return new UnixShellHostDetails.Builder()
+    private fun createUnixShellDetails(rawJdbcDetails: Map<*, *>): UnixShellHostDetails {
+        val hostName = rawJdbcDetails["hostName"] as String? ?: error("Server name must be declared for JDBC instance")
+        val hostAddress = rawJdbcDetails["hostAddress"] as String? ?: error("Driver class name must be declared for JDBC instance")
+        val port = rawJdbcDetails["port"] as Int? ?: 22
+        val userName = rawJdbcDetails["userName"] as String?
+        val password = rawJdbcDetails["password"] as String?
+        val sshKeyPath = rawJdbcDetails["sshKeyPath"] as String?
+
+        return UnixShellHostDetails.Builder()
                 .withHostName(hostName)
                 .withHostAddress(hostAddress)
                 .withPort(port)
                 .withUserName(userName)
                 .withPassword(password)
                 .withSshKeyPath(sshKeyPath)
-                .build();
+                .build()
     }
-
 }

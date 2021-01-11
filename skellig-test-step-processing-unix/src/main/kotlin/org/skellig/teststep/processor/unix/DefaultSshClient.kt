@@ -1,127 +1,110 @@
-package org.skellig.teststep.processor.unix;
+package org.skellig.teststep.processor.unix
 
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.channel.direct.Session;
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
+import net.schmizz.sshj.SSHClient
+import net.schmizz.sshj.common.IOUtils
+import net.schmizz.sshj.connection.channel.direct.Session
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+class DefaultSshClient private constructor(private val host: String,
+                                           private val port: Int,
+                                           private val user: String?,
+                                           private val password: String?,
+                                           private val privateSshKeyPath: String?) : SSHClient() {
 
-class DefaultSshClient extends SSHClient {
-
-    private static final int DEFAULT_CONNECT_TIMEOUT = 10000;
-
-    private String host;
-    private int port;
-    private String user;
-    private String password;
-    private String privateSshKeyPath;
-    private Session sshSession;
-
-    private DefaultSshClient(String host, int port, String user, String password, String privateSshKeyPath) {
-        this.host = host;
-        this.port = port;
-        this.user = user;
-        this.password = password;
-        this.privateSshKeyPath = privateSshKeyPath;
-        setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
+    companion object {
+        private const val DEFAULT_CONNECT_TIMEOUT = 10000
     }
 
-    public String runShellCommand(String command, int timeoutSec) {
-        startSshSessionLazy();
+    init {
+        connectTimeout = DEFAULT_CONNECT_TIMEOUT
+    }
 
-        String response = "";
+    private var sshSession: Session? = null
+
+    fun runShellCommand(command: String, timeoutSec: Int): String {
+        startSshSessionLazy()
+        var response = ""
         try {
-            Session.Command cmd = sshSession.exec(command);
-            cmd.join(timeoutSec, TimeUnit.SECONDS);
+            val cmd = sshSession!!.exec(command)
+            cmd.join(timeoutSec.toLong(), TimeUnit.SECONDS)
 
-            try (ByteArrayOutputStream outputStream = IOUtils.readFully(cmd.getInputStream())) {
-                response = outputStream.toString();
-            }
-        } catch (Exception ex) {
+            IOUtils.readFully(cmd.inputStream).use { outputStream -> response = outputStream.toString() }
+        } catch (ex: Exception) {
             //log later
         }
-        return response;
-
+        return response
     }
 
-    @Override
-    public synchronized void close() {
+    @Synchronized
+    override fun close() {
         try {
-            if (sshSession != null) {
-                sshSession.close();
-                sshSession = null;
+            sshSession?.let {
+                sshSession!!.close()
+                sshSession = null
             }
-            super.close();
-        } catch (Exception ex) {
+            super.close()
+        } catch (ex: Exception) {
             //log later
         }
     }
 
-    private synchronized void startSshSessionLazy() {
-        if (sshSession == null || !sshSession.isOpen()) {
+    @Synchronized
+    private fun startSshSessionLazy() {
+        if (sshSession == null || !sshSession!!.isOpen) {
             try {
-                if (!(isConnected() && isAuthenticated())) {
-                    createAndConnectSshClient();
+                if (!(isConnected && isAuthenticated)) {
+                    createAndConnectSshClient()
                 }
-                sshSession = super.startSession();
-                if (sshSession != null) {
-                    sshSession.allocateDefaultPTY();
-                }
-            } catch (Exception ex) {
-                throw new TestStepProcessingException(ex.getMessage(), ex);
+                sshSession = super.startSession()
+                sshSession?.allocateDefaultPTY()
+            } catch (ex: Exception) {
+                throw TestStepProcessingException(ex.message, ex)
             }
         }
     }
 
-    private void createAndConnectSshClient() throws IOException {
-        addHostKeyVerifier((host, port, key) -> true);
-        connect(host, port);
-        if (privateSshKeyPath != null) {
-            authPublickey(user, privateSshKeyPath);
-        } else {
-            this.authPassword(user, password);
-        }
+    @Throws(IOException::class)
+    private fun createAndConnectSshClient() {
+        addHostKeyVerifier { _, _, _ -> true }
+        connect(host, port)
+
+        privateSshKeyPath?.let {
+            authPublickey(user, privateSshKeyPath)
+        } ?: this.authPassword(user, password)
     }
 
-    static class Builder {
+    internal class Builder {
 
-        private String host;
-        private int port;
-        private String user;
-        private String password;
-        private String privateSshKeyPath;
+        private var host: String? = null
+        private var port = 0
+        private var user: String? = null
+        private var password: String? = null
+        private var privateSshKeyPath: String? = null
 
-        public Builder withHost(String host) {
-            this.host = host;
-            return this;
+        fun withHost(host: String?) = apply {
+            this.host = host
         }
 
-        public Builder withPort(int port) {
-            this.port = port;
-            return this;
+        fun withPort(port: Int) = apply {
+            this.port = port
         }
 
-        public Builder withUser(String user) {
-            this.user = user;
-            return this;
+        fun withUser(user: String?) = apply {
+            this.user = user
         }
 
-        public Builder withPassword(String password) {
-            this.password = password;
-            return this;
+        fun withPassword(password: String?) = apply {
+            this.password = password
         }
 
-        public Builder withPrivateSshKeyPath(String privateSshKeyPath) {
-            this.privateSshKeyPath = privateSshKeyPath;
-            return this;
+        fun withPrivateSshKeyPath(privateSshKeyPath: String?) = apply {
+            this.privateSshKeyPath = privateSshKeyPath
         }
 
-        DefaultSshClient build() {
-            return new DefaultSshClient(host, port, user, password, privateSshKeyPath);
+        fun build(): DefaultSshClient {
+            return DefaultSshClient(host!!, port, user, password, privateSshKeyPath)
         }
     }
-
 }

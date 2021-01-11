@@ -1,45 +1,34 @@
-package org.skellig.teststep.processor.unix.model.factory;
+package org.skellig.teststep.processor.unix.model.factory
 
-import org.skellig.teststep.processing.converter.TestDataConverter;
-import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.model.TestStep;
-import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
-import org.skellig.teststep.processor.unix.model.UnixShellTestStep;
+import org.skellig.teststep.processing.converter.TestDataConverter
+import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
+import org.skellig.teststep.processor.unix.model.UnixShellTestStep
+import java.util.*
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
+class UnixShellTestStepFactory(keywordsProperties: Properties?,
+                               testStepValueConverter: TestStepValueConverter?,
+                               testDataConverter: TestDataConverter?)
+    : BaseTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter) {
 
-public class UnixShellTestStepFactory extends BaseTestStepFactory {
-
-    private static final String HOSTS_KEYWORD = "test.step.keyword.hosts";
-    private static final String COMMAND_KEYWORD = "test.step.keyword.command";
-    private static final String ARGS_KEYWORD = "test.step.keyword.args";
-
-    public UnixShellTestStepFactory(Properties keywordsProperties,
-                                    TestStepValueConverter testStepValueConverter,
-                                    TestDataConverter testDataConverter) {
-        super(keywordsProperties, testStepValueConverter, testDataConverter);
+    companion object {
+        private const val HOSTS_KEYWORD = "test.step.keyword.hosts"
+        private const val COMMAND_KEYWORD = "test.step.keyword.command"
+        private const val ARGS_KEYWORD = "test.step.keyword.args"
     }
 
-    @Override
-    protected TestStep.Builder createTestStepBuilder(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
-        Collection<String> services =
-                getStringArrayDataFromRawTestStep(getKeywordName(HOSTS_KEYWORD, "hosts"), rawTestStep, parameters);
-
-        return new UnixShellTestStep.Builder()
+    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
+        val services = getStringArrayDataFromRawTestStep(getKeywordName(HOSTS_KEYWORD, "hosts"), rawTestStep, parameters)
+        return UnixShellTestStep.Builder()
                 .withHosts(services)
-                .withCommand(convertValue(rawTestStep.get(getCommandKeyword()), parameters))
-                .withArgs(convertValue(rawTestStep.get(getKeywordName(ARGS_KEYWORD, "args")), parameters));
+                .withCommand(convertValue(rawTestStep[commandKeyword], parameters))
+                .withArgs(convertValue(rawTestStep[getKeywordName(ARGS_KEYWORD, "args")], parameters))
     }
 
-    @Override
-    public boolean isConstructableFrom(Map<String, Object> rawTestStep) {
-        return rawTestStep.containsKey(getCommandKeyword());
+    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+        return rawTestStep.containsKey(commandKeyword)
     }
 
-    private String getCommandKeyword() {
-        return getKeywordName(COMMAND_KEYWORD, "command");
-    }
-
+    private val commandKeyword: String = getKeywordName(COMMAND_KEYWORD, "command")
 }

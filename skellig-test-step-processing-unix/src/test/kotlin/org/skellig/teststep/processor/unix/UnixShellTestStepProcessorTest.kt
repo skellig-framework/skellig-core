@@ -1,112 +1,100 @@
-package org.skellig.teststep.processor.unix;
+package org.skellig.teststep.processor.unix
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.skellig.teststep.processing.converter.TestStepResultConverter;
-import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.validation.TestStepResultValidator;
-import org.skellig.teststep.processor.unix.model.UnixShellTestStep;
+import com.nhaarman.mockitokotlin2.whenever
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processor.unix.DefaultSshClient
+import org.skellig.teststep.processor.unix.model.UnixShellTestStep
+import java.util.*
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+internal class UnixShellTestStepProcessorTest {
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-
-class UnixShellTestStepProcessorTest {
-
-    private UnixShellTestStepProcessor processor;
-    private DefaultSshClient sshClient;
-    private DefaultSshClient sshClient2;
+    private var processor: UnixShellTestStepProcessor? = null
+    private var sshClient = Mockito.mock(DefaultSshClient::class.java)
+    private var sshClient2 = Mockito.mock(DefaultSshClient::class.java)
 
     @BeforeEach
-    void setUp() {
-        sshClient = mock(DefaultSshClient.class);
-        sshClient2 = mock(DefaultSshClient.class);
+    fun setUp() {
+        val hosts = mapOf(
+                Pair("h1", sshClient),
+                Pair("h2", sshClient2))
 
-        Map<String, DefaultSshClient> hosts = new HashMap<>();
-        hosts.put("h1", sshClient);
-        hosts.put("h2", sshClient2);
-
-        processor = new UnixShellTestStepProcessor(mock(TestScenarioState.class),
-                mock(TestStepResultValidator.class), mock(TestStepResultConverter.class), hosts);
+        processor = UnixShellTestStepProcessor(Mockito.mock(TestScenarioState::class.java),
+                Mockito.mock(TestStepResultValidator::class.java), Mockito.mock(TestStepResultConverter::class.java), hosts)
     }
 
     @Test
-    void testRunCommandToNoHost() {
-        UnixShellTestStep testStep =
-                new UnixShellTestStep.Builder()
-                        .withCommand("ls")
-                        .build();
+    fun testRunCommandToNoHost() {
+        val testStep = UnixShellTestStep.Builder()
+                .withHosts(emptyList())
+                .withCommand("ls")
+                .withName("n1")
+                .build() as UnixShellTestStep
 
-        processor.process(testStep)
-                .subscribe((t, r, e) -> {
-                    assertEquals("No hosts were provided to run a command." +
-                            " Registered hosts are: [h1, h2]", e.getMessage());
-                });
+        processor!!.process(testStep)
+                .subscribe { _, _, e ->
+                    Assertions.assertEquals("No hosts were provided to run a command." +
+                            " Registered hosts are: [h1, h2]", e!!.message)
+                }
     }
 
     @Test
-    void testRunCommandToNonRegisteredHost() {
-        UnixShellTestStep testStep =
-                new UnixShellTestStep.Builder()
-                        .withHosts(Collections.singletonList("h3"))
-                        .withCommand("ls")
-                        .build();
+    fun testRunCommandToNonRegisteredHost() {
+        val testStep = UnixShellTestStep.Builder()
+                .withHosts(listOf("h3"))
+                .withCommand("ls")
+                .withName("n1")
+                .build() as UnixShellTestStep
 
-        processor.process(testStep)
-                .subscribe((t, r, e) -> {
-                    assertEquals("No hosts was registered for host name 'h3'." +
-                            " Registered hosts are: [h1, h2]", e.getMessage());
-                });
+        processor!!.process(testStep)
+                .subscribe { _, _, e ->
+                    Assertions.assertEquals("No hosts was registered for host name 'h3'." +
+                            " Registered hosts are: [h1, h2]", e!!.message)
+                }
     }
 
     @Test
-    void testRunCommand() {
-        UnixShellTestStep testStep =
-                new UnixShellTestStep.Builder()
-                        .withHosts(Collections.singletonList("h1"))
-                        .withCommand("ls -l")
-                        .build();
+    fun testRunCommand() {
+        val testStep = UnixShellTestStep.Builder()
+                .withHosts(listOf("h1"))
+                .withCommand("ls -l")
+                .withName("n1")
+                .build() as UnixShellTestStep
+        whenever(sshClient!!.runShellCommand(testStep.getCommand(), testStep.timeout)).thenReturn("r1")
 
-        when(sshClient.runShellCommand(testStep.getCommand(), testStep.getTimeout())).thenReturn("r1");
-
-        processor.process(testStep)
-                .subscribe((t, r, e) -> {
-                    Map<String, String> result = (Map<String, String>) r;
-                    assertEquals(1, result.size());
-                    assertEquals("r1", result.get("h1"));
-                });
-
-        verifyZeroInteractions(sshClient2);
+        processor!!.process(testStep)
+                .subscribe { _, r, _ ->
+                    val result = r as Map<*, *>
+                    Assertions.assertEquals(1, result.size)
+                    Assertions.assertEquals("r1", result["h1"])
+                }
+        Mockito.verifyZeroInteractions(sshClient2)
     }
 
     @Test
-    void testRunCommandWithArguments() {
-        Map<String, String> args = new HashMap<>();
-        args.put("a1", "v1");
-        args.put("a2", "v2");
+    fun testRunCommandWithArguments() {
+        val args: MutableMap<String, String> = HashMap()
+        args["a1"] = "v1"
+        args["a2"] = "v2"
+        val testStep = UnixShellTestStep.Builder()
+                .withHosts(listOf("h1", "h2"))
+                .withCommand("cmd1")
+                .withArgs(args)
+                .withName("n1")
+                .build() as UnixShellTestStep
+        whenever(sshClient!!.runShellCommand(testStep.getCommand(), testStep.timeout)).thenReturn("r1")
+        whenever(sshClient2!!.runShellCommand(testStep.getCommand(), testStep.timeout)).thenReturn("r2")
 
-        UnixShellTestStep testStep =
-                new UnixShellTestStep.Builder()
-                        .withHosts(Arrays.asList("h1", "h2"))
-                        .withCommand("cmd1")
-                        .withArgs(args)
-                        .build();
-
-        when(sshClient.runShellCommand(testStep.getCommand(), testStep.getTimeout())).thenReturn("r1");
-        when(sshClient2.runShellCommand(testStep.getCommand(), testStep.getTimeout())).thenReturn("r2");
-
-        processor.process(testStep)
-                .subscribe((t, r, e) -> {
-                    Map<String, String> result = (Map<String, String>) r;
-                    assertEquals("r1", result.get("h1"));
-                    assertEquals("r2", result.get("h2"));
-                });
+        processor!!.process(testStep)
+                .subscribe { _, r, _ ->
+                    val result = r as Map<*, *>
+                    Assertions.assertEquals("r1", result["h1"])
+                    Assertions.assertEquals("r2", result["h2"])
+                }
     }
-
 }

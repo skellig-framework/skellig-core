@@ -1,88 +1,48 @@
-package org.skellig.teststep.processor.unix.model;
+package org.skellig.teststep.processor.unix.model
 
-public class UnixShellHostDetails {
+class UnixShellHostDetails private constructor(val hostName: String,
+                                               val hostAddress: String,
+                                               val port: Int,
+                                               val sshKeyPath: String?,
+                                               val userName: String?,
+                                               val password: String?) {
 
-    private String hostName;
-    private String hostAddress;
-    private int port;
-    private String sshKeyPath;
-    private String userName;
-    private String password;
+    class Builder {
 
-    private UnixShellHostDetails(String hostName, String hostAddress, int port, String sshKeyPath,
-                                 String userName, String password) {
-        this.hostName = hostName;
-        this.hostAddress = hostAddress;
-        this.port = port;
-        this.sshKeyPath = sshKeyPath;
-        this.userName = userName;
-        this.password = password;
-    }
+        private var hostName: String? = null
+        private var hostAddress: String? = null
+        private var port = 0
+        private var sshKeyPath: String? = null
+        private var userName: String? = null
+        private var password: String? = null
 
-    public String getHostName() {
-        return hostName;
-    }
-
-    public String getHostAddress() {
-        return hostAddress;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public String getSshKeyPath() {
-        return sshKeyPath;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public static class Builder {
-        private String hostName;
-        private String hostAddress;
-        private int port;
-        private String sshKeyPath;
-        private String userName;
-        private String password;
-
-        public Builder withHostName(String name) {
-            this.hostName = name;
-            return this;
+        fun withHostName(name: String?) = apply {
+            hostName = name
         }
 
-        public Builder withHostAddress(String host) {
-            this.hostAddress = host;
-            return this;
+        fun withHostAddress(host: String?) = apply {
+            hostAddress = host
         }
 
-        public Builder withPort(int port) {
-            this.port = port;
-            return this;
+        fun withPort(port: Int) = apply {
+            this.port = port
         }
 
-        public Builder withSshKeyPath(String sshKeyPath) {
-            this.sshKeyPath = sshKeyPath;
-            return this;
+        fun withSshKeyPath(sshKeyPath: String?) = apply {
+            this.sshKeyPath = sshKeyPath
         }
 
-        public Builder withUserName(String userName) {
-            this.userName = userName;
-            return this;
+        fun withUserName(userName: String?) = apply {
+            this.userName = userName
         }
 
-        public Builder withPassword(String password) {
-            this.password = password;
-            return this;
+        fun withPassword(password: String?) = apply {
+            this.password = password
         }
 
-        public UnixShellHostDetails build() {
-            return new UnixShellHostDetails(hostName, hostAddress, port, sshKeyPath, userName, password);
+        fun build(): UnixShellHostDetails {
+            return UnixShellHostDetails(hostName ?: error("Host name must not be null. Please set any unique name"),
+                    hostAddress ?: error("Host address must not be null"), port, sshKeyPath, userName, password)
         }
     }
 }
