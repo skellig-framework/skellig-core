@@ -1,50 +1,33 @@
-package org.skellig.teststep.processor.ibmmq.model.factory;
+package org.skellig.teststep.processor.ibmmq.model.factory
 
-import org.skellig.teststep.processing.converter.TestDataConverter;
-import org.skellig.teststep.processing.converter.TestStepValueConverter;
-import org.skellig.teststep.processing.model.TestStep;
-import org.skellig.teststep.processing.model.factory.BaseTestStepFactory;
-import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep;
+import org.skellig.teststep.processing.converter.TestDataConverter
+import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
+import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
+import java.util.*
 
-import java.util.Map;
-import java.util.Properties;
+open class IbmMqTestStepFactory(keywordsProperties: Properties?,
+                                testStepValueConverter: TestStepValueConverter?,
+                                testDataConverter: TestDataConverter?)
+    : BaseTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter) {
 
-public class IbmMqTestStepFactory extends BaseTestStepFactory {
-
-    private static final String PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol";
-    private static final String SEND_TO_KEYWORD = "test.step.keyword.sendTo";
-    private static final String RECEIVE_FROM_KEYWORD = "test.step.keyword.receiveFrom";
-    private static final String RESPOND_TO_KEYWORD = "test.step.keyword.respondTo";
-    private static final String IBMMQ = "ibmmq";
-
-    public IbmMqTestStepFactory(Properties keywordsProperties,
-                                TestStepValueConverter testStepValueConverter,
-                                TestDataConverter testDataConverter) {
-        super(keywordsProperties, testStepValueConverter, testDataConverter);
+    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
+        return IbmMqTestStep.Builder()
+                .withSendTo(convertValue<String>(rawTestStep[getKeywordName(SEND_TO_KEYWORD, "sendTo")], parameters))
+                .withReceiveFrom(convertValue<String>(rawTestStep[getKeywordName(RECEIVE_FROM_KEYWORD, "receiveFrom")], parameters))
+                .withRespondTo(convertValue<String>(rawTestStep[getKeywordName(RESPOND_TO_KEYWORD, "respondTo")], parameters))
     }
 
-    @Override
-    protected TestStep.Builder createTestStepBuilder(Map<String, Object> rawTestStep, Map<String, Object> parameters) {
-        return new IbmMqTestStep.Builder()
-                .withSendTo(convertValue(rawTestStep.get(getSendToKeyword()), parameters))
-                .withReceiveFrom(convertValue(rawTestStep.get(getReceiveFromKeyword()), parameters))
-                .withRespondTo(convertValue(rawTestStep.get(getRespondToKeyword()), parameters));
+    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+        return rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == IBMMQ
     }
 
-    @Override
-    public boolean isConstructableFrom(Map<String, Object> rawTestStep) {
-        return rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "").equals(IBMMQ);
-    }
-
-    private String getSendToKeyword() {
-        return getKeywordName(SEND_TO_KEYWORD, "sendTo");
-    }
-
-    private String getReceiveFromKeyword() {
-        return getKeywordName(RECEIVE_FROM_KEYWORD, "receiveFrom");
-    }
-
-    private String getRespondToKeyword() {
-        return getKeywordName(RESPOND_TO_KEYWORD, "respondTo");
+    companion object {
+        private const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"
+        private const val SEND_TO_KEYWORD = "test.step.keyword.sendTo"
+        private const val RECEIVE_FROM_KEYWORD = "test.step.keyword.receiveFrom"
+        private const val RESPOND_TO_KEYWORD = "test.step.keyword.respondTo"
+        private const val IBMMQ = "ibmmq"
     }
 }
