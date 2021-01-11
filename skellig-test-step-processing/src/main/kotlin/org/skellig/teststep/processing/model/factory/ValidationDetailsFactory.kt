@@ -39,7 +39,7 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
         val rawValidationDetails = getValidationDetails(rawTestStep)
         val builder: ValidationDetails.Builder = ValidationDetails.Builder()
 
-        return rawValidationDetails.let {
+        return rawValidationDetails?.let {
             if (rawValidationDetails is Map<*, *>) {
                 val fromTestId = rawValidationDetails[getFromTestKeyword()]
                 val convertTo = rawValidationDetails[getConvertToKeyword()]

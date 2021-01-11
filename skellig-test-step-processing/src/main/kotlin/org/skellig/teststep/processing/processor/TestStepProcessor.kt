@@ -16,12 +16,12 @@ interface TestStepProcessor<T : TestStep> : Closeable {
 
     class TestStepRunResult(private val testStep: TestStep?) {
 
-        private var consumer: Consumer<Any?, RuntimeException?>? = null
+        private var consumer: ((TestStep?, Any?, RuntimeException?) -> Unit)? = null
         private var response: Any? = null
         private var error: RuntimeException? = null
         private val countDownLatch: CountDownLatch = CountDownLatch(1)
 
-        fun subscribe(consumer: Consumer<Any?, RuntimeException?>) {
+        fun subscribe(consumer: (TestStep?, Any?, RuntimeException?) -> Unit) {
             this.consumer = consumer
             if (countDownLatch.count == 0L) {
                 notify(response, error)
@@ -32,8 +32,8 @@ interface TestStepProcessor<T : TestStep> : Closeable {
             this.response = response
             this.error = error
             countDownLatch.countDown()
-            if (consumer != null) {
-                consumer!!.accept(testStep, response, error)
+            consumer?.let {
+                it(testStep, response, error)
             }
         }
 
@@ -54,10 +54,6 @@ interface TestStepProcessor<T : TestStep> : Closeable {
                     throw error as RuntimeException
                 }
             }
-        }
-
-        interface Consumer<R, E> {
-            fun accept(testStep: TestStep?, result: R, error: E)
         }
 
     }

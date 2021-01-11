@@ -44,12 +44,12 @@ abstract class BaseTestStepFactory(
     override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): TestStep {
         val additionalParameters: MutableMap<String, Any?> = HashMap(parameters)
         val parametersFromTestName = extractParametersFromTestStepName(testStepName, rawTestStep)
-        if (parametersFromTestName != null) {
+        parametersFromTestName?.let {
             additionalParameters.putAll(parametersFromTestName)
         }
 
         val variables = extractVariables(rawTestStep, additionalParameters)
-        if (variables != null) {
+        variables?.let {
             additionalParameters.putAll(variables)
         }
 
