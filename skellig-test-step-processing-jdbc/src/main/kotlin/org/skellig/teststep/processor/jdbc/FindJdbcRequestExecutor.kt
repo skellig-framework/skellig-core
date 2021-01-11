@@ -1,116 +1,101 @@
-package org.skellig.teststep.processor.jdbc;
+package org.skellig.teststep.processor.jdbc
 
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processor.db.model.DatabaseRequest;
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processor.db.model.DatabaseRequest
+import java.sql.*
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+internal class FindJdbcRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
 
-class FindJdbcRequestExecutor extends BaseJdbcRequestExecutor {
-
-    private static final String COMPARATOR = "comparator";
-    private static final String DEFAULT_VALUE_PLACEHOLDER = "?";
-    private static final String DEFAULT_COMPARATOR = "=";
-
-    private Connection connection;
-
-    FindJdbcRequestExecutor(Connection connection) {
-        this.connection = connection;
+    companion object {
+        private const val COMPARATOR = "comparator"
+        private const val DEFAULT_VALUE_PLACEHOLDER = "?"
+        private const val DEFAULT_COMPARATOR = "="
     }
 
-    public Object execute(DatabaseRequest databaseRequest) {
+    override fun execute(databaseRequest: DatabaseRequest): Any? {
         try {
-            String query;
-            if (databaseRequest.getQuery() != null) {
-                query = databaseRequest.getQuery();
-                return executeQuery(query, connection.createStatement());
+            val query: String?
+            if (databaseRequest.query != null) {
+                query = databaseRequest.query
+                return executeQuery(query!!, connection!!.createStatement())
             } else {
-                Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs().orElse(Collections.emptyMap());
-                query = composeFindQuery(databaseRequest, searchCriteria);
-
-                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                    Object[] rawParameters = convertToRawParameters(searchCriteria);
-                    for (int i = 0; i < rawParameters.length; i++) {
-                        preparedStatement.setObject(i + 1, rawParameters[i]);
+                val searchCriteria = databaseRequest.columnValuePairs ?: emptyMap()
+                query = composeFindQuery(databaseRequest, searchCriteria)
+                connection!!.prepareStatement(query).use { preparedStatement ->
+                    val rawParameters = convertToRawParameters(searchCriteria)
+                    for (i in rawParameters.indices) {
+                        preparedStatement.setObject(i + 1, rawParameters[i])
                     }
-                    return executeQuery(preparedStatement);
+                    return executeQuery(preparedStatement)
                 }
             }
-        } catch (Exception ex) {
-            throw new TestStepProcessingException(ex.getMessage(), ex);
+        } catch (ex: Exception) {
+            throw TestStepProcessingException(ex.message, ex)
         }
     }
 
-    private List<Map<String, Object>> executeQuery(String query, Statement statement) throws SQLException {
-        return extractFromResultSet(statement.executeQuery(query));
+    @Throws(SQLException::class)
+    private fun executeQuery(query: String, statement: Statement): List<Map<String, Any?>> {
+        return extractFromResultSet(statement.executeQuery(query))
     }
 
-    private List<Map<String, Object>> executeQuery(PreparedStatement statement) throws SQLException {
-        return extractFromResultSet(statement.executeQuery());
+    @Throws(SQLException::class)
+    private fun executeQuery(statement: PreparedStatement): List<Map<String, Any?>> {
+        return extractFromResultSet(statement.executeQuery())
     }
 
-    private List<Map<String, Object>> extractFromResultSet(ResultSet resultSet) throws SQLException {
-        List<Map<String, Object>> result = new ArrayList<>();
-
-        List<String> columns = extractColumns(resultSet);
-
+    @Throws(SQLException::class)
+    private fun extractFromResultSet(resultSet: ResultSet): List<Map<String, Any?>> {
+        val result = mutableListOf<Map<String, Any>>()
+        val columns = extractColumns(resultSet)
         while (resultSet.next()) {
-            Map<String, Object> row = new LinkedHashMap<>();
-            for (String column : columns) {
-                row.put(column, resultSet.getObject(column));
+            val row = linkedMapOf<String, Any>()
+            for (column in columns) {
+                row[column] = resultSet.getObject(column)
             }
-            result.add(row);
+            result.add(row)
         }
-        return result;
+        return result
     }
 
-    private Object[] convertToRawParameters(Map<String, Object> searchCriteria) {
-        return searchCriteria.values().stream()
-                .map(this::getParameterValue)
-                .toArray();
+    private fun convertToRawParameters(searchCriteria: Map<String, Any?>): Array<Any?> {
+        return searchCriteria.values
+                .map { getParameterValue(it) }
+                .toTypedArray()
     }
 
-    private String composeFindQuery(DatabaseRequest databaseRequest, Map<String, Object> searchCriteria) {
-        StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("SELECT * FROM ");
-        queryBuilder.append(databaseRequest.getTable());
-        if (!searchCriteria.isEmpty()) {
-            queryBuilder.append(" WHERE ");
-            String columns = searchCriteria.entrySet().stream()
-                    .map(entry -> {
-                        String comparator = DEFAULT_COMPARATOR;
-                        String valuePlaceholder = DEFAULT_VALUE_PLACEHOLDER;
-                        if (entry.getValue() instanceof Map) {
-                            comparator = (String) ((Map) entry.getValue()).get(COMPARATOR);
-                            if ("in".equals(comparator)) {
-                                valuePlaceholder = "(?)";
+    private fun composeFindQuery(databaseRequest: DatabaseRequest, searchCriteria: Map<String, Any?>): String {
+        val queryBuilder = StringBuilder()
+        queryBuilder.append("SELECT * FROM ")
+        queryBuilder.append(databaseRequest.table)
+        if (searchCriteria.isNotEmpty()) {
+            queryBuilder.append(" WHERE ")
+            val columns = searchCriteria.entries
+                    .map {
+                        var comparator: String? = DEFAULT_COMPARATOR
+                        var valuePlaceholder = DEFAULT_VALUE_PLACEHOLDER
+                        if (it.value is Map<*, *>) {
+                            comparator = (it.value as Map<*, *>)[COMPARATOR] as String?
+                            if ("in" == comparator) {
+                                valuePlaceholder = "(?)"
                             }
                         }
-                        return String.format("%s %s %s", entry.getKey(), comparator, valuePlaceholder);
-                    })
-                    .collect(Collectors.joining(" AND "));
-
-            queryBuilder.append(columns);
+                        String.format("%s %s %s", it.key, comparator, valuePlaceholder)
+                    }
+                    .joinToString(separator = " AND ")
+            queryBuilder.append(columns)
         }
-        return queryBuilder.toString();
+        return queryBuilder.toString()
     }
 
-    private List<String> extractColumns(ResultSet resultSet) throws SQLException {
-        ResultSetMetaData metadata = resultSet.getMetaData();
-        List<String> columns = new ArrayList<>();
-        for (int i = 1; i <= metadata.getColumnCount(); i++) {
-            columns.add(metadata.getColumnName(i));
+    @Throws(SQLException::class)
+    private fun extractColumns(resultSet: ResultSet): List<String> {
+        val metadata = resultSet.metaData
+        val columns = mutableListOf<String>()
+
+        for (i in 1..metadata.columnCount) {
+            columns.add(metadata.getColumnName(i))
         }
-        return columns;
+        return columns
     }
 }

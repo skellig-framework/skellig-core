@@ -1,71 +1,56 @@
-package org.skellig.teststep.processor.cassandra;
+package org.skellig.teststep.processor.cassandra
 
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processor.db.model.DatabaseRequest;
+import com.datastax.driver.core.Session
+import com.datastax.driver.core.SimpleStatement
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processor.db.model.DatabaseRequest
 
-import java.util.Map;
-import java.util.stream.Collectors;
+internal class CassandraInsertRequestExecutor(private val session: Session) : BaseCassandraRequestExecutor() {
 
-class CassandraInsertRequestExecutor extends BaseCassandraRequestExecutor {
+    override fun execute(databaseRequest: DatabaseRequest): Any? {
+        return try {
+            databaseRequest.query?.let {
+                return session.execute(databaseRequest.query)
+            } ?: run {
+                val searchCriteria = databaseRequest.columnValuePairs
+                        ?: throw TestStepProcessingException("Cannot insert empty data to table " + databaseRequest.table)
+                val query = composeInsertQuery(databaseRequest, searchCriteria)
+                val rawParameters = convertToRawParameters(searchCriteria)
+                val preparedStatement = SimpleStatement(query, *rawParameters)
 
-    private Session session;
-
-    CassandraInsertRequestExecutor(Session session) {
-        this.session = session;
-    }
-
-    @Override
-    public Object execute(DatabaseRequest databaseRequest) {
-        Object result;
-        try {
-            if (databaseRequest.getQuery() != null) {
-                result = session.execute(databaseRequest.getQuery());
-            } else {
-                Map<String, Object> searchCriteria = databaseRequest.getColumnValuePairs()
-                        .orElseThrow(() -> new TestStepProcessingException("Cannot insert empty data to table " + databaseRequest.getTable()));
-                String query = composeInsertQuery(databaseRequest, searchCriteria);
-
-                Object[] rawParameters = convertToRawParameters(searchCriteria);
-                Statement preparedStatement = new SimpleStatement(query, rawParameters);
-
-                result = session.execute(preparedStatement);
+                return session.execute(preparedStatement)
             }
-        } catch (Exception ex) {
-            throw new TestStepProcessingException(ex.getMessage(), ex);
+        } catch (ex: Exception) {
+            throw TestStepProcessingException(ex.message, ex)
         }
-        return result;
     }
 
-    private String composeInsertQuery(DatabaseRequest request, Map<String, Object> columnValuePairs) {
-        StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append(request.getCommand());
-        queryBuilder.append(" INTO ");
-        queryBuilder.append(request.getTable());
-        queryBuilder.append(" (");
-        appendColumns(columnValuePairs, queryBuilder);
-        queryBuilder.append(") VALUES(");
-        appendValues(columnValuePairs, queryBuilder);
-        queryBuilder.append(")");
+    private fun composeInsertQuery(request: DatabaseRequest, columnValuePairs: Map<String, Any?>): String {
+        val queryBuilder = StringBuilder()
+        queryBuilder.append(request.command)
+        queryBuilder.append(" INTO ")
+        queryBuilder.append(request.table)
+        queryBuilder.append(" (")
+        appendColumns(columnValuePairs, queryBuilder)
+        queryBuilder.append(") VALUES(")
+        appendValues(columnValuePairs, queryBuilder)
+        queryBuilder.append(")")
 
-        return queryBuilder.toString();
+        return queryBuilder.toString()
     }
 
-    private void appendColumns(Map<String, Object> columnValuePairs, StringBuilder queryBuilder) {
-        queryBuilder.append(String.join(",", columnValuePairs.keySet()));
+    private fun appendColumns(columnValuePairs: Map<String, Any?>, queryBuilder: StringBuilder) {
+        queryBuilder.append(java.lang.String.join(",", columnValuePairs.keys))
     }
 
-    private Object[] convertToRawParameters(Map<String, Object> columnValuePairs) {
-        return columnValuePairs.values().stream()
-                .map(this::getParameterValue)
-                .toArray();
+    private fun convertToRawParameters(columnValuePairs: Map<String, Any?>): Array<Any?> {
+        return columnValuePairs.values
+                .map { getParameterValue(it) }
+                .toTypedArray()
     }
 
-    private void appendValues(Map<String, Object> columnValuePairs, StringBuilder queryBuilder) {
-        queryBuilder.append(columnValuePairs.values().stream()
-                .map(column -> "?")
-                .collect(Collectors.joining(",")));
+    private fun appendValues(columnValuePairs: Map<String, Any?>, queryBuilder: StringBuilder) {
+        queryBuilder.append(columnValuePairs.values
+                .joinToString(",") { "?" })
     }
 }

@@ -1,21 +1,9 @@
-package org.skellig.teststep.processor.cassandra.model;
+package org.skellig.teststep.processor.cassandra.model
 
-import org.skellig.teststep.processor.db.model.DatabaseDetails;
+import org.skellig.teststep.processor.db.model.DatabaseDetails
+import java.net.InetSocketAddress
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
-
-public class CassandraDetails extends DatabaseDetails {
-
-    private Collection<InetSocketAddress> nodes;
-
-    public CassandraDetails(String serverName, Collection<InetSocketAddress> nodes, String userName, String password) {
-        super(serverName, userName, password);
-        this.nodes = nodes;
-    }
-
-    public Collection<InetSocketAddress> getNodes() {
-        return nodes;
-    }
-
-}
+class CassandraDetails(serverName: String,
+                       val nodes: Collection<InetSocketAddress>,
+                       userName: String?,
+                       password: String?) : DatabaseDetails(serverName, userName, password)

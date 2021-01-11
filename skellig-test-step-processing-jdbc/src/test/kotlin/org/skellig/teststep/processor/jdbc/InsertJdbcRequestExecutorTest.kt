@@ -1,97 +1,82 @@
-package org.skellig.teststep.processor.jdbc;
+package org.skellig.teststep.processor.jdbc
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatcher;
-import org.skellig.teststep.processing.exception.TestStepProcessingException;
-import org.skellig.teststep.processor.db.model.DatabaseRequest;
+import com.nhaarman.mockitokotlin2.argThat
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.whenever
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.function.Executable
+import org.mockito.Mockito
+import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processor.db.model.DatabaseRequest
+import java.sql.*
+import java.time.LocalDate
+import java.time.LocalDateTime
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+internal class InsertJdbcRequestExecutorTest {
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-class InsertJdbcRequestExecutorTest {
-
-    private InsertJdbcRequestExecutor executor;
-    private Connection connection;
+    private var executor: InsertJdbcRequestExecutor? = null
+    private var connection: Connection? = null
 
     @BeforeEach
-    void setUp() {
-        connection = mock(Connection.class);
-        executor = new InsertJdbcRequestExecutor(connection);
+    fun setUp() {
+        connection = Mockito.mock(Connection::class.java)
+        executor = InsertJdbcRequestExecutor(connection)
     }
 
     @Test
-    void testInsertUsingQuery() throws SQLException {
-        DatabaseRequest databaseRequest = mock(DatabaseRequest.class);
-        when(databaseRequest.getQuery()).thenReturn("insert query");
+    @Throws(SQLException::class)
+    fun testInsertUsingQuery() {
+        val databaseRequest = Mockito.mock(DatabaseRequest::class.java)
+        whenever(databaseRequest.query).thenReturn("insert query")
 
-        Statement statement = mock(Statement.class);
-        when(statement.executeUpdate(databaseRequest.getQuery())).thenReturn(1);
-        when(connection.createStatement()).thenReturn(statement);
+        val statement = Mockito.mock(Statement::class.java)
+        whenever(statement.executeUpdate(databaseRequest.query)).thenReturn(1)
+        whenever(connection!!.createStatement()).thenReturn(statement)
 
-        assertEquals(1, executor.execute(databaseRequest));
+        Assertions.assertEquals(1, executor!!.execute(databaseRequest))
     }
 
     @Test
-    void testInsertUsingCommand() throws SQLException {
-        String sql = "insert INTO t1 (c3,c4,c1,c2) VALUES(?,?,?,?)";
-        Map<String, Object> data = new HashMap<>();
-        data.put("c1", "v1");
-        data.put("c2", 2);
-        data.put("c3", LocalDateTime.of(2020, 1, 1, 10, 10));
-        data.put("c4", LocalDate.of(2020, 2, 2));
+    @Throws(SQLException::class)
+    fun testInsertUsingCommand() {
+        val sql = "insert INTO t1 (c3,c4,c1,c2) VALUES(?,?,?,?)"
+        val data = hashMapOf(
+                Pair("c1", "v1"),
+                Pair("c2", 2),
+                Pair("c3", LocalDateTime.of(2020, 1, 1, 10, 10)),
+                Pair("c4", LocalDate.of(2020, 2, 2)))
 
-        DatabaseRequest databaseRequest = new DatabaseRequest("insert", "t1", data);
+        val databaseRequest = DatabaseRequest("insert", "t1", data)
+        val statement = Mockito.mock(PreparedStatement::class.java)
+        whenever(statement.executeUpdate()).thenReturn(1)
+        whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
 
-        PreparedStatement statement = mock(PreparedStatement.class);
-        when(statement.executeUpdate()).thenReturn(1);
-        when(connection.prepareStatement(sql)).thenReturn(statement);
-
-        assertAll(
-                () -> assertEquals(1, executor.execute(databaseRequest)),
-                () -> verify(statement).setObject(eq(1), argThat(new ArgumentMatcher<Object>() {
-                    @Override
-                    public boolean matches(Object o) {
-                        return o instanceof Timestamp &&
-                                ((Timestamp) o).compareTo(Timestamp.valueOf((LocalDateTime) data.get("c3"))) == 0;
-                    }
-                })),
-                () -> verify(statement).setObject(eq(2), argThat(new ArgumentMatcher<Object>() {
-                    @Override
-                    public boolean matches(Object o) {
-                        return o instanceof Date &&
-                                ((Date) o).compareTo(Date.valueOf((LocalDate) data.get("c4"))) == 0;
-                    }
-                })),
-                () -> verify(statement).setObject(3, "v1"),
-                () -> verify(statement).setObject(4, 2)
-        );
+        Assertions.assertAll(
+                Executable { Assertions.assertEquals(1, executor!!.execute(databaseRequest)) },
+                Executable {
+                    Mockito.verify(statement).setObject(eq(1), argThat { o ->
+                        o is Timestamp &&
+                                o.compareTo(Timestamp.valueOf(data["c3"] as LocalDateTime?)) == 0
+                    })
+                },
+                Executable {
+                    Mockito.verify(statement).setObject(eq(2), argThat { o ->
+                        o is Date && o.compareTo(Date.valueOf(data["c4"] as LocalDate?)) == 0
+                    })
+                },
+                Executable { Mockito.verify(statement).setObject(3, "v1") },
+                Executable { Mockito.verify(statement).setObject(4, 2) }
+        )
     }
 
     @Test
-    void testInsertUsingCommandWithoutData() {
-        DatabaseRequest databaseRequest = new DatabaseRequest("insert", "t1", null);
+    fun testInsertUsingCommandWithoutData() {
+        val databaseRequest = DatabaseRequest("insert", "t1", null)
 
-        TestStepProcessingException ex = assertThrows(TestStepProcessingException.class,
-                () -> executor.execute(databaseRequest));
+        val ex = Assertions.assertThrows(TestStepProcessingException::class.java) { executor!!.execute(databaseRequest) }
 
-        assertEquals("Cannot insert empty data to table t1", ex.getMessage());
+        Assertions.assertEquals("Cannot insert empty data to table t1", ex.message)
     }
 }

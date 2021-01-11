@@ -1,47 +1,35 @@
-package org.skellig.teststep.processor.jdbc;
+package org.skellig.teststep.processor.jdbc
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processing.converter.TestStepResultConverter;
-import org.skellig.teststep.processing.processor.TestStepProcessor;
-import org.skellig.teststep.processing.state.TestScenarioState;
-import org.skellig.teststep.processing.validation.TestStepResultValidator;
-import org.skellig.teststep.processor.db.DatabaseTestStepProcessor;
-import org.skellig.teststep.processor.db.model.DatabaseTestStep;
-import org.skellig.teststep.processor.jdbc.model.JdbcDetails;
+import com.typesafe.config.Config
+import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processor.db.DatabaseTestStepProcessor
+import org.skellig.teststep.processor.db.model.DatabaseTestStep
+import org.skellig.teststep.processor.jdbc.model.JdbcDetails
 
-import java.util.Map;
+open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, JdbcRequestExecutor>,
+                                                       testScenarioState: TestScenarioState,
+                                                       validator: TestStepResultValidator,
+                                                       testStepResultConverter: TestStepResultConverter?)
+    : DatabaseTestStepProcessor<JdbcRequestExecutor>(dbServers, testScenarioState, validator, testStepResultConverter) {
 
-public class JdbcTestStepProcessor extends DatabaseTestStepProcessor<JdbcRequestExecutor> {
+    class Builder : DatabaseTestStepProcessor.Builder<JdbcDetails, JdbcRequestExecutor>() {
 
-    protected JdbcTestStepProcessor(Map<String, JdbcRequestExecutor> dbServers,
-                                    TestScenarioState testScenarioState,
-                                    TestStepResultValidator validator,
-                                    TestStepResultConverter testStepResultConverter) {
-        super(dbServers, testScenarioState, validator, testStepResultConverter);
-    }
+        private val jdbcDetailsConfigReader: JdbcDetailsConfigReader = JdbcDetailsConfigReader()
 
-    public static class Builder extends DatabaseTestStepProcessor.Builder<JdbcDetails, JdbcRequestExecutor> {
-
-        private JdbcDetailsConfigReader jdbcDetailsConfigReader;
-
-        public Builder() {
-            jdbcDetailsConfigReader = new JdbcDetailsConfigReader();
+        override fun withDbServers(config: Config) = apply {
+            jdbcDetailsConfigReader.read(config).forEach { databaseDetails: JdbcDetails -> withDbServer(databaseDetails) }
         }
 
-        @Override
-        public DatabaseTestStepProcessor.Builder<JdbcDetails, JdbcRequestExecutor> withDbServers(Config config) {
-            jdbcDetailsConfigReader.read(config).forEach(this::withDbServer);
-            return this;
+        protected override fun createRequestExecutor(databaseDetails: JdbcDetails): JdbcRequestExecutor {
+            return JdbcRequestExecutor(databaseDetails)
         }
 
-        @Override
-        protected JdbcRequestExecutor createRequestExecutor(JdbcDetails databaseDetails) {
-            return new JdbcRequestExecutor(databaseDetails);
+        override fun build(): TestStepProcessor<DatabaseTestStep> {
+            return JdbcTestStepProcessor(dbServers, testScenarioState!!, validator!!, testStepResultConverter)
         }
 
-        @Override
-        public TestStepProcessor<DatabaseTestStep> build() {
-            return new JdbcTestStepProcessor(dbServers, testScenarioState, validator, testStepResultConverter);
-        }
     }
 }

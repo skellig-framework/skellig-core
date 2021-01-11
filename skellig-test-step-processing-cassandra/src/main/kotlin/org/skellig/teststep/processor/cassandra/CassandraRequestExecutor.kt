@@ -1,39 +1,35 @@
-package org.skellig.teststep.processor.cassandra;
+package org.skellig.teststep.processor.cassandra
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.PlainTextAuthProvider;
-import com.datastax.driver.core.Session;
-import org.skellig.teststep.processor.cassandra.model.CassandraDetails;
-import org.skellig.teststep.processor.db.DatabaseRequestExecutor;
-import org.skellig.teststep.processor.db.model.DatabaseRequest;
+import com.datastax.driver.core.Cluster
+import com.datastax.driver.core.PlainTextAuthProvider
+import com.datastax.driver.core.Session
+import org.skellig.teststep.processor.cassandra.model.CassandraDetails
+import org.skellig.teststep.processor.db.DatabaseRequestExecutor
+import org.skellig.teststep.processor.db.model.DatabaseRequest
 
-class CassandraRequestExecutor implements DatabaseRequestExecutor {
+class CassandraRequestExecutor(cassandraDetails: CassandraDetails) : DatabaseRequestExecutor {
 
-    private CassandraRequestExecutorFactory factory;
-    private Cluster cluster;
-    private Session session;
+    private val factory: CassandraRequestExecutorFactory
+    private val cluster: Cluster
+    private val session: Session
 
-    CassandraRequestExecutor(CassandraDetails cassandraDetails) {
-        Cluster.Builder clusterBuilder = Cluster.builder()
-                .addContactPointsWithPorts(cassandraDetails.getNodes());
-        if (cassandraDetails.getUserName().isPresent()) {
+    init {
+        val clusterBuilder = Cluster.builder().addContactPointsWithPorts(cassandraDetails.nodes)
+        cassandraDetails.userName?.let {
             clusterBuilder.withAuthProvider(
-                    new PlainTextAuthProvider(cassandraDetails.getUserName().get(), cassandraDetails.getPassword().orElse(null)));
+                    PlainTextAuthProvider(cassandraDetails.userName, cassandraDetails.password))
         }
-        cluster = clusterBuilder.build();
-        session = cluster.connect();
-
-        factory = new CassandraRequestExecutorFactory(session);
+        cluster = clusterBuilder.build()
+        session = cluster.connect()
+        factory = CassandraRequestExecutorFactory(session)
     }
 
-    @Override
-    public Object execute(DatabaseRequest request) {
-        return factory.get(request).execute(request);
+    override fun execute(databaseRequest: DatabaseRequest): Any? {
+        return factory[databaseRequest]?.execute(databaseRequest)
     }
 
-    @Override
-    public void close() {
-        session.close();
-        cluster.close();
+    override fun close() {
+        session.close()
+        cluster.close()
     }
 }

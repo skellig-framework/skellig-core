@@ -1,159 +1,134 @@
-package org.skellig.teststep.processor.jdbc;
+package org.skellig.teststep.processor.jdbc
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatcher;
-import org.skellig.teststep.processor.db.model.DatabaseRequest;
+import com.nhaarman.mockitokotlin2.argThat
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.whenever
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.skellig.teststep.processor.db.model.DatabaseRequest
+import java.sql.*
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.concurrent.atomic.AtomicInteger
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+internal class FindJdbcRequestExecutorTest {
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-class FindJdbcRequestExecutorTest {
-
-    private FindJdbcRequestExecutor executor;
-    private Connection connection;
+    private var executor: FindJdbcRequestExecutor? = null
+    private var connection: Connection? = null
 
     @BeforeEach
-    void setUp() {
-        connection = mock(Connection.class);
-        executor = new FindJdbcRequestExecutor(connection);
+    fun setUp() {
+        connection = Mockito.mock(Connection::class.java)
+        executor = FindJdbcRequestExecutor(connection)
     }
 
     @Test
-    void testFindUsingQuery() throws SQLException {
-        DatabaseRequest databaseRequest = mock(DatabaseRequest.class);
-        when(databaseRequest.getQuery()).thenReturn("select query");
+    @Throws(SQLException::class)
+    fun testFindUsingQuery() {
+        val databaseRequest = Mockito.mock(DatabaseRequest::class.java)
+        whenever(databaseRequest.query).thenReturn("select query")
 
-        ResultSet resultSet = createResultSet();
-        Statement statement = mock(Statement.class);
-        when(statement.executeQuery(databaseRequest.getQuery())).thenReturn(resultSet);
-        when(connection.createStatement()).thenReturn(statement);
+        val resultSet = createResultSet()
+        val statement = Mockito.mock(Statement::class.java)
+        whenever(statement.executeQuery(databaseRequest.query)).thenReturn(resultSet)
+        whenever(connection!!.createStatement()).thenReturn(statement)
 
-        List<Map> response = (List<Map>) executor.execute(databaseRequest);
+        val response = executor!!.execute(databaseRequest) as List<Map<*, *>>?
 
-        assertAll(
-                () -> assertEquals(1, response.size()),
-                () -> assertEquals(2, response.get(0).size()),
-                () -> assertEquals("v1", response.get(0).get("c1")),
-                () -> assertEquals("v2", response.get(0).get("c2"))
-        );
+        Assertions.assertAll(
+                { Assertions.assertEquals(1, response!!.size) },
+                { Assertions.assertEquals(2, response!![0].size) },
+                { Assertions.assertEquals("v1", response!![0]["c1"]) },
+                { Assertions.assertEquals("v2", response!![0]["c2"]) }
+        )
     }
 
     @Test
-    void testFindUsingCommandWithoutFilter() throws SQLException {
-        String sql = "SELECT * FROM t1";
-        DatabaseRequest databaseRequest = new DatabaseRequest("select", "t1", null);
+    @Throws(SQLException::class)
+    fun testFindUsingCommandWithoutFilter() {
+        val sql = "SELECT * FROM t1"
+        val databaseRequest = DatabaseRequest("select", "t1", null)
 
-        ResultSet resultSet = createResultSet();
-        PreparedStatement statement = mock(PreparedStatement.class);
-        when(statement.executeQuery()).thenReturn(resultSet);
-        when(connection.prepareStatement(sql)).thenReturn(statement);
+        val resultSet = createResultSet()
+        val statement = Mockito.mock(PreparedStatement::class.java)
+        whenever(statement.executeQuery()).thenReturn(resultSet)
+        whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
 
-        List<Map> response = (List<Map>) executor.execute(databaseRequest);
+        val response = executor!!.execute(databaseRequest) as List<Map<*, *>>?
 
-        assertEquals(1, response.size());
+        Assertions.assertEquals(1, response!!.size)
     }
 
     @Test
-    void testFindUsingCommandWithFilter() throws SQLException {
-        String sql = "SELECT * FROM t1 WHERE c3 like ? AND c4 in (?) AND c5 = ? AND c6 = ? AND c1 = ? AND c2 > ?";
-        Map<String, Object> filter = new HashMap<>();
-        filter.put("c1", "v1");
-        filter.put("c2", new HashMap<String, Object>() {
-            {
-                put("comparator", ">");
-                put("value", 10);
-            }
-        });
-        filter.put("c3", new HashMap<String, String>() {
-            {
-                put("comparator", "like");
-                put("value", "%a%");
-            }
-        });
-        filter.put("c4", new HashMap<String, Object>() {
-            {
-                put("comparator", "in");
-                put("value", Arrays.asList("a", "b"));
-            }
-        });
-        filter.put("c5", LocalDateTime.of(2020, 1, 1, 10, 10));
-        filter.put("c6", LocalDate.of(2020, 2, 2));
+    @Throws(SQLException::class)
+    fun testFindUsingCommandWithFilter() {
+        val sql = "SELECT * FROM t1 WHERE c3 like ? AND c4 in (?) AND c5 = ? AND c6 = ? AND c1 = ? AND c2 > ?"
+        val filter = hashMapOf(
+                Pair("c1", "v1"),
+                Pair("c2", mapOf(
+                        Pair("comparator", ">"),
+                        Pair("value", 10),
+                )),
+                Pair("c3", mapOf(
+                        Pair("comparator", "like"),
+                        Pair("value", "%a%"),
+                )),
+                Pair("c4", mapOf(
+                        Pair("comparator", "in"),
+                        Pair("value", listOf("a", "b")),
+                )),
+                Pair("c5", LocalDateTime.of(2020, 1, 1, 10, 10)),
+                Pair("c6", LocalDate.of(2020, 2, 2)),
+        )
 
-        DatabaseRequest databaseRequest = new DatabaseRequest("select", "t1", filter);
 
-        ResultSet resultSet = createResultSet();
-        PreparedStatement statement = mock(PreparedStatement.class);
-        when(statement.executeQuery()).thenReturn(resultSet);
-        when(connection.prepareStatement(sql)).thenReturn(statement);
+        val databaseRequest = DatabaseRequest("select", "t1", filter)
 
-        List<Map> response = (List<Map>) executor.execute(databaseRequest);
+        val resultSet = createResultSet()
+        val statement = Mockito.mock(PreparedStatement::class.java)
+        whenever(statement.executeQuery()).thenReturn(resultSet)
+        whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
 
-        assertAll(
-                () -> assertEquals(1, response.size()),
-                () -> verify(statement).setObject(1, "%a%"),
-                () -> verify(statement).setObject(eq(2), argThat(new ArgumentMatcher<Object>() {
-                    @Override
-                    public boolean matches(Object o) {
-                        return ((List) o).contains("a") && ((List) o).contains("b");
-                    }
-                })),
-                () -> verify(statement).setObject(eq(3), argThat(new ArgumentMatcher<Object>() {
-                    @Override
-                    public boolean matches(Object o) {
-                        return o instanceof Timestamp &&
-                                ((Timestamp) o).compareTo(Timestamp.valueOf((LocalDateTime) filter.get("c5"))) == 0;
-                    }
-                })),
-                () -> verify(statement).setObject(eq(4), argThat(new ArgumentMatcher<Object>() {
-                    @Override
-                    public boolean matches(Object o) {
-                        return o instanceof Date &&
-                                ((Date) o).compareTo(Date.valueOf((LocalDate) filter.get("c6"))) == 0;
-                    }
-                })),
-                () -> verify(statement).setObject(5, "v1"),
-                () -> verify(statement).setObject(6, 10)
-        );
+        val response = executor!!.execute(databaseRequest) as List<Map<*, *>>
+
+        Assertions.assertAll(
+                { Assertions.assertEquals(1, response.size) },
+                { Mockito.verify(statement).setObject(1, "%a%") },
+                {
+                    Mockito.verify(statement).setObject(eq(2), argThat { o -> (o as List<*>).contains("a") && o.contains("b") })
+                },
+                {
+                    Mockito.verify(statement).setObject(eq(3), argThat { o ->
+                        o is Timestamp && o.compareTo(Timestamp.valueOf(filter["c5"] as LocalDateTime?)) == 0
+                    })
+                },
+                {
+                    Mockito.verify(statement).setObject(eq(4), argThat { o ->
+                        o is Date && o.compareTo(Date.valueOf(filter["c6"] as LocalDate?)) == 0
+                    })
+                },
+                { Mockito.verify(statement).setObject(5, "v1") },
+                { Mockito.verify(statement).setObject(6, 10) }
+        )
     }
 
-    private ResultSet createResultSet() throws SQLException {
-        ResultSet resultSet = mock(ResultSet.class);
-
-        ResultSetMetaData metaData = mock(ResultSetMetaData.class);
-        when(metaData.getColumnCount()).thenReturn(2);
-        when(metaData.getColumnName(1)).thenReturn("c1");
-        when(metaData.getColumnName(2)).thenReturn("c2");
-
-        when(resultSet.getMetaData()).thenReturn(metaData);
-        when(resultSet.getObject("c1")).thenReturn("v1");
-        when(resultSet.getObject("c2")).thenReturn("v2");
+    @Throws(SQLException::class)
+    private fun createResultSet(): ResultSet {
+        val resultSet = Mockito.mock(ResultSet::class.java)
+        val metaData = Mockito.mock(ResultSetMetaData::class.java)
+        whenever(metaData.columnCount).thenReturn(2)
+        whenever(metaData.getColumnName(1)).thenReturn("c1")
+        whenever(metaData.getColumnName(2)).thenReturn("c2")
+        whenever(resultSet.metaData).thenReturn(metaData)
+        whenever(resultSet.getObject("c1")).thenReturn("v1")
+        whenever(resultSet.getObject("c2")).thenReturn("v2")
 
         // has only 1 row
-        AtomicInteger counter = new AtomicInteger(0);
-        when(resultSet.next()).thenAnswer(i -> counter.incrementAndGet() <= 1);
+        val counter = AtomicInteger(0)
+        whenever(resultSet.next()).thenAnswer { counter.incrementAndGet() <= 1 }
 
-        return resultSet;
+        return resultSet
     }
 }

@@ -1,5 +1,9 @@
 plugins {
-    id 'java'
+    id "org.jetbrains.kotlin.jvm" version "1.4.21"
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
 dependencies {
@@ -11,7 +15,7 @@ dependencies {
 
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'org.mockito', name: 'mockito-all'
+    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }

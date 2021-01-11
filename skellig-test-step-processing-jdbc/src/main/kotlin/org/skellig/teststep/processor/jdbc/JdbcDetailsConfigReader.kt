@@ -1,44 +1,39 @@
-package org.skellig.teststep.processor.jdbc;
+package org.skellig.teststep.processor.jdbc
 
-import com.typesafe.config.Config;
-import org.skellig.teststep.processor.jdbc.model.JdbcDetails;
+import com.typesafe.config.Config
+import org.skellig.teststep.processor.jdbc.model.JdbcDetails
+import java.util.*
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+internal class JdbcDetailsConfigReader {
 
-class JdbcDetailsConfigReader {
+    fun read(config: Config): Collection<JdbcDetails> {
+        Objects.requireNonNull(config, "JDBC config cannot be null")
+        var jdbcDetails = emptyList<JdbcDetails>()
 
-    private static final String JDBC_CONFIG_KEYWORD = "jdbc";
-
-    Collection<JdbcDetails> read(Config config) {
-        Objects.requireNonNull(config, "JDBC config cannot be null");
-
-        Collection<JdbcDetails> jdbcDetails = Collections.emptyList();
         if (config.hasPath(JDBC_CONFIG_KEYWORD)) {
-            List<Map> anyRefList = (List<Map>) config.getAnyRefList(JDBC_CONFIG_KEYWORD);
-            jdbcDetails = anyRefList.stream()
-                    .map(this::createJdbcDetails)
-                    .collect(Collectors.toList());
+            val anyRefList = config.getAnyRefList(JDBC_CONFIG_KEYWORD) as List<Map<*, *>>
+            jdbcDetails = anyRefList
+                    .map { createJdbcDetails(it) }
+                    .toList()
         }
-        return jdbcDetails;
+        return jdbcDetails
     }
 
-    private JdbcDetails createJdbcDetails(Map rawJdbcDetails) {
-        String server = (String) rawJdbcDetails.get("server");
-        String url = (String) rawJdbcDetails.get("url");
-        String driver = (String) rawJdbcDetails.get("driver");
-        String userName = (String) rawJdbcDetails.get("userName");
-        String password = (String) rawJdbcDetails.get("password");
+    private fun createJdbcDetails(rawJdbcDetails: Map<*, *>): JdbcDetails {
+        val server = rawJdbcDetails["server"] as String?
+        val url = rawJdbcDetails["url"] as String?
+        val driver = rawJdbcDetails["driver"] as String?
+        val userName = rawJdbcDetails["userName"] as String?
+        val password = rawJdbcDetails["password"] as String?
 
-        Objects.requireNonNull(server, "Server name must be declared for JDBC instance");
-        Objects.requireNonNull(url, "Url name must be declared for JDBC instance");
-        Objects.requireNonNull(driver, "Driver class name must be declared for JDBC instance");
+        Objects.requireNonNull(server, "Server name must be declared for JDBC instance")
+        Objects.requireNonNull(url, "Url name must be declared for JDBC instance")
+        Objects.requireNonNull(driver, "Driver class name must be declared for JDBC instance")
 
-        return new JdbcDetails(server, driver, url, userName, password);
+        return JdbcDetails(server!!, driver!!, url!!, userName, password)
     }
 
+    companion object {
+        private const val JDBC_CONFIG_KEYWORD = "jdbc"
+    }
 }
