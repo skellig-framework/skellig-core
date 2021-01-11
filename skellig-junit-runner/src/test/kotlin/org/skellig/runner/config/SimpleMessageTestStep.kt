@@ -1,50 +1,37 @@
-package org.skellig.runner.config;
+package org.skellig.runner.config
 
-import org.skellig.teststep.processing.model.TestStep;
-import org.skellig.teststep.processing.model.TestStepExecutionType;
-import org.skellig.teststep.processing.model.ValidationDetails;
+import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.model.ValidationDetails
 
-import java.util.Map;
+class SimpleMessageTestStep private constructor(id: String?,
+                                                name: String?,
+                                                execution: TestStepExecutionType?,
+                                                timeout: Int,
+                                                delay: Int,
+                                                variables: Map<String, Any?>?,
+                                                testData: Any?,
+                                                validationDetails: ValidationDetails?,
+                                                val receiver: String?,
+                                                val receiveFrom: String?)
+    : TestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
 
-public class SimpleMessageTestStep extends TestStep {
+    class Builder : TestStep.Builder() {
 
-    private String receiver;
-    private String receiveFrom;
+        private var receiver: String? = null
+        private var receiveFrom: String? = null
 
-    protected SimpleMessageTestStep(String id, String name, TestStepExecutionType execution, int timeout, int delay,
-                                    Map<String, Object> variables, Object testData, ValidationDetails validationDetails,
-                                    String receiver, String receiveFrom) {
-        super(id, name, execution, timeout, delay, variables, testData, validationDetails);
-        this.receiver = receiver;
-        this.receiveFrom = receiveFrom;
-    }
-
-    public String getReceiver() {
-        return receiver;
-    }
-
-    public String getReceiveFrom() {
-        return receiveFrom;
-    }
-
-    public static class Builder extends TestStep.Builder {
-
-        private String receiver;
-        private String receiveFrom;
-
-        public Builder withReceiver(String receiver) {
-            this.receiver = receiver;
-            return this;
+        fun withReceiver(receiver: String?) = apply {
+            this.receiver = receiver
         }
 
-        public Builder withReceiveFrom(String receiveFrom) {
-            this.receiveFrom = receiveFrom;
-            return this;
+        fun withReceiveFrom(receiveFrom: String?) = apply {
+            this.receiveFrom = receiveFrom
         }
 
-        @Override
-        public TestStep build() {
-            return new SimpleMessageTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails, receiver, receiveFrom);
+        override fun build(): TestStep {
+            return SimpleMessageTestStep(id, name, execution, timeout, delay, variables, testData,
+                    validationDetails, receiver, receiveFrom)
         }
     }
 }
