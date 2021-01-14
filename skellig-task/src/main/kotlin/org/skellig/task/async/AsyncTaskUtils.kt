@@ -32,14 +32,16 @@ class AsyncTaskUtils {
         }
 
         @JvmStatic
-        fun <T> runTasksAsyncAndGet(tasks: Map<Any, () -> T>, stopCondition: Predicate<T>, delay: Int, timeout: Int): Map<Any, T?> {
+        fun <T> runTasksAsyncAndGet(tasks: Map<*, () -> T>, stopCondition: Predicate<T>, delay: Int, timeout: Int): Map<*, T?> {
             val futures = tasks.map { it.key to runTaskAsync(it.value, stopCondition, delay, timeout) }.toMap()
             return futures
                     .map {
                         it.key to
                                 try {
-                                    it.value[timeout.toLong(), TimeUnit.MILLISECONDS]
+                                    if(timeout > 0) it.value[timeout.toLong(), TimeUnit.MILLISECONDS]
+                                    else it.value[1, TimeUnit.MINUTES]
                                 } catch (ex: Exception) {
+                                    it.value.cancel(true)
                                     null
                                 }
                     }
