@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.skellig.task.async.AsyncTaskUtils.Companion.runCallableAsync
 import org.skellig.task.async.AsyncTaskUtils.Companion.runTaskAsync
+import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndGet
 import org.skellig.task.async.AsyncTaskUtils.Companion.shutdown
 import org.skellig.task.exception.TaskRunException
 import java.util.*
@@ -18,9 +19,10 @@ import java.util.concurrent.TimeUnit
 class AsyncTaskUtilsTest {
 
     companion object {
-        private val RESPONSE = "ok"
+        private const val RESPONSE = "ok"
 
         @AfterAll
+        @JvmStatic
         fun afterAll() {
             shutdown()
         }
@@ -42,7 +44,7 @@ class AsyncTaskUtilsTest {
     @Throws(Exception::class)
     fun testAsyncTaskWithStopCondition() {
         val countDownLatch = CountDownLatch(6)
-        val asyncResult = runTaskAsync ({
+        val asyncResult = runTaskAsync({
             countDownLatch.countDown()
             if (countDownLatch.count > 1) {
                 return@runTaskAsync null
@@ -51,6 +53,7 @@ class AsyncTaskUtilsTest {
                 return@runTaskAsync RESPONSE
             }
         }, { obj: String? -> Objects.nonNull(obj) }, 10, 1000)
+
         countDownLatch.await(1000, TimeUnit.MILLISECONDS)
         Assertions.assertEquals(0, countDownLatch.count)
         Assertions.assertEquals(RESPONSE, asyncResult[10, TimeUnit.MILLISECONDS])
@@ -63,6 +66,51 @@ class AsyncTaskUtilsTest {
             Thread.sleep(100)
             throw TaskRunException("oops")
         }
+
         Assertions.assertThrows(ExecutionException::class.java) { asyncResult[300, TimeUnit.MILLISECONDS] }
+    }
+
+    @Test
+    @DisplayName("When many tasks And results received within a timeout")
+    @Throws(Exception::class)
+    fun testAsyncTasks() {
+        val asyncResult = runTasksAsyncAndGet(
+                mapOf(Pair("t1",
+                        {
+                            Thread.sleep(150)
+                            "r1"
+                        }),
+                        Pair("t2", {
+                            Thread.sleep(50)
+                            "r2"
+                        })
+                ),
+                { it != null }, 0, 1000
+        )
+
+        Assertions.assertEquals("r1", asyncResult["t1"])
+        Assertions.assertEquals("r2", asyncResult["t2"])
+    }
+
+    @Test
+    @DisplayName("When many tasks And one result not received within a timeout")
+    @Throws(Exception::class)
+    fun testAsyncTasksWhenOneTimesOut() {
+        val asyncResult = runTasksAsyncAndGet(
+                mapOf(Pair("t1",
+                        {
+                            Thread.sleep(1500)
+                            "r1"
+                        }),
+                        Pair("t2", {
+                            Thread.sleep(50)
+                            "r2"
+                        })
+                ),
+                { it != null }, 0, 200
+        )
+
+        Assertions.assertNull(asyncResult["t1"])
+        Assertions.assertEquals("r2", asyncResult["t2"])
     }
 }

@@ -23,12 +23,27 @@ class AsyncTaskUtils {
         }
 
         @JvmStatic
-        fun <T> runCallableAsync(task: Callable<T>): Future<T> {
+        fun <T> runCallableAsync(task: () -> T): Future<T> {
             return try {
                 executorService.submit(task)
             } catch (e: Exception) {
                 throw TaskRunException(e.message, e)
             }
+        }
+
+        @JvmStatic
+        fun <T> runTasksAsyncAndGet(tasks: Map<Any, () -> T>, stopCondition: Predicate<T>, delay: Int, timeout: Int): Map<Any, T?> {
+            val futures = tasks.map { it.key to runTaskAsync(it.value, stopCondition, delay, timeout) }.toMap()
+            return futures
+                    .map {
+                        it.key to
+                                try {
+                                    it.value[timeout.toLong(), TimeUnit.MILLISECONDS]
+                                } catch (ex: Exception) {
+                                    null
+                                }
+                    }
+                    .toMap()
         }
 
         @JvmStatic
