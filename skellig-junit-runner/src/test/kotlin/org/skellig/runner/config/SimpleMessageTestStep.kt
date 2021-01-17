@@ -1,6 +1,6 @@
 package org.skellig.runner.config
 
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationDetails
 
@@ -14,9 +14,9 @@ class SimpleMessageTestStep private constructor(id: String?,
                                                 validationDetails: ValidationDetails?,
                                                 val receiver: String?,
                                                 val receiveFrom: String?)
-    : TestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
 
-    class Builder : TestStep.Builder() {
+    class Builder : DefaultTestStep.Builder<SimpleMessageTestStep>() {
 
         private var receiver: String? = null
         private var receiveFrom: String? = null
@@ -29,7 +29,7 @@ class SimpleMessageTestStep private constructor(id: String?,
             this.receiveFrom = receiveFrom
         }
 
-        override fun build(): TestStep {
+        override fun build(): SimpleMessageTestStep {
             return SimpleMessageTestStep(id, name, execution, timeout, delay, variables, testData,
                     validationDetails, receiver, receiveFrom)
         }

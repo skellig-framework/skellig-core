@@ -18,6 +18,15 @@ class TestSkelligContext : SkelligTestContext() {
                         createTestStepFactoryFrom { keywordsProperties, testStepValueConverter, testDataConverter ->
                             SimpleMessageTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter)
                         }
+                ),
+                TestStepProcessorDetails(
+                        SimpleTestStepProcessor.Builder()
+                                .withTestScenarioState(getTestScenarioState())
+                                .withValidator(getTestStepResultValidator())
+                                .build(),
+                        createTestStepFactoryFrom { keywordsProperties, testStepValueConverter, testDataConverter ->
+                            SimpleTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter)
+                        }
                 )
         )
 }

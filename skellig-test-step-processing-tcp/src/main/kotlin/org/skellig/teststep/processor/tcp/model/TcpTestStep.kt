@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.tcp.model
 
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationDetails
 
@@ -16,9 +16,9 @@ open class TcpTestStep protected constructor(id: String?,
                                              val receiveFrom: String?,
                                              val respondTo: String?,
                                              val readBufferSize: Int)
-    : TestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
 
-    class Builder : TestStep.Builder() {
+    class Builder : DefaultTestStep.Builder<TcpTestStep>() {
 
         private var sendTo: String? = null
         private var receiveFrom: String? = null

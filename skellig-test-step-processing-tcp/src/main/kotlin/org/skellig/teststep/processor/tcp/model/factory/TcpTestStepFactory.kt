@@ -2,7 +2,7 @@ package org.skellig.teststep.processor.tcp.model.factory
 
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
 import java.util.*
@@ -10,7 +10,7 @@ import java.util.*
 class TcpTestStepFactory(keywordsProperties: Properties?,
                          testStepValueConverter: TestStepValueConverter?,
                          testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseTestStepFactory<TcpTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     companion object {
         private const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"
@@ -21,7 +21,7 @@ class TcpTestStepFactory(keywordsProperties: Properties?,
         private const val TCP = "tcp"
     }
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): TestStep.Builder {
+    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<TcpTestStep> {
         val builder = TcpTestStep.Builder()
                 .withSendTo(convertValue(rawTestStep[getKeywordName(SEND_TO_KEYWORD, "sendTo")], parameters))
                 .withReceiveFrom(convertValue(rawTestStep[getKeywordName(RECEIVE_FROM_KEYWORD, "readFrom")], parameters))

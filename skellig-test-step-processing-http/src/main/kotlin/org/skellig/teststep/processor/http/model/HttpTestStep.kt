@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.http.model
 
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationDetails
 
@@ -20,9 +20,9 @@ class HttpTestStep(id: String?,
                    val headers: Map<String, String?>?,
                    val query: Map<String, String?>?,
                    val form: Map<String, String?>?)
-    : TestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
 
-    class Builder : TestStep.Builder() {
+    class Builder : DefaultTestStep.Builder<HttpTestStep>() {
 
         private var services: Collection<String> = emptyList()
         private var url: String? = null

@@ -4,9 +4,8 @@ import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import org.skellig.teststep.processing.converter.*
 import org.skellig.teststep.processing.model.TestStep
-import org.skellig.teststep.processing.model.factory.DefaultTestStepFactory
-import org.skellig.teststep.processing.model.factory.TestStepFactory
-import org.skellig.teststep.processing.processor.DefaultTestStepProcessor
+import org.skellig.teststep.processing.model.factory.*
+import org.skellig.teststep.processing.processor.CompositeTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -18,9 +17,13 @@ import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.reader.sts.StsTestStepReader
-import org.skellig.teststep.runner.DefaultTestStepRunner
-import org.skellig.teststep.runner.TestStepRunner
+import org.skellig.teststep.runner.*
+import org.skellig.teststep.runner.exception.TestStepRegistryException
+import org.skellig.teststep.runner.model.TestStepFileExtension
 import java.io.Closeable
+import java.net.URISyntaxException
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 
 open class SkelligTestContext : Closeable {
@@ -43,27 +46,60 @@ open class SkelligTestContext : Closeable {
         testStepResultValidator = createTestStepValidator(valueExtractor)
         val testStepProcessors = testStepProcessors
         val testStepProcessor = createTestStepProcessor(testStepProcessors, testScenarioState)
-        val testStepFactory = createTestStepFactory(testStepProcessors)
+        val testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader)
+        val testStepFactory = createTestStepFactory(testStepProcessors, testStepsRegistry)
 
         return DefaultTestStepRunner.Builder()
+                .withTestStepsRegistry(testStepsRegistry)
                 .withTestStepProcessor(testStepProcessor)
                 .withTestStepFactory(testStepFactory)
-                .withTestStepReader(testStepReader, classLoader, testStepPaths)
                 .build()
+    }
+
+    private fun createTestStepsRegistry(testStepPaths: List<String>, classLoader: ClassLoader, testStepReader: TestStepReader): DefaultTestStepsRegistry {
+        val paths = extractTestStepPaths(testStepPaths, classLoader)
+        val testStepClassPaths = extractTestStepPackages(testStepPaths)
+        val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STD, testStepReader)
+        testStepsRegistry.registerFoundTestStepsInPath(paths)
+        val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths, classLoader)
+
+        return DefaultTestStepsRegistry(listOf(testStepsRegistry, classTestStepsRegistry))
+    }
+
+    private fun extractTestStepPackages(testStepPaths: Collection<String>): Collection<String> {
+        return testStepPaths
+                .filter { !it.contains("/") }
+                .toSet()
+    }
+
+    private fun extractTestStepPaths(testStepPaths: Collection<String>?, classLoader: ClassLoader): Collection<Path> {
+        return testStepPaths
+                ?.filter { !it.contains(".") }
+                ?.map {
+                    try {
+                        val resource = classLoader.getResource(it)
+                        return@map resource?.let { Paths.get(resource.toURI()) }
+                    } catch (e: URISyntaxException) {
+                        throw TestStepRegistryException(e.message, e)
+                    }
+                }
+                ?.filterNotNull()
+                ?.toSet() ?: emptySet()
     }
 
     private fun createConfig(configPath: String?): Config? {
         return configPath?.let { ConfigFactory.load(configPath) }
     }
 
-    private fun createTestStepFactory(testStepProcessors: List<TestStepProcessorDetails>): TestStepFactory {
-        val testStepFactoryBuilder = DefaultTestStepFactory.Builder()
+    private fun createTestStepFactory(testStepProcessors: List<TestStepProcessorDetails>, testStepsRegistry: TestStepRegistry): TestStepFactory<TestStep> {
+        val testStepFactoryBuilder = CompositeTestStepFactory.Builder()
         testStepProcessors.forEach { testStepFactoryBuilder.withTestStepFactory(it.testStepFactory) }
 
         return testStepFactoryBuilder
                 .withKeywordsProperties(testStepKeywordsProperties)
                 .withTestStepValueConverter(testStepValueConverter)
                 .withTestDataConverter(testDataConverter)
+                .withTestDataRegistry(testStepsRegistry)
                 .build()
     }
 
@@ -83,7 +119,7 @@ open class SkelligTestContext : Closeable {
 
     private fun createTestStepProcessor(additionalTestStepProcessors: List<TestStepProcessorDetails>,
                                         testScenarioState: TestScenarioState?): TestStepProcessor<TestStep> {
-        val testStepProcessorBuilder = DefaultTestStepProcessor.Builder()
+        val testStepProcessorBuilder = CompositeTestStepProcessor.Builder()
         additionalTestStepProcessors.forEach { testStepProcessorBuilder.withTestStepProcessor(it.testStepProcessor) }
 
         defaultTestStepProcessor = testStepProcessorBuilder
@@ -177,7 +213,7 @@ open class SkelligTestContext : Closeable {
 
     protected fun createTestStepFactoryFrom(delegate: (keywordsProperties: Properties?,
                                                        testStepValueConverter: TestStepValueConverter?,
-                                                       testDataConverter: TestDataConverter?) -> TestStepFactory): TestStepFactory {
+                                                       testDataConverter: TestDataConverter?) -> TestStepFactory<out TestStep>): TestStepFactory<out TestStep> {
         return delegate(testStepKeywordsProperties,
                 testStepValueConverter
                         ?: error("TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?"),
@@ -188,6 +224,6 @@ open class SkelligTestContext : Closeable {
         defaultTestStepProcessor!!.close()
     }
 
-    protected class TestStepProcessorDetails(val testStepProcessor: TestStepProcessor<*>, val testStepFactory: TestStepFactory)
+    protected class TestStepProcessorDetails(val testStepProcessor: TestStepProcessor<*>, val testStepFactory: TestStepFactory<out TestStep>)
 
 }

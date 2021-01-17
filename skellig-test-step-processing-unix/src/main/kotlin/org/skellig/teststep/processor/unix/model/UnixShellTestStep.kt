@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.unix.model
 
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationDetails
 
@@ -15,13 +15,13 @@ open class UnixShellTestStep protected constructor(id: String?,
                                                    val hosts: Collection<String>,
                                                    private val command: String,
                                                    private val args: Map<String, String?>?)
-    : TestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
 
     fun getCommand(): String {
         return if (args == null) command else "$command " + args.entries.joinToString(" ") { "-" + it.key + " " + it.value }
     }
 
-    class Builder : TestStep.Builder() {
+    class Builder : DefaultTestStep.Builder<UnixShellTestStep>() {
 
         companion object {
             private const val DEFAULT_TIMEOUT = 30000
