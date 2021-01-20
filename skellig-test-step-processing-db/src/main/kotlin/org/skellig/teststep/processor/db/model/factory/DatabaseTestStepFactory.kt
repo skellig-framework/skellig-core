@@ -20,6 +20,8 @@ class DatabaseTestStepFactory(keywordsProperties: Properties?,
         private const val QUERY_KEYWORD = "test.step.keyword.query"
         private const val WHERE_KEYWORD = "test.step.keyword.where"
         private const val VALUES_KEYWORD = "test.step.keyword.values"
+        private const val DEFAULT_DELAY = 300
+        private const val DEFAULT_ATTEMPTS = 10
     }
 
     private var dbTestDataKeywords = setOf(
@@ -37,7 +39,7 @@ class DatabaseTestStepFactory(keywordsProperties: Properties?,
     protected override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<DatabaseTestStep> {
         val servers = getStringArrayDataFromRawTestStep(getKeywordName(SERVERS_KEYWORD, "servers"), rawTestStep, parameters)
         return DatabaseTestStep.Builder()
-                .withServers(servers!!)
+                .withServers(servers)
                 .withCommand(convertValue<String>(rawTestStep[getKeywordName(COMMAND_KEYWORD, "command")], parameters))
                 .withTable(convertValue<String>(rawTestStep[getTableKeyword()], parameters))
                 .withQuery(convertValue<String>(rawTestStep[getQueryKeyword()], parameters))
@@ -45,6 +47,16 @@ class DatabaseTestStepFactory(keywordsProperties: Properties?,
 
     override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
         return rawTestStep.containsKey(getTableKeyword()) || rawTestStep.containsKey(getQueryKeyword())
+    }
+
+    protected override fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+        val delay = super.getDelay(rawTestStep, parameters)
+        return if (delay == 0) DEFAULT_DELAY else delay
+    }
+
+    protected override fun getAttempts(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+        val attempts = super.getAttempts(rawTestStep, parameters)
+        return if (attempts == 0) DEFAULT_ATTEMPTS else attempts
     }
 
     override fun getTestDataKeywords(): Set<String> {

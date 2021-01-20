@@ -6,6 +6,7 @@ open class DefaultTestStep(
         val execution: TestStepExecutionType? = TestStepExecutionType.SYNC,
         val timeout: Int = 0,
         val delay: Int = 0,
+        val attempts: Int = 0,
         val variables: Map<String, Any?>? = null,
         val testData: Any? = null,
         val validationDetails: ValidationDetails? = null
@@ -17,7 +18,7 @@ open class DefaultTestStep(
     class DefaultTestStepBuilder : Builder<DefaultTestStep>() {
         override fun build(): DefaultTestStep {
             return DefaultTestStep(id, name ?: error("Name of the Test Step must be set"),
-                    execution, timeout, delay, variables, testData, validationDetails)
+                    execution, timeout, delay, 0, variables, testData, validationDetails)
         }
     }
 
@@ -29,7 +30,8 @@ open class DefaultTestStep(
             protected var validationDetails: ValidationDetails? = null,
             protected var execution: TestStepExecutionType? = null,
             protected var timeout: Int = 0,
-            protected var delay: Int = 0) {
+            protected var delay: Int = 0,
+            protected var attempts: Int = 0) {
 
         fun withId(id: String?) = apply { this.id = id }
 
@@ -46,6 +48,8 @@ open class DefaultTestStep(
         fun withTimeout(timeout: Int) = apply { this.timeout = timeout }
 
         fun withDelay(delay: Int) = apply { this.delay = delay }
+
+        fun withAttempts(attempts: Int) = apply { this.attempts = attempts }
 
         abstract fun build(): T
     }

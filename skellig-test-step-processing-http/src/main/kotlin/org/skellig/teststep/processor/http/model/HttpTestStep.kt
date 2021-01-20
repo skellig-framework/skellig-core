@@ -9,6 +9,7 @@ class HttpTestStep(id: String?,
                    execution: TestStepExecutionType?,
                    timeout: Int,
                    delay: Int,
+                   attempts: Int,
                    variables: Map<String, Any?>?,
                    testData: Any?,
                    validationDetails: ValidationDetails?,
@@ -20,11 +21,11 @@ class HttpTestStep(id: String?,
                    val headers: Map<String, String?>?,
                    val query: Map<String, String?>?,
                    val form: Map<String, String?>?)
-    : DefaultTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 
     class Builder : DefaultTestStep.Builder<HttpTestStep>() {
 
-        private var services: Collection<String> = emptyList()
+        private var services: Collection<String>? = emptyList()
         private var url: String? = null
         private var method: String? = null
         private var username: String? = null
@@ -33,7 +34,7 @@ class HttpTestStep(id: String?,
         private var query: Map<String, String?>? = null
         private var form: Map<String, String?>? = null
 
-        fun withService(services: Collection<String>) = apply {
+        fun withService(services: Collection<String>?) = apply {
             this.services = services
         }
 
@@ -66,7 +67,7 @@ class HttpTestStep(id: String?,
         }
 
         override fun build(): HttpTestStep {
-            return HttpTestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails,
+            return HttpTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails,
                     url, services, method, username, password, headers, query, form)
         }
     }

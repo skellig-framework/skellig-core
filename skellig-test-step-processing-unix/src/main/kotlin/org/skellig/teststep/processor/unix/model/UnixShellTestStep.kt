@@ -9,13 +9,14 @@ open class UnixShellTestStep protected constructor(id: String?,
                                                    execution: TestStepExecutionType?,
                                                    timeout: Int,
                                                    delay: Int,
+                                                   attempts: Int,
                                                    variables: Map<String, Any?>?,
                                                    testData: Any?,
                                                    validationDetails: ValidationDetails?,
                                                    val hosts: Collection<String>,
                                                    private val command: String,
                                                    private val args: Map<String, String?>?)
-    : DefaultTestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 
     fun getCommand(): String {
         return if (args == null) command else "$command " + args.entries.joinToString(" ") { "-" + it.key + " " + it.value }
@@ -48,7 +49,7 @@ open class UnixShellTestStep protected constructor(id: String?,
         }
 
         override fun build(): UnixShellTestStep {
-            return UnixShellTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails,
+            return UnixShellTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails,
                     hosts ?: error("Hosts to run Unix Shell Command must not be null"),
                     command ?: error("Unix Shell Command cannot be null"), args)
         }

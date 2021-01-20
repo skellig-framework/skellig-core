@@ -21,9 +21,9 @@ abstract class BaseTestStepFactory<T : DefaultTestStep>(
         private const val VARIABLES_KEYWORD = "test.step.keyword.variables"
         private const val EXECUTION_KEYWORD = "test.step.keyword.execution"
         private const val TIMEOUT_KEYWORD = "test.step.keyword.timeout"
+        private const val ATTEMPTS_KEYWORD = "test.step.keyword.attempts"
         private const val DELAY_KEYWORD = "test.step.keyword.delay"
-        private const val DEFAULT_DELAY = 5
-        private const val DEFAULT_TIMEOUT = 30
+        private const val DEFAULT_TIMEOUT = 30000
 
         private var testDataKeywords: Set<String>? = null
     }
@@ -61,7 +61,8 @@ abstract class BaseTestStepFactory<T : DefaultTestStep>(
                 .withVariables(variables)
                 .withExecution(getExecutionType(rawTestStep))
                 .withTimeout(getTimeout(rawTestStep, additionalParameters))
-                .withDelay(getTimeout(rawTestStep, additionalParameters))
+                .withDelay(getDelay(rawTestStep, additionalParameters))
+                .withAttempts(getAttempts(rawTestStep, additionalParameters))
                 .build() as T
     }
 
@@ -69,17 +70,16 @@ abstract class BaseTestStepFactory<T : DefaultTestStep>(
 
     protected open fun getStringArrayDataFromRawTestStep(propertyName: String?, rawTestStep: Map<String, Any?>,
                                                          parameters: Map<String, Any?>): Collection<String>? {
-        val rawArrayData = rawTestStep[propertyName]
-        if (rawArrayData != null) {
+        return rawTestStep[propertyName]?.let {
             when {
-                rawArrayData is String -> {
-                    return COMMA_SPLIT_PATTERN.split(convertValue(rawArrayData, parameters)).toList()
+                it is String -> {
+                    return COMMA_SPLIT_PATTERN.split(convertValue(it, parameters)).toList()
                 }
-                rawArrayData is Collection<*> -> return rawArrayData as Collection<String>
-                rawArrayData.javaClass.isArray -> return (rawArrayData as Array<String>).toList()
+                it is Collection<*> -> return it as Collection<String>
+                it.javaClass.isArray -> return (it as Array<String>).toList()
+                else -> null
             }
         }
-        return null
     }
 
     protected open fun getTestDataKeywords(): Set<String>? {
@@ -135,7 +135,11 @@ abstract class BaseTestStepFactory<T : DefaultTestStep>(
     }
 
     protected open fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
-        return getInteger(rawTestStep, parameters, getKeywordName(DELAY_KEYWORD, "delay"), DEFAULT_DELAY)
+        return getInteger(rawTestStep, parameters, getKeywordName(DELAY_KEYWORD, "delay"), 0)
+    }
+
+    protected open fun getAttempts(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+        return getInteger(rawTestStep, parameters, getKeywordName(ATTEMPTS_KEYWORD, "attempts"), 0)
     }
 
     protected open fun getName(rawTestStep: Map<String, Any?>): String {

@@ -1,7 +1,9 @@
 package org.skellig.teststep.processor.http
 
 import com.typesafe.config.Config
+import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndGet
 import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.exception.TestDataProcessingInitException
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -9,34 +11,40 @@ import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.http.model.HttpMethodName
 import org.skellig.teststep.processor.http.model.HttpRequestDetails
+import org.skellig.teststep.processor.http.model.HttpResponse
 import org.skellig.teststep.processor.http.model.HttpTestStep
 
-class HttpTestStepProcessor(private val httpChannelPerService: Map<String, HttpChannel>,
+class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
                             testScenarioState: TestScenarioState,
                             validator: TestStepResultValidator,
                             testStepResultConverter: TestStepResultConverter?)
     : BaseTestStepProcessor<HttpTestStep>(testScenarioState, validator, testStepResultConverter) {
 
-    override fun processTestStep(testStep: HttpTestStep): Any {
-        if (testStep.services!!.isEmpty()) {
-            throw TestStepProcessingException("No services were provided to run an HTTP request." +
-                    " Registered services are: " + httpChannelPerService.keys.toString())
+    override fun processTestStep(testStep: HttpTestStep): Any? {
+        var services: Collection<String>? = testStep.services
+        if (services.isNullOrEmpty()) {
+            if (httpServices.size > 1) {
+                throw TestStepProcessingException("No services were provided to run an HTTP request." +
+                        " Registered services are: " + httpServices.keys.toString())
+            } else {
+                services = httpServices.keys
+            }
         }
-        val result: MutableMap<String, Any?> = HashMap()
-        testStep.services.parallelStream()
-                .forEach { serviceName: String ->
-                    if (httpChannelPerService.containsKey(serviceName)) {
-                        val httpChannel = httpChannelPerService[serviceName]
-                        val request = buildHttpRequestDetails(testStep)
-                        result[serviceName] = httpChannel!!.send(request)
-                    } else {
-                        throw TestStepProcessingException(String.format(
-                                "Service '%s' was not registered in HTTP Processor." +
-                                        " Registered services are: %s", serviceName, httpChannelPerService.keys.toString()))
-                    }
-                }
-        return if (result.size == 1) result.values.stream().findFirst().get() else result
+
+        val tasks = services
+                .map { it to { getHttpService(it).send(buildHttpRequestDetails(testStep)) } }
+                .toMap()
+        val results = runTasksAsyncAndGet(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+        return if (isResultForSingleService(results, testStep)) results.values.first() else results
     }
+
+    private fun getHttpService(serviceName: String): HttpChannel =
+            httpServices[serviceName] ?: error("Service '$serviceName' was not registered in HTTP Processor." +
+                    " Registered services are: ${httpServices.keys}")
+
+    private fun isResultForSingleService(results: Map<*, HttpResponse?>, testStep: HttpTestStep) =
+            // when only one service is registered and test step doesn't have service name then return non-grouped result
+            results.size == 1 && httpServices.size == 1 && testStep.services.isNullOrEmpty()
 
     private fun buildHttpRequestDetails(httpTestStep: HttpTestStep): HttpRequestDetails {
         val testData = httpTestStep.testData
@@ -68,7 +76,6 @@ class HttpTestStepProcessor(private val httpChannelPerService: Map<String, HttpC
 
         fun withHttpService(serviceName: String?, url: String?) = apply {
             serviceName?.let { url?.let { httpChannelPerService[serviceName] = HttpChannel(url) } }
-
         }
 
         fun withHttpService(config: Config) = apply {
@@ -79,6 +86,9 @@ class HttpTestStepProcessor(private val httpChannelPerService: Map<String, HttpC
         }
 
         override fun build(): TestStepProcessor<HttpTestStep> {
+            if (httpChannelPerService.isEmpty()) {
+                throw TestDataProcessingInitException("No HTTP services were registered for the processor")
+            }
             return HttpTestStepProcessor(httpChannelPerService, testScenarioState!!, validator!!, testStepResultConverter)
         }
 
