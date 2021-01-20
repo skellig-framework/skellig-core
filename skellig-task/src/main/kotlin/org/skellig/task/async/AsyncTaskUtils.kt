@@ -2,10 +2,7 @@ package org.skellig.task.async
 
 import org.skellig.task.TaskUtils.Companion.runTask
 import org.skellig.task.exception.TaskRunException
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 import java.util.function.Predicate
 
 class AsyncTaskUtils {
@@ -32,20 +29,13 @@ class AsyncTaskUtils {
         }
 
         @JvmStatic
-        fun <T> runTasksAsyncAndGet(tasks: Map<*, () -> T>, stopCondition: Predicate<T>, delay: Int, timeout: Int): Map<*, T?> {
-            val futures = tasks.map { it.key to runTaskAsync(it.value, stopCondition, delay, timeout) }.toMap()
-            return futures
-                    .map {
-                        it.key to
-                                try {
-                                    if(timeout > 0) it.value[timeout.toLong(), TimeUnit.MILLISECONDS]
-                                    else it.value[1, TimeUnit.MINUTES]
-                                } catch (ex: Exception) {
-                                    it.value.cancel(true)
-                                    null
-                                }
-                    }
-                    .toMap()
+        fun <T> runTasksAsyncAndGet(tasks: Map<*, () -> T>, stopCondition: Predicate<T>, delay: Int, attempts: Int, timeout: Int): Map<*, T?> {
+            return if (tasks.size > 1) {
+                val futures = tasks.map { it.key to runTaskAsync(it.value, delay, attempts, stopCondition) }.toMap()
+                futures.map { it.key to waitAndGetResult(it.value, timeout) }.toMap()
+            } else {
+                tasks.map { it.key to runTask(it.value, delay, attempts, stopCondition) }.toMap()
+            }
         }
 
         @JvmStatic
@@ -59,6 +49,11 @@ class AsyncTaskUtils {
         }
 
         @JvmStatic
+        fun <T> runTaskAsync(task: Callable<T>, delay: Int, attempts: Int, stopCondition: Predicate<T>): Future<T> {
+            return runCallableAsync { runTask(task, delay, attempts, stopCondition) }
+        }
+
+        @JvmStatic
         fun shutdown() {
             executorService.shutdown()
             try {
@@ -67,5 +62,18 @@ class AsyncTaskUtils {
                 throw TaskRunException("Waiting for termination of the running async tasks took too long", e)
             }
         }
+
+        private fun <T> waitAndGetResult(taskResult: Future<T>, timeout: Int) =
+                try {
+                    if (timeout > 0) taskResult[timeout.toLong(), TimeUnit.MILLISECONDS]
+                    else taskResult[1, TimeUnit.MINUTES]
+                } catch (ex: Exception) {
+                    taskResult.cancel(true)
+                    when (ex) {
+                        is InterruptedException, is TimeoutException -> null
+                        // in case if exception comes from the task then throw it
+                        else -> ex.cause?.let { throw it } ?: throw ex
+                    }
+                }
     }
 }

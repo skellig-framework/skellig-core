@@ -9,6 +9,7 @@ open class TcpTestStep protected constructor(id: String?,
                                              execution: TestStepExecutionType?,
                                              timeout: Int,
                                              delay: Int,
+                                             attempts: Int,
                                              variables: Map<String, Any?>?,
                                              testData: Any?,
                                              validationDetails: ValidationDetails?,
@@ -16,7 +17,7 @@ open class TcpTestStep protected constructor(id: String?,
                                              val receiveFrom: String?,
                                              val respondTo: String?,
                                              val readBufferSize: Int)
-    : DefaultTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 
     class Builder : DefaultTestStep.Builder<TcpTestStep>() {
 
@@ -42,7 +43,7 @@ open class TcpTestStep protected constructor(id: String?,
         }
 
         override fun build(): TcpTestStep {
-            return TcpTestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails,
+            return TcpTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails,
                     sendTo, receiveFrom, respondTo, readBufferSize)
         }
     }

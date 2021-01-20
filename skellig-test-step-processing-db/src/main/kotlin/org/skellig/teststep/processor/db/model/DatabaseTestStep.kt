@@ -9,23 +9,24 @@ open class DatabaseTestStep protected constructor(id: String?,
                                                   execution: TestStepExecutionType?,
                                                   timeout: Int,
                                                   delay: Int,
+                                                  attempts: Int,
                                                   variables: Map<String, Any?>?,
                                                   testData: Any?,
                                                   validationDetails: ValidationDetails?,
-                                                  val servers: Collection<String>,
+                                                  val servers: Collection<String>?,
                                                   val command: String?,
                                                   val table: String?,
                                                   val query: String?)
-    : DefaultTestStep(id, name, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 
     class Builder : DefaultTestStep.Builder<DatabaseTestStep>() {
 
-        private var servers: Collection<String> = emptyList()
+        private var servers: Collection<String>? = emptyList()
         private var command: String? = null
         private var table: String? = null
         private var query: String? = null
 
-        fun withServers(servers: Collection<String>) = apply {
+        fun withServers(servers: Collection<String>?) = apply {
             this.servers = servers
         }
 
@@ -43,7 +44,7 @@ open class DatabaseTestStep protected constructor(id: String?,
 
         override fun build(): DatabaseTestStep {
             return DatabaseTestStep(id, name!!, execution, timeout,
-                    delay, variables, testData,
+                    delay, attempts, variables, testData,
                     validationDetails, servers, command, table, query)
         }
     }

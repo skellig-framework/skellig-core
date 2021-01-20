@@ -38,12 +38,11 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(
             result = processTestStep(testStep)
             testScenarioState.set(testStep.getId + RESULT_SAVE_SUFFIX, result)
             validate(testStep, result)
-        } catch (ex: ValidationException) {
-            error = ex
-        } catch (ex: TestStepProcessingException) {
-            error = ex
         } catch (ex: Throwable) {
-            error = TestStepProcessingException(ex.message, ex)
+            error = when (ex) {
+                is ValidationException, is TestStepProcessingException -> ex as RuntimeException
+                else -> TestStepProcessingException(ex.message, ex)
+            }
         } finally {
             testStepRunResult.notify(result, error)
         }

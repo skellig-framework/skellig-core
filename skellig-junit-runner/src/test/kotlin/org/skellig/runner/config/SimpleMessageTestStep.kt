@@ -9,12 +9,13 @@ class SimpleMessageTestStep private constructor(id: String?,
                                                 execution: TestStepExecutionType?,
                                                 timeout: Int,
                                                 delay: Int,
+                                                attempts: Int,
                                                 variables: Map<String, Any?>?,
                                                 testData: Any?,
                                                 validationDetails: ValidationDetails?,
                                                 val receiver: String?,
                                                 val receiveFrom: String?)
-    : DefaultTestStep(id, name!!, execution, timeout, delay, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 
     class Builder : DefaultTestStep.Builder<SimpleMessageTestStep>() {
 
@@ -30,7 +31,7 @@ class SimpleMessageTestStep private constructor(id: String?,
         }
 
         override fun build(): SimpleMessageTestStep {
-            return SimpleMessageTestStep(id, name, execution, timeout, delay, variables, testData,
+            return SimpleMessageTestStep(id, name, execution, timeout, delay, attempts, variables, testData,
                     validationDetails, receiver, receiveFrom)
         }
     }

@@ -26,7 +26,7 @@ class HttpTestStepFactory(keywordsProperties: Properties?,
     protected override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<HttpTestStep> {
         val services = getStringArrayDataFromRawTestStep(getKeywordName(SERVICE_KEYWORD, "services"), rawTestStep, parameters)
         return HttpTestStep.Builder()
-                .withService(services?:error("At least one name of registered HTTP Services must be supplied in the test step"))
+                .withService(services)
                 .withUrl(convertValue<String>(rawTestStep[getUrlKeyword()], parameters))
                 .withMethod(rawTestStep[getMethodKeyword()] as String?)
                 .withHeaders(getHttpHeaders(rawTestStep, parameters))

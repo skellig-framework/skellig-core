@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.db
 
 import com.typesafe.config.Config
+import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndGet
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
@@ -18,33 +19,35 @@ open class DatabaseTestStepProcessor<T : DatabaseRequestExecutor>(private val db
     : BaseTestStepProcessor<DatabaseTestStep>(testScenarioState, validator, testStepResultConverter) {
 
     override fun processTestStep(testStep: DatabaseTestStep): Any? {
-        if (testStep.servers.isEmpty()) {
-            throw TestStepProcessingException("No DB servers were provided to run a query." +
-                    " Registered servers are: " + dbServers.keys.toString())
+        var services: Collection<String>? = testStep.servers
+        if (services.isNullOrEmpty()) {
+            if (dbServers.size > 1) {
+                throw TestStepProcessingException("No DB servers were provided to run a query." +
+                        " Registered servers are: " + dbServers.keys.toString())
+            } else {
+                services = dbServers.keys
+            }
         }
-        val result = mutableMapOf<String, Any?>()
-        testStep.servers
-                .forEach { serverName: String ->
-                    val response = getDatabaseServer(serverName)!!.execute(getDatabaseRequest(testStep))
-                    result[serverName] = response
-                }
-        return result
+
+        val tasks = services
+                .map { it to { getDatabaseServer(it).execute(getDatabaseRequest(testStep)) } }
+                .toMap()
+        val results = runTasksAsyncAndGet(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+        return if (isResultForSingleDbServer(results, testStep)) results.values.first() else results
     }
 
     private fun getDatabaseRequest(testStep: DatabaseTestStep): DatabaseRequest {
-        return if (testStep.query != null) {
-            DatabaseRequest(testStep.query)
-        } else {
-            DatabaseRequest(testStep.command, testStep.table, testStep.testData as Map<String, Any?>?)
-        }
+        return if (testStep.query != null) DatabaseRequest(testStep.query)
+        else DatabaseRequest(testStep.command, testStep.table, testStep.testData as Map<String, Any?>?)
     }
 
-    private fun getDatabaseServer(serverName: String): DatabaseRequestExecutor? {
-        if (!dbServers.containsKey(serverName)) {
-            throw TestStepProcessingException(String.format("No database was registered for server name '%s'." +
-                    " Registered servers are: %s", serverName, dbServers.keys.toString()))
-        }
-        return dbServers[serverName]
+    private fun isResultForSingleDbServer(results: Map<*, *>, testStep: DatabaseTestStep) =
+            // when only one db server is registered and test step doesn't have db server names then return non-grouped result
+            results.size == 1 && dbServers.size == 1 && testStep.servers.isNullOrEmpty()
+
+    private fun getDatabaseServer(serverName: String): DatabaseRequestExecutor {
+        return dbServers[serverName] ?: error("No database was registered for server name '$serverName'." +
+                " Registered servers are: ${dbServers.keys}")
     }
 
     override fun getTestStepClass(): Class<DatabaseTestStep> {

@@ -35,7 +35,17 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
         }
     }
 
-    private fun validate(testStepId: String?, validationDetails: ValidationDetails, actualResult: Any?) {
+    protected fun isValid(testStep: DefaultTestStep, actualResult: Any?) : Boolean =
+        try {
+            if (testStep.validationDetails != null) {
+                validate(testStep.getId, testStep.validationDetails, actualResult)
+                true
+            } else actualResult != null
+        } catch (ex: Exception) {
+            false
+        }
+
+    protected fun validate(testStepId: String?, validationDetails: ValidationDetails, actualResult: Any?) {
         var newActualResult = actualResult
         try {
             validationDetails.convertTo?.let {
@@ -52,7 +62,7 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
     private fun getLatestResultOfTestStep(testStepId: String, delay: Int, timeout: Int): Any? {
         return runTask(
                 { testScenarioState.get(testStepId + RESULT_SAVE_SUFFIX) },
-                { obj: Any? -> obj != null },
+                { it != null },
                 delay, timeout)
     }
 }

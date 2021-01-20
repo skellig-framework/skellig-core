@@ -16,16 +16,18 @@ class TaskUtils {
 
         @JvmStatic
         @Throws(TaskRunException::class)
+        fun <T> runTask(task: Callable<T>, delay: Int, attempts: Int, stopCondition: Predicate<T>): T {
+            return runTaskUntil(task, delay, attempts, stopCondition)
+        }
+
+        @JvmStatic
+        @Throws(TaskRunException::class)
         private fun <T> runTaskUntil(task: Callable<T>, stopCondition: Predicate<T>, delay: Int, timeout: Int): T {
-            var newTimeout: Int
+            var newTimeout: Int = timeout
             var result: T
             do {
                 val startTime = System.currentTimeMillis()
-                result = try {
-                    task.call()
-                } catch (ex: Exception) {
-                    throw TaskRunException(ex.message, ex)
-                }
+                result = call(task)
                 val totalExecutionTime = (System.currentTimeMillis() - startTime).toInt()
                 newTimeout = if (stopCondition.test(result)) {
                     0
@@ -33,12 +35,40 @@ class TaskUtils {
                     if (delay > 0) {
                         delay(delay)
                     }
-                    timeout - delay - totalExecutionTime
+                    newTimeout - delay - totalExecutionTime
                 }
             } while (newTimeout > 0)
 
             return result
         }
+
+        @JvmStatic
+        @Throws(TaskRunException::class)
+        private fun <T> runTaskUntil(task: Callable<T>, delay: Int, attempts: Int, stopCondition: Predicate<T>): T {
+            var newAttempts = attempts
+            var result: T
+            do {
+                result = call(task)
+                newAttempts = if (stopCondition.test(result)) {
+                    0
+                } else {
+                    if (delay > 0) {
+                        delay(delay)
+                    }
+                    newAttempts - 1
+                }
+            } while (newAttempts > 0)
+
+            return result
+        }
+
+        private fun <T> call(task: Callable<T>): T =
+                try {
+                    task.call()
+                } catch (ex: Exception) {
+                    throw TaskRunException(ex.message, ex)
+                }
+
 
         private fun delay(idleMilliseconds: Int) {
             try {
