@@ -9,7 +9,7 @@ class FindFromStateValueConverter(val testScenarioState: TestScenarioState,
                                   val valueExtractor: TestStepValueExtractor?) : TestStepValueConverter {
 
     companion object {
-        private val FIND_PATTERN = Pattern.compile("find\\(([\\w_$.]+)\\)?")
+        private val FIND_PATTERN = Pattern.compile("find\\(([\\w_\$./)(]+)\\)")
     }
 
     override fun convert(value: String?): Any? {
@@ -22,6 +22,9 @@ class FindFromStateValueConverter(val testScenarioState: TestScenarioState,
                         .mapNotNull { e -> tryExtract(e, extractPath) }
                         .firstOrNull()
                         ?: throw(TestValueConversionException("Could not find data in the current state by '$extractPath' path"))
+                if (result is String) {
+                    return convert(value.replace("find($extractPath)", result.toString()))
+                }
             }
             return result
         }
