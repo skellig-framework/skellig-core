@@ -39,9 +39,10 @@ internal class JdbcSelectRequestExecutorTest {
 
         Assertions.assertAll(
                 { Assertions.assertEquals(1, response!!.size) },
-                { Assertions.assertEquals(2, response!![0].size) },
+                { Assertions.assertEquals(3, response!![0].size) },
                 { Assertions.assertEquals("v1", response!![0]["c1"]) },
-                { Assertions.assertEquals("v2", response!![0]["c2"]) }
+                { Assertions.assertEquals("v2", response!![0]["c2"]) },
+                { Assertions.assertNull(response!![0]["c3"]) }
         )
     }
 
@@ -118,12 +119,14 @@ internal class JdbcSelectRequestExecutorTest {
     private fun createResultSet(): ResultSet {
         val resultSet = Mockito.mock(ResultSet::class.java)
         val metaData = Mockito.mock(ResultSetMetaData::class.java)
-        whenever(metaData.columnCount).thenReturn(2)
+        whenever(metaData.columnCount).thenReturn(3)
         whenever(metaData.getColumnName(1)).thenReturn("c1")
         whenever(metaData.getColumnName(2)).thenReturn("c2")
+        whenever(metaData.getColumnName(3)).thenReturn("c3")
         whenever(resultSet.metaData).thenReturn(metaData)
         whenever(resultSet.getObject("c1")).thenReturn("v1")
         whenever(resultSet.getObject("c2")).thenReturn("v2")
+        whenever(resultSet.getObject("c3")).thenReturn(null)
 
         // has only 1 row
         val counter = AtomicInteger(0)

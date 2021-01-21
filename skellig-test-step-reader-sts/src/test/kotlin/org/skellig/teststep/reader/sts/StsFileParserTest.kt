@@ -172,6 +172,7 @@ class StsFileParserTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
+                { assertTrue((firstTestStep["services"] as Collection<*>).contains("srv1"), "Services field does not contain srv1") },
                 { assertEquals("3", getValueFromMap(firstTestStep, "validate", "size")) },
                 { assertEquals("contains(v1)", getValueFromMap(firstTestStep, "validate", "records", "[0]")) },
                 { assertEquals("contains(v2)", getValueFromMap(firstTestStep, "validate", "records", "[1]")) },

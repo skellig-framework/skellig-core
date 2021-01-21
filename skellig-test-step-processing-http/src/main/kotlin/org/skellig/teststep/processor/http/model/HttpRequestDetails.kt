@@ -15,7 +15,7 @@ class HttpRequestDetails(val verb: HttpMethodName,
                 (if (headers.isNotEmpty()) ("\nheaders: $headers") else "") +
                 (if (formParams.isNotEmpty()) ("\nformParams: $formParams") else "") +
                 (if (queryParams.isNotEmpty()) ("\nqueryParams: $queryParams") else "") +
-                body?.let { ("\nbody: $body") } +
+                (body?.let { ("\nbody: $body") } ?: "") +
                 username?.let { ("\nusername: $username") } +
                 password?.let { ("\npassword: $password") }
     }
