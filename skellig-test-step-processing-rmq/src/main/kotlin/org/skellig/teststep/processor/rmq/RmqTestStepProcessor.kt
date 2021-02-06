@@ -1,15 +1,14 @@
 package org.skellig.teststep.processor.rmq
 
 import com.typesafe.config.Config
+import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.converter.TestStepResultConverter
-import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.rmq.model.RmqDetails
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
-import java.util.function.Consumer
 
 open class RmqTestStepProcessor(protected val rmqChannels: Map<String, RmqChannel>,
                                 testScenarioState: TestScenarioState?,
@@ -18,53 +17,74 @@ open class RmqTestStepProcessor(protected val rmqChannels: Map<String, RmqChanne
     : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
     protected override fun processTestStep(testStep: RmqTestStep): Any? {
-        var response: Any? = null
+        var response: Map<*, Any?>? = null
         val sendTo = testStep.sendTo
         val receiveFrom = testStep.receiveFrom
         val routingKey = testStep.routingKey
         sendTo?.let { send(testStep.testData, it, routingKey) }
 
         receiveFrom?.let {
-            val channel = rmqChannels[receiveFrom]
             val respondTo = testStep.respondTo
             val responseTestData = testStep.testData
-            response = channel!!.read(if (respondTo != null) null else responseTestData, testStep.timeout)
+            response = read(testStep, receiveFrom, if (respondTo != null) null else responseTestData)
 
-            validate(testStep, response)
-
-            respondTo?.let { send(responseTestData, it, routingKey) }
+            if(isValid(testStep, response)) {
+                respondTo?.let {
+                    // respond to those channels from where result was received
+                    send(responseTestData, respondTo.filter { response!![it] != null }.toSet(), routingKey)
+                }
+            }
         }
         return response
     }
 
-    private fun send(testData: Any?, channelId: String?, routingKey: String?) {
-        if (rmqChannels.containsKey(channelId)) {
-            rmqChannels[channelId]?.send(testData, routingKey)
-        } else {
-            throw TestStepProcessingException(String.format("Channel '%s' was not registered " +
-                    "in RMQ Test Step Processor", channelId))
-        }
+    private fun read(testStep: RmqTestStep, channels: Set<String?>, responseTestData: Any? = null): Map<*, Any?> {
+        val tasks = channels
+                .map {
+                    it to {
+                        val channel = rmqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
+                        channel.read(responseTestData, testStep.timeout)
+                    }
+                }
+                .toMap()
+        return runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+    }
+
+    private fun send(testData: Any?, channels: Set<String>, routingKey: String?) {
+        val tasks = channels
+                .map {
+                    it to {
+                        val channel = rmqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
+                        channel.send(testData, routingKey)
+                        "sent"
+                    }
+                }
+                .toMap()
+        runTasksAsyncAndWait(tasks)
     }
 
     override fun close() {
-        rmqChannels.values.forEach(Consumer { obj: RmqChannel -> obj.close() })
+        rmqChannels.values.forEach { it.close() }
     }
 
     override fun getTestStepClass(): Class<RmqTestStep> {
         return RmqTestStep::class.java
     }
 
+    private fun getChannelNotExistErrorMessage(channelId: String?) =
+            "Channel '$channelId' was not registered in RMQ Test Step Processor"
+
     class Builder : BaseTestStepProcessor.Builder<RmqTestStep>() {
 
         private val rmqChannels = hashMapOf<String, RmqChannel>()
         private val rmqDetailsConfigReader: RmqDetailsConfigReader = RmqDetailsConfigReader()
 
-        fun withRmqChannel(rmqDetails: RmqDetails) = apply {
-            rmqChannels.putIfAbsent(rmqDetails.channelId, RmqChannel(rmqDetails))
+        fun rmqChannel(rmqDetails: RmqDetails) = apply {
+            rmqChannels.putIfAbsent(rmqDetails.queue.name, RmqChannel(rmqDetails))
         }
 
-        fun withRmqChannels(config: Config) = apply {
-            rmqDetailsConfigReader.read(config).filterNotNull().forEach { withRmqChannel(it) }
+        fun rmqChannels(config: Config) = apply {
+            rmqDetailsConfigReader.read(config).forEach { rmqChannel(it) }
         }
 
         override fun build(): TestStepProcessor<RmqTestStep> {

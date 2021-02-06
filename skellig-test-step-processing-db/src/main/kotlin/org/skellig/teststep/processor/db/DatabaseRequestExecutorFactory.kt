@@ -3,13 +3,16 @@ package org.skellig.teststep.processor.db
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 
-open class DatabaseRequestExecutorFactory(private val select: DatabaseRequestExecutor,
-                                          private val insert: DatabaseRequestExecutor) {
+open class DatabaseRequestExecutorFactory(select: DatabaseRequestExecutor,
+                                          insert: DatabaseRequestExecutor,
+                                          update: DatabaseRequestExecutor) {
 
     private var databaseRequestExecutors =
             mutableMapOf(
                     Pair("select", select),
-                    Pair("insert", insert))
+                    Pair("insert", insert),
+                    Pair("update", update)
+            )
 
     operator fun get(databaseRequest: DatabaseRequest): DatabaseRequestExecutor? {
         var command = databaseRequest.command

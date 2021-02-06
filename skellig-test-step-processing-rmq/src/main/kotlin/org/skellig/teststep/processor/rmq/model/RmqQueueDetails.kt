@@ -17,35 +17,35 @@ class RmqQueueDetails(val name: String,
         private var createIfNew = false
         private var parameters: MutableMap<String, Any>? = null
 
-        fun withName(name: String?) = apply {
+        fun name(name: String?) = apply {
             this.name = name
         }
 
-        fun withRoutingKey(routingKey: String?) = apply {
+        fun routingKey(routingKey: String?) = apply {
             this.routingKey = routingKey
         }
 
-        fun withDurable(isDurable: Boolean) = apply {
+        fun durable(isDurable: Boolean) = apply {
             this.isDurable = isDurable
         }
 
-        fun withExclusive(isExclusive: Boolean) = apply {
+        fun exclusive(isExclusive: Boolean) = apply {
             this.isExclusive = isExclusive
         }
 
-        fun withAutoDelete(isAutoDelete: Boolean) = apply {
+        fun autoDelete(isAutoDelete: Boolean) = apply {
             this.isAutoDelete = isAutoDelete
         }
 
-        fun withCreateIfNew(createIfNew: Boolean) = apply {
+        fun createIfNew(createIfNew: Boolean) = apply {
             this.createIfNew = createIfNew
         }
 
-        fun withParameters(parameters: MutableMap<String, Any>?) = apply {
+        fun parameters(parameters: MutableMap<String, Any>?) = apply {
             this.parameters = parameters
         }
 
-        fun withParameter(name: String, value: Any) = apply {
+        fun parameter(name: String, value: Any) = apply {
             if (parameters == null) {
                 parameters = hashMapOf()
             }

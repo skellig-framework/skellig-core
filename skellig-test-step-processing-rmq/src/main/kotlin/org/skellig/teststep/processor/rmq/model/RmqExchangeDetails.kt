@@ -15,31 +15,31 @@ class RmqExchangeDetails(val name: String,
         private var createIfNew = false
         private var parameters: MutableMap<String, Any>? = null
 
-        fun withName(name: String?) = apply {
+        fun name(name: String?) = apply {
             this.name = name
         }
 
-        fun withType(type: String?) = apply {
+        fun type(type: String?) = apply {
             this.type = type
         }
 
-        fun withDurable(durable: Boolean) = apply {
+        fun durable(durable: Boolean) = apply {
             isDurable = durable
         }
 
-        fun withAutoDelete(autoDelete: Boolean) = apply {
+        fun autoDelete(autoDelete: Boolean) = apply {
             isAutoDelete = autoDelete
         }
 
-        fun withCreateIfNew(createIfNew: Boolean) = apply {
+        fun createIfNew(createIfNew: Boolean) = apply {
             this.createIfNew = createIfNew
         }
 
-        fun withParameters(parameters: MutableMap<String, Any>?) = apply {
+        fun parameters(parameters: MutableMap<String, Any>?) = apply {
             this.parameters = parameters
         }
 
-        fun withParameter(name: String, value: Any) = apply {
+        fun parameter(name: String, value: Any) = apply {
             if (parameters == null) {
                 parameters = hashMapOf()
             }

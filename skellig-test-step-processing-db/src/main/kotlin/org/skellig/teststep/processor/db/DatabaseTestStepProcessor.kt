@@ -1,7 +1,7 @@
 package org.skellig.teststep.processor.db
 
 import com.typesafe.config.Config
-import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndGet
+import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
@@ -32,7 +32,7 @@ open class DatabaseTestStepProcessor<T : DatabaseRequestExecutor>(private val db
         val tasks = services
                 .map { it to { getDatabaseServer(it).execute(getDatabaseRequest(testStep)) } }
                 .toMap()
-        val results = runTasksAsyncAndGet(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+        val results = runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
         return if (isResultForSingleDbServer(results, testStep)) results.values.first() else results
     }
 

@@ -12,9 +12,26 @@ import java.net.Socket
 
 class TcpChannel(tcpDetails: TcpDetails) : Closeable {
 
+    companion object {
+        private const val DEFAULT_TIMEOUT = 30000
+    }
+
     private var socket: Socket? = null
     private var inputStream: DataInputStream? = null
     private var outputStream: DataOutputStream? = null
+
+    init {
+        try {
+            socket = Socket()
+            socket!!.keepAlive = tcpDetails.isKeepAlive
+            socket!!.soTimeout = DEFAULT_TIMEOUT
+            socket!!.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
+            inputStream = DataInputStream(socket!!.getInputStream())
+            outputStream = DataOutputStream(socket!!.getOutputStream())
+        } catch (e: IOException) {
+            throw TestStepProcessingException(e.message, e)
+        }
+    }
 
     fun send(request: Any?) {
         request?.let {
@@ -78,22 +95,5 @@ class TcpChannel(tcpDetails: TcpDetails) : Closeable {
             }
         }
         return if (response.isEmpty()) null else response
-    }
-
-    companion object {
-        private const val DEFAULT_TIMEOUT = 30000
-    }
-
-    init {
-        try {
-            socket = Socket()
-            socket!!.keepAlive = tcpDetails.isKeepAlive
-            socket!!.soTimeout = DEFAULT_TIMEOUT
-            socket!!.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
-            inputStream = DataInputStream(socket!!.getInputStream())
-            outputStream = DataOutputStream(socket!!.getOutputStream())
-        } catch (e: IOException) {
-            throw TestStepProcessingException(e.message, e)
-        }
     }
 }

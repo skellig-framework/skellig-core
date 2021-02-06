@@ -10,8 +10,7 @@ name (Validate response)
        contains(go go go)
        regex(.*get(id).*)
     ]
-    has_fields
-    {
+    has_fields {
       f1 = v1
       json_path(f1.f2) = get(id) and more
     }

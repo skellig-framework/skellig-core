@@ -9,6 +9,10 @@ import java.util.*
 
 internal class RmqDetailsConfigReader {
 
+    companion object {
+        private const val RMQ_CONFIG_KEYWORD = "rmq"
+    }
+
     fun read(config: Config?): Collection<RmqDetails> {
         Objects.requireNonNull(config, "RMQ config cannot be null")
 
@@ -42,8 +46,7 @@ internal class RmqDetailsConfigReader {
     }
 
     private fun createExchanges(rawExchangesDetails: Map<*, *>): Map<String, RmqExchangeDetails> {
-        val exchanges = rawExchangesDetails["exchanges"] as List<Map<*, *>>?
-        Objects.requireNonNull(exchanges, "No exchanges were declared for RMQ")
+        val exchanges = (rawExchangesDetails["exchanges"]?:error("No exchanges were declared for RMQ")) as List<Map<*, *>>?
 
         return exchanges!!
                 .map { createExchange(it) }
@@ -52,47 +55,40 @@ internal class RmqDetailsConfigReader {
     }
 
     private fun createExchange(rawExchangeDetails: Map<*, *>): RmqExchangeDetails {
-        val name = rawExchangeDetails["name"] as String?
+        val name = (rawExchangeDetails["name"]?:error("Name was not declared for RMQ Exchange")) as String?
         val type = rawExchangeDetails["type"] as String?
-        Objects.requireNonNull(name, "Name was not declared for RMQ Exchange")
 
         return RmqExchangeDetails.Builder()
-                .withName(name)
-                .withType(type)
-                .withDurable(extractIsDurable(rawExchangeDetails))
-                .withAutoDelete(extractIsAutoDelete(rawExchangeDetails))
-                .withCreateIfNew(extractCreateIfNew(rawExchangeDetails))
-                .withParameters(extractParameters(rawExchangeDetails))
+                .name(name)
+                .type(type)
+                .durable(extractIsDurable(rawExchangeDetails))
+                .autoDelete(extractIsAutoDelete(rawExchangeDetails))
+                .createIfNew(extractCreateIfNew(rawExchangeDetails))
+                .parameters(extractParameters(rawExchangeDetails))
                 .build()
     }
 
     private fun createQueueDetails(item: Map<*, *>, exchanges: Map<String, RmqExchangeDetails>,
                                    hostDetails: RmqHostDetails): RmqDetails {
-        val channelId = item["channelId"] as String?
-        val name = item["name"] as String?
-        val exchange = item["exchange"] as String?
+        val name = (item["name"]?:error("Queue name was not declared for RMQ details")) as String
+        val exchange = item["exchange"]?:error("Exchange name was not declared for RMQ details")
 
-        Objects.requireNonNull(channelId, "Channel ID was not declared for RMQ details. " +
-                "It can be any unique name which you would use in tests as a reference")
-        Objects.requireNonNull(name, "Queue name was not declared for RMQ details")
-        Objects.requireNonNull(exchange, "Exchange name was not declared for RMQ details")
         Objects.requireNonNull(exchanges[exchange], String.format("No exchange name '%s' was declared", exchange))
 
         val queue = RmqQueueDetails.Builder()
-                .withName(name)
-                .withRoutingKey(extractRoutingKey(item))
-                .withDurable(extractIsDurable(item))
-                .withAutoDelete(extractIsAutoDelete(item))
-                .withCreateIfNew(extractCreateIfNew(item))
-                .withExclusive(extractIsExclusive(item))
-                .withParameters(extractParameters(item))
+                .name(name)
+                .routingKey(extractRoutingKey(item))
+                .durable(extractIsDurable(item))
+                .autoDelete(extractIsAutoDelete(item))
+                .createIfNew(extractCreateIfNew(item))
+                .exclusive(extractIsExclusive(item))
+                .parameters(extractParameters(item))
                 .build()
 
         return RmqDetails.Builder()
-                .withChannelId(channelId)
-                .withHostDetails(hostDetails)
-                .withQueue(queue)
-                .withExchange(exchanges[exchange])
+                .hostDetails(hostDetails)
+                .queue(queue)
+                .exchange(exchanges[exchange])
                 .build()
     }
 
@@ -123,9 +119,5 @@ internal class RmqDetailsConfigReader {
 
     private fun extractParameters(rawQueueDetails: Map<*, *>): MutableMap<String, Any>? {
         return rawQueueDetails["parameters"] as MutableMap<String, Any>?
-    }
-
-    companion object {
-        private const val RMQ_CONFIG_KEYWORD = "rmq"
     }
 }

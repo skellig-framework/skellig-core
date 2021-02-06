@@ -15,7 +15,7 @@ class DatabaseRequestExecutorFactoryTest {
 
     @BeforeEach
     fun setUp() {
-        factory = DatabaseRequestExecutorFactory(selectExecutor, insertExecutor)
+        factory = DatabaseRequestExecutorFactory(selectExecutor, insertExecutor, insertExecutor)
     }
 
     @Test
@@ -61,7 +61,7 @@ class DatabaseRequestExecutorFactoryTest {
         val ex = Assertions.assertThrows(TestStepProcessingException::class.java) { factory!![databaseRequest] }
 
         Assertions.assertEquals("No database query executors found for query: 'some query'." +
-                " Supported types of queries: [select, insert]", ex.message)
+                " Supported types of queries: [select, insert, update]", ex.message)
     }
 
     @Test
@@ -71,6 +71,6 @@ class DatabaseRequestExecutorFactoryTest {
         val ex = Assertions.assertThrows(TestStepProcessingException::class.java) { factory!![databaseRequest] }
 
         Assertions.assertEquals("No database query executors found for command: 'wrong command'." +
-                " Supported commands: [select, insert]", ex.message)
+                " Supported commands: [select, insert, update]", ex.message)
     }
 }

@@ -1,7 +1,5 @@
 package org.skellig.teststep.processor.ibmmq.model
 
-import java.util.*
-
 class IbmMqManagerDetails private constructor(val name: String,
                                               val channel: String,
                                               val host: String,
@@ -16,34 +14,33 @@ class IbmMqManagerDetails private constructor(val name: String,
         private var channel: String? = null
         private var userCredentials: IbmMqUserCredentials? = null
 
-        fun withHost(host: String?) = apply {
+        fun host(host: String?) = apply {
             this.host = host
         }
 
-        fun withPort(port: Int) = apply {
+        fun port(port: Int) = apply {
             this.port = port
         }
 
-        fun withName(name: String?) = apply {
+        fun name(name: String?) = apply {
             this.name = name
         }
 
-        fun withChannel(channel: String?) = apply {
+        fun channel(channel: String?) = apply {
             this.channel = channel
         }
 
-        fun withUserCredentials(userCredentials: IbmMqUserCredentials?) = apply {
+        fun userCredentials(userCredentials: IbmMqUserCredentials?) = apply {
             this.userCredentials = userCredentials
         }
 
         fun build(): IbmMqManagerDetails {
-            Objects.requireNonNull(name, "MQ Manager name cannot be null")
-            Objects.requireNonNull(channel, "MQ Manager channel cannot be null")
-            Objects.requireNonNull(host, "MQ Manager host cannot be null")
-
-            return IbmMqManagerDetails(name!!, channel!!, host!!, port, userCredentials)
+            return IbmMqManagerDetails(name ?: error("MQ Manager name cannot be null"),
+                    channel ?: error("MQ Manager channel cannot be null"),
+                    host ?: error("MQ Manager host cannot be null"),
+                    port, userCredentials)
         }
     }
 
-    class IbmMqUserCredentials(val username: String, val password: String)
+    class IbmMqUserCredentials(val username: String, val password: String?)
 }

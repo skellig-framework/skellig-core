@@ -14,9 +14,9 @@ import java.time.temporal.ChronoUnit
 import java.util.regex.Pattern
 
 @DisplayName("Convert to current date")
-class DateTimeValueConverterTest {
+class CurrentDateTimeValueConverterTest {
 
-    private var valueConverter = DateTimeValueConverter()
+    private var valueConverter = CurrentDateTimeValueConverter()
 
     @Test
     @DisplayName("Then other value is provided")

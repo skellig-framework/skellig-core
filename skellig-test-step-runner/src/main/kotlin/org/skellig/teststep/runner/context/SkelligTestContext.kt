@@ -36,7 +36,7 @@ open class SkelligTestContext : Closeable {
     private var defaultTestStepProcessor: TestStepProcessor<TestStep>? = null
 
     fun initialize(classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null): TestStepRunner {
-        config = createConfig(configPath)
+        config = createConfig(classLoader, configPath)
         val testStepReader = createTestStepReader()
         testScenarioState = createTestScenarioState()
         val valueExtractor = createTestStepValueExtractor()
@@ -87,8 +87,13 @@ open class SkelligTestContext : Closeable {
                 ?.toSet() ?: emptySet()
     }
 
-    private fun createConfig(configPath: String?): Config? {
-        return configPath?.let { ConfigFactory.load(configPath) }
+    private fun createConfig(classLoader: ClassLoader, configPath: String?): Config? {
+        return configPath?.let {
+            if (classLoader.getResource(configPath) == null) {
+                throw IllegalArgumentException("Path to config file $configPath does not exist")
+            }
+            ConfigFactory.load(classLoader, configPath)
+        }
     }
 
     private fun createTestStepFactory(testStepProcessors: List<TestStepProcessorDetails>, testStepsRegistry: TestStepRegistry): TestStepFactory<TestStep> {
