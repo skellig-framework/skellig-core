@@ -28,7 +28,7 @@ class JdbcRequestExecutor(details: JdbcDetails) : DatabaseRequestExecutor {
             connection = DriverManager.getConnection(details.url, details.userName, details.password)
             connection!!.autoCommit = false
         } catch (e: Exception) {
-            throw TestDataProcessingInitException(e.message, e)
+            throw TestDataProcessingInitException("Failed to connect to DB ${details.url}. Reason: ${e.message}", e)
         }
     }
 
