@@ -46,7 +46,8 @@ class DefaultValueConverter private constructor(val valueConverters: List<TestSt
             }
             withValueConverter(NumberValueConverter())
             withValueConverter(IncrementValueConverter())
-            withValueConverter(DateTimeValueConverter())
+            withValueConverter(CurrentDateTimeValueConverter())
+            withValueConverter(ToDateTimeValueConverter())
             withValueConverter(ListOfValueConverter())
 
             return DefaultValueConverter(valueConverters)
