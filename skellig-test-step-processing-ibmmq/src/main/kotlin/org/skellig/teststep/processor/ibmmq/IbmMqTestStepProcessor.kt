@@ -51,13 +51,14 @@ open class IbmMqTestStepProcessor protected constructor(testScenarioState: TestS
     class Builder : BaseTestStepProcessor.Builder<IbmMqTestStep>() {
 
         private val ibmMqChannels = mutableMapOf<String, IbmMqChannel>()
+        private val ibmmqDetailsConfigReader = IbmmqDetailsConfigReader()
 
-        fun withIbmMqChannel(mqQueueDetails: IbmMqQueueDetails) = apply {
-            ibmMqChannels.putIfAbsent(mqQueueDetails.channelId, IbmMqChannel(mqQueueDetails))
+        fun ibmMqChannel(mqQueueDetails: IbmMqQueueDetails) = apply {
+            ibmMqChannels.putIfAbsent(mqQueueDetails.queueName, IbmMqChannel(mqQueueDetails))
         }
 
-        fun withIbmMqChannels(config: Config?) = apply {
-            return this
+        fun ibmMqChannels(config: Config?) = apply {
+            ibmmqDetailsConfigReader.read(config).forEach { ibmMqChannel(it) }
         }
 
         override fun build(): TestStepProcessor<IbmMqTestStep> {

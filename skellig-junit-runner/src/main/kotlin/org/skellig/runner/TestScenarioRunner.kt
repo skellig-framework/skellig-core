@@ -93,6 +93,7 @@ open class TestScenarioRunner protected constructor(private val testScenario: Te
                     }
                 }
             } catch (e: Throwable) {
+                testStepReportBuilder.withOriginalTestStep(child.name).withErrorLog(attachStackTrace(e))
                 fireFailureEvent(notifier, childDescription, e)
             } finally {
                 testStepsDataReport.add(testStepReportBuilder)

@@ -1,7 +1,7 @@
 package org.skellig.teststep.processor.http
 
 import com.typesafe.config.Config
-import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndGet
+import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestDataProcessingInitException
 import org.skellig.teststep.processing.exception.TestStepProcessingException
@@ -34,7 +34,7 @@ class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
         val tasks = services
                 .map { it to { getHttpService(it).send(buildHttpRequestDetails(testStep)) } }
                 .toMap()
-        val results = runTasksAsyncAndGet(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+        val results = runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
         return if (isResultForSingleService(results, testStep)) results.values.first() else results
     }
 

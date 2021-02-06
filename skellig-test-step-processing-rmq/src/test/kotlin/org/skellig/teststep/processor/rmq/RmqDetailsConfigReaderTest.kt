@@ -16,7 +16,7 @@ internal class RmqDetailsConfigReaderTest {
     private var rmqDetailsConfigReader = RmqDetailsConfigReader()
 
     @Test
-    @DisplayName("xWhen null provided Then throw exception")
+    @DisplayName("When null provided Then throw exception")
     fun testReadRmqDetailsWhenConfigIsNull() {
         val ex = Assertions.assertThrows(NullPointerException::class.java) { rmqDetailsConfigReader.read(null) }
 
@@ -36,32 +36,50 @@ internal class RmqDetailsConfigReaderTest {
                     assertTrue(mqDetails
                             .any { item: RmqDetails? ->
                                 val hostDetails = item!!.hostDetails
-                                item.exchange.name == "exchange1" && item.exchange.type == "topic" &&
+                                item.exchange.name == "exchange1" &&
+                                        item.exchange.type == "topic" &&
                                         item.exchange.isCreateIfNew &&
                                         item.exchange.isAutoDelete &&
-                                        item.exchange.isDurable && item.channelId == "Q1" && item.queue.name == "queue1" && item.queue.routingKey == "any" &&
+                                        item.exchange.isDurable &&
+                                        item.queue.name == "queue1" &&
+                                        item.queue.routingKey == "any" &&
                                         item.queue.isCreateIfNew &&
                                         item.queue.isAutoDelete &&
                                         item.queue.isDurable &&
-                                        item.queue.isExclusive && hostDetails.host == "localhost" && hostDetails.port == 5672 && hostDetails.user == "usr1" && hostDetails.password == "pswd1"
+                                        item.queue.isExclusive &&
+                                        hostDetails.host == "localhost" &&
+                                        hostDetails.port == 5672 &&
+                                        hostDetails.user == "usr1" &&
+                                        hostDetails.password == "pswd1"
                             })
                 },
                 {
                     assertTrue(mqDetails
                             .any { item: RmqDetails? ->
                                 val hostDetails = item!!.hostDetails
-                                item.channelId == "Q2" && item.queue.name == "queue1" && item.queue.routingKey == "#" &&
+                                item.queue.name == "queue1" && item.queue.routingKey == "#" &&
                                         !item.queue.isCreateIfNew &&
                                         !item.queue.isAutoDelete &&
                                         !item.queue.isDurable &&
-                                        !item.queue.isExclusive && item.exchange.name == "exchange2" && hostDetails.host == "localhost" && hostDetails.port == 5673 && hostDetails.user == "usr2" && hostDetails.password == "pswd2"
+                                        !item.queue.isExclusive &&
+                                        item.exchange.name == "exchange2" &&
+                                        hostDetails.host == "localhost" &&
+                                        hostDetails.port == 5673 &&
+                                        hostDetails.user == "usr2" &&
+                                        hostDetails.password == "pswd2"
                             })
                 },
                 {
                     assertTrue(mqDetails
                             .any { item: RmqDetails? ->
                                 val hostDetails = item!!.hostDetails
-                                item.channelId == "Q3" && item.queue.name == "queue2" && item.exchange.name == "exchange2" && item.exchange.type == null && hostDetails.host == "localhost" && hostDetails.port == 5673 && hostDetails.user == "usr2" && hostDetails.password == "pswd2"
+                                item.queue.name == "queue2" &&
+                                        item.exchange.name == "exchange2" &&
+                                        item.exchange.type == null &&
+                                        hostDetails.host == "localhost" &&
+                                        hostDetails.port == 5673 &&
+                                        hostDetails.user == "usr2" &&
+                                        hostDetails.password == "pswd2"
                             })
                 }
         )

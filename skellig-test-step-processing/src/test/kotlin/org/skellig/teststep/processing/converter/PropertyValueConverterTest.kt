@@ -26,7 +26,7 @@ class PropertyValueConverterTest {
         valueConverter = PropertyValueConverter(
                 listOf(
                         TestStepStateValueConverter(testScenarioState!!, valueExtractor),
-                        DateTimeValueConverter()
+                        CurrentDateTimeValueConverter()
                 )
         ) { if (CUSTOM_PROPERTY_KEY == it) DEFAULT_CUSTOM_PROPERTY_VALUE else null }
     }

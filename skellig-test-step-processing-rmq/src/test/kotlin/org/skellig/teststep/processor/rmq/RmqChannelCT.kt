@@ -15,6 +15,7 @@ import org.testcontainers.utility.DockerImageName
 
 @Testcontainers
 internal class RmqChannelCT {
+
     @Container
     private val rabbitMqContainer =
             GenericContainer<GenericContainer<*>>(DockerImageName.parse("rabbitmq:latest"))
@@ -39,23 +40,22 @@ internal class RmqChannelCT {
 
     private fun createChannel(host: String): RmqDetails {
         return RmqDetails.Builder()
-                .withChannelId("chn_1")
-                .withHostDetails(
+                .hostDetails(
                         RmqHostDetails(host, rabbitMqContainer.getMappedPort(5672), "guest", "guest")
                 )
-                .withExchange(
+                .exchange(
                         RmqExchangeDetails.Builder()
-                                .withName("exchange1")
-                                .withType("topic")
-                                .withCreateIfNew(true)
+                                .name("exchange1")
+                                .type("topic")
+                                .createIfNew(true)
                                 .build()
                 )
-                .withQueue(
+                .queue(
                         RmqQueueDetails.Builder()
-                                .withName("queue1")
-                                .withDurable(true)
-                                .withCreateIfNew(true)
-                                .withRoutingKey("#")
+                                .name("queue1")
+                                .durable(true)
+                                .createIfNew(true)
+                                .routingKey("#")
                                 .build()
                 )
                 .build()

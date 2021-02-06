@@ -13,33 +13,33 @@ open class RmqTestStep protected constructor(id: String?,
                                              variables: Map<String, Any?>?,
                                              testData: Any?,
                                              validationDetails: ValidationDetails?,
-                                             val sendTo: String?,
-                                             val receiveFrom: String?,
-                                             val respondTo: String?,
+                                             val sendTo: Set<String>?,
+                                             val receiveFrom: Set<String>?,
+                                             val respondTo: Set<String>?,
                                              val routingKey: String?)
     : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 
 
     class Builder : DefaultTestStep.Builder<RmqTestStep>() {
 
-        private var sendTo: String? = null
-        private var receiveFrom: String? = null
-        private var respondTo: String? = null
+        private var sendTo: Set<String>? = null
+        private var receiveFrom: Set<String>? = null
+        private var respondTo: Set<String>? = null
         private var routingKey: String? = null
 
-        fun withSendTo(sendTo: String?) = apply {
+        fun sendTo(sendTo: Set<String>?) = apply {
             this.sendTo = sendTo
         }
 
-        fun withReceiveFrom(receiveFrom: String?) = apply {
+        fun receiveFrom(receiveFrom: Set<String>?) = apply {
             this.receiveFrom = receiveFrom
         }
 
-        fun withRespondTo(respondTo: String?) = apply {
+        fun respondTo(respondTo: Set<String>?) = apply {
             this.respondTo = respondTo
         }
 
-        fun withRoutingKey(routingKey: String?) = apply {
+        fun routingKey(routingKey: String?) = apply {
             this.routingKey = routingKey
         }
 

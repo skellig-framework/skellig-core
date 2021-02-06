@@ -8,7 +8,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.regex.Pattern
 
-class DateTimeValueConverter : TestStepValueConverter {
+class CurrentDateTimeValueConverter : TestStepValueConverter {
 
     companion object {
         private val NOW_PATTERN = Pattern.compile("now\\(([\\w]*)\\)(.format\\(([\\w-'/:.]*)\\))?")

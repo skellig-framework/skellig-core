@@ -39,7 +39,7 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
             channel!!.basicConsume(rmqDetails.queue.name, true,
                     createConsumer(acknowledgeResponse, response, countDownLatch))
 
-            countDownLatch.await(timeout.toLong(), TimeUnit.SECONDS)
+            countDownLatch.await(timeout.toLong(), TimeUnit.MILLISECONDS)
         } catch (e: Exception) {
             //log later
         }
@@ -67,7 +67,7 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
             channel!!.basicPublish(
                     "",
                     properties.replyTo,
-                    MessageProperties.TEXT_PLAIN,
+                    properties,
                     convertRequestToBytes(message)
             )
         } catch (e: IOException) {
