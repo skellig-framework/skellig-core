@@ -6,4 +6,7 @@ import org.skellig.teststep.processor.db.DatabaseRequestExecutorFactory
 internal class CassandraRequestExecutorFactory(session: Session)
     : DatabaseRequestExecutorFactory(
         CassandraSelectRequestExecutor(session),
-        CassandraInsertRequestExecutor(session))
+        CassandraInsertRequestExecutor(session),
+        CassandraUpdateRequestExecutor(session,
+                CassandraInsertRequestExecutor(session),
+                CassandraSelectRequestExecutor(session)))
