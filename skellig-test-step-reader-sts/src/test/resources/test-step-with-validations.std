@@ -8,9 +8,9 @@ name (Validate response)
        equals to something
        contains(success)
        contains(go go go)
-       regex(.*get(id).*)
+       regex('.*get(\\"id\\").*')
     ]
-    has_fields {
+    'has_\'fields\'' {
       f1 = v1
       json_path(f1.f2) = get(id) and more
     }

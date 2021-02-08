@@ -100,10 +100,10 @@ class StsFileParserTest {
                                             "equals to something",
                                             "contains(success)",
                                             "contains(go go go)",
-                                            "regex(.*get(id).*)")))
+                                            "regex(.*get(\"id\").*)")))
                 },
-                { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "has_fields", "f1")) },
-                { assertEquals("get(id) and more", getValueFromMap(firstTestStep, "validate", "has_fields", "json_path(f1.f2)")) }
+                { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "has_\'fields\'", "f1")) },
+                { assertEquals("get(id) and more", getValueFromMap(firstTestStep, "validate", "has_'fields'", "json_path(f1.f2)")) }
         )
     }
 

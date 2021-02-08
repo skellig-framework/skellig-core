@@ -10,6 +10,7 @@ class RawTestStepHandler : Closeable {
         private const val NULL = "null"
     }
 
+    private var isSpecialCharacter: Boolean = false     // ",',\,\n,\r,\t,
     private var openedBrackets = 0
     private var bracketsNumber = 0
     private var propertyName: String? = null
@@ -36,7 +37,7 @@ class RawTestStepHandler : Closeable {
             if (character == '#') {
                 handleCommentCharacter(reader)
             } else if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
-                handleSingleQuoteCharacter(rawTestStep)
+                handleSingleQuoteCharacter()
             } else if (!isEnclosedText) {  // skip handling special characters if enclosed in single quotes
                 if (character == '}') {
                     if (handleClosedBracketCharacter(character, rawTestStep)) break
@@ -66,6 +67,8 @@ class RawTestStepHandler : Closeable {
         while (reader.read().also { character = it.toChar() } > 0) {
             if (character == '#') {
                 handleCommentCharacter(reader)
+            }else if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
+                handleSingleQuoteCharacter()
             } else if (character == '{') {
                 handleListOpenedCurlyBracketCharacter(character, reader, result)
             } else if (character == '\n' && rawTestStepBuilder.isNotEmpty()) {
@@ -150,12 +153,9 @@ class RawTestStepHandler : Closeable {
         }
     }
 
-    private fun handleSingleQuoteCharacter(rawTestStep: MutableMap<String, Any?>) {
+    private fun handleSingleQuoteCharacter() {
         // Single quote character means that we need to read the value till the next single quote
         isEnclosedText = !isEnclosedText
-        if (!isEnclosedText && propertyName != null) {
-            //addParameterWithValue(rawTestStep)
-        }
     }
 
     @Throws(IOException::class)
@@ -194,9 +194,6 @@ class RawTestStepHandler : Closeable {
         emptyBuffer()
         propertyName = null
     }
-
-    // ",',\,n,r,t,
-    private var isSpecialCharacter: Boolean = false
 
     private fun addCharacter(character: Char) {
         if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
