@@ -2,6 +2,8 @@ package org.skellig.teststep.processing.converter
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 internal class TestDataToJsonConverterTest {
 
@@ -19,6 +21,15 @@ internal class TestDataToJsonConverterTest {
         val testData = mapOf<Any, Any>(Pair("json", mapOf<Any, Any>(Pair("f1", "v1"), Pair("f2", 2))))
 
         assertEquals("{\"f1\":\"v1\",\"f2\":2}", converter.convert(testData))
+    }
+
+    @Test
+    internal fun testConvertToJsonWithDate() {
+        val date = LocalDate.of(2020, 2, 2)
+        val time = LocalDateTime.of(2020, 1, 1, 10, 20, 30)
+        val testData = mapOf<Any, Any>(Pair("json", mapOf(Pair("f1", date), Pair("f2", time))))
+
+        assertEquals("""{"f1":"2020-02-02","f2":"2020-01-01T10:20:30"}""", converter.convert(testData))
     }
 
     @Test

@@ -4,7 +4,6 @@ import org.skellig.teststep.processing.exception.ValueExtractionException
 import java.beans.IntrospectionException
 import java.beans.Introspector
 import java.lang.String.format
-import java.lang.reflect.Array
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.util.regex.Pattern
@@ -13,7 +12,6 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor {
 
     companion object {
         private val PATH_SEPARATOR = Pattern.compile("\\.(?=(?:[^\"']*['\"][^'\"]*['\"])*[^'\"]*\$)")
-        private val INDEX_PATTERN = Pattern.compile("\\[(\\d+)\\]")
     }
 
     override fun extract(value: Any?, extractionParameter: String?): Any? {
@@ -24,8 +22,6 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor {
                     .forEach { key ->
                         if (newValue is Map<*, *>) {
                             newValue = extractValueFromMap(newValue as Map<*, *>, key)
-                        } else if (newValue is List<*> || newValue != null && newValue!!.javaClass.isArray) {
-                            newValue = extractValueFromListOrArray(newValue!!, key)
                         } else if (newValue != null) {
                             newValue = extractValueFromObject(key, newValue)
                         }
@@ -34,34 +30,12 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor {
         } ?: throw ValueExtractionException(format("Cannot extract '%s' from null value", extractionParameter))
     }
 
-    private fun extractValueFromListOrArray(value: Any, key: String): Any {
-        val index = getIndex(key)
-        return if (index >= 0) {
-            if (value.javaClass.isArray) {
-                Array.get(value, index)
-            } else {
-                (value as List<*>)[index]!!
-            }
-        } else {
-            extractValueFromObject(key, value)
-        }
-    }
-
     private fun extractValueFromMap(value: Any, key: String): Any? {
         val valueAsMap = value as Map<*, *>
         return if (valueAsMap.containsKey(key)) {
             valueAsMap[key]
         } else {
             extractValueFromObject(key, value)
-        }
-    }
-
-    private fun getIndex(value: String): Int {
-        val matcher = INDEX_PATTERN.matcher(value)
-        return if (matcher.find()) {
-            matcher.group(1).toInt()
-        } else {
-            -1
         }
     }
 

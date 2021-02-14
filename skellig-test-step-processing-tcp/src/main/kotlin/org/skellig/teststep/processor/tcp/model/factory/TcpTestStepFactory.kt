@@ -3,14 +3,14 @@ package org.skellig.teststep.processor.tcp.model.factory
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
+import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
 import java.util.*
 
 class TcpTestStepFactory(keywordsProperties: Properties?,
                          testStepValueConverter: TestStepValueConverter?,
                          testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory<TcpTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseDefaultTestStepFactory<TcpTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     companion object {
         private const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"

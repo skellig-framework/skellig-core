@@ -1,10 +1,16 @@
 package org.skellig.teststep.processing.model.factory
 
+import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.GroupedTestStep
 import org.skellig.teststep.processing.model.TestStep
+import java.util.*
+import kotlin.collections.HashMap
 
 internal class GroupedTestStepFactory(private val testStepRegistry: TestStepRegistry,
-                                      private val testStepFactory: TestStepFactory<TestStep>) : TestStepFactory<GroupedTestStep> {
+                                      private val testStepFactory: TestStepFactory<TestStep>,
+                                      keywordsProperties: Properties?,
+                                      testStepValueConverter: TestStepValueConverter?)
+    : BaseTestStepFactory<GroupedTestStep>(keywordsProperties, testStepValueConverter) {
 
     companion object {
         private const val TEST = "test"
@@ -13,7 +19,13 @@ internal class GroupedTestStepFactory(private val testStepRegistry: TestStepRegi
     }
 
     override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): GroupedTestStep {
-        return GroupedTestStep(rawTestStep["name"] as String, createTestStepRun(rawTestStep, parameters)!!)
+        val additionalParameters: MutableMap<String, String?> = HashMap(parameters)
+        val parametersFromTestName = extractParametersFromTestStepName(testStepName, rawTestStep)
+        parametersFromTestName?.let {
+            additionalParameters.putAll(parametersFromTestName)
+        }
+
+        return GroupedTestStep(testStepName, createTestStepRun(rawTestStep, additionalParameters)!!)
     }
 
     private fun createTestStepRun(rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): GroupedTestStep.TestStepRun? {
@@ -32,7 +44,8 @@ internal class GroupedTestStepFactory(private val testStepRegistry: TestStepRegi
 
     private fun createConvertToTestDataFunction(rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): () -> TestStep =
             {
-                val testStepName = rawTestStep[TEST] as String
+                var testStepName = rawTestStep[TEST] as String
+                testStepName = testStepFactoryValueConverter.convertValue<String>(testStepName, parameters) ?: testStepName
                 val rawTestStepToRun = testStepRegistry.getByName(testStepName)
                         ?: error("Test step '$testStepName' is not found in any of test data files or classes indicated in the runner")
                 testStepFactory.create(testStepName, rawTestStepToRun, parameters)

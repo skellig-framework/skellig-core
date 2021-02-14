@@ -52,6 +52,12 @@ class PropertyValueConverterTest {
     }
 
     @Test
+    fun testWithNestedParametersAndDefaultWhenFirstIsEmpty() {
+        whenever(testScenarioState!!.get("id")).thenReturn("")
+        Assertions.assertEquals("v3", valueConverter!!.convert("\${id : v3}"))
+    }
+
+    @Test
     fun testWithComplexNestedParametersAndAttachedText() {
         Assertions.assertEquals("id:v3_end", valueConverter!!.convert("\${key_1 : id:\${key_2 : \${id:v3}}_end}"))
     }

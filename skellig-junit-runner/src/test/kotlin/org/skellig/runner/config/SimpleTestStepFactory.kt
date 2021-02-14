@@ -3,13 +3,13 @@ package org.skellig.runner.config
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
+import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import java.util.*
 
 class SimpleTestStepFactory(keywordsProperties: Properties?,
                             testStepValueConverter: TestStepValueConverter?,
                             testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory<SimpleTestStepFactory.SimpleTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseDefaultTestStepFactory<SimpleTestStepFactory.SimpleTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
         return rawTestStep.containsKey("captureData")

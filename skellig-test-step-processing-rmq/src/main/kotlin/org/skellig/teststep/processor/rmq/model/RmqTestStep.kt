@@ -16,7 +16,8 @@ open class RmqTestStep protected constructor(id: String?,
                                              val sendTo: Set<String>?,
                                              val receiveFrom: Set<String>?,
                                              val respondTo: Set<String>?,
-                                             val routingKey: String?)
+                                             val routingKey: String?,
+                                             val properties: Map<String, Any?>?)
     : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 
 
@@ -26,6 +27,7 @@ open class RmqTestStep protected constructor(id: String?,
         private var receiveFrom: Set<String>? = null
         private var respondTo: Set<String>? = null
         private var routingKey: String? = null
+        private var properties: Map<String, Any?>? = null
 
         fun sendTo(sendTo: Set<String>?) = apply {
             this.sendTo = sendTo
@@ -43,9 +45,13 @@ open class RmqTestStep protected constructor(id: String?,
             this.routingKey = routingKey
         }
 
+        fun properties(properties: Map<String, Any?>?) = apply {
+            this.properties = properties
+        }
+
         override fun build(): RmqTestStep {
             return RmqTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails,
-                    sendTo, receiveFrom, respondTo, routingKey)
+                    sendTo, receiveFrom, respondTo, routingKey, properties)
         }
     }
 }

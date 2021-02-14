@@ -3,14 +3,14 @@ package org.skellig.teststep.processor.http.model.factory
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
+import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processor.http.model.HttpTestStep
 import java.util.*
 
 class HttpTestStepFactory(keywordsProperties: Properties?,
                           testStepValueConverter: TestStepValueConverter?,
                           testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory<HttpTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseDefaultTestStepFactory<HttpTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     companion object {
         private const val SERVICE_KEYWORD = "test.step.keyword.services"

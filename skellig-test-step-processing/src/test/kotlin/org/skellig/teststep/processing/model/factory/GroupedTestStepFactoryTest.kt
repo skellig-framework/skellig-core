@@ -9,12 +9,13 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
+import java.util.*
 
 class GroupedTestStepFactoryTest {
 
     private val testStepRegistry = mock<TestStepRegistry>()
     private val testStepFactory = mock<TestStepFactory<TestStep>>()
-    private val factory = GroupedTestStepFactory(testStepRegistry, testStepFactory)
+    private val factory = GroupedTestStepFactory(testStepRegistry, testStepFactory, System.getProperties(), mock())
 
     @Test
     fun testCreateSimpleGroupedTestStep() {

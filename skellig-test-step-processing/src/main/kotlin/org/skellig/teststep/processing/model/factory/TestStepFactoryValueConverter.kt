@@ -25,10 +25,10 @@ class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueCon
         var result: Any? = valueAsString
         if (matcher.find()) {
             val parameterName = matcher.group(1)
-            val parameterValue = parameters.getOrDefault(parameterName, null)
+            val parameterValue = parameters[parameterName]
             val hasDefaultValue = matcher.group(3) != null
             if (matcher.group(0).length != valueAsString.length) {
-                if (parameterValue != null || !hasDefaultValue) {
+                if (hasValue(parameterValue) || !hasDefaultValue) {
                     result = valueAsString.replace(matcher.group(0), parameterValue.toString())
                 } else {
                     var defaultValue = matcher.group(3)
@@ -36,7 +36,7 @@ class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueCon
                     result = valueAsString.replace(matcher.group(0), defaultValue)
                 }
             } else {
-                result = if (parameterValue != null || !hasDefaultValue) {
+                result = if (hasValue(parameterValue) || !hasDefaultValue) {
                     parameterValue
                 } else {
                     convertValue<Any>(matcher.group(3), parameters)
@@ -49,6 +49,12 @@ class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueCon
         }
         return result
     }
+
+    private fun hasValue(parameterValue: Any?) =
+            when (parameterValue) {
+                is String -> parameterValue.isNotEmpty()
+                else -> parameterValue != null
+            }
 
     private fun isString(value: Any?): Boolean {
         return value is String

@@ -108,9 +108,35 @@ class DefaultTestStepResultValidatorTest {
     }
 
     @Test
+    @DisplayName("When actual is object with Json And extract using regex Then pass validation")
+    fun testValidateWhenJsonAndWithRegex() {
+        val actualResult = mapOf(
+                Pair("passed", true),
+                Pair("body",
+                        """
+                            {
+                               "c": {
+                                  "d": "f1=500,f2=300"
+                               }
+                            }
+                        """.trimIndent())
+        )
+        val expectedResult = ExpectedResult("",
+                listOf(
+                        ExpectedResult("passed", true, null),
+                        ExpectedResult("body.jsonPath(c.d).regex(f2=(\\w+))", "300", null),
+                        ExpectedResult("body",
+                                listOf(ExpectedResult("jsonPath(c.d)", "contains(300)", null)),
+                                MatchingType.ALL_MATCH)),
+                MatchingType.ALL_MATCH)
+
+        validator!!.validate(expectedResult, actualResult)
+    }
+
+    @Test
     @DisplayName("When expected contains+size under single group And not match actual List of String")
     fun testValidateListOfContainsTextUnderGroupAndNotMatchWithActualResult() {
-        val actualResult: List<String> = ArrayList(listOf("v1 v2", "v3 v4"))
+        val actualResult = ArrayList(listOf("v1 v2", "v3 v4"))
         val expectedResult = ExpectedResult("",
                 listOf(
                         ExpectedResult("size", 2, null),
@@ -130,7 +156,7 @@ class DefaultTestStepResultValidatorTest {
 
         val e = Assertions.assertThrows(ValidationException::class.java) { validator!!.validate(expectedResult, actualResult) }
 
-        Assertions.assertEquals("""
+        assertEquals("""
     Validation failed!
     result is not valid. Expected: contains(v5) Actual: v1 v2
     result is not valid. Expected: contains(v5) Actual: v3 v4
@@ -150,7 +176,24 @@ class DefaultTestStepResultValidatorTest {
 
         val e = Assertions.assertThrows(ValidationException::class.java) { validator!!.validate(expectedResult, actualResult) }
 
-        Assertions.assertEquals("Validation failed!\nk1 is not valid. Expected: v2 Actual: v1\n", e.message)
+        assertEquals("Validation failed!\nk1 is not valid. Expected: v2 Actual: v1\n", e.message)
+    }
+
+    @Test
+    @DisplayName("When actual Map of List And validate by index")
+    fun testValidateListByIndexes() {
+        val actualResult = mapOf(Pair("a", listOf("v1", "v2")))
+        val expectedResult = ExpectedResult("",
+                listOf(
+                        ExpectedResult("a",
+                                listOf(
+                                        ExpectedResult("fromIndex(0)", "v1", null),
+                                        ExpectedResult("fromIndex(1)", "v2", null)
+                                ),
+                                MatchingType.ALL_MATCH)),
+                MatchingType.ALL_MATCH)
+
+        validator!!.validate(expectedResult, actualResult)
     }
 
     @Test
@@ -312,7 +355,7 @@ class DefaultTestStepResultValidatorTest {
 
         val e = Assertions.assertThrows(ValidationException::class.java) { validator!!.validate(expectedResult, listOf(actualResult1, actualResult2)) }
 
-        Assertions.assertEquals("""
+        assertEquals("""
     Validation failed!
     .k1 is not valid. Did not expect: v1 Actual: v1
     
@@ -356,7 +399,7 @@ class DefaultTestStepResultValidatorTest {
 
         val e = Assertions.assertThrows(ValidationException::class.java) { validator!!.validate(expectedResult, actualResult) }
 
-        Assertions.assertEquals("""
+        assertEquals("""
     Validation failed!
     k1 is not valid. Expected: v3 Actual: v1
     k2 is not valid. Expected: v3 Actual: v2
@@ -377,7 +420,7 @@ class DefaultTestStepResultValidatorTest {
 
         val e = Assertions.assertThrows(ValidationException::class.java) { validator!!.validate(expectedResult, actualResult) }
 
-        Assertions.assertEquals("Validation failed!\nk1 is not valid. Did not expect: v1 Actual: v1\n", e.message)
+        assertEquals("Validation failed!\nk1 is not valid. Did not expect: v1 Actual: v1\n", e.message)
     }
 
     @Test
@@ -392,7 +435,7 @@ class DefaultTestStepResultValidatorTest {
 
         val e = Assertions.assertThrows(ValidationException::class.java) { validator!!.validate(expectedResult, actualResult) }
 
-        Assertions.assertEquals("""
+        assertEquals("""
     Validation failed!
     k1.k2 is not valid. Expected: v3 Actual: v2
     

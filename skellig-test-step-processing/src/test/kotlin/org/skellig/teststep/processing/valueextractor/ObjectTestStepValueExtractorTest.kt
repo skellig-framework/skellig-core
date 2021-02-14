@@ -31,21 +31,6 @@ class ObjectTestStepValueExtractorTest {
     }
 
     @Test
-    @DisplayName("Extract from List of Map last String value")
-    fun testExtractFromMapAndList() {
-        val testMap = getTestMap()
-        testMap["f4"] = listOf(Collections.singletonMap("f5", "v5"))
-
-        Assertions.assertEquals("v5", valueExtractor!!.extract(listOf<Map<Any, Any>>(testMap), "[0].f4.[0].f5"))
-    }
-
-    @Test
-    @DisplayName("Extract from List last String value")
-    fun testExtractFromList() {
-        Assertions.assertEquals("v1", valueExtractor!!.extract(listOf("v1", "v2"), "[0]"))
-    }
-
-    @Test
     @DisplayName("Extract size of List")
     fun testExtractSizeOfList() {
         val objects = ArrayList<Any>()
@@ -62,33 +47,12 @@ class ObjectTestStepValueExtractorTest {
     }
 
     @Test
-    @DisplayName("Extract from Array last String value")
-    fun testExtractFromArray() {
-        Assertions.assertEquals("v1", valueExtractor!!.extract(arrayOf("v1", "v2"), "[0]"))
-    }
-
-    @Test
-    @DisplayName("Extract from List of List last String value")
-    fun testExtractFromListOfList() {
-        Assertions.assertEquals("v2", valueExtractor!!.extract(listOf(listOf("v1", "v2")), "[0].[1]"))
-    }
-
-    @Test
     @DisplayName("Extract from object of a class")
     fun testExtractFromCustomObject() {
         val testObject = TestObject("test")
 
         Assertions.assertEquals(testObject.name, valueExtractor!!.extract(testObject, "name"))
         Assertions.assertEquals(testObject.name.length, valueExtractor!!.extract(testObject, "name.length"))
-    }
-
-    @Test
-    @DisplayName("Extract from object of a class with List and Map inside")
-    fun testExtractFromCustomObjectWithListAndMap() {
-        val o = listOf(Collections.singletonMap<String, Any>("f1",
-                ComplexTestObject(Collections.singletonMap<String, Any>("f2", TestObject("test")))))
-
-        Assertions.assertEquals("test", valueExtractor!!.extract(o, "[0].f1.params.f2.name"))
     }
 
     @Test
@@ -121,5 +85,4 @@ class ObjectTestStepValueExtractorTest {
 
     private class TestObject(val name: String)
 
-    private class ComplexTestObject(val params: Map<String, Any>)
 }

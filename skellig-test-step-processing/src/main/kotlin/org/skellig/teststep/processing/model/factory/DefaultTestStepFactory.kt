@@ -9,7 +9,7 @@ import java.util.*
 internal class DefaultTestStepFactory(keywordsProperties: Properties?,
                              testStepValueConverter: TestStepValueConverter?,
                              testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory<DefaultTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseDefaultTestStepFactory<DefaultTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<DefaultTestStep> {
         return DefaultTestStep.DefaultTestStepBuilder()
