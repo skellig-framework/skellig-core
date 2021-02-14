@@ -19,12 +19,12 @@ open class DatabaseTestStep protected constructor(id: String?,
                                                   val query: String?)
     : DefaultTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 
-    class Builder : DefaultTestStep.Builder<DatabaseTestStep>() {
+    abstract class Builder<T : DatabaseTestStep> : DefaultTestStep.Builder<T>() {
 
-        private var servers: Collection<String>? = emptyList()
-        private var command: String? = null
-        private var table: String? = null
-        private var query: String? = null
+        protected var servers: Collection<String>? = emptyList()
+        protected var command: String? = null
+        protected var table: String? = null
+        protected var query: String? = null
 
         fun withServers(servers: Collection<String>?) = apply {
             this.servers = servers
@@ -40,12 +40,6 @@ open class DatabaseTestStep protected constructor(id: String?,
 
         fun withQuery(query: String?) = apply {
             this.query = query
-        }
-
-        override fun build(): DatabaseTestStep {
-            return DatabaseTestStep(id, name!!, execution, timeout,
-                    delay, attempts, variables, testData,
-                    validationDetails, servers, command, table, query)
         }
     }
 }

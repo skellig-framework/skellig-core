@@ -4,16 +4,17 @@ import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
+import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 import java.util.*
 
-class DatabaseTestStepFactory(keywordsProperties: Properties?,
-                              testStepValueConverter: TestStepValueConverter?,
-                              testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory<DatabaseTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
+abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(keywordsProperties: Properties?,
+                                                              testStepValueConverter: TestStepValueConverter?,
+                                                              testDataConverter: TestDataConverter?)
+    : BaseDefaultTestStepFactory<TS>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     companion object {
+        private const val PROVIDER_KEYWORD = "test.step.keyword.db.provide"
         private const val SERVERS_KEYWORD = "test.step.keyword.servers"
         private const val TABLE_KEYWORD = "test.step.keyword.table"
         private const val COMMAND_KEYWORD = "test.step.keyword.command"
@@ -28,7 +29,7 @@ class DatabaseTestStepFactory(keywordsProperties: Properties?,
             getKeywordName(WHERE_KEYWORD, "where"),
             getKeywordName(VALUES_KEYWORD, "values"))
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): DatabaseTestStep {
+    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): TS {
         val testStep = super.create(testStepName, rawTestStep, parameters)
         if (testStep.testData != null && testStep.testData !is Map<*, *>) {
             throw TestDataConversionException("Test Data of Database Test Step must be class of Map<String,Object>")
@@ -36,38 +37,36 @@ class DatabaseTestStepFactory(keywordsProperties: Properties?,
         return testStep
     }
 
-    protected override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<DatabaseTestStep> {
+    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<TS> {
         val servers = getStringArrayDataFromRawTestStep(getKeywordName(SERVERS_KEYWORD, "servers"), rawTestStep, parameters)
-        return DatabaseTestStep.Builder()
+        return createDatabaseTestStepBuilder(rawTestStep, parameters)
                 .withServers(servers)
                 .withCommand(convertValue<String>(rawTestStep[getKeywordName(COMMAND_KEYWORD, "command")], parameters))
                 .withTable(convertValue<String>(rawTestStep[getTableKeyword()], parameters))
                 .withQuery(convertValue<String>(rawTestStep[getQueryKeyword()], parameters))
     }
 
+    protected abstract fun createDatabaseTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DatabaseTestStep.Builder<TS>
+
     override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
         return rawTestStep.containsKey(getTableKeyword()) || rawTestStep.containsKey(getQueryKeyword())
     }
 
-    protected override fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    override fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
         val delay = super.getDelay(rawTestStep, parameters)
         return if (delay == 0) DEFAULT_DELAY else delay
     }
 
-    protected override fun getAttempts(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    override fun getAttempts(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
         val attempts = super.getAttempts(rawTestStep, parameters)
         return if (attempts == 0) DEFAULT_ATTEMPTS else attempts
     }
 
-    override fun getTestDataKeywords(): Set<String> {
-        return dbTestDataKeywords
-    }
+    override fun getTestDataKeywords(): Set<String> = dbTestDataKeywords
 
-    private fun getQueryKeyword(): String {
-        return getKeywordName(QUERY_KEYWORD, "query")
-    }
+    private fun getQueryKeyword(): String = getKeywordName(QUERY_KEYWORD, "query")
 
-    private fun getTableKeyword(): String {
-        return getKeywordName(TABLE_KEYWORD, "table")
-    }
+    private fun getTableKeyword(): String = getKeywordName(TABLE_KEYWORD, "table")
+
+    protected fun getProviderKeyword(): String = getKeywordName(PROVIDER_KEYWORD, "provider")
 }
