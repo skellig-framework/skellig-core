@@ -20,6 +20,11 @@ class AsyncTaskUtils {
         }
 
         @JvmStatic
+        fun <T> runTaskAsync(task: () -> T): Future<T> {
+            return runCallableAsync { runTask(task, 0, 0, { true }) }
+        }
+
+        @JvmStatic
         fun <T> runCallableAsync(task: () -> T): Future<T> {
             return try {
                 executorService.submit(task)
@@ -29,13 +34,16 @@ class AsyncTaskUtils {
         }
 
         @JvmStatic
-        fun <T> runTasksAsyncAndWait(tasks: Map<*, () -> T>, stopCondition: (T) -> Boolean = { true },
+        fun <T> runTasksAsyncAndWait(tasks: Map<*, () -> T>, stopCondition: (Map<*, T?>) -> Boolean = { true },
                                      delay: Int = 0, attempts: Int = 0, timeout: Int = 0): Map<*, T?> {
-            return if (tasks.size > 1) {
-                val futures = tasks.map { it.key to runTaskAsync(it.value, delay, attempts, stopCondition) }.toMap()
-                futures.map { it.key to waitAndGetResult(it.value, timeout) }.toMap()
-            } else {
-                tasks.map { it.key to runTask(it.value, delay, attempts, stopCondition) }.toMap()
+            val newAttempt = attempts - 1
+            val futures = tasks.map { it.key to runTaskAsync(it.value) }.toMap()
+            val finalResult = futures.map { it.key to waitAndGetResult(it.value, timeout) }.toMap()
+            // collect all results from tasks and apply stopCondition
+            return if (newAttempt <= 0 || stopCondition(finalResult)) finalResult
+            else {
+                Thread.sleep(delay.toLong())
+                runTasksAsyncAndWait(tasks, stopCondition, delay, newAttempt, timeout)
             }
         }
 
