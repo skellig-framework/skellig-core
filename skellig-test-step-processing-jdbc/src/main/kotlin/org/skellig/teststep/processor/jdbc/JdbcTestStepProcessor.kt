@@ -6,16 +6,18 @@ import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.db.DatabaseTestStepProcessor
-import org.skellig.teststep.processor.db.model.DatabaseTestStep
 import org.skellig.teststep.processor.jdbc.model.JdbcDetails
+import org.skellig.teststep.processor.jdbc.model.JdbcTestStep
 
 open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, JdbcRequestExecutor>,
                                                        testScenarioState: TestScenarioState,
                                                        validator: TestStepResultValidator,
                                                        testStepResultConverter: TestStepResultConverter?)
-    : DatabaseTestStepProcessor<JdbcRequestExecutor>(dbServers, testScenarioState, validator, testStepResultConverter) {
+    : DatabaseTestStepProcessor<JdbcRequestExecutor, JdbcTestStep>(dbServers, testScenarioState, validator, testStepResultConverter) {
 
-    class Builder : DatabaseTestStepProcessor.Builder<JdbcDetails, JdbcRequestExecutor>() {
+    override fun getTestStepClass(): Class<*> = JdbcTestStep::class.java
+
+    class Builder : DatabaseTestStepProcessor.Builder<JdbcDetails, JdbcTestStep, JdbcRequestExecutor>() {
 
         private val jdbcDetailsConfigReader: JdbcDetailsConfigReader = JdbcDetailsConfigReader()
 
@@ -23,13 +25,12 @@ open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, Jd
             jdbcDetailsConfigReader.read(config).forEach { databaseDetails: JdbcDetails -> withDbServer(databaseDetails) }
         }
 
-        protected override fun createRequestExecutor(databaseDetails: JdbcDetails): JdbcRequestExecutor {
+        override fun createRequestExecutor(databaseDetails: JdbcDetails): JdbcRequestExecutor {
             return JdbcRequestExecutor(databaseDetails)
         }
 
-        override fun build(): TestStepProcessor<DatabaseTestStep> {
+        override fun build(): TestStepProcessor<JdbcTestStep> {
             return JdbcTestStepProcessor(dbServers, testScenarioState!!, validator!!, testStepResultConverter)
         }
-
     }
 }

@@ -6,16 +6,18 @@ import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.cassandra.model.CassandraDetails
+import org.skellig.teststep.processor.cassandra.model.CassandraTestStep
 import org.skellig.teststep.processor.db.DatabaseTestStepProcessor
-import org.skellig.teststep.processor.db.model.DatabaseTestStep
 
 open class CassandraTestStepProcessor protected constructor(dbServers: Map<String, CassandraRequestExecutor>,
                                                             testScenarioState: TestScenarioState,
                                                             validator: TestStepResultValidator,
                                                             testStepResultConverter: TestStepResultConverter?)
-    : DatabaseTestStepProcessor<CassandraRequestExecutor>(dbServers, testScenarioState, validator, testStepResultConverter) {
+    : DatabaseTestStepProcessor<CassandraRequestExecutor, CassandraTestStep>(dbServers, testScenarioState, validator, testStepResultConverter) {
 
-    class Builder : DatabaseTestStepProcessor.Builder<CassandraDetails, CassandraRequestExecutor>() {
+    override fun getTestStepClass(): Class<CassandraTestStep> = CassandraTestStep::class.java
+
+    class Builder : DatabaseTestStepProcessor.Builder<CassandraDetails,CassandraTestStep, CassandraRequestExecutor>() {
 
         private val cassandraDetailsConfigReader = CassandraDetailsConfigReader()
 
@@ -23,11 +25,11 @@ open class CassandraTestStepProcessor protected constructor(dbServers: Map<Strin
             cassandraDetailsConfigReader.read(config).forEach { withDbServer(it) }
         }
 
-        protected override fun createRequestExecutor(databaseDetails: CassandraDetails): CassandraRequestExecutor {
+        override fun createRequestExecutor(databaseDetails: CassandraDetails): CassandraRequestExecutor {
             return CassandraRequestExecutor(databaseDetails)
         }
 
-        override fun build(): TestStepProcessor<DatabaseTestStep> {
+        override fun build(): TestStepProcessor<CassandraTestStep> {
             return CassandraTestStepProcessor(dbServers, testScenarioState!!, validator!!, testStepResultConverter)
         }
     }

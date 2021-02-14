@@ -10,7 +10,7 @@ import java.sql.SQLException
 
 class JdbcRequestExecutor(details: JdbcDetails) : DatabaseRequestExecutor {
 
-    private val factory: JdbcRequestExecutorFactory
+    private var factory: JdbcRequestExecutorFactory
     private var connection: Connection? = null
 
     init {
@@ -27,6 +27,7 @@ class JdbcRequestExecutor(details: JdbcDetails) : DatabaseRequestExecutor {
             Class.forName(details.driverName)
             connection = DriverManager.getConnection(details.url, details.userName, details.password)
             connection!!.autoCommit = false
+            connection!!.transactionIsolation = Connection.TRANSACTION_READ_COMMITTED
         } catch (e: Exception) {
             throw TestDataProcessingInitException("Failed to connect to DB ${details.url}. Reason: ${e.message}", e)
         }

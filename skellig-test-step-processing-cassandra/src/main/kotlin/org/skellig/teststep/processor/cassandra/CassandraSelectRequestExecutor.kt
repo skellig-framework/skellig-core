@@ -28,10 +28,10 @@ internal class CassandraSelectRequestExecutor(private val session: Session) : Ba
         }
     }
 
-    private fun extractFromResultSet(resultSet: ResultSet): List<Map<String, Any>> {
-        val result: MutableList<Map<String, Any>> = ArrayList()
+    private fun extractFromResultSet(resultSet: ResultSet): List<Map<String, Any?>> {
+        val result: MutableList<Map<String, Any?>> = ArrayList()
         resultSet.forEach(Consumer { row: Row ->
-            val resultRow: MutableMap<String, Any> = LinkedHashMap()
+            val resultRow: MutableMap<String, Any?> = LinkedHashMap()
             result.add(resultRow)
             row.columnDefinitions
                     .forEach(Consumer { column: ColumnDefinitions.Definition -> resultRow[column.name] = row.getObject(column.name) })

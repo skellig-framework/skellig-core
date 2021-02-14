@@ -5,20 +5,20 @@ import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
-import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.db.model.DatabaseDetails
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 
-open class DatabaseTestStepProcessor<T : DatabaseRequestExecutor>(private val dbServers: Map<String, T>,
-                                                                  testScenarioState: TestScenarioState,
-                                                                  validator: TestStepResultValidator,
-                                                                  testStepResultConverter: TestStepResultConverter?)
-    : BaseTestStepProcessor<DatabaseTestStep>(testScenarioState, validator, testStepResultConverter) {
+abstract class DatabaseTestStepProcessor<T : DatabaseRequestExecutor, TS : DatabaseTestStep>
+(private val dbServers: Map<String, T>,
+ testScenarioState: TestScenarioState,
+ validator: TestStepResultValidator,
+ testStepResultConverter: TestStepResultConverter?)
+    : BaseTestStepProcessor<TS>(testScenarioState, validator, testStepResultConverter) {
 
-    override fun processTestStep(testStep: DatabaseTestStep): Any? {
+    override fun processTestStep(testStep: TS): Any? {
         var services: Collection<String>? = testStep.servers
         if (services.isNullOrEmpty()) {
             if (dbServers.size > 1) {
@@ -36,7 +36,7 @@ open class DatabaseTestStepProcessor<T : DatabaseRequestExecutor>(private val db
         return if (isResultForSingleDbServer(results, testStep)) results.values.first() else results
     }
 
-    private fun getDatabaseRequest(testStep: DatabaseTestStep): DatabaseRequest {
+    private fun getDatabaseRequest(testStep: TS): DatabaseRequest {
         return if (testStep.query != null) DatabaseRequest(testStep.query)
         else DatabaseRequest(testStep.command, testStep.table, testStep.testData as Map<String, Any?>?)
     }
@@ -50,15 +50,12 @@ open class DatabaseTestStepProcessor<T : DatabaseRequestExecutor>(private val db
                 " Registered servers are: ${dbServers.keys}")
     }
 
-    override fun getTestStepClass(): Class<DatabaseTestStep> {
-        return DatabaseTestStep::class.java
-    }
-
     override fun close() {
         dbServers.values.forEach { it.close() }
     }
 
-    abstract class Builder<D : DatabaseDetails, RE : DatabaseRequestExecutor> : BaseTestStepProcessor.Builder<DatabaseTestStep>() {
+    abstract class Builder<D : DatabaseDetails, TS: DatabaseTestStep, RE : DatabaseRequestExecutor>
+        : BaseTestStepProcessor.Builder<TS>() {
 
         protected var dbServers = mutableMapOf<String, RE>()
 
@@ -66,12 +63,9 @@ open class DatabaseTestStepProcessor<T : DatabaseRequestExecutor>(private val db
             dbServers[databaseDetails.serverName] = createRequestExecutor(databaseDetails)
         }
 
-        abstract fun withDbServers(config: Config): Builder<D, RE>?
+        abstract fun withDbServers(config: Config): Builder<D, TS, RE>?
 
         protected abstract fun createRequestExecutor(databaseDetails: D): RE
-
-        abstract override fun build(): TestStepProcessor<DatabaseTestStep>
-
     }
 
 }
