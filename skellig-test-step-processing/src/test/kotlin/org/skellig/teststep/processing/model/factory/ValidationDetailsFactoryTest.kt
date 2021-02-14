@@ -92,6 +92,21 @@ class ValidationDetailsFactoryTest {
     }
 
     @Test
+    @DisplayName("When default values for empty parameters provided")
+    fun testSimpleExpectedResultWithDefaultParameters() {
+        val rawValidationDetails = UnitTestUtils.createMap("status", "\${f1:v1}")
+
+        val testStep = validationDetailsFactory!!.create("step1", UnitTestUtils.createMap("validate", rawValidationDetails), mapOf(Pair("f1","")))
+        val validationDetails = testStep.validationDetails
+
+        Assertions.assertAll(
+                { Assertions.assertEquals(MatchingType.ALL_MATCH, validationDetails!!.expectedResult.matchingType) },
+                { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
+                { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult) }
+        )
+    }
+
+    @Test
     @DisplayName("When has properties as index Then verify these properties are not changed")
     fun testWithIndexedProperties() {
         val rawValidationDetails = UnitTestUtils.createMap("records",

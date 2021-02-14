@@ -27,7 +27,7 @@ name('User (\w+) receives valid response from (\w+)') {
    validate {
       fromTest = step2
       originalRequest [
-         regex(.*score=${score}.*)
+         match(.*score=${score}.*)
          contains(${2})
       ]
       receivedBy = ${1}

@@ -44,7 +44,8 @@ class CompositeTestStepFactory(var factories: Collection<TestStepFactory<out Tes
 
         fun build(): TestStepFactory<TestStep> {
             val compositeTestStepFactory = CompositeTestStepFactory(testStepFactories)
-            withTestStepFactory(GroupedTestStepFactory(testStepsRegistry, compositeTestStepFactory))
+            withTestStepFactory(GroupedTestStepFactory(testStepsRegistry, compositeTestStepFactory,
+                    keywordsProperties, testStepValueConverter))
             withTestStepFactory(ClassTestStepFactory())
             withTestStepFactory(DefaultTestStepFactory.Builder()
                     .withKeywordsProperties(keywordsProperties)

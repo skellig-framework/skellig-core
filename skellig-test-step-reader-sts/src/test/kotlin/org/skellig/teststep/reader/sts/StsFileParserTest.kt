@@ -100,7 +100,7 @@ class StsFileParserTest {
                                             "equals to something",
                                             "contains(success)",
                                             "contains(go go go)",
-                                            "regex(.*get(\"id\").*)")))
+                                            "match(.*get(\\\"id\\\").*)")))
                 },
                 { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "has_\'fields\'", "f1")) },
                 { assertEquals("get(id) and more", getValueFromMap(firstTestStep, "validate", "has_'fields'", "json_path(f1.f2)")) }
@@ -174,15 +174,16 @@ class StsFileParserTest {
         assertAll(
                 { assertTrue((firstTestStep["services"] as Collection<*>).contains("srv1"), "Services field does not contain srv1") },
                 { assertEquals("3", getValueFromMap(firstTestStep, "validate", "size")) },
-                { assertEquals("contains(v1)", getValueFromMap(firstTestStep, "validate", "records", "[0]")) },
-                { assertEquals("contains(v2)", getValueFromMap(firstTestStep, "validate", "records", "[1]")) },
+                { assertEquals("contains(v1)", getValueFromMap(firstTestStep, "validate", "records", "fromIndex(0)")) },
+                { assertEquals("contains(v2)", getValueFromMap(firstTestStep, "validate", "records", "fromIndex(1)")) },
+                { assertEquals("contains(v3)", getValueFromMap(firstTestStep, "validate", "records.fromIndex(2).fromIndex(1).toString()")) },
                 { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c1", "none_match", 0)) },
                 { assertEquals("v2", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c1", "none_match", 1)) },
                 { assertEquals("v3", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c1", "none_match", 2)) },
                 { assertEquals("v5", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c2", "any_match", 0)) },
                 { assertEquals("v6", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c2", "any_match", 1)) },
                 { assertEquals("v2", getValueFromMap(firstTestStep, "validate", "all_match", 1, "c1")) },
-                { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "[0]", "c1")) }
+                { assertEquals(" a#b  ", getValueFromMap(firstTestStep, "validate", "fromIndex(0)", " c 1 ")) }
         )
     }
 

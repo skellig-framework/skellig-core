@@ -3,14 +3,14 @@ package org.skellig.teststep.processor.rmq.model.factory
 import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
+import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
 import java.util.*
 
 class RmqTestStepFactory(keywordsProperties: Properties?,
                          testStepValueConverter: TestStepValueConverter?,
                          testDataConverter: TestDataConverter?)
-    : BaseTestStepFactory<RmqTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
+    : BaseDefaultTestStepFactory<RmqTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
 
     companion object {
         private const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"
@@ -18,6 +18,7 @@ class RmqTestStepFactory(keywordsProperties: Properties?,
         private const val SEND_TO_KEYWORD = "test.step.keyword.sendTo"
         private const val RECEIVE_FROM_KEYWORD = "test.step.keyword.receiveFrom"
         private const val RESPOND_TO_KEYWORD = "test.step.keyword.respondTo"
+        private const val RMQ_PROPERTIES_KEYWORD = "test.step.keyword.rmq.properties"
         private const val RMQ = "rmq"
     }
 
@@ -27,6 +28,7 @@ class RmqTestStepFactory(keywordsProperties: Properties?,
                 .receiveFrom(getReceiveFromChannels(rawTestStep, parameters))
                 .respondTo(getRespondToChannels(rawTestStep, parameters))
                 .routingKey(convertValue(getRoutingKey(rawTestStep), parameters))
+                .properties(convertValue(getProperties(rawTestStep), parameters))
     }
 
     private fun getRespondToChannels(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Set<String>? =
@@ -38,10 +40,6 @@ class RmqTestStepFactory(keywordsProperties: Properties?,
     private fun getReceiveFromChannels(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Set<String>? =
             toSet(convertValue<Any>(rawTestStep[getKeywordName(RECEIVE_FROM_KEYWORD, "readFrom")], parameters))
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
-        return getRoutingKey(rawTestStep) != null || rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == RMQ
-    }
-
     private fun toSet(channel: Any?): Set<String>? {
         return when (channel) {
             is Collection<*> -> channel.map { it.toString() }.toSet()
@@ -49,8 +47,13 @@ class RmqTestStepFactory(keywordsProperties: Properties?,
         }
     }
 
-    private fun getRoutingKey(rawTestStep: Map<String, Any?>): Any? {
-        return rawTestStep[getKeywordName(ROUTING_KEY_KEYWORD, "routingKey")]
-    }
+    private fun getRoutingKey(rawTestStep: Map<String, Any?>): Any? =
+            rawTestStep[getKeywordName(ROUTING_KEY_KEYWORD, "routingKey")]
+
+    private fun getProperties(rawTestStep: Map<String, Any?>): Any? =
+            rawTestStep[getKeywordName(RMQ_PROPERTIES_KEYWORD, "properties")]
+
+    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
+            getRoutingKey(rawTestStep) != null || rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == RMQ
 
 }

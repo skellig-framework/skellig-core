@@ -33,5 +33,8 @@ Name: Test feature
 
     Test: Sign in user
     Steps:
-    User is signed in
-       | usr | dude |
+    User <usr> is signed in
+       | usr | <usr> |
+    Data:
+     |usr |
+     |dude|

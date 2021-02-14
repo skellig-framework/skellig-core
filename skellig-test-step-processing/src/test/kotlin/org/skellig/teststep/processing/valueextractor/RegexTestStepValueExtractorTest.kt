@@ -22,6 +22,22 @@ class RegexTestStepValueExtractorTest {
     }
 
     @Test
+    fun testExtractByRegexWithoutGroups() {
+        val regexFilter = "f1=\\w+"
+
+        Assertions.assertEquals("f1=v1",
+                regexValueExtractor!!.extract("some data f1=v1 some data", regexFilter))
+    }
+
+    @Test
+    fun testExtractByRegexManyGroups() {
+        val regexFilter = "f1=(\\w+),.*f2=(\\w+)"
+
+        Assertions.assertEquals(listOf("v1", "v2"),
+                regexValueExtractor!!.extract("some data f1=v1, some data f2=v2", regexFilter))
+    }
+
+    @Test
     fun testExtractByRegexWhenNoMatch() {
         val regexFilter = "data: ([a-z]+)"
         val value = "data: 1000"

@@ -44,7 +44,5 @@ class CompositeTestStepProcessor private constructor(
 
             return compositeTestStepProcessor
         }
-
     }
-
 }

@@ -1,6 +1,9 @@
 package org.skellig.teststep.processing.converter
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+
 
 class TestDataToJsonConverter : TestDataConverter {
 
@@ -9,6 +12,11 @@ class TestDataToJsonConverter : TestDataConverter {
     }
 
     private val jsonSerializer = ObjectMapper()
+
+    init{
+        jsonSerializer.registerModule(JavaTimeModule())
+        jsonSerializer.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    }
 
     override fun convert(testData: Any?): Any? {
         if (testData is Map<*, *>) {

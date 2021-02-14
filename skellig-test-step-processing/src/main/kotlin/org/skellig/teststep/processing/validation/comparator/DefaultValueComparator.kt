@@ -20,7 +20,7 @@ class DefaultValueComparator(private val comparators: Collection<ValueComparator
         init {
             valueComparators = ArrayList()
             withValueComparator(ContainsValueComparator())
-            withValueComparator(RegexValueComparator())
+            withValueComparator(MatchValueComparator())
         }
 
         fun withValueComparator(valueComparator: ValueComparator) = apply {

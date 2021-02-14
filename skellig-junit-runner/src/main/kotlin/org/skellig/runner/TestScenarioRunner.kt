@@ -106,8 +106,7 @@ open class TestScenarioRunner protected constructor(private val testScenario: Te
         val testStepReportDetails = testStepsDataReport
                 .map { it.build() }
                 .toList()
-        return TestScenarioReportDetails(name,
-                testStepReportDetails)
+        return TestScenarioReportDetails(name, testStepReportDetails)
     }
 
     companion object {

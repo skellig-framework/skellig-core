@@ -2,11 +2,11 @@ package org.skellig.teststep.processing.validation.comparator
 
 import java.util.regex.Pattern
 
-class RegexValueComparator : ValueComparator {
+class MatchValueComparator : ValueComparator {
 
     companion object {
-        private val PATTERN = Pattern.compile("regex\\((.+)\\)")
-        private const val REGEX_PREFIX = "regex("
+        private val PATTERN = Pattern.compile("match\\((.+)\\)")
+        private const val REGEX_PREFIX = "match("
     }
 
     override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {

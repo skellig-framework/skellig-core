@@ -19,12 +19,12 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
         connectToQueue(createConnectionFactory(rmqDetails))
     }
 
-    fun send(request: Any?, routingKey: String?) {
+    fun send(request: Any?, routingKey: String?, properties: AMQP.BasicProperties? = null) {
         try {
             channel!!.basicPublish(
                     rmqDetails.exchange.name,
                     routingKey ?: rmqDetails.queue.routingKey,
-                    MessageProperties.TEXT_PLAIN,
+                    properties ?: MessageProperties.TEXT_PLAIN,
                     convertRequestToBytes(request)
             )
         } catch (ex: Exception) {

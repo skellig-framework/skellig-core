@@ -34,8 +34,8 @@ class RawTestStepHandler : Closeable {
         emptyBuffer()
         var character: Char
         while (reader.read().also { character = it.toChar() } > 0) {
-            if (character == '#') {
-                handleCommentCharacter(reader)
+            if (character == '#' && !isEnclosedText) {
+                handleCommentCharacter(reader, rawTestStep)
             } else if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
                 handleSingleQuoteCharacter()
             } else if (!isEnclosedText) {  // skip handling special characters if enclosed in single quotes
@@ -65,9 +65,9 @@ class RawTestStepHandler : Closeable {
         var character: Char
         val result = mutableListOf<Any>()
         while (reader.read().also { character = it.toChar() } > 0) {
-            if (character == '#') {
+            if (character == '#' && !isEnclosedText) {
                 handleCommentCharacter(reader)
-            }else if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
+            } else if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
                 handleSingleQuoteCharacter()
             } else if (character == '{') {
                 handleListOpenedCurlyBracketCharacter(character, reader, result)
@@ -158,9 +158,21 @@ class RawTestStepHandler : Closeable {
         isEnclosedText = !isEnclosedText
     }
 
-    @Throws(IOException::class)
     private fun handleCommentCharacter(reader: StsFileBufferedReader) {
         reader.readUntilFindCharacter('\n')
+    }
+
+    @Throws(IOException::class)
+    private fun handleCommentCharacter(reader: StsFileBufferedReader, rawTestStep: MutableMap<String, Any?>) {
+        reader.readUntilFindCharacter('\n')
+        //TODO: if comment goes after value enclosed in quotes, it can trim spaces
+        // in case if comment goes after the value, try to trim spaces
+        val value = rawTestStepBuilder.trim()
+        if (value.isNotEmpty()) {
+            // if value not empty then assign it
+            rawTestStepBuilder = rawTestStepBuilder.clear().append(value)
+            handleNewLineCharacter('\n', rawTestStep)
+        }
     }
 
     private fun handleOpenParenthesis(character: Char) {
@@ -214,16 +226,21 @@ class RawTestStepHandler : Closeable {
                 else -> rawTestStepBuilder.append("\\").append(character)
             }
         } else {
-            if (isValueOfPropertyUnderConstruction() || character != ' ' && character != '\n') {
-                // add leftover spaces before the character
-                if (!isValueOfPropertyUnderConstruction() && spacesBuilder.isNotEmpty()) {
-                    rawTestStepBuilder.append(spacesBuilder.toString())
-                    spacesBuilder.setLength(0)
-                }
+            if (isEnclosedText) {
+                // if text is inside quotes then just add the character
                 rawTestStepBuilder.append(character)
-            }
-            if (rawTestStepBuilder.isNotEmpty() && character == ' ') {
-                spacesBuilder.append(character)
+            } else {
+                if (isValueOfPropertyUnderConstruction() || character != ' ' && character != '\n') {
+                    // add leftover spaces before the character
+                    if (!isValueOfPropertyUnderConstruction() && spacesBuilder.isNotEmpty()) {
+                        rawTestStepBuilder.append(spacesBuilder.toString())
+                        spacesBuilder.setLength(0)
+                    }
+                    rawTestStepBuilder.append(character)
+                }
+                if (rawTestStepBuilder.isNotEmpty() && character == ' ') {
+                    spacesBuilder.append(character)
+                }
             }
         }
     }
