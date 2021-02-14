@@ -10,7 +10,7 @@ class TestStepStateValueConverter(val testScenarioState: TestScenarioState,
                                   val valueExtractor: TestStepValueExtractor?) : TestStepValueConverter {
 
     companion object {
-        private val GET_PATTERN = Pattern.compile("get\\(([\\w_\\$\\.]+)\\)(\\.(.+\\)))?")
+        private val GET_PATTERN = Pattern.compile("get\\(([\\w_$.-]+)\\)(\\.(.+))?")
     }
 
     override fun convert(value: String?): Any? {

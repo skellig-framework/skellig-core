@@ -113,7 +113,7 @@ class DefaultValueExtractorTest {
         }
 
         @Test
-        fun testExtractFromManyObjects2() {
+        fun testExtractFromManyObjectsAsList() {
             val value = SimpleObject(mapOf(Pair("data", "f0=0, f1=(v1),f2=v2,f3 = 'v3'")))
 
             assertEquals(listOf("(v1)", "'v3'"), testStepValueExtractor.extract(value,
@@ -121,13 +121,13 @@ class DefaultValueExtractorTest {
         }
 
         @Test
-        fun testExtractFromManyObjects3() {
+        fun testExtractFromManyObjectsWithConcatenation() {
             val value = SimpleObject(mapOf(Pair("data", """{ "a": 1 }""".toByteArray())))
 
             assertEquals("1", testStepValueExtractor.extract(value,
                     "params.data.toString().jsonPath(a)"))
-            assertEquals("1", testStepValueExtractor.extract(value,
-                    "params.data.toString(utf8).jsonPath(a)"))
+            assertEquals("1_._", testStepValueExtractor.extract(value,
+                    "params.data.toString(utf8).jsonPath(a).concat(_._)"))
         }
 
     }

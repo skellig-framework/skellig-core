@@ -1,10 +1,10 @@
 package org.skellig.teststep.processing.converter
 
+import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
@@ -17,8 +17,8 @@ class TestStepStateValueConverterTest {
 
     @BeforeEach
     fun setUp() {
-        testScenarioState = Mockito.mock(TestScenarioState::class.java)
-        valueExtractor = Mockito.mock(TestStepValueExtractor::class.java)
+        testScenarioState = mock()
+        valueExtractor = mock()
         testStepStateValueConverter = TestStepStateValueConverter(testScenarioState!!, valueExtractor)
     }
 
@@ -48,25 +48,25 @@ class TestStepStateValueConverterTest {
     @Test
     fun testGetValueFromStateWithExtractorAndAttachedString() {
         val value = listOf("_")
-        whenever(valueExtractor!!.extract(value, "([0])")).thenReturn(value[0])
+        whenever(valueExtractor!!.extract(value, "toArray().fromIndex(0).concat(^)")).thenReturn(value[0] + "^")
         whenever(testScenarioState!!.get("key")).thenReturn(value)
 
-        Assertions.assertEquals("^_^", testStepStateValueConverter!!.convert("^get(key).([0])^"))
+        Assertions.assertEquals("^_^", testStepStateValueConverter!!.convert("^get(key).toArray().fromIndex(0).concat(^)"))
     }
 
     @Test
     fun testGetValueFromStateWithExtractor() {
         val value = "value"
-        whenever(valueExtractor!!.extract(value, "(length)")).thenReturn(value.length)
+        whenever(valueExtractor!!.extract(value, "data.length")).thenReturn(value.length)
         whenever(testScenarioState!!.get("key")).thenReturn(value)
 
-        Assertions.assertEquals(value.length, testStepStateValueConverter!!.convert("get(key).(length)"))
+        Assertions.assertEquals(value.length, testStepStateValueConverter!!.convert("get(key).data.length"))
     }
 
     @Test
     fun testGetValueFromStateWhenNotExist() {
         whenever(testScenarioState!!.get("key")).thenReturn(null)
 
-        Assertions.assertThrows(TestDataConversionException::class.java) { testStepStateValueConverter!!.convert("get(key).(length)") }
+        Assertions.assertThrows(TestDataConversionException::class.java) { testStepStateValueConverter!!.convert("get(key).length") }
     }
 }
