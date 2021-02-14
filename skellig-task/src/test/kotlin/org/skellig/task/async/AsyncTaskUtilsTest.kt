@@ -85,7 +85,7 @@ class AsyncTaskUtilsTest {
         @Test
         @DisplayName("When many tasks And results received within a timeout")
         fun testAsyncTasks() {
-            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(150, 50), { it != null }, 0, 0, 500)
+            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(150, 50), { it["t1"] != null && it["t2"] != null  }, 0, 0, 500)
 
             Assertions.assertEquals("r1", asyncResult["t1"])
             Assertions.assertEquals("r2", asyncResult["t2"])
@@ -94,7 +94,7 @@ class AsyncTaskUtilsTest {
         @Test
         @DisplayName("When many tasks And one result not received within a timeout")
         fun testAsyncTasksWhenOneTimesOut() {
-            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(3000, 50), { it != null }, 0, 0, 200)
+            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(3000, 50), { it["t1"] != null }, 0, 0, 200)
 
             Assertions.assertNull(asyncResult["t1"])
             Assertions.assertEquals("r2", asyncResult["t2"])
@@ -103,7 +103,7 @@ class AsyncTaskUtilsTest {
         @Test
         @DisplayName("When many tasks And timeout is 0 Then wait until received")
         fun testAsyncTasksWhenTimeoutZero() {
-            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(120, 20), { it != null }, 0, 0, 0)
+            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(120, 20), { it["t1"] != null && it["t2"] != null }, 0, 0, 0)
 
             Assertions.assertEquals("r1", asyncResult["t1"])
             Assertions.assertEquals("r2", asyncResult["t2"])
@@ -112,7 +112,7 @@ class AsyncTaskUtilsTest {
         @Test
         @DisplayName("When many tasks And retries 3 times And results received within a timeout")
         fun testAsyncTasksWithRetries() {
-            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(150, 50, 3), { it != null }, 0, 3, 0)
+            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(150, 50, 3), { it["t1"] != null }, 0, 3, 0)
 
             Assertions.assertEquals("r1", asyncResult["t1"])
             Assertions.assertEquals("r2", asyncResult["t2"])
@@ -121,7 +121,7 @@ class AsyncTaskUtilsTest {
         @Test
         @DisplayName("When many tasks And retries 2 times And one result not received after retries")
         fun testAsyncTasksWhenOneNotReceivedAfterRetries() {
-            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(150, 50, 3), { it != null }, 0, 2, 0)
+            val asyncResult = runTasksAsyncAndWait(createMapOfTasks(150, 50, 3), { it["t1"] != null }, 0, 2, 0)
 
             Assertions.assertNull(asyncResult["t1"])
             Assertions.assertEquals("r2", asyncResult["t2"])
