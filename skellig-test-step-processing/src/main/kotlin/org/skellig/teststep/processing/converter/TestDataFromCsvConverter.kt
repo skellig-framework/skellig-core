@@ -24,9 +24,8 @@ class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestDataConverter
     override fun convert(testData: Any?): Any? {
         var newTestData = testData
         if (newTestData is Map<*, *>) {
-            val valueAsMap = newTestData as Map<*, *>
-            if (valueAsMap.containsKey(CSV_KEYWORD)) {
-                val csv = valueAsMap[CSV_KEYWORD] as Map<String, Any?>
+            if (newTestData.containsKey(CSV_KEYWORD)) {
+                val csv = newTestData[CSV_KEYWORD] as Map<String, Any?>
                 val csvFile = csv[FILE_KEYWORD] as String?
                 newTestData = readCsvFile(csvFile, getRowFilter(csv))
             }
