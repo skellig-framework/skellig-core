@@ -6,7 +6,7 @@ import java.util.regex.Pattern
 class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueConverter?) {
 
     companion object {
-        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_]+)(\\s*:\\s*(.+))?\\}")
+        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_]+)(\\s*:\\s*(.+))?}")
     }
 
     fun <T> convertValue(value: Any?, parameters: Map<String, Any?>): T? {
@@ -14,6 +14,7 @@ class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueCon
         if (isString(value)) {
             result = applyParameters(value.toString(), parameters)
             if (isString(result)) {
+                // convert further if needed (ex. more functions)
                 result = testStepValueConverter!!.convert(result.toString())
             }
         }
@@ -56,7 +57,5 @@ class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueCon
                 else -> parameterValue != null
             }
 
-    private fun isString(value: Any?): Boolean {
-        return value is String
-    }
+    private fun isString(value: Any?): Boolean = value is String
 }

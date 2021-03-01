@@ -37,7 +37,7 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
 
     fun create(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): ValidationDetails? {
         val rawValidationDetails = getValidationDetails(rawTestStep)
-        val builder: ValidationDetails.Builder = ValidationDetails.Builder()
+        val builder = ValidationDetails.Builder()
 
         return rawValidationDetails?.let {
             if (rawValidationDetails is Map<*, *>) {
