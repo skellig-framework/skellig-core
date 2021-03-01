@@ -14,21 +14,23 @@ class TestStepStateValueConverter(val testScenarioState: TestScenarioState,
     }
 
     override fun convert(value: String?): Any? {
-        val matcher = GET_PATTERN.matcher(value)
-        var result: Any? = value
-        while (matcher.find() && result is String) {
-            if (hasIdOnly(matcher)) {
-                result = extractById(result, matcher)
-            } else if (hasExtractFunction(matcher)) {
-                result = extractUsingExtractorFunction(result, matcher)
+        return value?.let {
+            val matcher = GET_PATTERN.matcher(value)
+            var result: Any = value
+            while (matcher.find()) {
+                if (hasIdOnly(matcher)) {
+                    result = extractById(result, matcher)
+                } else if (hasExtractFunction(matcher)) {
+                    result = extractUsingExtractorFunction(result, matcher)
+                }
             }
+            result
         }
-        return result
     }
 
     private fun extractById(value: Any, matcher: Matcher): Any {
         val key = matcher.group(1)
-        val valueFromState = testScenarioState.get(key)?: throwException(key)
+        val valueFromState = testScenarioState.get(key) ?: throwException(key)
         val originalValue = matcher.group(0)
 
         return (if (originalValue == value) valueFromState else replace(value, originalValue, valueFromState))
@@ -36,7 +38,7 @@ class TestStepStateValueConverter(val testScenarioState: TestScenarioState,
 
     private fun extractUsingExtractorFunction(value: Any, matcher: Matcher): Any {
         val key = matcher.group(1)
-        val valueFromState: Any = testScenarioState.get(key)?: throwException(key)
+        val valueFromState: Any = testScenarioState.get(key) ?: throwException(key)
         val originalValue = matcher.group(0)
         val extractionParameter = matcher.group(3)
         val extractedValue = valueExtractor?.extract(valueFromState, extractionParameter)

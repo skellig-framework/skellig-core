@@ -38,7 +38,6 @@ class DefaultValueConverter private constructor(val valueConverters: List<TestSt
         fun build(): TestStepValueConverter {
             Objects.requireNonNull(testScenarioState, "Test Scenario State must be provided")
 
-            valueConverters.add(0, PropertyValueConverter(valueConverters, getPropertyFunction))
             withValueConverter(TestStepStateValueConverter(testScenarioState!!, testStepValueExtractor))
             withValueConverter(FindFromStateValueConverter(testScenarioState!!, testStepValueExtractor))
             if (classLoader != null) {
@@ -50,7 +49,10 @@ class DefaultValueConverter private constructor(val valueConverters: List<TestSt
             withValueConverter(ToDateTimeValueConverter())
             withValueConverter(ListOfValueConverter())
 
-            return DefaultValueConverter(valueConverters)
+            val defaultValueConverter = DefaultValueConverter(valueConverters)
+            valueConverters.add(0, PropertyValueConverter(defaultValueConverter, getPropertyFunction))
+
+            return defaultValueConverter
         }
     }
 }
