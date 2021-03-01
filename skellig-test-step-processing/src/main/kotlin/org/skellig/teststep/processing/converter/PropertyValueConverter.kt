@@ -4,18 +4,12 @@ import org.apache.commons.lang3.StringUtils
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class PropertyValueConverter(var valueConverters: List<TestStepValueConverter>,
-                             val propertyExtractorFunction: ((String) -> String?)?) : TestStepValueConverter {
+class PropertyValueConverter(var valueConverter: TestStepValueConverter,
+                             private val propertyExtractorFunction: ((String) -> String?)?) : TestStepValueConverter {
 
     companion object {
-        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_.]+)(\\s*:\\s*(.+))?}")
+        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_.]+)(\\s*:\\s*(.+))?}|\\\$\\{(.+)}")
         private const val NULL = "null"
-    }
-
-    init {
-        if (valueConverters.none { javaClass == it.javaClass }) {
-            valueConverters = mutableListOf(listOf(this), valueConverters).flatten()
-        }
     }
 
     override fun convert(value: String?): Any? {
@@ -27,19 +21,28 @@ class PropertyValueConverter(var valueConverters: List<TestStepValueConverter>,
 
     private fun convert(value: String, matcher: Matcher): Any? {
         var result: Any? = null
-        val propertyValue = getPropertyValue(matcher.group(1))
-        if (StringUtils.isNotEmpty(propertyValue) || !hasDefaultValue(matcher)) {
-            result = value.replace(matcher.group(0), propertyValue)
-        } else if (hasDefaultValue(matcher)) {
-            var defaultValue = matcher.group(3)
-            if (NULL != defaultValue) {
-                for (valueConverter in valueConverters) {
-                    defaultValue = valueConverter.convert(defaultValue).toString()
+        if (hasKeyOnly(matcher)) {
+            result = replace(value, matcher.group(0), valueConverter.convert(matcher.group(4)));
+        } else {
+            val propertyValue = getPropertyValue(matcher.group(1))
+            if (StringUtils.isNotEmpty(propertyValue) || !hasDefaultValue(matcher)) {
+                result = value.replace(matcher.group(0), propertyValue)
+            } else if (hasDefaultValue(matcher)) {
+                val defaultValue = matcher.group(3)
+                if (NULL != defaultValue) {
+                    result = replace(value, matcher.group(0), valueConverter.convert(defaultValue));
                 }
-                result = value.replace(matcher.group(0), defaultValue!!)
             }
         }
         return result
+    }
+
+    private fun replace(originalValue: String, capturedValue: String, newValue: Any?): Any? {
+        return if (originalValue == capturedValue) {
+            newValue
+        } else {
+            originalValue.replace(capturedValue, newValue.toString())
+        }
     }
 
     private fun getPropertyValue(propertyKey: String): String {
@@ -56,7 +59,7 @@ class PropertyValueConverter(var valueConverters: List<TestStepValueConverter>,
         return propertyValue ?: ""
     }
 
-    private fun hasDefaultValue(matcher: Matcher): Boolean {
-        return matcher.group(3) != null
-    }
+    private fun hasDefaultValue(matcher: Matcher): Boolean = matcher.group(3) != null
+
+    private fun hasKeyOnly(matcher: Matcher) = matcher.group(4) != null
 }
