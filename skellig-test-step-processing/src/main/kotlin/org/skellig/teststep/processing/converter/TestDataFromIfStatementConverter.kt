@@ -16,28 +16,24 @@ class TestDataFromIfStatementConverter : TestDataConverter {
     private val engine = ScriptEngineManager().getEngineByName("JavaScript")
 
     override fun convert(testData: Any?): Any? =
-            convertHierarchicalData(testData)
+            when (testData) {
+                is Map<*, *> ->
+                    if (testData.containsKey(IF_KEYWORD)) {
+                        val ifDetails = testData[IF_KEYWORD] as Map<String, Any>
+                        val condition = ifDetails[CONDITION_KEYWORD] as String?
+                        val thenContent = ifDetails[THEN_KEYWORD]
+                        val elseContent = ifDetails[ELSE_KEYWORD] ?: ""
 
-    private fun convertHierarchicalData(data: Any?): Any? {
-        return when (data) {
-            is Map<*, *> ->
-                if (data.containsKey(IF_KEYWORD)) {
-                    val ifDetails = data[IF_KEYWORD] as Map<String, Any>
-                    val condition = ifDetails[CONDITION_KEYWORD] as String?
-                    val thenContent = ifDetails[THEN_KEYWORD]
-                    val elseContent = ifDetails[ELSE_KEYWORD] ?: ""
+                        Objects.requireNonNull(condition, "'condition' is mandatory in 'if' statement")
+                        Objects.requireNonNull(thenContent, "'then' is mandatory in 'if' statement")
 
-                    Objects.requireNonNull(condition, "'condition' is mandatory in 'if' statement")
-                    Objects.requireNonNull(thenContent, "'then' is mandatory in 'if' statement")
+                        if (isConditionSatisfied(condition)) convert(thenContent)
+                        else convert(elseContent)
+                    } else testData.entries.map { it.key to convert(it.value) }.toMap()
 
-                    if (isConditionSatisfied(condition)) convertHierarchicalData(thenContent)
-                    else convertHierarchicalData(elseContent)
-                } else data.entries.map { it.key to convertHierarchicalData(it.value) }.toMap()
-
-            is Collection<*> -> data.map { convertHierarchicalData(it) }.toList()
-            else -> data
-        }
-    }
+                is Collection<*> -> testData.map { convert(it) }.toList()
+                else -> testData
+            }
 
     private fun isConditionSatisfied(condition: String?): Boolean {
         val newCondition = encloseStringWithQuotes(condition)
