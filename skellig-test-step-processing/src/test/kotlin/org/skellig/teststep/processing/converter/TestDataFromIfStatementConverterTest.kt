@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.converter
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.utils.UnitTestUtils
+import org.skellig.teststep.processing.utils.UnitTestUtils.Companion.createMap
 
 class TestDataFromIfStatementConverterTest {
 
@@ -16,8 +16,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWhenFalse() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "a 1 == b 1",
+        val data = createMap("if",
+                createMap("condition", "a 1 == b 1",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("false", converter!!.convert(data))
@@ -25,8 +25,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWhenTrue() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "a 1 == a 1",
+        val data = createMap("if",
+                createMap("condition", "a 1 == a 1",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
@@ -34,8 +34,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testTwoConditionsWhenOneOfThemTrue() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "a == b || c == c",
+        val data = createMap("if",
+                createMap("condition", "a == b || c == c",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
@@ -43,8 +43,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testTwoConditionsWhenNotAllAreTrue() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "a == b && c == c",
+        val data = createMap("if",
+                createMap("condition", "a == b && c == c",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("false", converter!!.convert(data))
@@ -52,8 +52,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testTwoConditionsWhenAllAreTrue() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "a == a && cd d == cd d",
+        val data = createMap("if",
+                createMap("condition", "a == a && cd d == cd d",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
@@ -61,8 +61,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWithNumbersWhenMore() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "12 > 5",
+        val data = createMap("if",
+                createMap("condition", "12 > 5",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
@@ -70,8 +70,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWithNumbersWhenMoreAndFalse() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "10 > 32.5",
+        val data = createMap("if",
+                createMap("condition", "10 > 32.5",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("false", converter!!.convert(data))
@@ -79,8 +79,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWithNumbersWhenLess() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "12 < 5",
+        val data = createMap("if",
+                createMap("condition", "12 < 5",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("false", converter!!.convert(data))
@@ -88,8 +88,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWithNumbersWhenLessAndTrue() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "0.5 < 2.1",
+        val data = createMap("if",
+                createMap("condition", "0.5 < 2.1",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
@@ -97,8 +97,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWithNumbersWhenMoreOrEqual() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "5 >= 5",
+        val data = createMap("if",
+                createMap("condition", "5 >= 5",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
@@ -106,8 +106,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWithNumbersWhenLessAndFalse() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "3 >= 5",
+        val data = createMap("if",
+                createMap("condition", "3 >= 5",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("false", converter!!.convert(data))
@@ -115,8 +115,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWithNumbersWhenLessOrEqual() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "8 <= 7",
+        val data = createMap("if",
+                createMap("condition", "8 <= 7",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("false", converter!!.convert(data))
@@ -124,8 +124,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testSimpleConditionWithNumbersWhenLessOrEqualAndTrue() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "123 <= 999.9",
+        val data = createMap("if",
+                createMap("condition", "123 <= 999.9",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
@@ -133,8 +133,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testComplexConditionWithoutGroups() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "a == c || a == a && c == d || c == c",
+        val data = createMap("if",
+                createMap("condition", "a == c || a == a && c == d || c == c",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
@@ -142,8 +142,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testComplexConditionWithoutGroupsAndFalse() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "abc == g || 56 <= 32 || b == n",
+        val data = createMap("if",
+                createMap("condition", "abc == g || 56 <= 32 || b == n",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("false", converter!!.convert(data))
@@ -151,8 +151,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testComplexConditionWithGroupsAndFalse() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "(a == c || a == a) && (c == d || d == c)",
+        val data = createMap("if",
+                createMap("condition", "(a == c || a == a) && (c == d || d == c)",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("false", converter!!.convert(data))
@@ -160,8 +160,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testComplexConditionWithGroupsAndTrue() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "(a == c && a == a) || (c == d || c == c)",
+        val data = createMap("if",
+                createMap("condition", "(a == c && a == a) || (c == d || c == c)",
                         "then", "true", "else", "false"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
@@ -169,8 +169,8 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testComplexCondition() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "success == success && (7 <= 12 || 7 == 100)",
+        val data = createMap("if",
+                createMap("condition", "success == success && (7 <= 12 || 7 == 100)",
                         "then", "a", "else", "b"))
 
         Assertions.assertEquals("a", converter!!.convert(data))
@@ -178,25 +178,21 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testConditionWithThenOnlyAndTrue() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "a == a",
-                        "then", "true"))
+        val data = createMap("if", createMap("condition", "a == a", "then", "true"))
 
         Assertions.assertEquals("true", converter!!.convert(data))
     }
 
     @Test
     fun testConditionWithThenOnlyAndFalse() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "a == b", "then", "true"))
+        val data = createMap("if", createMap("condition", "a == b", "then", "true"))
 
         Assertions.assertEquals("", converter!!.convert(data))
     }
 
     @Test
     fun testConditionWhenThenNotProvided() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("condition", "a == a"))
+        val data = createMap("if", createMap("condition", "a == a"))
 
         val ex = Assertions.assertThrows(NullPointerException::class.java) { converter!!.convert(data) }
 
@@ -206,11 +202,42 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testWhenConditionNotProvided() {
-        val data = UnitTestUtils.createMap("if",
-                UnitTestUtils.createMap("then", "a"))
+        val data = createMap("if", createMap("then", "a"))
 
         val ex = Assertions.assertThrows(NullPointerException::class.java) { converter!!.convert(data) }
 
         Assertions.assertEquals("'condition' is mandatory in 'if' statement", ex.message)
+    }
+
+    @Test
+    fun testConditionInsideMap() {
+        val expectedValue = "success"
+        val data = createMap("a", "1",
+                "b", createMap("if", createMap("condition", "1 > 0", "then", expectedValue)))
+
+        val result = converter!!.convert(data)
+
+        Assertions.assertEquals(expectedValue, (result as Map<*, *>)["b"])
+    }
+
+    @Test
+    fun testManyInnerConditions() {
+        val expectedValue = "success"
+        val data = createMap("a", createMap("if", createMap("condition", "a==a", "then",
+                createMap("if", createMap("condition", "a==b", "then", "fail", "else", expectedValue)))))
+
+        val result = converter!!.convert(data)
+
+        Assertions.assertEquals(expectedValue, (result as Map<*, *>)["a"])
+    }
+
+    @Test
+    fun testConditionInsideList() {
+        val data = createMap("result",
+                listOf("a", "b", createMap("if", createMap("condition", "1 > 0", "then", "c")), "d"))
+
+        val result = converter!!.convert(data)
+
+        Assertions.assertEquals(listOf("a", "b", "c", "d"), (result as Map<*, *>)["result"])
     }
 }

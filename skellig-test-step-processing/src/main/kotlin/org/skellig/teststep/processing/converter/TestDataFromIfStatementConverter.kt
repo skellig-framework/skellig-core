@@ -15,22 +15,28 @@ class TestDataFromIfStatementConverter : TestDataConverter {
 
     private val engine = ScriptEngineManager().getEngineByName("JavaScript")
 
-    override fun convert(testData: Any?): Any? {
-        if (testData is Map<*, *>) {
-            val valueAsMap = testData as Map<String, Any>
-            if (valueAsMap.containsKey(IF_KEYWORD)) {
-                val ifDetails = valueAsMap[IF_KEYWORD] as Map<String, Any>
-                val condition = ifDetails[CONDITION_KEYWORD] as String?
-                val thenContent = ifDetails[THEN_KEYWORD]
-                val elseContent = ifDetails[ELSE_KEYWORD] ?: ""
+    override fun convert(testData: Any?): Any? =
+            convertHierarchicalData(testData)
 
-                Objects.requireNonNull(condition, "'condition' is mandatory in 'if' statement")
-                Objects.requireNonNull(thenContent, "'then' is mandatory in 'if' statement")
+    private fun convertHierarchicalData(data: Any?): Any? {
+        return when (data) {
+            is Map<*, *> ->
+                if (data.containsKey(IF_KEYWORD)) {
+                    val ifDetails = data[IF_KEYWORD] as Map<String, Any>
+                    val condition = ifDetails[CONDITION_KEYWORD] as String?
+                    val thenContent = ifDetails[THEN_KEYWORD]
+                    val elseContent = ifDetails[ELSE_KEYWORD] ?: ""
 
-                return if (isConditionSatisfied(condition)) thenContent else elseContent
-            }
+                    Objects.requireNonNull(condition, "'condition' is mandatory in 'if' statement")
+                    Objects.requireNonNull(thenContent, "'then' is mandatory in 'if' statement")
+
+                    if (isConditionSatisfied(condition)) convertHierarchicalData(thenContent)
+                    else convertHierarchicalData(elseContent)
+                } else data.entries.map { it.key to convertHierarchicalData(it.value) }.toMap()
+
+            is Collection<*> -> data.map { convertHierarchicalData(it) }.toList()
+            else -> data
         }
-        return testData
     }
 
     private fun isConditionSatisfied(condition: String?): Boolean {
