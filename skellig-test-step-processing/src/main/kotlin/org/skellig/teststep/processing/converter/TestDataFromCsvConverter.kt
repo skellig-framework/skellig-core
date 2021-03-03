@@ -34,8 +34,7 @@ class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestDataConverter
     }
 
     private fun getRowFilter(csvDetails: Map<String, Any?>): Predicate<Map<String, String>> {
-        val rowFilter: Predicate<Map<String, String>>
-        rowFilter = if (csvDetails.containsKey(ROW_KEYWORD)) {
+        return if (csvDetails.containsKey(ROW_KEYWORD)) {
             val row = csvDetails[ROW_KEYWORD] as Map<String, Any?>
             Predicate { item: Map<String, String> ->
                 row.entries.all { item.containsKey(it.key) && item[it.key] == it.value }
@@ -43,7 +42,6 @@ class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestDataConverter
         } else {
             Predicate { true }
         }
-        return rowFilter
     }
 
     private fun readCsvFile(fileName: String?, rowFilter: Predicate<Map<String, String>>): List<Map<String, String>> {
