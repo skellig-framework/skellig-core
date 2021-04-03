@@ -6,13 +6,22 @@ import java.util.*
 
 class DefaultValueConverter private constructor(val valueConverters: List<TestStepValueConverter>) : TestStepValueConverter {
 
-    override fun convert(value: String?): Any? {
+    override fun convert(value: Any?): Any? {
+        val newValue = when (value) {
+            is Map<*, *> -> value.entries.map { it.key to convert(it.value) }.toMap()
+            is Collection<*> -> value.map { convert(it) }.toList()
+            else -> convertWithConverters(value)
+        }
+        // If collection then go through conversion again to avoid missed function processing
+        return if (newValue is Map<*, *> || newValue is Collection<*>) convertWithConverters(newValue)
+        else newValue
+    }
+
+    private fun convertWithConverters(value: Any?): Any? {
         var result: Any? = value
         for (valueConverter in valueConverters) {
-            if (result != null && result.javaClass == String::class.java) {
-                result = valueConverter.convert(result as String?)
-                //TODO: probably worth to use value extractors over here
-            }
+            result = valueConverter.convert(result)
+            //TODO: probably worth to use value extractors over here
         }
         return result
     }
@@ -40,17 +49,27 @@ class DefaultValueConverter private constructor(val valueConverters: List<TestSt
 
             withValueConverter(TestStepStateValueConverter(testScenarioState!!, testStepValueExtractor))
             withValueConverter(FindFromStateValueConverter(testScenarioState!!, testStepValueExtractor))
-            if (classLoader != null) {
-                withValueConverter(FileValueConverter(classLoader!!))
+            classLoader?.let {
+                withValueConverter(FileValueConverter(it))
             }
+
             withValueConverter(NumberValueConverter())
             withValueConverter(IncrementValueConverter())
             withValueConverter(CurrentDateTimeValueConverter())
             withValueConverter(ToDateTimeValueConverter())
             withValueConverter(ListOfValueConverter())
+            withValueConverter(TestDataToBytesConverter())
+            withValueConverter(TestDataToJsonConverter())
+            classLoader?.let {
+                val testDataFromCsvConverter = TestDataFromCsvConverter(it)
+                withValueConverter(testDataFromCsvConverter)
+                withValueConverter(TestDataFromCsvConverter(it))
+                withValueConverter(TestDataFromFTLConverter(it, testDataFromCsvConverter))
+            }
 
             val defaultValueConverter = DefaultValueConverter(valueConverters)
-            valueConverters.add(0, PropertyValueConverter(defaultValueConverter, getPropertyFunction))
+            valueConverters.add(0, TestDataFromIfStatementConverter())
+            valueConverters.add(1, PropertyValueConverter(defaultValueConverter, getPropertyFunction))
 
             return defaultValueConverter
         }

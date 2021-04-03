@@ -13,20 +13,19 @@ class TestStepStateValueConverter(val testScenarioState: TestScenarioState,
         private val GET_PATTERN = Pattern.compile("get\\(([\\w_$.-]+)\\)(\\.(.+))?")
     }
 
-    override fun convert(value: String?): Any? {
-        return value?.let {
-            val matcher = GET_PATTERN.matcher(value)
-            var result: Any = value
-            while (matcher.find()) {
-                if (hasIdOnly(matcher)) {
-                    result = extractById(result, matcher)
-                } else if (hasExtractFunction(matcher)) {
-                    result = extractUsingExtractorFunction(result, matcher)
+    override fun convert(value: Any?): Any? =
+            value?.let {
+                val matcher = GET_PATTERN.matcher(value.toString())
+                var result: Any = value
+                while (matcher.find()) {
+                    if (hasIdOnly(matcher)) {
+                        result = extractById(result, matcher)
+                    } else if (hasExtractFunction(matcher)) {
+                        result = extractUsingExtractorFunction(result, matcher)
+                    }
                 }
+                result
             }
-            result
-        }
-    }
 
     private fun extractById(value: Any, matcher: Matcher): Any {
         val key = matcher.group(1)

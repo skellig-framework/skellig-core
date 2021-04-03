@@ -8,7 +8,8 @@ import java.io.StringWriter
 import java.net.URL
 
 class TestDataFromFTLConverter(val classLoader: ClassLoader,
-                               val testDataFromCsvConverter: TestDataFromCsvConverter) : TestDataConverter {
+                               val testDataFromCsvConverter: TestDataFromCsvConverter)
+    : TestStepValueConverter {
 
     companion object {
         private const val TEMPLATE_KEYWORD = "template"
@@ -17,8 +18,8 @@ class TestDataFromFTLConverter(val classLoader: ClassLoader,
 
     private var templateProvider: TemplateProvider = TemplateProvider(classLoader)
 
-    override fun convert(testData: Any?): Any? {
-        var newTestData = testData
+    override fun convert(value: Any?): Any? {
+        var newTestData = value
         if (newTestData is Map<*, *>) {
             val valueAsMap = newTestData as Map<String, Any?>
             if (valueAsMap.containsKey(TEMPLATE_KEYWORD)) {

@@ -5,7 +5,7 @@ import org.skellig.teststep.processing.exception.TestDataConversionException
 import java.io.Serializable
 import java.nio.charset.StandardCharsets
 
-class TestDataToBytesConverter : TestDataConverter {
+class TestDataToBytesConverter : TestStepValueConverter {
 
     companion object {
         private const val VALUE = "value"

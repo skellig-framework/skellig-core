@@ -18,7 +18,7 @@ class ValidationDetailsFactoryTest {
     fun setUp() {
         validationDetailsFactory = DefaultTestStepFactory.Builder()
                 .withTestStepValueConverter(object : TestStepValueConverter {
-                    override fun convert(value: String?): Any? {
+                    override fun convert(value: Any?): Any? {
                         return value
                     }
                 })

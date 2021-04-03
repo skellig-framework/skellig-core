@@ -12,14 +12,15 @@ class FileValueConverter(val classLoader: ClassLoader) : TestStepValueConverter 
         private val FILE_PATTERN = Pattern.compile("file\\((.+)\\)")
     }
 
-    override fun convert(value: String?): Any? {
-        val matcher = FILE_PATTERN.matcher(value)
-        return if (matcher.find()) {
-            readFileContentFromFilePath(matcher.group(1))
-        } else value
-    }
+    override fun convert(value: Any?): Any? =
+            value?.let {
+                val matcher = FILE_PATTERN.matcher(value.toString())
+                if (matcher.find()) {
+                    readFileContentFromFilePath(matcher.group(1))
+                } else value
+            }
 
-    private fun readFileContentFromFilePath(pathToFile: String): String? {
+    private fun readFileContentFromFilePath(pathToFile: String): String {
         val resource = classLoader.getResource(pathToFile)
         return if (resource != null) {
             try {

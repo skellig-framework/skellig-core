@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.skellig.teststep.processing.converter.DefaultTestDataConverter
 import org.skellig.teststep.processing.converter.DefaultValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -28,10 +27,6 @@ class DefaultTestStepFactoryTest {
                                 .withTestScenarioState(testScenarioState)
                                 .build()
                 )
-                .withTestDataConverter(
-                        DefaultTestDataConverter.Builder()
-                                .withClassLoader(javaClass.classLoader)
-                                .build())
                 .build()
     }
 
@@ -150,5 +145,17 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf())
 
         Assertions.assertEquals("", testStep.testData)
+    }
+
+    @Test
+    @DisplayName("With test data as a content conversion function")
+    fun testCreateTestStepWithTestDataAsContentConversionFunction() {
+        val data = "something"
+        val rawTestStep = UnitTestUtils.createMap("data",
+                mapOf(Pair("toBytes", mapOf(Pair("value", data)))))
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf())
+
+        Assertions.assertEquals(data, String(testStep.testData as ByteArray))
     }
 }

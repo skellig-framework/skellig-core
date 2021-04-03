@@ -35,7 +35,7 @@ class DefaultSkelligTestContext : SkelligTestContext() {
                                         .withTestScenarioState(getTestScenarioState())
                                         .withValidator(getTestStepResultValidator())
                                         .build(),
-                                createTestStepFactoryFrom { props, c1, c2 -> HttpTestStepFactory(props, c1, c2) })
+                                createTestStepFactoryFrom { props, c1 -> HttpTestStepFactory(props, c1) })
                 )
             } ?: emptyList()
 }

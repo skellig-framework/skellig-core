@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 
 
-class TestDataToJsonConverter : TestDataConverter {
+class TestDataToJsonConverter : TestStepValueConverter {
 
     companion object {
         private const val JSON_KEYWORD = "json"
@@ -18,14 +18,14 @@ class TestDataToJsonConverter : TestDataConverter {
         jsonSerializer.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
     }
 
-    override fun convert(testData: Any?): Any? {
-        if (testData is Map<*, *>) {
-            val valueAsMap = testData as Map<String, Any?>
+    override fun convert(value: Any?): Any? {
+        if (value is Map<*, *>) {
+            val valueAsMap = value as Map<String, Any?>
             if (valueAsMap.containsKey(JSON_KEYWORD)) {
                 val jsonContent = valueAsMap[JSON_KEYWORD]
                 return jsonSerializer.writeValueAsString(jsonContent)
             }
         }
-        return testData
+        return value
     }
 }

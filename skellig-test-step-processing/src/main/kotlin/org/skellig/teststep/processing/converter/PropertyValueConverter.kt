@@ -12,12 +12,11 @@ class PropertyValueConverter(var valueConverter: TestStepValueConverter,
         private const val NULL = "null"
     }
 
-    override fun convert(value: String?): Any? {
-        return value?.let {
-            val matcher = PARAMETER_REGEX.matcher(it)
-            return if (matcher.find()) convert(it, matcher) else value
-        }
-    }
+    override fun convert(value: Any?): Any? =
+            value?.let {
+                val matcher = PARAMETER_REGEX.matcher(value.toString())
+                if (matcher.find()) convert(value.toString(), matcher) else value
+            }
 
     private fun convert(value: String, matcher: Matcher): Any? {
         var result: Any? = null
