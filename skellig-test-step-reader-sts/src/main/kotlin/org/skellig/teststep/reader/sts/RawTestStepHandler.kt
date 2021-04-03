@@ -202,7 +202,13 @@ class RawTestStepHandler : Closeable {
 
     private fun addParameterWithValue(rawTestStep: MutableMap<String, Any?>) {
         val value = rawTestStepBuilder.toString()
-        rawTestStep[propertyName!!] = if (value == NULL) null else value
+        rawTestStep[propertyName!!] = when {
+            value == NULL -> null
+            // if left-over spaces were not registered then the value was enclosed in single quotes
+            // thus no need preserve them and not to trim
+            spacesBuilder.isEmpty() -> value
+            else -> value.trim()
+        }
         emptyBuffer()
         propertyName = null
     }
