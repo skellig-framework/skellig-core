@@ -11,16 +11,19 @@ class NumberValueConverter : TestStepValueConverter {
     }
 
     override fun convert(value: Any?): Any? =
-            value?.let {
-                val intMatcher = INTEGER_REGEX.matcher(value.toString())
-                if (intMatcher.find()) {
-                    toIntOrLong(intMatcher)
-                } else {
-                    val floatMatcher = FLOAT_REGEX.matcher(value.toString())
-                    if (floatMatcher.find())
-                        toFloatOrDouble(floatMatcher)
-                    else value
+            when (value) {
+                is String -> {
+                    val intMatcher = INTEGER_REGEX.matcher(value.toString())
+                    if (intMatcher.find()) {
+                        toIntOrLong(intMatcher)
+                    } else {
+                        val floatMatcher = FLOAT_REGEX.matcher(value.toString())
+                        if (floatMatcher.find())
+                            toFloatOrDouble(floatMatcher)
+                        else value
+                    }
                 }
+                else -> value
             }
 
     private fun toFloatOrDouble(floatMatcher: Matcher): Number {

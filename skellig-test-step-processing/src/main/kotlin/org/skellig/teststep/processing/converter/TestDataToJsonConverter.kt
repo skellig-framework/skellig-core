@@ -13,7 +13,7 @@ class TestDataToJsonConverter : TestStepValueConverter {
 
     private val jsonSerializer = ObjectMapper()
 
-    init{
+    init {
         jsonSerializer.registerModule(JavaTimeModule())
         jsonSerializer.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
     }
