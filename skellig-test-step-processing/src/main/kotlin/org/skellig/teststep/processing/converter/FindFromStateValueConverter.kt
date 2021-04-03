@@ -13,18 +13,21 @@ class FindFromStateValueConverter(val testScenarioState: TestScenarioState,
     }
 
     override fun convert(value: Any?): Any? =
-            value?.let {
-                val matcher = FIND_PATTERN.matcher(value.toString())
-                var result: Any? = value
-                if (matcher.find()) {
-                    val extractPath = matcher.group(1)
-                    result = testScenarioState.reversed()
-                            .mapNotNull { e -> tryExtract(e, extractPath) }
-                            .firstOrNull()
-                            ?: throw(TestValueConversionException("Could not find data in the current state by '$extractPath' path"))
-                    if (result is String) convert(value.toString().replace("find($extractPath)", result.toString()))
-                    else result
-                } else result
+            when (value) {
+                is String -> {
+                    val matcher = FIND_PATTERN.matcher(value.toString())
+                    var result: Any? = value
+                    if (matcher.find()) {
+                        val extractPath = matcher.group(1)
+                        result = testScenarioState.reversed()
+                                .mapNotNull { e -> tryExtract(e, extractPath) }
+                                .firstOrNull()
+                                ?: throw(TestValueConversionException("Could not find data in the current state by '$extractPath' path"))
+                        if (result is String) convert(value.toString().replace("find($extractPath)", result.toString()))
+                        else result
+                    } else result
+                }
+                else -> value
             }
 
     private fun tryExtract(e: Pair<String, Any?>, extractPath: String?): Any? {

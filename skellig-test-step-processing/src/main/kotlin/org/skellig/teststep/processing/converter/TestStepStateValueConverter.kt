@@ -14,17 +14,20 @@ class TestStepStateValueConverter(val testScenarioState: TestScenarioState,
     }
 
     override fun convert(value: Any?): Any? =
-            value?.let {
-                val matcher = GET_PATTERN.matcher(value.toString())
-                var result: Any = value
-                while (matcher.find()) {
-                    if (hasIdOnly(matcher)) {
-                        result = extractById(result, matcher)
-                    } else if (hasExtractFunction(matcher)) {
-                        result = extractUsingExtractorFunction(result, matcher)
+            when (value) {
+                is String -> {
+                    val matcher = GET_PATTERN.matcher(value.toString())
+                    var result: Any = value
+                    while (matcher.find()) {
+                        if (hasIdOnly(matcher)) {
+                            result = extractById(result, matcher)
+                        } else if (hasExtractFunction(matcher)) {
+                            result = extractUsingExtractorFunction(result, matcher)
+                        }
                     }
+                    result
                 }
-                result
+                else -> value
             }
 
     private fun extractById(value: Any, matcher: Matcher): Any {

@@ -13,9 +13,12 @@ class PropertyValueConverter(var valueConverter: TestStepValueConverter,
     }
 
     override fun convert(value: Any?): Any? =
-            value?.let {
-                val matcher = PARAMETER_REGEX.matcher(value.toString())
-                if (matcher.find()) convert(value.toString(), matcher) else value
+            when (value) {
+                is String -> {
+                    val matcher = PARAMETER_REGEX.matcher(value.toString())
+                    if (matcher.find()) convert(value.toString(), matcher) else value
+                }
+                else -> value
             }
 
     private fun convert(value: String, matcher: Matcher): Any? {

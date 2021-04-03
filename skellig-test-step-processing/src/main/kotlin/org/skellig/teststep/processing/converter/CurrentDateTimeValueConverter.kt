@@ -15,14 +15,17 @@ class CurrentDateTimeValueConverter : TestStepValueConverter {
     }
 
     override fun convert(value: Any?): Any? =
-            value?.let {
-                val matcher = NOW_PATTERN.matcher(value.toString())
-                if (matcher.find()) {
-                    val timezone = matcher.group(1)
-                    val format = matcher.group(3)
-                    if (format == null) getLocalDateTime(timezone)
-                    else value.toString().replace(matcher.group(0), getLocalDateTime(format, timezone))
-                } else value
+            when (value) {
+                is String -> {
+                    val matcher = NOW_PATTERN.matcher(value.toString())
+                    if (matcher.find()) {
+                        val timezone = matcher.group(1)
+                        val format = matcher.group(3)
+                        if (format == null) getLocalDateTime(timezone)
+                        else value.toString().replace(matcher.group(0), getLocalDateTime(format, timezone))
+                    } else value
+                }
+                else -> value
             }
 
     private fun getLocalDateTime(timezone: String): LocalDateTime {

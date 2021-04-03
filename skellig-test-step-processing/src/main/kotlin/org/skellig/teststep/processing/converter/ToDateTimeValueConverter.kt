@@ -17,18 +17,21 @@ class ToDateTimeValueConverter : TestStepValueConverter {
     }
 
     override fun convert(value: Any?): Any? =
-            value?.let {
-                var matcher = TO_DATE_PATTERN.matcher(value.toString())
-                if (matcher.find()) {
-                    val date = matcher.group(1)
-                    parseDate(date, DATE_FORMATTER) { LocalDate.from(it) }
-                } else {
-                    matcher = TO_DATE_TIME_PATTERN.matcher(value.toString())
+            when (value) {
+                is String -> {
+                    var matcher = TO_DATE_PATTERN.matcher(value.toString())
                     if (matcher.find()) {
-                        val dateTime = matcher.group(1)
-                        parseDate(dateTime, DATE_TIME_FORMATTER) { LocalDateTime.from(it) }
-                    } else value
+                        val date = matcher.group(1)
+                        parseDate(date, DATE_FORMATTER) { LocalDate.from(it) }
+                    } else {
+                        matcher = TO_DATE_TIME_PATTERN.matcher(value.toString())
+                        if (matcher.find()) {
+                            val dateTime = matcher.group(1)
+                            parseDate(dateTime, DATE_TIME_FORMATTER) { LocalDateTime.from(it) }
+                        } else value
+                    }
                 }
+                else -> value
             }
 
     private fun parseDate(value: String?, formatter: DateTimeFormatter, query: TemporalQuery<*>) =

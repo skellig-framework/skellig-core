@@ -13,11 +13,14 @@ class FileValueConverter(val classLoader: ClassLoader) : TestStepValueConverter 
     }
 
     override fun convert(value: Any?): Any? =
-            value?.let {
-                val matcher = FILE_PATTERN.matcher(value.toString())
-                if (matcher.find()) {
-                    readFileContentFromFilePath(matcher.group(1))
-                } else value
+            when (value) {
+                is String -> {
+                    val matcher = FILE_PATTERN.matcher(value.toString())
+                    if (matcher.find()) {
+                        readFileContentFromFilePath(matcher.group(1))
+                    } else value
+                }
+                else -> value
             }
 
     private fun readFileContentFromFilePath(pathToFile: String): String {
