@@ -1,6 +1,5 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.TestStep
 import java.util.*
@@ -25,7 +24,6 @@ class CompositeTestStepFactory(var factories: Collection<TestStepFactory<out Tes
         private val testStepFactories = mutableListOf<TestStepFactory<out TestStep>>()
         private var keywordsProperties: Properties? = null
         private var testStepValueConverter: TestStepValueConverter? = null
-        private var testDataConverter: TestDataConverter? = null
 
         fun withTestStepFactory(factory: TestStepFactory<out TestStep>) =
                 apply { testStepFactories.add(factory) }
@@ -35,9 +33,6 @@ class CompositeTestStepFactory(var factories: Collection<TestStepFactory<out Tes
 
         fun withTestStepValueConverter(testStepValueConverter: TestStepValueConverter?) =
                 apply { this.testStepValueConverter = testStepValueConverter }
-
-        fun withTestDataConverter(testDataConverter: TestDataConverter?) =
-                apply { this.testDataConverter = testDataConverter }
 
         fun withTestDataRegistry(testStepsRegistry: TestStepRegistry) =
                 apply {this.testStepsRegistry = testStepsRegistry }
@@ -50,7 +45,6 @@ class CompositeTestStepFactory(var factories: Collection<TestStepFactory<out Tes
             withTestStepFactory(DefaultTestStepFactory.Builder()
                     .withKeywordsProperties(keywordsProperties)
                     .withTestStepValueConverter(testStepValueConverter)
-                    .withTestDataConverter(testDataConverter)
                     .build())
 
 

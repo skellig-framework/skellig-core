@@ -30,7 +30,6 @@ open class SkelligTestContext : Closeable {
 
     private var testStepValueConverter: TestStepValueConverter? = null
     private var testStepResultConverter: TestStepResultConverter? = null
-    private var testDataConverter: TestDataConverter? = null
     private var testScenarioState: TestScenarioState? = null
     private var testStepResultValidator: TestStepResultValidator? = null
     private var defaultTestStepProcessor: TestStepProcessor<TestStep>? = null
@@ -41,7 +40,6 @@ open class SkelligTestContext : Closeable {
         testScenarioState = createTestScenarioState()
         val valueExtractor = createTestStepValueExtractor()
         testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState)
-        testDataConverter = createTestDataConverter(classLoader)
         testStepResultConverter = createTestDataResultConverter()
         testStepResultValidator = createTestStepValidator(valueExtractor)
         val testStepProcessors = testStepProcessors
@@ -103,7 +101,6 @@ open class SkelligTestContext : Closeable {
         return testStepFactoryBuilder
                 .withKeywordsProperties(testStepKeywordsProperties)
                 .withTestStepValueConverter(testStepValueConverter)
-                .withTestDataConverter(testDataConverter)
                 .withTestDataRegistry(testStepsRegistry)
                 .build()
     }
@@ -159,13 +156,6 @@ open class SkelligTestContext : Closeable {
                 .build()
     }
 
-    private fun createTestDataConverter(classLoader: ClassLoader): TestDataConverter {
-        val builder = DefaultTestDataConverter.Builder()
-        additionalTestDataConverters.forEach { builder.withTestDataConverter(it) }
-
-        return builder.withClassLoader(classLoader).build()
-    }
-
     private fun createTestDataResultConverter(): TestStepResultConverter {
         val builder = DefaultTestStepResultConverter.Builder()
         additionalTestStepResultConverters.forEach { builder.withTestStepResultConverter(it) }
@@ -197,9 +187,6 @@ open class SkelligTestContext : Closeable {
     protected val additionalTestStepValueConverters: List<TestStepValueConverter>
         protected get() = emptyList()
 
-    protected open val additionalTestDataConverters: List<TestDataConverter>
-        protected get() = emptyList()
-
     protected val additionalTestStepResultConverters: List<TestStepResultConverter>
         protected get() = emptyList()
 
@@ -217,12 +204,10 @@ open class SkelligTestContext : Closeable {
         private set
 
     protected fun createTestStepFactoryFrom(delegate: (keywordsProperties: Properties?,
-                                                       testStepValueConverter: TestStepValueConverter?,
-                                                       testDataConverter: TestDataConverter?) -> TestStepFactory<out TestStep>): TestStepFactory<out TestStep> {
+                                                       testStepValueConverter: TestStepValueConverter?) -> TestStepFactory<out TestStep>): TestStepFactory<out TestStep> {
         return delegate(testStepKeywordsProperties,
                 testStepValueConverter
-                        ?: error("TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?"),
-                testDataConverter ?: error("TestDataConverter must be initialized first. Did you forget to call 'initialize'?"))
+                        ?: error("TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?"))
     }
 
     override fun close() {

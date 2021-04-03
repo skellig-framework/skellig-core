@@ -1,12 +1,8 @@
 package org.skellig.runner.config
 
-import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.runner.context.SkelligTestContext
 
 class TestSkelligContext : SkelligTestContext() {
-
-    override val additionalTestDataConverters: List<TestDataConverter>
-        get() = listOf(CustomMessageTestDataConverter())
 
     override val testStepProcessors: List<TestStepProcessorDetails>
         get() = listOf(
@@ -15,8 +11,8 @@ class TestSkelligContext : SkelligTestContext() {
                                 .withTestScenarioState(getTestScenarioState())
                                 .withValidator(getTestStepResultValidator())
                                 .build(),
-                        createTestStepFactoryFrom { keywordsProperties, testStepValueConverter, testDataConverter ->
-                            SimpleMessageTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter)
+                        createTestStepFactoryFrom { keywordsProperties, testStepValueConverter ->
+                            SimpleMessageTestStepFactory(keywordsProperties, testStepValueConverter)
                         }
                 ),
                 TestStepProcessorDetails(
@@ -24,8 +20,8 @@ class TestSkelligContext : SkelligTestContext() {
                                 .withTestScenarioState(getTestScenarioState())
                                 .withValidator(getTestStepResultValidator())
                                 .build(),
-                        createTestStepFactoryFrom { keywordsProperties, testStepValueConverter, testDataConverter ->
-                            SimpleTestStepFactory(keywordsProperties, testStepValueConverter, testDataConverter)
+                        createTestStepFactoryFrom { keywordsProperties, testStepValueConverter ->
+                            SimpleTestStepFactory(keywordsProperties, testStepValueConverter)
                         }
                 )
         )

@@ -4,7 +4,7 @@ import org.apache.commons.lang3.math.NumberUtils
 import java.util.*
 import javax.script.ScriptEngineManager
 
-class TestDataFromIfStatementConverter : TestDataConverter {
+class TestDataFromIfStatementConverter : TestStepValueConverter {
 
     companion object {
         private const val IF_KEYWORD = "if"
@@ -15,11 +15,11 @@ class TestDataFromIfStatementConverter : TestDataConverter {
 
     private val engine = ScriptEngineManager().getEngineByName("JavaScript")
 
-    override fun convert(testData: Any?): Any? =
-            when (testData) {
+    override fun convert(value: Any?): Any? =
+            when (value) {
                 is Map<*, *> ->
-                    if (testData.containsKey(IF_KEYWORD)) {
-                        val ifDetails = testData[IF_KEYWORD] as Map<String, Any>
+                    if (value.containsKey(IF_KEYWORD)) {
+                        val ifDetails = value[IF_KEYWORD] as Map<String, Any>
                         val condition = ifDetails[CONDITION_KEYWORD] as String?
                         val thenContent = ifDetails[THEN_KEYWORD]
                         val elseContent = ifDetails[ELSE_KEYWORD] ?: ""
@@ -29,10 +29,10 @@ class TestDataFromIfStatementConverter : TestDataConverter {
 
                         if (isConditionSatisfied(condition)) convert(thenContent)
                         else convert(elseContent)
-                    } else testData.entries.map { it.key to convert(it.value) }.toMap()
+                    } else value.entries.map { it.key to convert(it.value) }.toMap()
 
-                is Collection<*> -> testData.map { convert(it) }.toList()
-                else -> testData
+                is Collection<*> -> value.map { convert(it) }.toList()
+                else -> value
             }
 
     private fun isConditionSatisfied(condition: String?): Boolean {

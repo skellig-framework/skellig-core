@@ -31,7 +31,7 @@ class PropertyValueConverterTest {
 
         valueConverter = PropertyValueConverter(
             object : TestStepValueConverter {
-                override fun convert(value: String?): Any? {
+                override fun convert(value: Any?): Any? {
                     var newValue: Any? = value
                     for (valueConverter in converters) {
                         if (newValue is String)
@@ -58,6 +58,11 @@ class PropertyValueConverterTest {
     @Test
     fun testSimpleParameterWithNoValueAndDefaultIsNull() {
         Assertions.assertNull(valueConverter!!.convert("\${1:null}"))
+    }
+
+    @Test
+    fun testConvertNull() {
+        Assertions.assertNull(valueConverter!!.convert(null))
     }
 
     @Test

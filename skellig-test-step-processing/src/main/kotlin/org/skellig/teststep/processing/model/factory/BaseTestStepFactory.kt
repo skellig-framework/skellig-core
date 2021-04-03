@@ -14,7 +14,7 @@ abstract class BaseTestStepFactory<T : TestStep>(
         protected const val TEST_STEP_NAME_KEYWORD = "test.step.keyword.name"
     }
 
-    protected var testStepFactoryValueConverter = TestStepFactoryValueConverter(testStepValueConverter)
+    protected var testStepFactoryValueConverter = TestStepFactoryValueConverter(testStepValueConverter!!)
 
     protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<String, Any?>): Map<String, String>? {
         var parameters: MutableMap<String, String>? = null

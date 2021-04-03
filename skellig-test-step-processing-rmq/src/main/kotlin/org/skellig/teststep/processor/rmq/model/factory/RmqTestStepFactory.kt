@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.rmq.model.factory
 
-import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
@@ -8,9 +7,8 @@ import org.skellig.teststep.processor.rmq.model.RmqTestStep
 import java.util.*
 
 class RmqTestStepFactory(keywordsProperties: Properties?,
-                         testStepValueConverter: TestStepValueConverter?,
-                         testDataConverter: TestDataConverter?)
-    : BaseDefaultTestStepFactory<RmqTestStep>(keywordsProperties, testStepValueConverter, testDataConverter) {
+                         testStepValueConverter: TestStepValueConverter?)
+    : BaseDefaultTestStepFactory<RmqTestStep>(keywordsProperties, testStepValueConverter) {
 
     companion object {
         private const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"

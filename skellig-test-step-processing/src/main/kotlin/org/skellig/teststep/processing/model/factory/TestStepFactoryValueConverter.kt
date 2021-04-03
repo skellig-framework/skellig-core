@@ -3,21 +3,25 @@ package org.skellig.teststep.processing.model.factory
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import java.util.regex.Pattern
 
-class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueConverter?) {
+class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueConverter) {
 
     companion object {
         private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_]+)(\\s*:\\s*(.+))?}")
     }
 
+    /**
+     * Convert the value by applying parameters first and then use provided testStepValueConverter
+     * to convert it further if applicable
+     */
     fun <T> convertValue(value: Any?, parameters: Map<String, Any?>): T? {
         var result: Any? = value
-        if (isString(value)) {
-            result = applyParameters(value.toString(), parameters)
-            if (isString(result)) {
-                // convert further if needed (ex. more functions)
-                result = testStepValueConverter!!.convert(result.toString())
-            }
+        result = when (result) {
+            is Map<*, *> -> result.entries.map { it.key to convertValue(it.value, parameters) }.toMap()
+            is Collection<*> -> result.map { convertValue<T>(it, parameters) }.toList()
+            is String -> applyParameters(result.toString(), parameters)
+            else -> result
         }
+        result = testStepValueConverter.convert(result)
         return result as T?
     }
 

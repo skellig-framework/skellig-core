@@ -1,6 +1,5 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.converter.TestDataConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
@@ -10,8 +9,7 @@ import kotlin.collections.HashMap
 
 abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         keywordsProperties: Properties?,
-        testStepValueConverter: TestStepValueConverter?,
-        val testDataConverter: TestDataConverter?) 
+        testStepValueConverter: TestStepValueConverter?)
     : BaseTestStepFactory<T>(keywordsProperties, testStepValueConverter) {
 
     companion object {
@@ -86,23 +84,15 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 
     private fun extractVariables(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Map<String, Any?>? {
         val rawVariables = rawTestStep[getKeywordName(VARIABLES_KEYWORD, "variables")]
-        val convertedVariables = convertHierarchicalData(rawVariables, parameters)
+        val convertedVariables = convertValue<Any>(rawVariables, parameters)
         return if (convertedVariables is Map<*, *>) convertedVariables as Map<String, Any?> else null
     }
 
     private fun extractTestData(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Any? {
         return getTestDataKeywords()!!
                 .filter { rawTestStep.containsKey(it) }
-                .map { keyword: String -> testDataConverter!!.convert(convertHierarchicalData(rawTestStep[keyword], parameters)) }
+                .map { keyword: String -> convertValue<Any>(rawTestStep[keyword], parameters) }
                 .firstOrNull()
-    }
-
-    private fun convertHierarchicalData(data: Any?, parameters: Map<String, Any?>): Any? {
-        return when (data) {
-            is Map<*, *> -> data.entries.map { it.key to convertHierarchicalData(it.value, parameters) }.toMap()
-            is List<*> -> data.map { convertHierarchicalData(it, parameters) }.toList()
-            else -> testStepFactoryValueConverter.convertValue<Any>(data, parameters)
-        }
     }
 
     protected open fun getId(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): String? {

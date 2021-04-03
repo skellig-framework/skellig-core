@@ -13,7 +13,7 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.stream.Collectors
 
-class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestDataConverter {
+class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestStepValueConverter {
 
     companion object {
         private const val ROW_KEYWORD = "row"
@@ -21,8 +21,8 @@ class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestDataConverter
         private const val FILE_KEYWORD = "file"
     }
 
-    override fun convert(testData: Any?): Any? {
-        var newTestData = testData
+    override fun convert(value: Any?): Any? {
+        var newTestData = value
         if (newTestData is Map<*, *>) {
             if (newTestData.containsKey(CSV_KEYWORD)) {
                 val csv = newTestData[CSV_KEYWORD] as Map<String, Any?>

@@ -10,20 +10,18 @@ class NumberValueConverter : TestStepValueConverter {
         private val FLOAT_REGEX = Pattern.compile("^(float|double)\\((\\d+\\.\\d+)\\)$")
     }
 
-    override fun convert(value: String?): Any? {
-        return value?.let {
-            val intMatcher = INTEGER_REGEX.matcher(value)
-            if (intMatcher.find()) {
-                return toIntOrLong(intMatcher)
-            } else {
-                val floatMatcher = FLOAT_REGEX.matcher(value)
-                if (floatMatcher.find()) {
-                    return toFloatOrDouble(floatMatcher)
+    override fun convert(value: Any?): Any? =
+            value?.let {
+                val intMatcher = INTEGER_REGEX.matcher(value.toString())
+                if (intMatcher.find()) {
+                    toIntOrLong(intMatcher)
+                } else {
+                    val floatMatcher = FLOAT_REGEX.matcher(value.toString())
+                    if (floatMatcher.find())
+                        toFloatOrDouble(floatMatcher)
+                    else value
                 }
             }
-            return value
-        } ?: value
-    }
 
     private fun toFloatOrDouble(floatMatcher: Matcher): Number {
         val type = floatMatcher.group(1)

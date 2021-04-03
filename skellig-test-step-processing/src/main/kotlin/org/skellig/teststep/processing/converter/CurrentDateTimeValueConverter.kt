@@ -14,17 +14,16 @@ class CurrentDateTimeValueConverter : TestStepValueConverter {
         private val NOW_PATTERN = Pattern.compile("now\\(([\\w]*)\\)(.format\\(([\\w-'/:.]*)\\))?")
     }
 
-    override fun convert(value: String?): Any? {
-        return value?.let {
-            val matcher = NOW_PATTERN.matcher(value)
-            if (matcher.find()) {
-                val timezone = matcher.group(1)
-                val format = matcher.group(3)
-                return if (format == null) getLocalDateTime(timezone)
-                else it.replace(matcher.group(0), getLocalDateTime(format, timezone))
-            } else value
-        }
-    }
+    override fun convert(value: Any?): Any? =
+            value?.let {
+                val matcher = NOW_PATTERN.matcher(value.toString())
+                if (matcher.find()) {
+                    val timezone = matcher.group(1)
+                    val format = matcher.group(3)
+                    if (format == null) getLocalDateTime(timezone)
+                    else value.toString().replace(matcher.group(0), getLocalDateTime(format, timezone))
+                } else value
+            }
 
     private fun getLocalDateTime(timezone: String): LocalDateTime {
         return if (StringUtils.isEmpty(timezone)) {
