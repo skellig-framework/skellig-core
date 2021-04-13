@@ -1,6 +1,5 @@
 package org.skellig.teststep.processing.validation.comparator
 
-import java.util.*
 import java.util.regex.Pattern
 
 class ContainsValueComparator : ValueComparator {
@@ -16,18 +15,14 @@ class ContainsValueComparator : ValueComparator {
                 val expectedValueAsString = matcher.group(1)
                 // usually actual is String so to speed up comparison it checks if it is String first
                 return when {
-                    actualValue.javaClass == String::class.java -> {
+                    actualValue::class == String::class -> {
                         (actualValue as String).contains(expectedValueAsString)
                     }
                     actualValue.javaClass.isArray -> {
-                        Arrays.stream(actualValue as Array<*>)
-                                .map { it.toString() }
-                                .anyMatch { item: String -> item == expectedValueAsString }
+                        compareArray(actualValue, expectedValueAsString)
                     }
                     actualValue is Collection<*> -> {
-                        actualValue
-                                .map { it.toString() }
-                                .any { item: String -> item == expectedValueAsString }
+                        compareCollection(actualValue, expectedValueAsString)
                     }
                     else -> {
                         actualValue.toString().contains(expectedValueAsString)
@@ -37,6 +32,21 @@ class ContainsValueComparator : ValueComparator {
         }
         return false
     }
+
+    private fun compareCollection(actualValue: Collection<*>, expectedValueAsString: String?) = actualValue
+            .map { it.toString() }
+            .any { it == expectedValueAsString }
+
+    private fun compareArray(actualValue: Any?, expectedValueAsString: String?) =
+            if (actualValue is ByteArray) {
+                actualValue
+                        .map { it.toString() }
+                        .any { it == expectedValueAsString }
+            } else {
+                (actualValue as Array<*>)
+                        .map { it.toString() }
+                        .any { it == expectedValueAsString }
+            }
 
     override fun isApplicable(expectedValue: Any?): Boolean {
         return CONTAINS_PATTERN.matcher(expectedValue?.toString() ?: "").matches()

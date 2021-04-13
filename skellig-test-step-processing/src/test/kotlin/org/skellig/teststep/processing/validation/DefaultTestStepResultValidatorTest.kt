@@ -197,6 +197,41 @@ class DefaultTestStepResultValidatorTest {
     }
 
     @Test
+    @DisplayName("When actual byte array And validate as String")
+    fun testValidateByteArrayAsString() {
+        val value = "result"
+        val actualResult = mapOf(Pair("a", value.toByteArray()))
+        val expectedResult = ExpectedResult("",
+                listOf(
+                        ExpectedResult("a",
+                                listOf(
+                                        ExpectedResult("toString()", value, null)
+                                ),
+                                MatchingType.ALL_MATCH)),
+                MatchingType.ALL_MATCH)
+
+        validator!!.validate(expectedResult, actualResult)
+    }
+
+    @Test
+    @DisplayName("When actual byte array And validate to contains bytes")
+    fun testValidateByteArrayWithContains() {
+        val actualResult = mapOf(Pair("a", byteArrayOf(1, 2, 3)))
+        val expectedResult = ExpectedResult("",
+                listOf(
+                        ExpectedResult("a",
+                                listOf(
+                                        ExpectedResult(null, listOf(
+                                                ExpectedResult(null, "contains(2)", null)
+                                        ), MatchingType.ALL_MATCH)
+                                ),
+                                MatchingType.ALL_MATCH)),
+                MatchingType.ALL_MATCH)
+
+        validator!!.validate(expectedResult, actualResult)
+    }
+
+    @Test
     @DisplayName("When any match with actual Map Then pass validation")
     fun testValidateAnyMatch() {
         val actualResult = createActualResult()
