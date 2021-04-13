@@ -6,6 +6,10 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+test {
+    useJUnitPlatform()
+}
+
 dependencies {
     compile group: 'com.typesafe', name: 'config'
     compile group: 'org.junit.platform', name: 'junit-platform-runner'

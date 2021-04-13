@@ -18,6 +18,10 @@ dependencies {
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }
 
+test {
+    useJUnitPlatform()
+}
+
 modifyPom {
     project {
         name = 'Skellig Test Step IBM MQ processing'
