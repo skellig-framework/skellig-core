@@ -1,9 +1,8 @@
 package org.skellig.teststep.processor.ibmmq
 
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.*
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
+import org.mockito.ArgumentMatchers.anyInt
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ExpectedResult
@@ -18,11 +17,12 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal class IbmMqTestStepProcessorTest {
 
-    class IbmMqTestStepProcessorUnderTest(testScenarioState: TestScenarioState?,
-                                          validator: TestStepResultValidator?,
-                                          testStepResultConverter: TestStepResultConverter?,
-                                          ibmMqChannels: Map<String, IbmMqChannel>)
-        : IbmMqTestStepProcessor(testScenarioState, validator, testStepResultConverter, ibmMqChannels)
+    class IbmMqTestStepProcessorUnderTest(
+        testScenarioState: TestScenarioState?,
+        validator: TestStepResultValidator?,
+        testStepResultConverter: TestStepResultConverter?,
+        ibmMqChannels: Map<String, IbmMqChannel>
+    ) : IbmMqTestStepProcessor(testScenarioState, validator, testStepResultConverter, ibmMqChannels)
 
 
     companion object {
@@ -31,38 +31,37 @@ internal class IbmMqTestStepProcessorTest {
     }
 
     private var processor: TestStepProcessor<IbmMqTestStep>? = null
-    private var ibmMqChannel = Mockito.mock(IbmMqChannel::class.java)
-    private var ibmMqChannel2 = Mockito.mock(IbmMqChannel::class.java)
+    private var ibmMqChannel = mock<IbmMqChannel>()
+    private var ibmMqChannel2 = mock<IbmMqChannel>()
     private var validator: TestStepResultValidator? = null
     private var testScenarioState: TestScenarioState? = null
 
     @BeforeEach
     fun setUp() {
         val ibmMqChannels = mapOf(
-                Pair(CHANNEL_ID, ibmMqChannel),
-                Pair(CHANNEL_ID_2, ibmMqChannel2))
+            Pair(CHANNEL_ID, ibmMqChannel),
+            Pair(CHANNEL_ID_2, ibmMqChannel2)
+        )
 
-        validator = Mockito.mock(TestStepResultValidator::class.java)
-        testScenarioState = Mockito.mock(TestScenarioState::class.java)
+        validator = mock()
+        testScenarioState = mock()
 
-        processor = IbmMqTestStepProcessorUnderTest(testScenarioState, validator,
-                Mockito.mock(TestStepResultConverter::class.java), ibmMqChannels)
+        processor = IbmMqTestStepProcessorUnderTest(testScenarioState, validator, mock(), ibmMqChannels)
     }
 
     @Test
     @DisplayName("Send data to non-registered channel Then verify exception is captured")
     fun testSendToChannelNotRegistered() {
         val testStep = IbmMqTestStep.Builder()
-                .withSendTo("host3")
-                .withTestData("hi")
-                .withName("n1")
-                .build() as IbmMqTestStep
+            .sendTo(setOf("host3"))
+            .withTestData("hi")
+            .withName("n1")
+            .build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
-        processor!!.process(testStep)
-                .subscribe { _, _, e -> ref.set(e) }
+        processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
 
-        Assertions.assertEquals("Channel 'host3' was not registered in IBMMQ Test Step Processor", ref.get().message)
+        Assertions.assertEquals("Channel 'host3' was not registered in IBM MQ Test Step Processor", ref.get().message)
     }
 
     @Nested
@@ -71,15 +70,15 @@ internal class IbmMqTestStepProcessorTest {
         @DisplayName("Send data Then verify rmq channel is called")
         fun testSendData() {
             val testStep = IbmMqTestStep.Builder()
-                    .withSendTo(CHANNEL_ID)
-                    .withTestData("hi")
-                    .withName("n1")
-                    .build() as IbmMqTestStep
+                .sendTo(setOf(CHANNEL_ID))
+                .withTestData("hi")
+                .withName("n1")
+                .build()
 
             val result = processor!!.process(testStep)
 
             Assertions.assertNotNull(result)
-            Mockito.verify(ibmMqChannel).send(testStep.testData!!)
+            verify(ibmMqChannel).send(testStep.testData!!)
         }
 
         @Test
@@ -87,61 +86,70 @@ internal class IbmMqTestStepProcessorTest {
         fun testSendAndReceive() {
             val response = "yo"
             val testStep = IbmMqTestStep.Builder()
-                    .withSendTo(CHANNEL_ID)
-                    .withReceiveFrom(CHANNEL_ID)
-                    .withTestData("hi")
-                    .withName("n1")
-                    .build() as IbmMqTestStep
-            whenever(ibmMqChannel!!.read(ArgumentMatchers.anyInt())).thenReturn(response.toByteArray())
+                .sendTo(setOf(CHANNEL_ID))
+                .readFrom(setOf(CHANNEL_ID))
+                .withTestData("hi")
+                .withName("n1")
+                .build()
+            whenever(ibmMqChannel.read(anyInt())).thenReturn(response.toByteArray())
 
             val isPassed = AtomicBoolean()
             processor!!.process(testStep)
-                    .subscribe { _, r, _ ->
-                        Assertions.assertEquals(response, String((r as ByteArray?)!!))
-                        isPassed.set(true)
-                    }
+                .subscribe { _, r, _ ->
+                    Assertions.assertEquals(response, String((r as Map<String, Any>)[CHANNEL_ID] as ByteArray))
+                    isPassed.set(true)
+                }
 
-            Assertions.assertTrue(isPassed.get())
-            Mockito.verify<TestScenarioState>(testScenarioState).set(testStep.getId + ".result", response.toByteArray())
+            assertAll(
+                { Assertions.assertTrue(isPassed.get()) },
+                {
+                    verify(testScenarioState!!).set(eq(testStep.getId + ".result"),
+                        argThat { args -> (args as Map<String, Any>).containsKey(CHANNEL_ID) })
+                }
+            )
         }
 
         @Test
         @DisplayName("Receive and respond to different channel Then verify rmq channel is called to respond")
         fun testReceiveAndRespondToDifferentChannel() {
             val testStep: IbmMqTestStep = IbmMqTestStep.Builder()
-                    .withRespondTo(CHANNEL_ID_2)
-                    .withReceiveFrom(CHANNEL_ID)
-                    .withTestData("hi")
-                    .withName("n1")
-                    .build() as IbmMqTestStep
-            whenever(ibmMqChannel!!.read(ArgumentMatchers.anyInt())).thenReturn("yo".toByteArray())
+                .respondTo(setOf(CHANNEL_ID_2))
+                .readFrom(setOf(CHANNEL_ID))
+                .withTestData("hi")
+                .withName("n1")
+                .build()
+            whenever(ibmMqChannel.read(anyInt())).thenReturn("yo".toByteArray())
 
             processor!!.process(testStep)
 
-            Mockito.verify(ibmMqChannel2).send(testStep.testData!!)
+            verify(ibmMqChannel2).send(testStep.testData!!)
         }
 
         @Test
         @DisplayName("Receive invalid response And try to respond Then verify rmq channel did not respond")
         fun testReceiveInvalidAndTryRespond() {
-            val response = "yo"
+            val response = "yo".toByteArray()
             val expectedResult = ExpectedResult(null, "yo yo", MatchingType.ALL_MATCH)
             val testStep: IbmMqTestStep = IbmMqTestStep.Builder()
-                    .withRespondTo(CHANNEL_ID)
-                    .withReceiveFrom(CHANNEL_ID)
-                    .withTestData("hi")
-                    .withValidationDetails(
-                            ValidationDetails.Builder()
-                                    .withExpectedResult(expectedResult)
-                                    .build())
-                    .withName("n1")
-                    .build() as IbmMqTestStep
-            whenever(ibmMqChannel!!.read(ArgumentMatchers.anyInt())).thenReturn(response.toByteArray())
-            Mockito.doThrow(ValidationException::class.java).`when`<TestStepResultValidator?>(validator).validate(expectedResult, response.toByteArray())
+                .respondTo(setOf(CHANNEL_ID))
+                .readFrom(setOf(CHANNEL_ID))
+                .withTestData("hi")
+                .withValidationDetails(
+                    ValidationDetails.Builder()
+                        .withExpectedResult(expectedResult)
+                        .build()
+                )
+                .withName("n1")
+                .build()
+            whenever(ibmMqChannel.read(anyInt())).thenReturn(response)
+
+            doThrow(ValidationException("oops")).whenever(validator!!)
+                .validate(eq(expectedResult),
+                    argThat { args -> (args as Map<String, Any>)[CHANNEL_ID] == response })
 
             processor!!.process(testStep)
 
-            Mockito.verify(ibmMqChannel, Mockito.times(0)).send(testStep.testData!!)
+            verify(ibmMqChannel, times(0)).send(testStep.testData!!)
         }
     }
 

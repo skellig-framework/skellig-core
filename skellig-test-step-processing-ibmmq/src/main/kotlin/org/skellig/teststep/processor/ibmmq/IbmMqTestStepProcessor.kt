@@ -1,8 +1,8 @@
 package org.skellig.teststep.processor.ibmmq
 
 import com.typesafe.config.Config
+import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.converter.TestStepResultConverter
-import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -10,39 +10,65 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 
-open class IbmMqTestStepProcessor protected constructor(testScenarioState: TestScenarioState?,
-                                                        validator: TestStepResultValidator?,
-                                                        testStepResultConverter: TestStepResultConverter?,
-                                                        private val ibmMqChannels: Map<String, IbmMqChannel>)
-    : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
+open class IbmMqTestStepProcessor protected constructor(
+    testScenarioState: TestScenarioState?,
+    validator: TestStepResultValidator?,
+    testStepResultConverter: TestStepResultConverter?,
+    private val ibmMqChannels: Map<String, IbmMqChannel>
+) : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
     protected override fun processTestStep(testStep: IbmMqTestStep): Any? {
-        var response: Any? = null
+        var response: Map<*, Any?>? = null
         val sendTo = testStep.sendTo
-        val receiveFrom = testStep.receiveFrom
+        val readFrom = testStep.readFrom
         val respondTo = testStep.respondTo
 
         sendTo?.let { send(testStep.testData, it) }
 
-        receiveFrom?.let {
-            response = ibmMqChannels[receiveFrom]?.read(testStep.timeout)
-            validate(testStep, response)
+        readFrom?.let {
+            response = read(testStep, readFrom)
 
-            respondTo?.let { send(testStep.testData, respondTo) }
+            respondTo?.let {
+                if (isValid(testStep, response)) send(testStep.testData, respondTo)
+            }
         }
         return response
     }
 
-    private fun send(testData: Any?, channelId: String) {
-        testData?.let {
-            if (ibmMqChannels.containsKey(channelId)) {
-                ibmMqChannels[channelId]?.send(testData)
-            } else {
-                throw TestStepProcessingException(String.format("Channel '%s' was not registered " +
-                        "in IBMMQ Test Step Processor", channelId))
+    private fun read(testStep: IbmMqTestStep, channels: Set<String?>): Map<*, Any?> {
+        val tasks = channels
+            .map {
+                it to {
+                    val channel = ibmMqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
+                    channel.read(testStep.timeout)
+                }
             }
+            .toMap()
+        return runTasksAsyncAndWait(
+            tasks,
+            { isValid(testStep, it) },
+            testStep.delay,
+            testStep.attempts,
+            testStep.timeout
+        )
+    }
+
+    private fun send(testData: Any?, channels: Set<String>) {
+        testData?.let {
+            val tasks = channels
+                .map {
+                    it to {
+                        val channel = ibmMqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
+                        channel.send(testData)
+                    }
+                }
+                .toMap()
+            runTasksAsyncAndWait(tasks)
         }
     }
+
+    private fun getChannelNotExistErrorMessage(channelId: String?) =
+        "Channel '$channelId' was not registered in IBM MQ Test Step Processor"
 
     override fun getTestStepClass(): Class<IbmMqTestStep> {
         return IbmMqTestStep::class.java

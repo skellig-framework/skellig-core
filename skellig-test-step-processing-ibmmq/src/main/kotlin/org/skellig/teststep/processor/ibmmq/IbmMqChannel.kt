@@ -34,20 +34,19 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
         }
     }
 
-    fun read(timeout: Int): Any? {
-        return try {
-            val message = MQMessage()
-            val options = MQGetMessageOptions()
-            options.options = MQConstants.MQGMO_WAIT
-            options.waitInterval = timeout
+    fun read(timeout: Int): Any? =
+            try {
+                val message = MQMessage()
+                val options = MQGetMessageOptions()
+                options.options = MQConstants.MQGMO_WAIT
+                options.waitInterval = timeout
 
-            queue!![message, options]
+                queue!![message, options]
 
-            getMessageBody(message)
-        } catch (ex: Exception) {
-            null
-        }
-    }
+                getMessageBody(message)
+            } catch (ex: Exception) {
+                null
+            }
 
     @Throws(IOException::class)
     private fun convertMqMessage(request: Any): MQMessage {
