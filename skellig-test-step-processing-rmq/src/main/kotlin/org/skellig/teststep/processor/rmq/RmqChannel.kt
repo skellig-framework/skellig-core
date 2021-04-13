@@ -6,9 +6,6 @@ import org.skellig.teststep.processor.rmq.model.RmqDetails
 import java.io.Closeable
 import java.io.IOException
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicReference
 
 class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
 
@@ -32,34 +29,20 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
         }
     }
 
-    fun read(acknowledgeResponse: Any?, timeout: Int): ByteArray? {
-        val response = AtomicReference<ByteArray?>()
+    fun read(acknowledgeResponse: Any?): ByteArray? {
+        var response: ByteArray? = null
         try {
-            val countDownLatch = CountDownLatch(1)
-            channel!!.basicConsume(rmqDetails.queue.name, true,
-                    createConsumer(acknowledgeResponse, response, countDownLatch))
+            val msg = channel!!.basicGet(rmqDetails.queue.name, true)
+            if (msg != null) {
+                response = msg.body
 
-            countDownLatch.await(timeout.toLong(), TimeUnit.MILLISECONDS)
+                acknowledgeResponse?.let { sendResponse(msg.props, it) }
+                        ?: channel!!.basicAck(msg.envelope.deliveryTag, true)
+            }
         } catch (e: Exception) {
             //log later
         }
-        return response.get()
-    }
-
-    private fun createConsumer(acknowledgeResponse: Any?, response: AtomicReference<ByteArray?>, countDownLatch: CountDownLatch): DefaultConsumer {
-        return object : DefaultConsumer(channel) {
-            override fun handleDelivery(consumerTag: String, envelope: Envelope,
-                                        properties: AMQP.BasicProperties, body: ByteArray) {
-                if (response.get() == null) {
-                    response.set(body)
-                    try {
-                        acknowledgeResponse?.let { sendResponse(properties, it) }
-                    } finally {
-                        countDownLatch.countDown()
-                    }
-                }
-            }
-        }
+        return response
     }
 
     private fun sendResponse(properties: AMQP.BasicProperties, message: Any) {
@@ -72,6 +55,7 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
             )
         } catch (e: IOException) {
             // log later
+            e.printStackTrace()
         }
     }
 

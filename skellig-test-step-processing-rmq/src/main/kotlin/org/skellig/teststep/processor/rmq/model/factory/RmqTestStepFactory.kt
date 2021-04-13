@@ -18,6 +18,8 @@ class RmqTestStepFactory(keywordsProperties: Properties?,
         private const val RESPOND_TO_KEYWORD = "test.step.keyword.respondTo"
         private const val RMQ_PROPERTIES_KEYWORD = "test.step.keyword.rmq.properties"
         private const val RMQ = "rmq"
+        private const val DEFAULT_DELAY = 250
+        private const val DEFAULT_ATTEMPTS = 20
     }
 
     override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<RmqTestStep> {
@@ -54,4 +56,13 @@ class RmqTestStepFactory(keywordsProperties: Properties?,
     override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
             getRoutingKey(rawTestStep) != null || rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == RMQ
 
+    override fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+        val delay = super.getDelay(rawTestStep, parameters)
+        return if (delay == 0) DEFAULT_DELAY else delay
+    }
+
+    override fun getAttempts(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+        val attempts = super.getAttempts(rawTestStep, parameters)
+        return if (attempts == 0) DEFAULT_ATTEMPTS else attempts
+    }
 }
