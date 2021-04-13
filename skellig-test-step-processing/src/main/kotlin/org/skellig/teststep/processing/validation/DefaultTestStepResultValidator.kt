@@ -57,8 +57,8 @@ class DefaultTestStepResultValidator(
                 } else {
                     newActualValue.any { validate(expectedResult, it, errorBuilder) }
                 }
-            } else if (newActualValue?.javaClass?.isArray == true) {
-                validateFurther(expectedResult, (actualResult as Array<*>).toList(), errorBuilder)
+            } else if (newActualValue?.javaClass?.isArray == true && newActualValue !is ByteArray) {
+                validateFurther(expectedResult, (newActualValue as Array<*>).toList(), errorBuilder)
             } else {
                 validate(expectedResult, newActualValue, errorBuilder)
             }

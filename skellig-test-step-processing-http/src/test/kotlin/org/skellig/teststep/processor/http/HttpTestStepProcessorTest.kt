@@ -46,7 +46,7 @@ class HttpTestStepProcessorTest {
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
                     .subscribe { _, r, _ ->
-                        Assertions.assertEquals(response1, r)
+                        Assertions.assertEquals(response1, (r as Map<*,*>)[SRV_1])
                         isPassed.set(true)
                     }
 
