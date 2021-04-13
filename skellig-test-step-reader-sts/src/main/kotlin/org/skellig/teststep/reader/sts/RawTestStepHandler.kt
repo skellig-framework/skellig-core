@@ -13,9 +13,9 @@ class RawTestStepHandler : Closeable {
     private var isSpecialCharacter: Boolean = false     // ",',\,\n,\r,\t,
     private var openedBrackets = 0
     private var bracketsNumber = 0
+    private var parameterBrackets = 0
     private var propertyName: String? = null
     private var isEnclosedText = false
-    private var isParameter = false
     private var rawTestStepBuilder: StringBuilder = StringBuilder()
     private val spacesBuilder = StringBuilder()
 
@@ -99,16 +99,17 @@ class RawTestStepHandler : Closeable {
     }
 
     private fun handleClosedBracketCharacter(character: Char, rawTestStep: MutableMap<String, Any?>): Boolean {
-        if (!isParameter) {
+        if (parameterBrackets<=0) {
             // for '}' if paramName is not null then add its value
             openedBrackets--
+            parameterBrackets = 0
             if (propertyName != null) {
                 addParameterWithValue(rawTestStep)
             }
             return true
         } else {
             // if '}' is part of parametrised value than close this parameter and include it in the future value
-            isParameter = false
+            parameterBrackets--
             addCharacter(character)
         }
         return false
@@ -144,7 +145,7 @@ class RawTestStepHandler : Closeable {
         // if it's a parameter then continue reading.
         // Otherwise start read value as Map
         if (rawTestStepBuilder.isNotEmpty() && !isPreviousCharacterNotParameterSign()) {
-            isParameter = true
+            parameterBrackets++
             addCharacter(character)
         } else {
             openedBrackets++
