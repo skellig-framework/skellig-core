@@ -1,7 +1,9 @@
 package org.skellig.teststep.processor.rmq
 
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.skellig.teststep.processing.converter.TestStepResultConverter
@@ -16,7 +18,8 @@ import org.skellig.teststep.processor.rmq.model.RmqTestStep
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-internal class RmqTestStepProcessorTest {
+@DisplayName("Test rmq")
+class RmqTestStepProcessorTest {
 
     companion object {
         private const val CHANNEL_NAME = "host1"
@@ -33,10 +36,13 @@ internal class RmqTestStepProcessorTest {
     fun setUp() {
         val rmqChannels = mapOf(
                 Pair(CHANNEL_NAME, rmqChannel),
-                Pair(CHANNEL_NAME_2, rmqChannel2))
+                Pair(CHANNEL_NAME_2, rmqChannel2)
+        )
 
-        processor = RmqTestStepProcessor(rmqChannels, testScenarioState,
-                validator, Mockito.mock(TestStepResultConverter::class.java))
+        processor = RmqTestStepProcessor(
+                rmqChannels, testScenarioState,
+                validator, Mockito.mock(TestStepResultConverter::class.java)
+        )
     }
 
     @Test
@@ -51,7 +57,7 @@ internal class RmqTestStepProcessorTest {
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
 
-        Assertions.assertEquals("Channel 'host3' was not registered in RMQ Test Step Processor", ref.get().message)
+        assertEquals("Channel 'host3' was not registered in RMQ Test Step Processor", ref.get().message)
     }
 
     @Test
@@ -66,7 +72,7 @@ internal class RmqTestStepProcessorTest {
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
 
-        Assertions.assertEquals("Channel 'host3' was not registered in RMQ Test Step Processor", ref.get().message)
+        assertEquals("Channel 'host3' was not registered in RMQ Test Step Processor", ref.get().message)
     }
 
     @Nested
@@ -96,17 +102,22 @@ internal class RmqTestStepProcessorTest {
                     .withTestData("hi")
                     .withName("n1")
                     .build()
-            whenever(rmqChannel!!.read(ArgumentMatchers.any(), ArgumentMatchers.anyInt())).thenReturn(response.toByteArray())
+            whenever(rmqChannel!!.read(ArgumentMatchers.any())).thenReturn(response.toByteArray())
 
             val isPassed = AtomicBoolean()
             processor!!.process(testStep)
                     .subscribe { _, r, _ ->
-                        Assertions.assertEquals(response, String((r as ByteArray?)!!))
+                        assertEquals(response, String((r as Map<String, Any>)[CHANNEL_NAME] as ByteArray))
                         isPassed.set(true)
                     }
 
-            Assertions.assertTrue(isPassed.get())
-            Mockito.verify(testScenarioState).set(testStep.getId + ".result", response.toByteArray())
+            assertAll(
+                    { assertTrue(isPassed.get()) },
+                    {
+                        verify(testScenarioState!!).set(eq(testStep.getId + ".result"),
+                                argThat { args -> (args as Map<String, Any>).containsKey(CHANNEL_NAME) })
+                    }
+            )
         }
 
         @Test
@@ -118,17 +129,17 @@ internal class RmqTestStepProcessorTest {
                     .withTestData("hi")
                     .withName("n1")
                     .build()
-            whenever(rmqChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn("yo".toByteArray())
+            whenever(rmqChannel!!.read(ArgumentMatchers.anyInt())).thenReturn("yo".toByteArray())
 
             processor!!.process(testStep)
 
-            Mockito.verify(rmqChannel2).send(testStep.testData, testStep.routingKey)
+            verify(rmqChannel2).send(testStep.testData, testStep.routingKey)
         }
 
         @Test
         @DisplayName("Receive invalid response And try to respond Then verify rmq channel did not respond")
         fun testReceiveInvalidAndTryRespond() {
-            val response = "yo"
+            val response = "yo".toByteArray()
             val expectedResult = ExpectedResult(null, "yo yo", MatchingType.ALL_MATCH)
             val testStep: RmqTestStep = RmqTestStep.Builder()
                     .respondTo(setOf(CHANNEL_NAME))
@@ -138,14 +149,18 @@ internal class RmqTestStepProcessorTest {
                     .withValidationDetails(
                             ValidationDetails.Builder()
                                     .withExpectedResult(expectedResult)
-                                    .build())
+                                    .build()
+                    )
                     .build()
-            whenever(rmqChannel!!.read(ArgumentMatchers.any(), ArgumentMatchers.anyInt())).thenReturn(response.toByteArray())
-            Mockito.doThrow(ValidationException::class.java).whenever(validator).validate(expectedResult, response.toByteArray())
+            whenever(rmqChannel!!.read(ArgumentMatchers.any())
+            ).thenReturn(response)
+            doThrow(ValidationException("oops")).whenever(validator)
+                    .validate(eq(expectedResult),
+                            argThat { args -> (args as Map<String, Any>)[CHANNEL_NAME] == response })
 
             processor!!.process(testStep)
 
-            Mockito.verify(rmqChannel, Mockito.times(0)).send(testStep.testData, testStep.routingKey)
+            verify(rmqChannel, Mockito.times(0)).send(testStep.testData, testStep.routingKey)
         }
     }
 }

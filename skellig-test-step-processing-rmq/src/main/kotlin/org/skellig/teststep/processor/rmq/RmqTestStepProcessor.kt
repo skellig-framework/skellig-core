@@ -12,11 +12,12 @@ import org.skellig.teststep.processor.rmq.model.RmqDetails
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
 import java.util.*
 
-open class RmqTestStepProcessor(protected val rmqChannels: Map<String, RmqChannel>,
-                                testScenarioState: TestScenarioState?,
-                                validator: TestStepResultValidator?,
-                                testStepResultConverter: TestStepResultConverter?)
-    : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
+open class RmqTestStepProcessor(
+        protected val rmqChannels: Map<String, RmqChannel>,
+        testScenarioState: TestScenarioState?,
+        validator: TestStepResultValidator?,
+        testStepResultConverter: TestStepResultConverter?
+) : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
     protected override fun processTestStep(testStep: RmqTestStep): Any? {
         var response: Map<*, Any?>? = null
@@ -29,12 +30,8 @@ open class RmqTestStepProcessor(protected val rmqChannels: Map<String, RmqChanne
             val respondTo = testStep.respondTo
             val responseTestData = testStep.testData
             response = read(testStep, receiveFrom, if (respondTo != null) null else responseTestData)
-
             respondTo?.let {
-                if (isValid(testStep, response)) {
-                    // respond to those channels from where result was received
-                    send(responseTestData, respondTo.filter { response!![it] != null }.toSet(), routingKey, getProperties(testStep))
-                }
+                if (isValid(testStep, response)) send(responseTestData, respondTo, routingKey, getProperties(testStep))
             }
         }
         return response
@@ -42,9 +39,11 @@ open class RmqTestStepProcessor(protected val rmqChannels: Map<String, RmqChanne
 
     private fun getProperties(testStep: RmqTestStep): AMQP.BasicProperties? =
             testStep.properties?.let {
-                AMQP.BasicProperties((it["content_type"] ?: "text/plain").toString(),
+                AMQP.BasicProperties(
+                        (it["content_type"] ?: "text/plain").toString(),
                         null as String?, null, 1, 0, null as String?, null as String?, null as String?,
-                        null as String?, null as Date?, null as String?, null as String?, null as String?, null as String?)
+                        null as String?, null as Date?, null as String?, null as String?, null as String?, null as String?
+                )
             }
 
 
@@ -53,14 +52,20 @@ open class RmqTestStepProcessor(protected val rmqChannels: Map<String, RmqChanne
                 .map {
                     it to {
                         val channel = rmqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
-                        channel.read(responseTestData, testStep.timeout)
+                        channel.read(responseTestData)
                     }
                 }
                 .toMap()
-        return runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+        return runTasksAsyncAndWait(
+                tasks,
+                { isValid(testStep, it) },
+                testStep.delay,
+                testStep.attempts,
+                testStep.timeout
+        )
     }
 
-    private fun send(testData: Any?, channels: Set<String>, routingKey: String?, properties : AMQP.BasicProperties?) {
+    private fun send(testData: Any?, channels: Set<String>, routingKey: String?, properties: AMQP.BasicProperties?) {
         val tasks = channels
                 .map {
                     it to {

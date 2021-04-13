@@ -35,7 +35,7 @@ internal class RmqChannelCT {
 
         rmqChannel.send(data, "#")
 
-        Assertions.assertEquals(data, String(rmqChannel.read(null, 100)!!))
+        Assertions.assertEquals(data, String(rmqChannel.read(null)!!))
     }
 
     private fun createChannel(host: String): RmqDetails {
