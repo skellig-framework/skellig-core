@@ -65,10 +65,10 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
     }
 
     private fun extract(extractFunctionName: String, value: Any?, parameter: String): Any? {
-        return valueExtractors
-                .filter { it.getExtractFunctionName() == extractFunctionName }
-                .map { it.extract(value, parameter) }
-                .first()
+        val extractor = valueExtractors
+                .firstOrNull { it.getExtractFunctionName() == extractFunctionName }
+                ?:throw IllegalArgumentException("No extraction function found for name '$extractFunctionName'")
+        return extractor.extract(value, parameter)
     }
 
     override fun getExtractFunctionName(): String? {
@@ -93,7 +93,7 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
                         SubStringLastTestStepValueExtractor())
 
 
-        fun withValueExtractor(valueExtractor: TestStepValueExtractor) = apply {
+        fun valueExtractor(valueExtractor: TestStepValueExtractor) = apply {
             valueExtractors.add(valueExtractor)
         }
 

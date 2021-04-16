@@ -38,8 +38,7 @@ open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>
         if (tcpChannels.containsKey(channel)) {
             tcpChannels[channel]?.send(testData)
         } else {
-            throw TestStepProcessingException(String.format("Channel '%s' was not registered " +
-                    "in TCP Test Step Processor", channel))
+            throw TestStepProcessingException("Channel with name '$channel' was not registered  in TCP Test Step Processor")
         }
     }
 
@@ -56,7 +55,7 @@ open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>
         companion object {
             private const val TCP_CONFIG_KEYWORD = "tcp"
             const val HOST = "host"
-            const val CHANNEL_ID = "channelId"
+            const val NAME = "name"
             const val PORT = "port"
             const val KEEP_ALIVE = "keepAlive"
         }
@@ -75,7 +74,7 @@ open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>
                             try {
                                 val port = it[PORT]?.toInt() ?: 0
                                 val keepAlive = if (it.containsKey(KEEP_ALIVE)) it[KEEP_ALIVE].toBoolean() else true
-                                withTcpChannel(TcpDetails(it[CHANNEL_ID] ?: error("TCP Channel ID must not be null"),
+                                withTcpChannel(TcpDetails(it[NAME] ?: error("TCP Connection Name must not be null"),
                                         it[HOST] ?: error("TCP host must not be null"), port, keepAlive))
                             } catch (e: NumberFormatException) {
                                 throw NumberFormatException("Invalid number assigned to TCP port in configuration")

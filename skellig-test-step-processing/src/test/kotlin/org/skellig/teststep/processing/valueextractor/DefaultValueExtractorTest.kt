@@ -1,10 +1,7 @@
 package org.skellig.teststep.processing.valueextractor
 
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
 import org.skellig.teststep.processing.utils.UnitTestUtils
 import java.util.*
 
@@ -49,6 +46,15 @@ class DefaultValueExtractorTest {
             val value = UnitTestUtils.createMap("body", "{ \"params\" : { \"f1\" : \"v1\" }}")
 
             assertEquals("v1", testStepValueExtractor.extract(value, "body.jsonPath(params.f1)"))
+        }
+
+        @Test
+        fun testExtractWhenFunctionNotFound() {
+            val value = UnitTestUtils.createMap("k1", "v1")
+
+            val ex = Assertions.assertThrows(IllegalArgumentException::class.java) { testStepValueExtractor.extract(value, "get()") }
+
+            assertEquals("No extraction function found for name 'get'", ex.message)
         }
     }
 

@@ -51,9 +51,9 @@ internal class TcpTestStepProcessorTest {
                 .build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
-        processor!!.process(testStep as TcpTestStep).subscribe { _, _, e -> ref.set(e) }
+        processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
 
-        Assertions.assertEquals("Channel 'host3' was not registered in TCP Test Step Processor", ref.get().message)
+        Assertions.assertEquals("Channel with name 'host3' was not registered  in TCP Test Step Processor", ref.get().message)
     }
 
     @Nested

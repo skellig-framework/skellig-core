@@ -165,7 +165,7 @@ open class SkelligTestContext : Closeable {
 
     private fun createTestStepValueExtractor(): TestStepValueExtractor {
         val valueExtractorBuilder = DefaultValueExtractor.Builder()
-        additionalTestStepValueExtractors.forEach { valueExtractorBuilder.withValueExtractor(it) }
+        additionalTestStepValueExtractors.forEach { valueExtractorBuilder.valueExtractor(it) }
 
         return valueExtractorBuilder.build()
     }
