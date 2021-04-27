@@ -107,7 +107,7 @@ class RmqTestStepProcessorTest {
             val isPassed = AtomicBoolean()
             processor!!.process(testStep)
                     .subscribe { _, r, _ ->
-                        assertEquals(response, String((r as Map<String, Any>)[CHANNEL_NAME] as ByteArray))
+                        assertEquals(response, String((r as Map<*, *>)[CHANNEL_NAME] as ByteArray))
                         isPassed.set(true)
                     }
 
@@ -115,7 +115,7 @@ class RmqTestStepProcessorTest {
                     { assertTrue(isPassed.get()) },
                     {
                         verify(testScenarioState!!).set(eq(testStep.getId + ".result"),
-                                argThat { args -> (args as Map<String, Any>).containsKey(CHANNEL_NAME) })
+                                argThat { args -> (args as Map<*, *>).containsKey(CHANNEL_NAME) })
                     }
             )
         }
@@ -152,11 +152,10 @@ class RmqTestStepProcessorTest {
                                     .build()
                     )
                     .build()
-            whenever(rmqChannel!!.read(ArgumentMatchers.any())
-            ).thenReturn(response)
+            whenever(rmqChannel!!.read(ArgumentMatchers.any())).thenReturn(response)
             doThrow(ValidationException("oops")).whenever(validator)
                     .validate(eq(expectedResult),
-                            argThat { args -> (args as Map<String, Any>)[CHANNEL_NAME] == response })
+                            argThat { args -> (args as Map<*, *>)[CHANNEL_NAME] == response })
 
             processor!!.process(testStep)
 

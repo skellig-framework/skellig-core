@@ -13,38 +13,38 @@ open class TcpTestStep protected constructor(id: String?,
                                              variables: Map<String, Any?>?,
                                              testData: Any?,
                                              validationDetails: ValidationDetails?,
-                                             val sendTo: String?,
-                                             val receiveFrom: String?,
-                                             val respondTo: String?,
+                                             val sendTo: Set<String>?,
+                                             val readFrom: Set<String>?,
+                                             val respondTo: Set<String>?,
                                              val readBufferSize: Int)
     : DefaultTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 
     class Builder : DefaultTestStep.Builder<TcpTestStep>() {
 
-        private var sendTo: String? = null
-        private var receiveFrom: String? = null
-        private var respondTo: String? = null
+        private var sendTo: Set<String>? = null
+        private var readFrom: Set<String>? = null
+        private var respondTo: Set<String>? = null
         private var readBufferSize = 1024 * 1024
 
-        fun withReceiveFrom(receiveFrom: String?) = apply {
-            this.receiveFrom = receiveFrom
-        }
-
-        fun withRespondTo(respondTo: String?) = apply {
-            this.respondTo = respondTo
-        }
-
-        fun withSendTo(sendTo: String?) = apply {
+        fun sendTo(sendTo: Set<String>?) = apply {
             this.sendTo = sendTo
         }
 
-        fun withReadBufferSize(readBufferSize: Int) = apply {
+        fun readFrom(readFrom: Set<String>?) = apply {
+            this.readFrom = readFrom
+        }
+
+        fun respondTo(respondTo: Set<String>?) = apply {
+            this.respondTo = respondTo
+        }
+
+        fun readBufferSize(readBufferSize: Int) = apply {
             this.readBufferSize = readBufferSize
         }
 
         override fun build(): TcpTestStep {
             return TcpTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails,
-                    sendTo, receiveFrom, respondTo, readBufferSize)
+                    sendTo, readFrom, respondTo, readBufferSize)
         }
     }
 }

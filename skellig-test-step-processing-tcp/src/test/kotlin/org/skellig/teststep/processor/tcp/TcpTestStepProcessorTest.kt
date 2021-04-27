@@ -1,7 +1,8 @@
 package org.skellig.teststep.processor.tcp
 
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.skellig.teststep.processing.converter.TestStepResultConverter
@@ -45,7 +46,7 @@ internal class TcpTestStepProcessorTest {
     @DisplayName("Send data to non-registered channel Then verify exception is captured")
     fun testSendToChannelNotRegistered() {
         val testStep = TcpTestStep.Builder()
-                .withSendTo("host3")
+                .sendTo(setOf("host3"))
                 .withTestData("hi")
                 .withName("n1")
                 .build()
@@ -53,7 +54,7 @@ internal class TcpTestStepProcessorTest {
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
 
-        Assertions.assertEquals("Channel with name 'host3' was not registered  in TCP Test Step Processor", ref.get().message)
+        Assertions.assertEquals("Channel 'host3' was not registered in TCP Test Step Processor", ref.get().message)
     }
 
     @Nested
@@ -62,12 +63,12 @@ internal class TcpTestStepProcessorTest {
         @DisplayName("Send data Then verify tcp channel is called")
         fun testSendData() {
             val testStep = TcpTestStep.Builder()
-                    .withSendTo(CHANNEL_ID)
+                    .sendTo(setOf(CHANNEL_ID))
                     .withTestData("hi")
                     .withName("n1")
                     .build()
 
-            val result = processor!!.process(testStep as TcpTestStep)
+            val result = processor!!.process(testStep)
 
             Assertions.assertNotNull(result)
             Mockito.verify(tcpChannel).send(testStep.testData)
@@ -78,36 +79,41 @@ internal class TcpTestStepProcessorTest {
         fun testSendAndReceive() {
             val response = "yo"
             val testStep = TcpTestStep.Builder()
-                    .withSendTo(CHANNEL_ID)
-                    .withReceiveFrom(CHANNEL_ID)
+                    .sendTo(setOf(CHANNEL_ID))
+                    .readFrom(setOf(CHANNEL_ID))
                     .withTestData("hi")
                     .withName("n1")
                     .build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(response)
 
             val isPassed = AtomicBoolean()
-            processor!!.process(testStep as TcpTestStep)
+            processor!!.process(testStep)
                     .subscribe { _, r, _ ->
-                        Assertions.assertEquals(response, r)
+                        Assertions.assertEquals(response, (r as Map<*,*>)[CHANNEL_ID])
                         isPassed.set(true)
                     }
 
-            Assertions.assertTrue(isPassed.get())
-            Mockito.verify<TestScenarioState?>(testScenarioState).set(testStep.getId + ".result", response)
+            assertAll(
+                    { assertTrue(isPassed.get()) },
+                    {
+                        verify(testScenarioState!!).set(eq(testStep.getId + ".result"),
+                                argThat { args -> (args as Map<*, *>).containsKey(CHANNEL_ID) })
+                    }
+            )
         }
 
         @Test
         @DisplayName("Receive and respond to different channel Then verify tcp channel is called to respond")
         fun testReceiveAndRespondToDifferentChannel() {
             val testStep = TcpTestStep.Builder()
-                    .withRespondTo(CHANNEL_ID_2)
-                    .withReceiveFrom(CHANNEL_ID)
+                    .respondTo(setOf(CHANNEL_ID_2))
+                    .readFrom(setOf(CHANNEL_ID))
                     .withTestData("hi")
                     .withName("n1")
                     .build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(Optional.of("yo"))
 
-            processor!!.process(testStep as TcpTestStep)
+            processor!!.process(testStep)
 
             Mockito.verify(tcpChannel2).send(testStep.testData)
         }
@@ -118,8 +124,8 @@ internal class TcpTestStepProcessorTest {
             val response = "yo"
             val expectedResult = ExpectedResult(null, "yo yo", MatchingType.ALL_MATCH)
             val testStep = TcpTestStep.Builder()
-                    .withRespondTo(CHANNEL_ID)
-                    .withReceiveFrom(CHANNEL_ID)
+                    .respondTo(setOf(CHANNEL_ID))
+                    .readFrom(setOf(CHANNEL_ID))
                     .withTestData("hi")
                     .withName("n1")
                     .withValidationDetails(
@@ -128,11 +134,13 @@ internal class TcpTestStepProcessorTest {
                                     .build())
                     .build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(response)
-            Mockito.doThrow(ValidationException::class.java).whenever(validator)!!.validate(expectedResult, response)
+            doThrow(ValidationException("oops")).whenever(validator!!)
+                    .validate(eq(expectedResult),
+                            argThat { args -> (args as Map<*, *>)[CHANNEL_ID] == response })
 
-            processor!!.process(testStep as TcpTestStep)
+            processor!!.process(testStep)
 
-            Mockito.verify(tcpChannel, Mockito.times(0)).send(testStep.testData)
+            verify(tcpChannel, Mockito.times(0)).send(testStep.testData)
         }
     }
 }
