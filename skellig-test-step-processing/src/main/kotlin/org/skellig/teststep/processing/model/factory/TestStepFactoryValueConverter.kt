@@ -16,7 +16,7 @@ class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueCon
     fun <T> convertValue(value: Any?, parameters: Map<String, Any?>): T? {
         var result: Any? = value
         result = when (result) {
-            is Map<*, *> -> result.entries.map { it.key to convertValue(it.value, parameters) }.toMap()
+            is Map<*, *> -> result.entries.map { applyParameters(it.key.toString(), parameters) to convertValue<T>(it.value, parameters) }.toMap()
             is Collection<*> -> result.map { convertValue<T>(it, parameters) }.toList()
             is String -> applyParameters(result.toString(), parameters)
             else -> result
@@ -60,6 +60,4 @@ class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueCon
                 is String -> parameterValue.isNotEmpty()
                 else -> parameterValue != null
             }
-
-    private fun isString(value: Any?): Boolean = value is String
 }
