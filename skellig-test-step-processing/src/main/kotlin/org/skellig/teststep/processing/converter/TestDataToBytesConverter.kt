@@ -15,22 +15,21 @@ class TestDataToBytesConverter : TestStepValueConverter {
     override fun convert(value: Any?): Any? {
         var newTestData = value
         if (value is Map<*, *>) {
-            val valueAsMap = value as Map<String, Any>
-            if (valueAsMap.containsKey(TO_BYTES)) {
-                val toBytes = valueAsMap[TO_BYTES] as Map<String, Any?>
-                val value = toBytes[VALUE]
-                newTestData = when {
-                    value is String -> {
-                        value.toByteArray(StandardCharsets.UTF_8)
+            if (value.containsKey(TO_BYTES)) {
+                val toBytes = value[TO_BYTES] as Map<*, *>
+                val valueToConvert = toBytes[VALUE]
+                newTestData = when (valueToConvert) {
+                    is String -> {
+                        valueToConvert.toByteArray(StandardCharsets.UTF_8)
                     }
-                    value is Serializable -> {
-                        SerializationUtils.serialize(value as Serializable?)
+                    is Serializable -> {
+                        SerializationUtils.serialize(valueToConvert as Serializable?)
                     }
                     else -> {
                         throw TestDataConversionException(String.format("""
-            Failed to convert to bytes the test data: %s
-            It must be either String or Serializable object
-            """.trimIndent(), newTestData))
+                    Failed to convert to bytes the test data: %s
+                    It must be either String or Serializable object
+                    """.trimIndent(), newTestData))
                     }
                 }
             }
