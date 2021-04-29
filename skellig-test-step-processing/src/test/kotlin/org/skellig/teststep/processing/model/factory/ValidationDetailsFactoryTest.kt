@@ -75,6 +75,21 @@ class ValidationDetailsFactoryTest {
     }
 
     @Test
+    fun testValidationDetailsWithParametrisedProperties() {
+        val expectedResult = "something"
+
+        val testStep = validationDetailsFactory!!.create("step1",
+                mapOf(Pair("validate", mapOf(Pair("key-\${key1}", expectedResult)))),
+                mapOf(Pair("key1", "1")))
+        val validationDetails = testStep.validationDetails!!
+
+        Assertions.assertAll(
+                { Assertions.assertEquals("key-1", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).property) },
+                { Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).expectedResult) }
+        )
+    }
+
+    @Test
     @DisplayName("When has few expected values")
     fun testSimpleExpectedResult() {
         val rawValidationDetails = UnitTestUtils.createMap("status", "200", "log", "")
@@ -96,7 +111,7 @@ class ValidationDetailsFactoryTest {
     fun testSimpleExpectedResultWithDefaultParameters() {
         val rawValidationDetails = UnitTestUtils.createMap("status", "\${f1:v1}")
 
-        val testStep = validationDetailsFactory!!.create("step1", UnitTestUtils.createMap("validate", rawValidationDetails), mapOf(Pair("f1","")))
+        val testStep = validationDetailsFactory!!.create("step1", UnitTestUtils.createMap("validate", rawValidationDetails), mapOf(Pair("f1", "")))
         val validationDetails = testStep.validationDetails
 
         Assertions.assertAll(
