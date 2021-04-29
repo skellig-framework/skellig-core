@@ -35,17 +35,8 @@ class AsyncTaskUtils {
 
         @JvmStatic
         fun <T> runTasksAsyncAndWait(tasks: Map<*, () -> T>, stopCondition: (Map<*, T?>) -> Boolean = { true },
-                                     delay: Int = 0, attempts: Int = 0, timeout: Int = 0): Map<*, T?> {
-            val newAttempt = attempts - 1
-            val futures = tasks.map { it.key to runTaskAsync(it.value) }.toMap()
-            val finalResult = futures.map { it.key to waitAndGetResult(it.value, timeout) }.toMap()
-            // collect all results from tasks and apply stopCondition
-            return if (newAttempt <= 0 || stopCondition(finalResult)) finalResult
-            else {
-                Thread.sleep(delay.toLong())
-                runTasksAsyncAndWait(tasks, stopCondition, delay, newAttempt, timeout)
-            }
-        }
+                                     delay: Int = 0, attempts: Int = 0, timeout: Int = 0): Map<*, T?> =
+                runTasksAsyncAndWaitInternal(tasks, stopCondition, delay, attempts, timeout, mapOf<Any, T?>())
 
         @JvmStatic
         fun <T> runTaskAsync(task: Callable<T>, stopCondition: Predicate<T>, timeout: Int): Future<T> {
@@ -69,6 +60,24 @@ class AsyncTaskUtils {
                 executorService.awaitTermination(30, TimeUnit.SECONDS)
             } catch (e: InterruptedException) {
                 throw TaskRunException("Waiting for termination of the running async tasks took too long", e)
+            }
+        }
+
+        private fun <T> runTasksAsyncAndWaitInternal(tasks: Map<*, () -> T>,
+                                                     stopCondition: (Map<*, T?>) -> Boolean = { true },
+                                                     delay: Int = 0, attempts: Int = 0, timeout: Int = 0,
+                                                     previousResults: Map<*, T?>): Map<*, T?> {
+            val newAttempt = attempts - 1
+            val futures = tasks.map { it.key to runTaskAsync(it.value) }.toMap()
+            val finalResult = futures.map {
+                // if result is null then try to get non-null value from previous result if exists
+                it.key to (waitAndGetResult(it.value, timeout) ?: previousResults[it.key])
+            }.toMap()
+            // collect all results from tasks and apply stopCondition
+            return if (newAttempt <= 0 || stopCondition(finalResult)) finalResult
+            else {
+                Thread.sleep(delay.toLong())
+                runTasksAsyncAndWaitInternal(tasks, stopCondition, delay, newAttempt, timeout, finalResult)
             }
         }
 
