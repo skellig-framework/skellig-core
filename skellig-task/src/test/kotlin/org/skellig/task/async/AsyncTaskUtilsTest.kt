@@ -69,12 +69,27 @@ class AsyncTaskUtilsTest {
             Assertions.assertThrows(ExecutionException::class.java) { asyncResult[300, TimeUnit.MILLISECONDS] }
         }
 
-        @Test
-        @DisplayName("When one task submitted And wait for the result Then task run synchronously")
-        fun testAsyncTaskAndGetResult() {
-            val asyncResult = runTasksAsyncAndWait(mapOf(Pair("t1", { "r1" })), { true }, 0, 0, 500)
+        @Nested
+        @DisplayName("When one task submitted And wait for the result")
+        internal inner class RunTaskAndWait {
+            @Test
+            @DisplayName("Then task run synchronously")
+            fun testAsyncTaskAndGetResult() {
+                val asyncResult = runTasksAsyncAndWait(mapOf(Pair("t1", { "r1" })), { true }, 0, 0, 500)
 
-            Assertions.assertEquals("r1", asyncResult["t1"])
+                Assertions.assertEquals("r1", asyncResult["t1"])
+            }
+
+            @Test
+            @DisplayName("And condition not satisfied Then check latest non-null result returned")
+            fun testAsyncTaskWhenConditionNotSatisfied() {
+                var counter = 0;
+                val asyncResult = runTasksAsyncAndWait(
+                        mapOf(Pair("t1", { if(counter++ == 1) "r1" else null })),
+                        { false }, 1, 5, 500)
+
+                Assertions.assertEquals("r1", asyncResult["t1"])
+            }
         }
     }
 
