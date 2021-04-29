@@ -94,13 +94,13 @@ open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>
 
         fun tcpChannels(config: Config) = apply {
             if (config.hasPath(TCP_CONFIG_KEYWORD)) {
-                (config.getAnyRefList(TCP_CONFIG_KEYWORD) as List<Map<String, String>>)
+                (config.getAnyRefList(TCP_CONFIG_KEYWORD) as List<Map<*, *>>)
                         .forEach {
                             try {
-                                val port = it[PORT]?.toInt() ?: 0
-                                val keepAlive = if (it.containsKey(KEEP_ALIVE)) it[KEEP_ALIVE].toBoolean() else true
-                                tcpChannel(TcpDetails(it[NAME] ?: error("TCP Connection Name must not be null"),
-                                        it[HOST] ?: error("TCP host must not be null"), port, keepAlive))
+                                val port = it[PORT]?.toString()?.toInt() ?: 0
+                                val keepAlive = if (it.containsKey(KEEP_ALIVE)) it[KEEP_ALIVE].toString().toBoolean() else true
+                                tcpChannel(TcpDetails(it[NAME]?.toString() ?: error("TCP Connection Name must not be null"),
+                                        it[HOST]?.toString() ?: error("TCP host must not be null"), port, keepAlive))
                             } catch (e: NumberFormatException) {
                                 throw NumberFormatException("Invalid number assigned to TCP port in configuration")
                             }

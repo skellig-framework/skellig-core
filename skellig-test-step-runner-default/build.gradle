@@ -13,6 +13,7 @@ dependencies {
     compile project(':skellig-test-step-processing-cassandra')
     compile project(':skellig-test-step-processing-rmq')
     compile project(':skellig-test-step-processing-ibmmq')
+    compile project(':skellig-test-step-processing-tcp')
     compile project(':skellig-test-step-processing-unix')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
