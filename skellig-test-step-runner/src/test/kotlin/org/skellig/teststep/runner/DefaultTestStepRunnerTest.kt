@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepFactory
@@ -49,7 +48,7 @@ internal class DefaultTestStepRunnerTest {
                 .withTestStepsRegistry(createTestStepsRegistry("wrong path"))
                 .build()
 
-        Assertions.assertThrows(TestStepProcessingException::class.java) { testStepRunner!!.run(testStepName) }
+        Assertions.assertThrows(IllegalStateException::class.java) { testStepRunner!!.run(testStepName) }
 
         Mockito.verifyZeroInteractions(testStepProcessor)
     }
@@ -60,7 +59,7 @@ internal class DefaultTestStepRunnerTest {
         initializeTestSteps("test1", emptyMap<String, String>())
         initializeTestStepRunner()
 
-        Assertions.assertThrows(TestStepProcessingException::class.java) { testStepRunner!!.run("test2") }
+        Assertions.assertThrows(IllegalStateException::class.java) { testStepRunner!!.run("test2") }
 
         Mockito.verifyZeroInteractions(testStepProcessor)
     }

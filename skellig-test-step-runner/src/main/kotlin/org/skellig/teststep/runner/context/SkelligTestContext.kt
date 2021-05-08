@@ -54,14 +54,14 @@ open class SkelligTestContext : Closeable {
                 .build()
     }
 
-    private fun createTestStepsRegistry(testStepPaths: List<String>, classLoader: ClassLoader, testStepReader: TestStepReader): DefaultTestStepsRegistry {
+    private fun createTestStepsRegistry(testStepPaths: List<String>, classLoader: ClassLoader, testStepReader: TestStepReader): CachedTestStepsRegistry {
         val paths = extractTestStepPaths(testStepPaths, classLoader)
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STD, testStepReader)
         testStepsRegistry.registerFoundTestStepsInPath(paths)
         val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths, classLoader)
 
-        return DefaultTestStepsRegistry(listOf(testStepsRegistry, classTestStepsRegistry))
+        return CachedTestStepsRegistry(listOf(testStepsRegistry, classTestStepsRegistry))
     }
 
     private fun extractTestStepPackages(testStepPaths: Collection<String>): Collection<String> {
