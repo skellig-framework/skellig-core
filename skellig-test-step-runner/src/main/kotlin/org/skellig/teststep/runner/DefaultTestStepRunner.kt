@@ -1,6 +1,5 @@
 package org.skellig.teststep.runner
 
-import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
@@ -21,10 +20,8 @@ internal class DefaultTestStepRunner private constructor(private val testStepPro
         return rawTestStep?.let {
             val testStep = testStepFactory.create(testStepName, rawTestStep, parameters)
             return testStepProcessor.process(testStep)
-        } ?: run {
-            throw TestStepProcessingException(String.format("Test step '%s' is not found in any of registered test data files from: %s",
-                    testStepName, "testStepsRegistry.testStepsRootPath"))
-        }
+        } ?: error("Test step '${testStepName}' is not found in any of registered test data files in resources " +
+                "or classes of the classloader")
     }
 
     class Builder {

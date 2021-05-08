@@ -31,10 +31,8 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
         }
     }
 
-    override fun getByName(testStepName: String): Map<String, Any?>? {
-        return testStepsPerClass
-                .firstOrNull { (it[TEST_STEP_NAME_PATTERN] as Pattern).matcher(testStepName).matches() }
-    }
+    override fun getByName(testStepName: String): Map<String, Any?>? =
+            testStepsPerClass.firstOrNull { (it[TEST_STEP_NAME_PATTERN] as Pattern).matcher(testStepName).matches() }
 
     @Throws(Exception::class)
     private fun processDirectory(file: File, packageName: String) {

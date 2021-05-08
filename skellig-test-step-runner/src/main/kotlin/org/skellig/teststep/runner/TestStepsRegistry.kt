@@ -12,28 +12,24 @@ import java.util.*
 import java.util.stream.Collectors
 
 internal class TestStepsRegistry(private val testStepFileExtension: TestStepFileExtension,
-                        private val testStepReader: TestStepReader?) : TestStepRegistry {
+                                 private val testStepReader: TestStepReader?) : TestStepRegistry {
 
     private var testSteps: Collection<Map<String, Any?>> = emptyList()
-
-    var testStepsRootPath: Collection<Path>? = null
-        private set
+    private var testStepsRootPath: Collection<Path>? = null
 
     fun registerFoundTestStepsInPath(testStepsPaths: Collection<Path>) {
         testStepsRootPath = testStepsPaths
         testSteps = getTestStepsFromPath(testStepsPaths)
     }
 
-    override fun getByName(testStepName: String): Map<String, Any?>? {
-        return testSteps.parallelStream()
-                .filter { testStep: Map<String, Any?> -> compile(getTestStepName(testStep)).matcher(testStepName).matches() }
-                .findFirst()
-                .orElse(null)
-    }
+    override fun getByName(testStepName: String): Map<String, Any?>? =
+            testSteps.parallelStream()
+                    .filter { testStep: Map<String, Any?> -> compile(getTestStepName(testStep)).matcher(testStepName).matches() }
+                    .findFirst()
+                    .orElse(null)
 
-    private fun getTestStepName(rawTestStep: Map<String, Any?>): String {
-        return rawTestStep["name"]?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
-    }
+    private fun getTestStepName(rawTestStep: Map<String, Any?>): String =
+            rawTestStep["name"]?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
 
     private fun getTestStepsFromPath(rootPaths: Collection<Path>): Collection<Map<String, Any?>> {
         return rootPaths
