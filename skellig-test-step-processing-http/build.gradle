@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.4.21"
+        id "org.jetbrains.kotlin.jvm" version "${kotlinVersion}"
 }
 
 sourceSets {
@@ -9,7 +9,7 @@ sourceSets {
 dependencies {
     compile group: 'com.typesafe', name: 'config'
     compile group: 'org.junit.platform', name: 'junit-platform-runner'
-    compile project(':skellig-connection-http')
+    compile 'org.apache.httpcomponents:httpclient:4.5.6'
     compile project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
