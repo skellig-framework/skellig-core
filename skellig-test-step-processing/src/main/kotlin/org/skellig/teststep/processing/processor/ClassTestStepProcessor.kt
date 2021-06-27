@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
+import kotlin.system.measureTimeMillis
 
 internal class ClassTestStepProcessor : TestStepProcessor<ClassTestStep> {
 
@@ -14,7 +15,9 @@ internal class ClassTestStepProcessor : TestStepProcessor<ClassTestStep> {
     override fun getTestStepClass(): Class<*> = ClassTestStep::class.java
 
     @Throws(TestStepProcessingException::class)
-    operator fun invoke(testStepName: String, testStep: ClassTestStep, parameters: Map<String, String?>?): TestStepProcessor.TestStepRunResult {
+    operator fun invoke(testStepName: String,
+                        testStep: ClassTestStep,
+                        parameters: Map<String, String?>?): TestStepProcessor.TestStepRunResult {
         val methodParameters = getMethodParameters(testStepName, testStep, parameters)
 
         return invokeMethod(testStep, testStep.testStepMethod, methodParameters)
@@ -45,7 +48,9 @@ internal class ClassTestStepProcessor : TestStepProcessor<ClassTestStep> {
         return result
     }
 
-    private fun getMethodParameters(testStepName: String, testStep: ClassTestStep, parameters: Map<String, String?>?): Array<Any?> {
+    private fun getMethodParameters(testStepName: String,
+                                    testStep: ClassTestStep,
+                                    parameters: Map<String, String?>?): Array<Any?> {
         val testStepMethod = testStep.testStepMethod
         val testStepNamePattern = testStep.testStepNamePattern
         val matcher = testStepNamePattern.matcher(testStepName)

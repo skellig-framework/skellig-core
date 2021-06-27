@@ -23,7 +23,7 @@ interface TestStepProcessor<T : TestStep> : Closeable {
 
         fun subscribe(consumer: (TestStep?, Any?, RuntimeException?) -> Unit) {
             this.consumer = consumer
-            if (countDownLatch.count == 0L) {
+            if (isFinished()) {
                 notify(response, error)
             }
         }
@@ -39,15 +39,17 @@ interface TestStepProcessor<T : TestStep> : Closeable {
 
         @Throws(TestStepProcessingException::class)
         fun awaitResult() {
-            if (testStep != null) {
+            if (testStep != null && isFinished()) {
                 try {
                     countDownLatch.await(getTimeout(), TimeUnit.SECONDS)
                     if (error != null) {
-                        error = TestStepProcessingException(String.format("Failed to process test step '%s'", testStep.name), error)
+                        error = TestStepProcessingException(String.format("Failed to process test step '%s'",
+                                                                          testStep.name), error)
                     }
                 } catch (ex: InterruptedException) {
-                    error = TestStepProcessingException(String.format("Failed to get response from test step '%s' within %d seconds",
-                            testStep.name, getTimeout()), ex)
+                    error =
+                        TestStepProcessingException(String.format("Failed to get response from test step '%s' within %d seconds",
+                                                                  testStep.name, getTimeout()), ex)
                     notify(null, error)
                 }
                 if (error != null) {
@@ -56,7 +58,9 @@ interface TestStepProcessor<T : TestStep> : Closeable {
             }
         }
 
-        protected open fun getTimeout() : Long = 0
+        private fun isFinished() = countDownLatch.count == 0L
+
+        protected open fun getTimeout(): Long = 0
 
     }
 }

@@ -3,6 +3,7 @@ package org.skellig.teststep.runner.context
 import com.typesafe.config.ConfigValue
 import org.skellig.teststep.processor.http.HttpTestStepProcessor
 import org.skellig.teststep.processor.http.model.factory.HttpTestStepFactory
+import org.skellig.teststep.processor.jdbc.model.factory.JdbcTestStepFactory
 import java.util.*
 
 class DefaultSkelligTestContext : SkelligTestContext() {
@@ -18,9 +19,9 @@ class DefaultSkelligTestContext : SkelligTestContext() {
             if (it.hasPath(TEST_STEP_KEYWORD)) {
                 testStepKeywordsProperties = Properties()
                 it.getObject(TEST_STEP_KEYWORD)
-                        .forEach { key: String, value: ConfigValue ->
-                            testStepKeywordsProperties!!.setProperty("$TEST_STEP_KEYWORD.$key", value.toString())
-                        }
+                    .forEach { key: String, value: ConfigValue ->
+                        testStepKeywordsProperties!!.setProperty("$TEST_STEP_KEYWORD.$key", value.toString())
+                    }
             }
         }
     }
@@ -29,13 +30,13 @@ class DefaultSkelligTestContext : SkelligTestContext() {
         get() =
             config?.let {
                 listOf(
-                        TestStepProcessorDetails(
-                                HttpTestStepProcessor.Builder()
-                                        .withHttpService(it)
-                                        .withTestScenarioState(getTestScenarioState())
-                                        .withValidator(getTestStepResultValidator())
-                                        .build(),
-                                createTestStepFactoryFrom { props, c1 -> HttpTestStepFactory(props, c1) })
+                    createTestStepProcessorFrom(
+                        HttpTestStepProcessor.Builder()
+                            .withHttpService(it)
+                            .withTestScenarioState(getTestScenarioState())
+                            .withValidator(getTestStepResultValidator())
+                            .build()
+                    ) { props, converter -> HttpTestStepFactory(props, converter) }
                 )
             } ?: emptyList()
 }

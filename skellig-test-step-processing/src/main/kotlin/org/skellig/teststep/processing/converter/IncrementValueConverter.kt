@@ -86,7 +86,7 @@ class IncrementValueConverter : TestStepValueConverter {
     }
 
     private fun isNumber(line: String): Boolean {
-        return line.isNotEmpty() && line[0].toInt() >= 48 && line[0].toInt() <= 57
+        return line.isNotEmpty() && line[0].code >= 48 && line[0].code <= 57
     }
 
     private fun replaceOldValueInFile(key: String?, newValue: String, isOldValue: Boolean) {

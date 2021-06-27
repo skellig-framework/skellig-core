@@ -1,0 +1,42 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "${kotlinVersion}"
+}
+apply plugin: 'java'
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/kotlin'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.skellig.teststep.processor.performance.ActorsSampleKt'
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+    compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0-RC")
+    compile project(':skellig-test-step-processing')
+
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-runner'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+}
+
+modifyPom {
+    project {
+        name = 'Skellig Test Step Performance processing'
+        packaging = 'jar'
+        description = 'Processes Performance Skellig Test Step'
+        url = "$projectUrl"
+        scm(projectRepo)
+        licenses(projectLicenses)
+        developers(projectDevelopers)
+    }
+}
