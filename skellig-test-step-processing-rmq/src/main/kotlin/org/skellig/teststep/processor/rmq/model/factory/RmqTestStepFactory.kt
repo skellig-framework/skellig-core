@@ -4,20 +4,16 @@ import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
+import org.skellig.teststep.processor.rmq.model.factory.BaseRmqTestStepFactory.Companion.RMQ
 import java.util.*
 
 class RmqTestStepFactory(keywordsProperties: Properties?,
                          testStepValueConverter: TestStepValueConverter?)
-    : BaseDefaultTestStepFactory<RmqTestStep>(keywordsProperties, testStepValueConverter) {
+    : BaseRmqTestStepFactory<RmqTestStep>(keywordsProperties, testStepValueConverter) {
 
     companion object {
-        private const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"
-        private const val ROUTING_KEY_KEYWORD = "test.step.keyword.routingKey"
         private const val SEND_TO_KEYWORD = "test.step.keyword.sendTo"
         private const val RECEIVE_FROM_KEYWORD = "test.step.keyword.receiveFrom"
-        private const val RESPOND_TO_KEYWORD = "test.step.keyword.respondTo"
-        private const val RMQ_PROPERTIES_KEYWORD = "test.step.keyword.rmq.properties"
-        private const val RMQ = "rmq"
         private const val DEFAULT_DELAY = 250
         private const val DEFAULT_ATTEMPTS = 20
     }
@@ -47,14 +43,8 @@ class RmqTestStepFactory(keywordsProperties: Properties?,
         }
     }
 
-    private fun getRoutingKey(rawTestStep: Map<String, Any?>): Any? =
-            rawTestStep[getKeywordName(ROUTING_KEY_KEYWORD, "routingKey")]
-
-    private fun getProperties(rawTestStep: Map<String, Any?>): Any? =
-            rawTestStep[getKeywordName(RMQ_PROPERTIES_KEYWORD, "properties")]
-
     override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
-            getRoutingKey(rawTestStep) != null || rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == RMQ
+        !rawTestStep.containsKey(getConsumeFromKeyword()) && hasRmqRequiredData(rawTestStep)
 
     override fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
         val delay = super.getDelay(rawTestStep, parameters)

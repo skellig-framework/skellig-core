@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.rmq.model
 
-import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationDetails
 
@@ -16,12 +15,13 @@ open class RmqTestStep protected constructor(id: String?,
                                              val sendTo: Set<String>?,
                                              val receiveFrom: Set<String>?,
                                              val respondTo: Set<String>?,
-                                             val routingKey: String?,
-                                             val properties: Map<String, Any?>?)
-    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails) {
+                                             routingKey: String?,
+                                             properties: Map<String, Any?>?)
+    : BaseRmqTestStep(id, name!!, execution, timeout, delay, attempts,
+                      variables, testData, validationDetails, routingKey, properties) {
 
 
-    class Builder : DefaultTestStep.Builder<RmqTestStep>() {
+    class Builder : BaseRmqTestStep.Builder<RmqTestStep>() {
 
         private var sendTo: Set<String>? = null
         private var receiveFrom: Set<String>? = null
@@ -39,14 +39,6 @@ open class RmqTestStep protected constructor(id: String?,
 
         fun respondTo(respondTo: Set<String>?) = apply {
             this.respondTo = respondTo
-        }
-
-        fun routingKey(routingKey: String?) = apply {
-            this.routingKey = routingKey
-        }
-
-        fun properties(properties: Map<String, Any?>?) = apply {
-            this.properties = properties
         }
 
         override fun build(): RmqTestStep {

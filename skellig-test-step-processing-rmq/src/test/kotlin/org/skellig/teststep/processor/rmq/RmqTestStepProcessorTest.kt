@@ -35,13 +35,13 @@ class RmqTestStepProcessorTest {
     @BeforeEach
     fun setUp() {
         val rmqChannels = mapOf(
-                Pair(CHANNEL_NAME, rmqChannel),
-                Pair(CHANNEL_NAME_2, rmqChannel2)
+            Pair(CHANNEL_NAME, rmqChannel),
+            Pair(CHANNEL_NAME_2, rmqChannel2)
         )
 
         processor = RmqTestStepProcessor(
-                rmqChannels, testScenarioState,
-                validator, Mockito.mock(TestStepResultConverter::class.java)
+            rmqChannels, testScenarioState,
+            validator, Mockito.mock(TestStepResultConverter::class.java)
         )
     }
 
@@ -49,10 +49,10 @@ class RmqTestStepProcessorTest {
     @DisplayName("Send data to non-registered channel Then verify exception is captured")
     fun testSendToNotRegisteredChannel() {
         val testStep = RmqTestStep.Builder()
-                .sendTo(setOf("host3"))
-                .withTestData("hi")
-                .withName("n1")
-                .build()
+            .sendTo(setOf("host3"))
+            .withTestData("hi")
+            .withName("n1")
+            .build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
@@ -64,10 +64,10 @@ class RmqTestStepProcessorTest {
     @DisplayName("Read data from non-registered channel Then verify exception is captured")
     fun testReadFromNotRegisteredChannel() {
         val testStep = RmqTestStep.Builder()
-                .receiveFrom(setOf("host3"))
-                .withTestData("hi")
-                .withName("n1")
-                .build()
+            .receiveFrom(setOf("host3"))
+            .withTestData("hi")
+            .withName("n1")
+            .build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
@@ -81,10 +81,10 @@ class RmqTestStepProcessorTest {
         @DisplayName("Send data Then verify rmq channel is called")
         fun testSendData() {
             val testStep: RmqTestStep = RmqTestStep.Builder()
-                    .sendTo(setOf(CHANNEL_NAME))
-                    .withTestData("hi")
-                    .withName("n1")
-                    .build()
+                .sendTo(setOf(CHANNEL_NAME))
+                .withTestData("hi")
+                .withName("n1")
+                .build()
 
             val result = processor!!.process(testStep)
 
@@ -97,26 +97,26 @@ class RmqTestStepProcessorTest {
         fun testSendAndReceive() {
             val response = "yo"
             val testStep = RmqTestStep.Builder()
-                    .sendTo(setOf(CHANNEL_NAME))
-                    .receiveFrom(setOf(CHANNEL_NAME))
-                    .withTestData("hi")
-                    .withName("n1")
-                    .build()
+                .sendTo(setOf(CHANNEL_NAME))
+                .receiveFrom(setOf(CHANNEL_NAME))
+                .withTestData("hi")
+                .withName("n1")
+                .build()
             whenever(rmqChannel!!.read(ArgumentMatchers.any())).thenReturn(response.toByteArray())
 
             val isPassed = AtomicBoolean()
             processor!!.process(testStep)
-                    .subscribe { _, r, _ ->
-                        assertEquals(response, String((r as Map<*, *>)[CHANNEL_NAME] as ByteArray))
-                        isPassed.set(true)
-                    }
+                .subscribe { _, r, _ ->
+                    assertEquals(response, String((r as Map<*, *>)[CHANNEL_NAME] as ByteArray))
+                    isPassed.set(true)
+                }
 
             assertAll(
-                    { assertTrue(isPassed.get()) },
-                    {
-                        verify(testScenarioState!!).set(eq(testStep.getId + ".result"),
-                                argThat { args -> (args as Map<*, *>).containsKey(CHANNEL_NAME) })
-                    }
+                { assertTrue(isPassed.get()) },
+                {
+                    verify(testScenarioState!!).set(eq(testStep.getId + ".result"),
+                                                    argThat { args -> (args as Map<*, *>).containsKey(CHANNEL_NAME) })
+                }
             )
         }
 
@@ -124,11 +124,11 @@ class RmqTestStepProcessorTest {
         @DisplayName("Receive and respond to different channel Then verify rmq channel is called to respond")
         fun testReceiveAndRespondToDifferentChannel() {
             val testStep: RmqTestStep = RmqTestStep.Builder()
-                    .respondTo(setOf(CHANNEL_NAME_2))
-                    .receiveFrom(setOf(CHANNEL_NAME))
-                    .withTestData("hi")
-                    .withName("n1")
-                    .build()
+                .respondTo(setOf(CHANNEL_NAME_2))
+                .receiveFrom(setOf(CHANNEL_NAME))
+                .withTestData("hi")
+                .withName("n1")
+                .build()
             whenever(rmqChannel!!.read(ArgumentMatchers.anyInt())).thenReturn("yo".toByteArray())
 
             processor!!.process(testStep)
@@ -142,20 +142,19 @@ class RmqTestStepProcessorTest {
             val response = "yo".toByteArray()
             val expectedResult = ExpectedResult(null, "yo yo", MatchingType.ALL_MATCH)
             val testStep: RmqTestStep = RmqTestStep.Builder()
-                    .respondTo(setOf(CHANNEL_NAME))
-                    .receiveFrom(setOf(CHANNEL_NAME))
-                    .withTestData("hi")
-                    .withName("n1")
-                    .withValidationDetails(
-                            ValidationDetails.Builder()
-                                    .withExpectedResult(expectedResult)
-                                    .build()
-                    )
-                    .build()
+                .respondTo(setOf(CHANNEL_NAME))
+                .receiveFrom(setOf(CHANNEL_NAME))
+                .withTestData("hi")
+                .withName("n1")
+                .withValidationDetails(
+                    ValidationDetails.Builder()
+                        .withExpectedResult(expectedResult)
+                        .build())
+                .build()
             whenever(rmqChannel!!.read(ArgumentMatchers.any())).thenReturn(response)
             doThrow(ValidationException("oops")).whenever(validator)
-                    .validate(eq(expectedResult),
-                            argThat { args -> (args as Map<*, *>)[CHANNEL_NAME] == response })
+                .validate(eq(expectedResult),
+                          argThat { args -> (args as Map<*, *>)[CHANNEL_NAME] == response })
 
             processor!!.process(testStep)
 

@@ -6,6 +6,11 @@ import org.skellig.teststep.processor.rmq.model.RmqDetails
 import java.io.Closeable
 import java.io.IOException
 import java.nio.charset.StandardCharsets
+import com.rabbitmq.client.AMQP
+
+import com.rabbitmq.client.DefaultConsumer
+import org.slf4j.LoggerFactory
+
 
 class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
 
@@ -19,10 +24,10 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
     fun send(request: Any?, routingKey: String?, properties: AMQP.BasicProperties? = null) {
         try {
             channel!!.basicPublish(
-                    rmqDetails.exchange.name,
-                    routingKey ?: rmqDetails.queue.routingKey,
-                    properties ?: MessageProperties.TEXT_PLAIN,
-                    convertRequestToBytes(request)
+                rmqDetails.exchange.name,
+                routingKey ?: rmqDetails.queue.routingKey,
+                properties ?: MessageProperties.TEXT_PLAIN,
+                convertRequestToBytes(request)
             )
         } catch (ex: Exception) {
             //log later
@@ -35,9 +40,9 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
             val msg = channel!!.basicGet(rmqDetails.queue.name, true)
             if (msg != null) {
                 response = msg.body
-
+                println(response)
                 acknowledgeResponse?.let { sendResponse(msg.props, it) }
-                        ?: channel!!.basicAck(msg.envelope.deliveryTag, true)
+                    ?: channel!!.basicAck(msg.envelope.deliveryTag, true)
             }
         } catch (e: Exception) {
             //log later
@@ -45,13 +50,25 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
         return response
     }
 
+    fun consume(acknowledgeResponse: Any?, callback: (message: Any) -> Unit): String? {
+        return channel!!.basicConsume(
+            rmqDetails.queue.name, acknowledgeResponse == null,
+            object : DefaultConsumer(channel) {
+                override fun handleDelivery(consumerTag: String, envelope: Envelope,
+                                            properties: AMQP.BasicProperties, body: ByteArray) {
+                    callback(body)
+                    acknowledgeResponse?.let { sendResponse(properties, it) }
+                }
+            })
+    }
+
     private fun sendResponse(properties: AMQP.BasicProperties, message: Any) {
         try {
             channel!!.basicPublish(
-                    "",
-                    properties.replyTo,
-                    properties,
-                    convertRequestToBytes(message)
+                "",
+                properties.replyTo,
+                properties,
+                convertRequestToBytes(message)
             )
         } catch (e: IOException) {
             // log later
@@ -85,18 +102,18 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
             val exchange = rmqDetails.exchange
             if (exchange.isCreateIfNew) {
                 channel!!.exchangeDeclare(exchange.name,
-                        exchange.type,
-                        exchange.isDurable,
-                        exchange.isAutoDelete,
-                        exchange.parameters)
+                                          exchange.type,
+                                          exchange.isDurable,
+                                          exchange.isAutoDelete,
+                                          exchange.parameters)
             }
             val queueDetails = rmqDetails.queue
             if (queueDetails.isCreateIfNew) {
                 channel!!.queueDeclare(queueDetails.name,
-                        queueDetails.isDurable,
-                        queueDetails.isExclusive,
-                        queueDetails.isAutoDelete,
-                        queueDetails.parameters)
+                                       queueDetails.isDurable,
+                                       queueDetails.isExclusive,
+                                       queueDetails.isAutoDelete,
+                                       queueDetails.parameters)
             }
             channel!!.queueBind(queueDetails.name, exchange.name, queueDetails.routingKey)
         } catch (e: Exception) {

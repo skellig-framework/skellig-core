@@ -24,28 +24,18 @@ open class RmqTestStepProcessor(
         val sendTo = testStep.sendTo
         val receiveFrom = testStep.receiveFrom
         val routingKey = testStep.routingKey
-        sendTo?.let { send(testStep.testData, it, routingKey, getProperties(testStep)) }
+        sendTo?.let { send(testStep.testData, it, routingKey, testStep.getAmqpProperties()) }
 
         receiveFrom?.let {
             val respondTo = testStep.respondTo
             val responseTestData = testStep.testData
             response = read(testStep, receiveFrom, if (respondTo != null) null else responseTestData)
             respondTo?.let {
-                if (isValid(testStep, response)) send(responseTestData, respondTo, routingKey, getProperties(testStep))
+                if (isValid(testStep, response)) send(responseTestData, respondTo, routingKey, testStep.getAmqpProperties())
             }
         }
         return response
     }
-
-    private fun getProperties(testStep: RmqTestStep): AMQP.BasicProperties? =
-            testStep.properties?.let {
-                AMQP.BasicProperties(
-                        (it["content_type"] ?: "text/plain").toString(),
-                        null as String?, null, 1, 0, null as String?, null as String?, null as String?,
-                        null as String?, null as Date?, null as String?, null as String?, null as String?, null as String?
-                )
-            }
-
 
     private fun read(testStep: RmqTestStep, channels: Set<String?>, responseTestData: Any? = null): Map<*, Any?> {
         val tasks = channels
@@ -89,19 +79,7 @@ open class RmqTestStepProcessor(
     private fun getChannelNotExistErrorMessage(channelId: String?) =
             "Channel '$channelId' was not registered in RMQ Test Step Processor"
 
-    class Builder : BaseTestStepProcessor.Builder<RmqTestStep>() {
-
-        private val rmqChannels = hashMapOf<String, RmqChannel>()
-        private val rmqDetailsConfigReader: RmqDetailsConfigReader = RmqDetailsConfigReader()
-
-        fun rmqChannel(rmqDetails: RmqDetails) = apply {
-            rmqChannels.putIfAbsent(rmqDetails.queue.name, RmqChannel(rmqDetails))
-        }
-
-        fun rmqChannels(config: Config) = apply {
-            rmqDetailsConfigReader.read(config).forEach { rmqChannel(it) }
-        }
-
+    class Builder : BaseRmqProcessorBuilder<RmqTestStep>() {
         override fun build(): TestStepProcessor<RmqTestStep> {
             return RmqTestStepProcessor(rmqChannels, testScenarioState, validator, testStepResultConverter)
         }
