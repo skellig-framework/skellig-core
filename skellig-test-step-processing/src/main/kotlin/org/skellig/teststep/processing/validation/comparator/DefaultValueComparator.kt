@@ -28,8 +28,10 @@ class DefaultValueComparator(private val comparators: Collection<ValueComparator
         }
 
         fun build(): ValueComparator {
+            val defaultValueComparator = DefaultValueComparator(valueComparators)
+            withValueComparator(NotValueComparator(defaultValueComparator))
             withValueComparator(EqualsValueComparator())
-            return DefaultValueComparator(valueComparators)
+            return defaultValueComparator
         }
     }
 }
