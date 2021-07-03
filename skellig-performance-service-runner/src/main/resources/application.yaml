@@ -1,2 +1,5 @@
 server:
-  port: 6080
+  port: 7080
+spring:
+  main:
+    web-application-type: servlet

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping
 @RestController
 class SkelligPerformanceController {
 
-    @Autowired
+//    @Autowired
     private var context: SkelligTestContext? = null
 
     @GetMapping("/")

@@ -3,13 +3,14 @@ package org.skellig.teststep.processor.performance
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processor.performance.metrics.MetricsFactory
 import org.skellig.teststep.processor.performance.model.LongRunResponse
 import org.skellig.teststep.processor.performance.model.LongRunTestStep
-import org.skellig.teststep.processor.performance.model.timeseries.MessageReceptionTimeSeries
 
 open class LongRunTestStepProcessor protected constructor(
     private val testStepProcessor: TestStepProcessor<TestStep>,
-    private val testStepRegistry: TestStepRegistry
+    private val testStepRegistry: TestStepRegistry,
+    private val metricsFactory: MetricsFactory
 ) : TestStepProcessor<LongRunTestStep> {
 
     override fun process(testStep: LongRunTestStep): TestStepProcessor.TestStepRunResult {
@@ -17,7 +18,7 @@ open class LongRunTestStepProcessor protected constructor(
 
         runTestSteps(testStep.testStepsToRunBefore, response)
 
-        val periodicRunner = PeriodicRunner(testStep, testStepRegistry)
+        val periodicRunner = PeriodicRunner(testStep, testStepRegistry, metricsFactory)
         val timeSeries = periodicRunner.run { testStepProcessor.process(it) }
 
         runTestSteps(testStep.testStepsToRunAfter, response)
@@ -30,10 +31,10 @@ open class LongRunTestStepProcessor protected constructor(
     }
 
     private fun runTestSteps(testSteps: List<(testStepRegistry: TestStepRegistry) -> TestStep>,
-                             response : LongRunResponse) {
+                             response: LongRunResponse) {
         testSteps.forEach {
             val testStep = it(testStepRegistry)
-            val timeSeries = MessageReceptionTimeSeries(testStep.name)
+            val timeSeries = metricsFactory.createMessageReceptionMetric(testStep.name)
             response.registerTimeSeriesFor(testStep.name, timeSeries)
             testStepProcessor.process(testStep)
                 .subscribe { _, _, ex ->
@@ -50,6 +51,7 @@ open class LongRunTestStepProcessor protected constructor(
 
         private var testStepProcessor: TestStepProcessor<TestStep>? = null
         private var testStepRegistry: TestStepRegistry? = null
+        private var metricsFactory: MetricsFactory? = null
 
         fun testStepProcessor(testStepProcessor: TestStepProcessor<TestStep>) = apply {
             this.testStepProcessor = testStepProcessor
@@ -59,7 +61,11 @@ open class LongRunTestStepProcessor protected constructor(
             this.testStepRegistry = testStepRegistry
         }
 
+        fun metricsFactory(metricsFactory: MetricsFactory?) = apply {
+            this.metricsFactory = metricsFactory
+        }
+
         fun build(): LongRunTestStepProcessor =
-            LongRunTestStepProcessor(testStepProcessor!!, testStepRegistry!!)
+            LongRunTestStepProcessor(testStepProcessor!!, testStepRegistry!!, metricsFactory!!)
     }
 }

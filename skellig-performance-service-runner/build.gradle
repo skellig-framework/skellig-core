@@ -14,6 +14,8 @@ configurations.all {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
     compile 'org.springframework.boot:spring-boot-starter-web:2.4.2'
+    compile group: 'io.prometheus', name: 'simpleclient_servlet', version: '0.11.0'
+
     compile 'org.freemarker:freemarker:2.3.30'
 
     compile project(':skellig-test-step-processing-performance')

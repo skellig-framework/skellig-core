@@ -1,5 +1,6 @@
 package org.skellig.performance.runner.service
 
+import io.prometheus.client.exporter.MetricsServlet
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.performance.model.LongRunResponse
 import org.skellig.teststep.runner.TestStepRunner
@@ -7,12 +8,13 @@ import org.skellig.teststep.runner.context.SkelligTestContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.web.servlet.ServletRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.DependsOn
 import org.springframework.core.task.TaskExecutor
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import java.io.File
 import javax.annotation.PostConstruct
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 
 
 @SpringBootApplication
@@ -89,4 +91,9 @@ abstract class SkelligPerformanceServiceRunner {
     @DependsOn("testStepRunner")
     open fun testScenarioState(context: SkelligTestContext): TestScenarioState =
         context.getTestScenarioState()
+
+    @Bean
+    open fun servletRegistrationBean(): ServletRegistrationBean<MetricsServlet> {
+        return ServletRegistrationBean(MetricsServlet(), true, "/metrics")
+    }
 }

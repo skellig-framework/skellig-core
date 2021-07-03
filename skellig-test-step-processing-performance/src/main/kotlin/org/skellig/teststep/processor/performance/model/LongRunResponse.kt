@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.performance.model
 
-import org.skellig.teststep.processor.performance.model.timeseries.TimeSeries
+import org.skellig.teststep.processor.performance.metrics.TimeSeries
 
 class LongRunResponse {
 

@@ -1,4 +1,4 @@
-package org.skellig.teststep.processor.performance.model.timeseries
+package org.skellig.teststep.processor.performance.metrics
 
 interface TimeSeries {
 

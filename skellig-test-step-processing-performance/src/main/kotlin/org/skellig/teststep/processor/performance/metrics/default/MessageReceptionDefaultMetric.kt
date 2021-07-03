@@ -1,22 +1,23 @@
-package org.skellig.teststep.processor.performance.model.timeseries
+package org.skellig.teststep.processor.performance.metrics.default
 
+import org.skellig.teststep.processor.performance.metrics.MessageReceptionMetric
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-open class MessageReceptionTimeSeries(private val name : String) : TimeSeries {
+open class MessageReceptionDefaultMetric(private val name: String) : MessageReceptionMetric {
 
     private val timeSeriesSuccessfulReceptions = ConcurrentHashMap<Long, AtomicInteger>()
     private val timeSeriesFailedReceptions = ConcurrentHashMap<Long, AtomicInteger>()
 
-    fun registerMessageReception() {
+    override fun registerMessageReception() {
         timeSeriesSuccessfulReceptions.computeIfAbsent(getCurrentTimeInSeconds()) { AtomicInteger(0) }.incrementAndGet()
     }
 
-    fun registerMessageFailed() {
+    override fun registerMessageFailed() {
         timeSeriesFailedReceptions.computeIfAbsent(getCurrentTimeInSeconds()) { AtomicInteger(0) }.incrementAndGet()
     }
 
-    override fun consumeTimeSeriesRecords(recordConsumer : (String) -> Unit) {
+    override fun consumeTimeSeriesRecords(recordConsumer: (String) -> Unit) {
         recordConsumer("name: $name")
         timeSeriesSuccessfulReceptions.forEach { recordConsumer("\n${it.key}=${it.value.get()}") }
         recordConsumer("\ntotal passed: ${getTotalPassedRequests()}")

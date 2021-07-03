@@ -4,59 +4,49 @@ import kotlinx.coroutines.*
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processor.performance.metrics.MetricsFactory
+import org.skellig.teststep.processor.performance.metrics.TimeSeries
 import org.skellig.teststep.processor.performance.model.LongRunTestStep
-import org.skellig.teststep.processor.performance.model.timeseries.PercentileTimeSeries
-import org.skellig.teststep.processor.performance.model.timeseries.PercentileTimeSeriesItem
-import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import kotlin.concurrent.fixedRateTimer
 import kotlin.math.ceil
 import kotlin.system.measureTimeMillis
 
-internal class PeriodicRunner(private val testStep: LongRunTestStep, private val testStepRegistry: TestStepRegistry) {
+internal class PeriodicRunner(private val testStep: LongRunTestStep,
+                              private val testStepRegistry: TestStepRegistry,
+                              metricsFactory: MetricsFactory) {
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(PeriodicRunner::class.java)
         private const val SEC_IN_NANOSEC = 1000000000
-        private const val COMPRESSION_TIME_PERIOD = 120 * 1000L
-        private const val TIME_SERIES_COMPRESSION_PERCENTAGE = 80
     }
 
     private val rps = testStep.rps
     private val finishTime = LocalDateTime.now().plusMinutes(testStep.timeToRun.toLong())
     private val delayTimeNs = (SEC_IN_NANOSEC / ceil(testStep.rps.toDouble())).toLong()
-    private val timeSeries = PercentileTimeSeries(testStep.name)
-    private val timer = fixedRateTimer("timer", false, COMPRESSION_TIME_PERIOD, COMPRESSION_TIME_PERIOD) {
-        measureTimeMillis {
-            timeSeries.compress(TIME_SERIES_COMPRESSION_PERCENTAGE)
-        }.also { LOGGER.debug("Successfully compressed time series data in $it ms") }
-    }
+    private val durationPercentileMetric = metricsFactory.createDurationPercentileMetric(testStep.name)
 
-    fun run(processingFunction: (TestStep) -> TestStepProcessor.TestStepRunResult) : PercentileTimeSeries {
+    fun run(processingFunction: (TestStep) -> TestStepProcessor.TestStepRunResult) : TimeSeries {
         runBlocking {
             withContext(Dispatchers.Default) {
                 try {
                     runTillTimeEnds(processingFunction)
                 } finally {
-                    timer.cancel()
-                    timeSeries.compress()
+                    durationPercentileMetric.close()
                 }
             }
         }
-        return timeSeries
+        return durationPercentileMetric
     }
 
     private suspend fun runTillTimeEnds(processingFunction: (TestStep) -> TestStepProcessor.TestStepRunResult) {
         val time = measureTimeMillis {
             coroutineScope {
                 do {
-                    val timeSeriesItem = PercentileTimeSeriesItem()
-                    timeSeries.add(timeSeriesItem)
+                    val durationMetric = durationPercentileMetric.createPercentileBucket()
                     repeat((1 until rps).count()) {
                         val startTime = System.nanoTime()
                         launch {
                             val totalElapsedTime = processAndGetTime(testStep, processingFunction)
-                            timeSeriesItem.recordTime(totalElapsedTime)
+                            durationMetric.recordTime(totalElapsedTime)
                         }
                         delayPrecise(startTime, delayTimeNs)
                     }

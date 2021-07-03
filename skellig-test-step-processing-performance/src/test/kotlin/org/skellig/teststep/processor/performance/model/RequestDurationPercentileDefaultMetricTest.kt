@@ -4,21 +4,18 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processor.performance.model.timeseries.PercentileTimeSeries
-import org.skellig.teststep.processor.performance.model.timeseries.PercentileTimeSeriesItem
-import java.time.Instant
-import java.util.*
+import org.skellig.teststep.processor.performance.metrics.default.RequestDurationDefaultMetric
+import org.skellig.teststep.processor.performance.metrics.default.RequestDurationPercentileDefaultMetric
 
-class PercentileTimeSeriesTest {
+class RequestDurationPercentileDefaultMetricTest {
 
     @Test
     internal fun testTimeSeries() {
-        val timeSeries = PercentileTimeSeries()
+        val timeSeries = RequestDurationPercentileDefaultMetric("")
 
         repeat((0 until 30).count()) {
-            val timeSeriesItem = PercentileTimeSeriesItem()
+            val timeSeriesItem = timeSeries.createPercentileBucket()
             repeat((0 until 10).count()) { timeSeriesItem.recordTime(it.toLong()) }
-            timeSeries.add(timeSeriesItem)
         }
 
         timeSeries.compress(10)
@@ -41,7 +38,7 @@ class PercentileTimeSeriesTest {
 
         @Test
         internal fun testSimple() {
-            val timeSeriesItem = PercentileTimeSeriesItem()
+            val timeSeriesItem = RequestDurationDefaultMetric()
 
             (0 until 11).forEach { timeSeriesItem.recordTime(10 * it.toLong()) }
 
@@ -64,7 +61,7 @@ class PercentileTimeSeriesTest {
 
         @Test
         internal fun testWhen100000Items() {
-            val timeSeriesItem = PercentileTimeSeriesItem()
+            val timeSeriesItem = RequestDurationDefaultMetric()
 
             (0 until 100001).forEach { timeSeriesItem.recordTime(it.toLong()) }
 
@@ -87,7 +84,7 @@ class PercentileTimeSeriesTest {
 
         @Test
         internal fun testWhen500Items() {
-            val timeSeriesItem = PercentileTimeSeriesItem()
+            val timeSeriesItem = RequestDurationDefaultMetric()
 
             (0 until 501).forEach { timeSeriesItem.recordTime(it.toLong()) }
 
