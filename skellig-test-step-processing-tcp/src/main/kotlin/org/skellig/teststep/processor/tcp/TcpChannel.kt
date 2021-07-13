@@ -9,27 +9,33 @@ import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
-class TcpChannel(tcpDetails: TcpDetails) : Closeable {
+class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
 
     companion object {
         private const val DEFAULT_TIMEOUT = 30000
     }
 
-    private var socket: Socket
+    private var socket: Socket? = null
     private var inputStream: DataInputStream? = null
     private var outputStream: DataOutputStream? = null
+    private var consumerThread: ExecutorService? = null
 
-    init {
-        try {
-            socket = Socket()
-            socket.keepAlive = tcpDetails.isKeepAlive
-            socket.soTimeout = DEFAULT_TIMEOUT
-            socket.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
-            inputStream = DataInputStream(socket.getInputStream())
-            outputStream = DataOutputStream(socket.getOutputStream())
-        } catch (e: IOException) {
-            throw TestStepProcessingException(e.message, e)
+    private fun lazyConnectSocket() {
+        if (socket == null) {
+            try {
+                socket = Socket()
+                socket!!.keepAlive = tcpDetails.isKeepAlive
+                socket!!.soTimeout = DEFAULT_TIMEOUT
+                socket!!.tcpNoDelay = tcpDetails.isKeepAlive
+                socket!!.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
+                inputStream = DataInputStream(socket!!.getInputStream())
+                outputStream = DataOutputStream(socket!!.getOutputStream())
+            } catch (e: IOException) {
+                throw TestStepProcessingException(e.message, e)
+            }
         }
     }
 
@@ -40,6 +46,7 @@ class TcpChannel(tcpDetails: TcpDetails) : Closeable {
             else -> null
         }
         messageAsBytes?.let {
+            lazyConnectSocket()
             try {
                 outputStream?.let {
                     it.write(messageAsBytes, 0, messageAsBytes.size)
@@ -49,16 +56,13 @@ class TcpChannel(tcpDetails: TcpDetails) : Closeable {
                 // log later
                 e.printStackTrace()
             }
-        } ?: error("Request was not sent to ${socket.remoteSocketAddress} as it must be String or Byte Array");
+        } ?: error("Request was not sent to ${socket?.remoteSocketAddress} as it must be String or Byte Array");
     }
 
     fun read(timeout: Int, bufferSize: Int): Any? {
+        lazyConnectSocket()
         try {
-            if (timeout > 0) {
-                socket.soTimeout = timeout
-            } else {
-                socket.soTimeout = DEFAULT_TIMEOUT
-            }
+            initTimeout(timeout)
             return readAllBytes(bufferSize)
         } catch (e: Exception) {
             //log later
@@ -67,18 +71,47 @@ class TcpChannel(tcpDetails: TcpDetails) : Closeable {
         return null
     }
 
+    fun consume(response: Any?, timeout: Int, bufferSize: Int, callback: (message: Any?) -> Unit) {
+//        if (consumerThread != null) {
+//            close()
+//        }
+        if (consumerThread == null || consumerThread!!.isShutdown) {
+            consumerThread = Executors.newCachedThreadPool()
+        }
+        lazyConnectSocket()
+        consumerThread?.execute {
+            initTimeout(timeout)
+            while (!consumerThread!!.isShutdown) {
+                val bytes = readAllBytes(bufferSize)
+                callback(bytes)
+                response?.let { send(it) }
+            }
+        }
+    }
+
+    private fun closeConsumer() {
+        consumerThread?.shutdownNow()
+    }
+
     @Synchronized
     override fun close() {
         try {
-            if (socket.isConnected) {
-                if (!socket.isClosed) {
-                    inputStream!!.close()
-                    outputStream!!.close()
-                }
-                socket.close()
+            closeConsumer()
+            if (socket?.isClosed == false) {
+                inputStream!!.close()
+                outputStream!!.close()
+                socket?.close()
             }
         } catch (e: Exception) {
             //log later
+        }
+    }
+
+    private fun initTimeout(timeout: Int) {
+        if (timeout > 0) {
+            socket?.soTimeout = timeout
+        } else {
+            socket?.soTimeout = DEFAULT_TIMEOUT
         }
     }
 

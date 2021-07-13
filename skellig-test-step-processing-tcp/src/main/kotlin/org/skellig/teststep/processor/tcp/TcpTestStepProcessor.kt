@@ -1,13 +1,11 @@
 package org.skellig.teststep.processor.tcp
 
-import com.typesafe.config.Config
 import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
-import org.skellig.teststep.processor.tcp.model.TcpDetails
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
 
 open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>,
@@ -76,38 +74,7 @@ open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>
     private fun getChannelNotExistErrorMessage(channelId: String?) =
             "Channel '$channelId' was not registered in TCP Test Step Processor"
 
-    class Builder : BaseTestStepProcessor.Builder<TcpTestStep>() {
-
-        companion object {
-            private const val TCP_CONFIG_KEYWORD = "tcp"
-            const val HOST = "host"
-            const val NAME = "name"
-            const val PORT = "port"
-            const val KEEP_ALIVE = "keepAlive"
-        }
-
-        private val tcpChannels = mutableMapOf<String, TcpChannel>()
-
-        fun tcpChannel(tcpDetails: TcpDetails) = apply {
-            tcpChannels.putIfAbsent(tcpDetails.channelId, TcpChannel(tcpDetails))
-        }
-
-        fun tcpChannels(config: Config) = apply {
-            if (config.hasPath(TCP_CONFIG_KEYWORD)) {
-                (config.getAnyRefList(TCP_CONFIG_KEYWORD) as List<Map<*, *>>)
-                        .forEach {
-                            try {
-                                val port = it[PORT]?.toString()?.toInt() ?: 0
-                                val keepAlive = if (it.containsKey(KEEP_ALIVE)) it[KEEP_ALIVE].toString().toBoolean() else true
-                                tcpChannel(TcpDetails(it[NAME]?.toString() ?: error("TCP Connection Name must not be null"),
-                                        it[HOST]?.toString() ?: error("TCP host must not be null"), port, keepAlive))
-                            } catch (e: NumberFormatException) {
-                                throw NumberFormatException("Invalid number assigned to TCP port in configuration")
-                            }
-                        }
-            }
-        }
-
+    class Builder : BaseTcpProcessorBuilder<TcpTestStep>() {
         override fun build(): TestStepProcessor<TcpTestStep> {
             return TcpTestStepProcessor(tcpChannels, testScenarioState, validator, testStepResultConverter)
         }
