@@ -21,6 +21,7 @@ import org.skellig.teststep.runner.*
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.skellig.teststep.runner.model.TestStepFileExtension
 import java.io.Closeable
+import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -85,13 +86,13 @@ abstract class SkelligTestContext : Closeable {
             .toSet()
     }
 
-    private fun extractTestStepPaths(testStepPaths: Collection<String>?, classLoader: ClassLoader): Collection<Path> {
+    private fun extractTestStepPaths(testStepPaths: Collection<String>?, classLoader: ClassLoader): Collection<URI> {
         return testStepPaths
             ?.filter { !it.contains(".") }
             ?.map {
                 try {
                     val resource = classLoader.getResource(it)
-                    return@map resource?.let { Paths.get(resource.toURI()) }
+                    return@map resource?.let { resource.toURI() }
                 } catch (e: URISyntaxException) {
                     throw TestStepRegistryException(e.message, e)
                 }

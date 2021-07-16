@@ -1,7 +1,7 @@
 package org.skellig.teststep.reader
 
-import java.nio.file.Path
+import java.io.InputStream
 
 interface TestStepReader {
-    fun read(fileName: Path): List<Map<String, Any?>>
+    fun read(inputStream: InputStream): List<Map<String, Any?>>
 }

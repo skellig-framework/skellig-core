@@ -10,15 +10,15 @@ import java.nio.file.Paths
 @DisplayName("Read sts-file")
 class StsFileParserTest {
 
-    private var stsFileParser: StsFileParser = StsFileParser()
+    private var stsFileParser = StsFileParser()
 
     @Test
     @DisplayName("When test step is simple with parameters, regex and functions")
     @Throws(URISyntaxException::class)
     fun testParseSimpleTestStep() {
-        val filePath = Paths.get(javaClass.getResource("/simple-test-steps.std").toURI())
+        val filePath = javaClass.getResource("/simple-test-steps.std").toURI().toURL()
 
-        val testSteps = stsFileParser.parse(filePath)
+        val testSteps = stsFileParser.parse(filePath.openStream())
 
         assertEquals(2, testSteps.size)
         val firstTestStep = testSteps[0]
@@ -63,9 +63,9 @@ class StsFileParserTest {
     @DisplayName("When value has text enclosed in single quotes")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithQuotes() {
-        val filePath = Paths.get(javaClass.getResource("/test-step-with-quotes.std").toURI())
+        val filePath = javaClass.getResource("/test-step-with-quotes.std").toURI().toURL()
 
-        val testSteps = stsFileParser.parse(filePath)
+        val testSteps = stsFileParser.parse(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
@@ -85,9 +85,9 @@ class StsFileParserTest {
     @DisplayName("When test step has validations")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithValidations() {
-        val filePath = Paths.get(javaClass.getResource("/test-step-with-validations.std").toURI())
+        val filePath = javaClass.getResource("/test-step-with-validations.std").toURI().toURL()
 
-        val testSteps = stsFileParser.parse(filePath)
+        val testSteps = stsFileParser.parse(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
@@ -111,9 +111,9 @@ class StsFileParserTest {
     @DisplayName("When test step has array of maps")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithArrayOfMaps() {
-        val filePath = Paths.get(javaClass.getResource("/test-step-with-array-of-maps.std").toURI())
+        val filePath = javaClass.getResource("/test-step-with-array-of-maps.std").toURI().toURL()
 
-        val testSteps = stsFileParser.parse(filePath)
+        val testSteps = stsFileParser.parse(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
@@ -132,9 +132,9 @@ class StsFileParserTest {
     @DisplayName("When step is empty")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithEmptyStep() {
-        val filePath = Paths.get(javaClass.getResource("/empty-step.std").toURI())
+        val filePath = javaClass.getResource("/empty-step.std").toURI().toURL()
 
-        val testSteps = stsFileParser.parse(filePath)
+        val testSteps = stsFileParser.parse(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertEquals("Given something", firstTestStep["name"])
@@ -144,9 +144,9 @@ class StsFileParserTest {
     @DisplayName("When test step has complex validation details")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithComplexValidation() {
-        val filePath = Paths.get(javaClass.getResource("/test-step-with-complex-validations.std").toURI())
+        val filePath = javaClass.getResource("/test-step-with-complex-validations.std").toURI().toURL()
 
-        val testSteps = stsFileParser.parse(filePath)
+        val testSteps = stsFileParser.parse(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
@@ -166,9 +166,9 @@ class StsFileParserTest {
     @DisplayName("When test step has validation details with array of maps and properties as indexes")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithArrayValidation() {
-        val filePath = Paths.get(javaClass.getResource("/test-step-with-array-validations.std").toURI())
+        val filePath = javaClass.getResource("/test-step-with-array-validations.std").toURI().toURL()
 
-        val testSteps = stsFileParser.parse(filePath)
+        val testSteps = stsFileParser.parse(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
@@ -191,9 +191,9 @@ class StsFileParserTest {
     @DisplayName("When test step has null values Then verify null is preserved")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithNullValues() {
-        val filePath = Paths.get(javaClass.getResource("/test-step-with-null.std").toURI())
+        val filePath = javaClass.getResource("/test-step-with-null.std").toURI().toURL()
 
-        val testSteps = stsFileParser.parse(filePath)
+        val testSteps = stsFileParser.parse(filePath.openStream())
 
         assertAll(
                 { assertNull(getValueFromMap(testSteps[0], "payload", "a")) },
