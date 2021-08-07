@@ -23,13 +23,6 @@ open class MessageReceptionPrometheusMetric(private val name: String,
 
     private var startTime = -1L
 
-    init {
-        Gauge.builder("$name mps") { getMps() }
-            .baseUnit(BaseUnits.MESSAGES)
-            .description("Total messages per second for test: $name")
-            .register(meterRegistry)
-    }
-
     private fun getTotalElapsedSeconds(): Double {
         return ceil((System.currentTimeMillis() - startTime) / 1000.0)
     }
