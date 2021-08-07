@@ -40,6 +40,8 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
     override fun getByName(testStepName: String): Map<String, Any?>? =
         testStepsPerClass.firstOrNull { (it[TEST_STEP_NAME_PATTERN] as Pattern).matcher(testStepName).matches() }
 
+    override fun getTestSteps(): Collection<Map<String, Any?>> = testStepsPerClass
+
 
     private inner class ClassTestStepsReaderStrategy(packageName: String) : ClassTestStepsReader {
         private val fileReader = ClassTestStepsFromFileReader(packageName)

@@ -10,12 +10,15 @@ internal class CachedTestStepsRegistry(private val testStepRegistries: List<Test
         var testStep = cachedTestSteps[testStepName]
         if (testStep == null) {
             testStep = testStepRegistries
-                    .mapNotNull { it.getByName(testStepName) }
-                    .firstOrNull()
+                .mapNotNull { it.getByName(testStepName) }
+                .firstOrNull()
             if (testStep != null) {
                 cachedTestSteps[testStepName] = testStep
             }
         }
         return testStep
     }
+
+    override fun getTestSteps(): Collection<Map<String, Any?>> =
+        testStepRegistries.flatMap { it.getTestSteps() }
 }

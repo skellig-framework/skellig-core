@@ -27,6 +27,8 @@ internal class TestStepsRegistry(private val testStepFileExtension: TestStepFile
             .findFirst()
             .orElse(null)
 
+    override fun getTestSteps(): Collection<Map<String, Any?>> = testSteps
+
     private fun getTestStepName(rawTestStep: Map<String, Any?>): String =
         rawTestStep["name"]?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
 

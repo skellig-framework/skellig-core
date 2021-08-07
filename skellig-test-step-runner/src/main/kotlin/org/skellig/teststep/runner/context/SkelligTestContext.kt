@@ -204,8 +204,8 @@ abstract class SkelligTestContext : Closeable {
     protected open val propertyExtractorFunction: ((String) -> String?)?
         protected get() = { key -> config?.getString(key) }
 
-    protected open val testStepKeywordsProperties: Properties?
-        protected get() = null
+    open val testStepKeywordsProperties: Properties?
+         get() = null
 
     protected var config: Config? = null
         protected get() = field
