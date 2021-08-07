@@ -6,6 +6,7 @@ import java.util.regex.Pattern
 class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueConverter) {
 
     companion object {
+        //TODO: doesn't work for /${prefix:data}/${id}
         private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_]+)(\\s*:\\s*(.+))?}")
     }
 

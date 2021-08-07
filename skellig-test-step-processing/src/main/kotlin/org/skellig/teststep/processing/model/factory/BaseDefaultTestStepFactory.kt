@@ -118,10 +118,6 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         return getInteger(rawTestStep, parameters, getKeywordName(ATTEMPTS_KEYWORD, "attempts"), 0)
     }
 
-    protected open fun <T> convertValue(value: Any?, parameters: Map<String, Any?>): T? {
-        return testStepFactoryValueConverter.convertValue(value, parameters)
-    }
-
     private fun getInteger(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>,
                            keywordName: String, defaultValue: Int): Int {
         var value = defaultValue

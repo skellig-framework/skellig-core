@@ -20,7 +20,7 @@ internal class PeriodicRunner(private val testStep: LongRunTestStep,
     }
 
     private val rps = testStep.rps
-    private val finishTime = LocalDateTime.now().plusMinutes(testStep.timeToRun.toLong())
+    private val finishTime = LocalDateTime.now().plusSeconds(testStep.timeToRun.toSecondOfDay().toLong())
     private val delayTimeNs = (SEC_IN_NANOSEC / ceil(testStep.rps.toDouble())).toLong()
     private val durationPercentileMetric = metricsFactory.createDurationPercentileMetric(testStep.name)
 

@@ -16,6 +16,10 @@ abstract class BaseTestStepFactory<T : TestStep>(
 
     protected var testStepFactoryValueConverter = TestStepFactoryValueConverter(testStepValueConverter!!)
 
+    protected open fun <T> convertValue(value: Any?, parameters: Map<String, Any?>): T? {
+        return testStepFactoryValueConverter.convertValue(value, parameters)
+    }
+
     protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<String, Any?>): Map<String, String>? {
         var parameters: MutableMap<String, String>? = null
         val matcher = CachedPattern.compile(getName(rawTestStep)).matcher(testStepName)
