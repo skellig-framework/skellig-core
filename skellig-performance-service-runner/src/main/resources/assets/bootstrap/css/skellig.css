@@ -1,0 +1,72 @@
+.text-color {
+  color: #8b92a9
+}
+
+.card {
+    border: 0;
+    margin-bottom: 30px;
+    margin-top: 30px;
+    border-radius: 6px;
+    color: #333333;
+    width: 100%;
+}
+
+.card {
+    font-size: .875rem;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+}
+
+.card-header-in-progress {
+    background: #04c860;
+}
+
+.dark-background .btn.btn-primary {
+    color: #fff;
+    background-color: #03c470;
+    border-color: #039856;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
+    color: #fff;
+    background-color: #29cf86;
+    border-color: #039856;
+}
+
+.dark-background .btn.btn-warning {
+    color: #fff;
+    background-color: #ea3556;
+    border-color: #b82640;
+}
+
+.btn-warning:hover, .btn-warning:focus, .btn-warning:active, .btn-warning.active, .open>.dropdown-toggle.btn-warning {
+    color: #fff;
+    background-color: #ee637c;
+    border-color: #b82640;
+}
+
+.progress-text {
+    height: 25px;
+    text-align: center;
+    color: #202940;
+    font-size: 1.3rem;
+    font-weight: 300;
+}
+
+.content-panel {
+    position: relative;
+    width: calc(100% - 260px);
+    transition: 0.33s, cubic-bezier(0.685, 0.0473, 0.346, 1);
+}
+
+.main-items-panel {
+    margin-left: 100px;
+    display: flex;
+    flex-wrap: wrap;
+}
