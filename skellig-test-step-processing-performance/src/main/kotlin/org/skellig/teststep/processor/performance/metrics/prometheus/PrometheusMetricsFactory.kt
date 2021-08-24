@@ -15,22 +15,26 @@ import org.skellig.teststep.processor.performance.metrics.MetricsFactory
 
 class PrometheusMetricsFactory : MetricsFactory {
 
-    private val meterRegistry = PrometheusMeterRegistry(
-        PrometheusConfig.DEFAULT,
-        CollectorRegistry.defaultRegistry,
-        Clock.SYSTEM)
+    companion object {
+        private val meterRegistry = PrometheusMeterRegistry(
+            PrometheusConfig.DEFAULT,
+            CollectorRegistry.defaultRegistry,
+            Clock.SYSTEM)
+        private val durationMetricsCache = mutableMapOf<String, DurationPercentileMetric>()
+        private val messageReceptionMetricsCache = mutableMapOf<String, MessageReceptionMetric>()
 
-    init {
-        meterRegistry.config().commonTags(listOf(Tag.of("application", "application")))
-        ProcessorMetrics().bindTo(meterRegistry)
-        JvmThreadMetrics().bindTo(meterRegistry)
-        JvmMemoryMetrics().bindTo(meterRegistry)
-        JvmGcMetrics().bindTo(meterRegistry)
+        init {
+            meterRegistry.config().commonTags(listOf(Tag.of("application", "application")))
+            ProcessorMetrics().bindTo(meterRegistry)
+            JvmThreadMetrics().bindTo(meterRegistry)
+            JvmMemoryMetrics().bindTo(meterRegistry)
+            JvmGcMetrics().bindTo(meterRegistry)
+        }
     }
 
     override fun createDurationPercentileMetric(name: String): DurationPercentileMetric =
-        RequestDurationPrometheusMetric(name, meterRegistry)
+        durationMetricsCache.computeIfAbsent(name) { RequestDurationPrometheusMetric(name, meterRegistry) }
 
     override fun createMessageReceptionMetric(name: String): MessageReceptionMetric =
-        MessageReceptionPrometheusMetric(name, meterRegistry)
+        messageReceptionMetricsCache.computeIfAbsent(name) { MessageReceptionPrometheusMetric(name, meterRegistry) }
 }

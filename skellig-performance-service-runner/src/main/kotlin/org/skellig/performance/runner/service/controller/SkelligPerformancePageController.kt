@@ -2,6 +2,7 @@ package org.skellig.performance.runner.service.controller
 
 import org.skellig.teststep.runner.context.SkelligTestContext
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.ui.set
@@ -30,8 +31,18 @@ class SkelligPerformancePageController {
     @Autowired
     private var skelligTestContext: SkelligTestContext? = null
 
+    @Autowired
+    private var configPath: String? = null
+
+    @Autowired
+    @Qualifier("testSteps")
+    private var testSteps: List<String>? = null
+
     @GetMapping("/")
     fun home(model: Model): String {
+        skelligTestContext?.initialize(javaClass.classLoader,
+                                       testSteps ?: error("No paths to test steps were provided"),
+                                       configPath)
         val testStepRegistry = skelligTestContext!!.getTestStepRegistry()
         val properties = skelligTestContext!!.testStepKeywordsProperties
         var idCounter = 0

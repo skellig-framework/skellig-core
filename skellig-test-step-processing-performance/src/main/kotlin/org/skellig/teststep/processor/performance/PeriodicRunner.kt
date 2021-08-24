@@ -11,7 +11,8 @@ import java.time.LocalDateTime
 import kotlin.math.ceil
 import kotlin.system.measureTimeMillis
 
-internal class PeriodicRunner(private val testStep: LongRunTestStep,
+internal class PeriodicRunner(private val owner: LongRunTestStepProcessor,
+                              private val testStep: LongRunTestStep,
                               private val testStepRegistry: TestStepRegistry,
                               metricsFactory: MetricsFactory) {
 
@@ -24,13 +25,11 @@ internal class PeriodicRunner(private val testStep: LongRunTestStep,
     private val delayTimeNs = (SEC_IN_NANOSEC / ceil(testStep.rps.toDouble())).toLong()
     private val durationPercentileMetric = metricsFactory.createDurationPercentileMetric(testStep.name)
 
-    fun run(processingFunction: (TestStep) -> TestStepProcessor.TestStepRunResult) : TimeSeries {
+    fun run(processingFunction: (TestStep) -> TestStepProcessor.TestStepRunResult): TimeSeries {
         runBlocking {
             withContext(Dispatchers.Default) {
-                try {
+                durationPercentileMetric.use {
                     runTillTimeEnds(processingFunction)
-                } finally {
-                    durationPercentileMetric.close()
                 }
             }
         }
@@ -38,23 +37,20 @@ internal class PeriodicRunner(private val testStep: LongRunTestStep,
     }
 
     private suspend fun runTillTimeEnds(processingFunction: (TestStep) -> TestStepProcessor.TestStepRunResult) {
-        val time = measureTimeMillis {
-            coroutineScope {
-                do {
-                    val durationMetric = durationPercentileMetric.createPercentileBucket()
-                    repeat((1 until rps).count()) {
-                        val startTime = System.nanoTime()
-                        launch {
-                            val totalElapsedTime = processAndGetTime(testStep, processingFunction)
-                            durationMetric.recordTime(totalElapsedTime)
-                        }
-                        delayPrecise(startTime, delayTimeNs)
+        coroutineScope {
+            do {
+                val durationMetric = durationPercentileMetric.createPercentileBucket()
+                repeat((1 until rps).count()) {
+                    val startTime = System.nanoTime()
+                    launch {
+                        val totalElapsedTime = processAndGetTime(testStep, processingFunction)
+                        durationMetric.recordTime(totalElapsedTime)
                     }
-                    delay(1)
-                } while (finishTime.isAfter(LocalDateTime.now()))
-            }
+                    delayPrecise(startTime, delayTimeNs)
+                }
+                delay(1)
+            } while (!owner.isClosed.get() && finishTime.isAfter(LocalDateTime.now()))
         }
-        println("total spent time = $time")
     }
 
     private fun processAndGetTime(testStep: LongRunTestStep,

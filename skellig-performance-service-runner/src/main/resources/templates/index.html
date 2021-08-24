@@ -36,7 +36,7 @@
                             <input type="hidden" th:name="timeToRunParam" th:value="${item.timeToRunParam}">
                             <div class="col-md-6">
                                 <label th:for="timeToRun">
-                                    <input type="text" th:name="timeToRun" th:disabled="${item.isTimeToRunSet}"
+                                    <input th:id="${'timeToRun-'+item.id}" type="text" th:name="timeToRun" th:disabled="${item.isTimeToRunSet}"
                                            th:value="${item.timeToRun}" class="form-control">
                                     <input th:name="timeToRun" type="hidden" th:value="${item.timeToRun}"
                                            th:unless="${!item.isTimeToRunSet}">
@@ -50,7 +50,7 @@
                             <input type="hidden" th:name="rpsParam" th:value="${item.rpsParam}">
                             <div class="col-md-6">
                                 <label th:for="rps">
-                                    <input type="text" th:disabled="${item.isRpsSet}" th:value="${item.rps}"
+                                    <input th:id="${'rps-'+item.id}" type="text" th:disabled="${item.isRpsSet}" th:value="${item.rps}"
                                            th:name="rps" class="form-control">
                                     <input th:name="rps" type="hidden" th:value="${item.rps}"
                                            th:unless="${!item.isRpsSet}">
@@ -139,6 +139,34 @@
     var currentTestId
     var progressTriggerCounter = 0
 
+    $( document ).ready(function() {
+        tryInitCurrentTestInProgress()
+    });
+
+    function tryInitCurrentTestInProgress() {
+        $.ajax({
+            type: "GET",
+            url: '/progress/get',
+            dataType: 'json',
+            complete: function (data) {
+                data = data.responseJSON === undefined ? data : data.responseJSON
+                if (data != null && data.test.id !== undefined && !hasError(data)) {
+                    currentTestId = data.test.id
+                    setUiForRunningTest(currentTestId)
+                    $("#timeToRun-" + currentTestId).val(data.test.timeToRun);
+                    $("#rps-" + currentTestId).val(data.test.rps);
+                }
+            },
+        });
+    }
+
+    function setUiForRunningTest(testId) {
+        currentTestId = testId
+        $("#stopBtn-" + testId).prop("disabled", false)
+        $("#runBtn-" + testId).prop("disabled", true)
+        getProgress(testId, ++progressTriggerCounter)
+    }
+
     function runTest(testId) {
         $.ajax({
             type: "POST",
@@ -148,10 +176,7 @@
                 if (currentTestId != null) {
                     configureUiWhenTestStopped(currentTestId);
                 }
-                currentTestId = testId
-                $("#stopBtn-" + testId).prop("disabled", false)
-                $("#runBtn-" + testId).prop("disabled", true)
-                getProgress(testId, ++progressTriggerCounter)
+                setUiForRunningTest(testId);
             }
         });
     }
@@ -163,24 +188,27 @@
     }
 
     function hasError(data) {
-        return data.responseText != null && data.responseText.includes("error");
+        return data != null && data.error != null;
     }
 
     function getProgress(testId, progressId) {
         $.ajax({
             type: "GET",
             url: '/progress/get',
+            dataType: 'json',
             success: function (data) {
+                data = data.responseJSON === undefined ? data : data.responseJSON
                 if (currentTestId === testId && !hasError(data)) {
-                    $("#progressBar-" + testId).text(data);
+                    $("#progressBar-" + testId).text(data.time);
                     $("#progressPanel-" + testId).css("background", "#04c860")
                 }
             },
             complete: function (data) {
+                data = data.responseJSON === undefined ? data : data.responseJSON
                 if (currentTestId === testId && progressTriggerCounter === progressId) {
-                    if (data.responseText != null && data.responseText !== "") {
+                    if (data != null && data.responseText !== "") {
                         if (hasError(data)) {
-                            showError(data.responseText);
+                            showError(data.error);
                         } else {
                             setTimeout(getProgress, 5000, testId, progressId);
                         }

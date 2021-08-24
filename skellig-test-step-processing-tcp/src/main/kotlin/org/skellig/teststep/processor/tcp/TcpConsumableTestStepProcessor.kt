@@ -42,6 +42,9 @@ open class TcpConsumableTestStepProcessor(
                 var error: RuntimeException? = null
                 try {
                     validate(testStep, receivedMessage)
+                    respondTo?.let {
+                        if (isValid(testStep, response)) send(response, respondTo[index])
+                    }
                 } catch (ex: Exception) {
                     error = when (ex) {
                         is ValidationException, is TestStepProcessingException -> ex as RuntimeException
@@ -49,10 +52,6 @@ open class TcpConsumableTestStepProcessor(
                     }
                 } finally {
                     result.notify(receivedMessage, error)
-                }
-
-                respondTo?.let {
-                    if (isValid(testStep, response)) send(response, respondTo[index])
                 }
             }
         }

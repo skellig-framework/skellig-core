@@ -6,6 +6,7 @@ import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processor.performance.metrics.MetricsFactory
 import org.skellig.teststep.processor.performance.model.LongRunResponse
 import org.skellig.teststep.processor.performance.model.LongRunTestStep
+import java.util.concurrent.atomic.AtomicBoolean
 
 open class LongRunTestStepProcessor protected constructor(
     private val testStepProcessor: TestStepProcessor<TestStep>,
@@ -13,17 +14,21 @@ open class LongRunTestStepProcessor protected constructor(
     private val metricsFactory: MetricsFactory
 ) : TestStepProcessor<LongRunTestStep> {
 
+    internal var isClosed = AtomicBoolean(false)
+
     override fun process(testStep: LongRunTestStep): TestStepProcessor.TestStepRunResult {
         val response = LongRunResponse()
 
-        runTestSteps(testStep.testStepsToRunBefore, response)
+        if(!isClosed.get()) {
+            runTestSteps(testStep.testStepsToRunBefore, response)
 
-        val periodicRunner = PeriodicRunner(testStep, testStepRegistry, metricsFactory)
-        val timeSeries = periodicRunner.run { testStepProcessor.process(it) }
+            val periodicRunner = PeriodicRunner(this, testStep, testStepRegistry, metricsFactory)
+            val timeSeries = periodicRunner.run { testStepProcessor.process(it) }
 
-        runTestSteps(testStep.testStepsToRunAfter, response)
+            runTestSteps(testStep.testStepsToRunAfter, response)
 
-        response.registerTimeSeriesFor(testStep.name, timeSeries)
+            response.registerTimeSeriesFor(testStep.name, timeSeries)
+        }
 
         val result = TestStepProcessor.TestStepRunResult(testStep)
         result.notify(response, null)
@@ -32,16 +37,22 @@ open class LongRunTestStepProcessor protected constructor(
 
     private fun runTestSteps(testSteps: List<(testStepRegistry: TestStepRegistry) -> TestStep>,
                              response: LongRunResponse) {
-        testSteps.forEach {
-            val testStep = it(testStepRegistry)
-            val timeSeries = metricsFactory.createMessageReceptionMetric(testStep.name)
-            response.registerTimeSeriesFor(testStep.name, timeSeries)
-            testStepProcessor.process(testStep)
-                .subscribe { _, _, ex ->
-                    if (ex == null) timeSeries.registerMessageReception()
-                    else timeSeries.registerMessageFailed()
-                }
+        if(!isClosed.get()) {
+            testSteps.forEach {
+                val testStep = it(testStepRegistry)
+                val timeSeries = metricsFactory.createMessageReceptionMetric(testStep.name)
+                response.registerTimeSeriesFor(testStep.name, timeSeries)
+                testStepProcessor.process(testStep)
+                    .subscribe { _, _, ex ->
+                        if (ex == null) timeSeries.registerMessageReception()
+                        else timeSeries.registerMessageFailed()
+                    }
+            }
         }
+    }
+
+    override fun close() {
+        isClosed.set(true)
     }
 
     override fun getTestStepClass(): Class<LongRunTestStep> = LongRunTestStep::class.java
