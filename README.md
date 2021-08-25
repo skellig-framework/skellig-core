@@ -11,8 +11,6 @@ Skellig is Automation/Performance Testing Framework with focus on writing tests 
 
 ### Sample test
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
 File bookings.sf
 ```feature
 Name: Booking events
@@ -102,4 +100,5 @@ public class SkelligDemoTestRunner {
 }
 ```
 For more information please refer [this guide](https://github.com/skellig-framework/skellig-core/wiki/Skellig-Quickstart-Guide)
+
 Or for complete source code of the [demo project](https://github.com/skellig-framework/skellig-demo)
