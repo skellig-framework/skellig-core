@@ -11,14 +11,20 @@ configurations.all {
     exclude group: "ch.qos.logback", module: "logback-core"
 }
 
-dependencies {
-    compile "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.4.2'
-    implementation group: 'org.thymeleaf', name: 'thymeleaf', version: '3.0.12.RELEASE'
-    compile 'org.springframework.boot:spring-boot-starter-web:2.4.2'
-    compile group: 'io.prometheus', name: 'simpleclient_servlet', version: '0.11.0'
+ext {
+    springThimeleafVersion = '3.0.12.RELEASE'
+    springBootVersion = '2.4.2'
+    freemarkerVersion = '2.3.30'
+    prometheusVersion = '0.11.0'
+}
 
-    compile 'org.freemarker:freemarker:2.3.30'
+dependencies {
+    implementation group: 'org.thymeleaf', name: 'thymeleaf', version: "${springThimeleafVersion}"
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: "${springBootVersion}"
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "${springBootVersion}"
+    compile group: 'io.prometheus', name: 'simpleclient_servlet', version: "${prometheusVersion}"
+    compile group: 'org.freemarker', name: 'freemarker', version: "${freemarkerVersion}"
 
     compile project(':skellig-test-step-processing-performance')
     compile project(':skellig-test-step-runner')

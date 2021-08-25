@@ -12,7 +12,7 @@ plugins {
 }
 
 ext {
-    version = '1.0.0'
+    version = '2.0.5-beta'
     mockitoAllVersion = '1.10.19'
     junitApiVersion = '5.2.0'
     junitPlatformVersion = '1.2.0'
@@ -20,10 +20,11 @@ ext {
     typesafeConfigVersion = '1.4.0'
     slf4jLogVersion = '1.7.30'
     kotlinVersion = '1.5.0'
+//    kotlinReflectionVersion = '1.4.21'
 }
 
 allprojects {
-    group 'org.skellig'
+    group 'org.skelligframework'
     version "${version}"
 }
 
@@ -34,10 +35,10 @@ subprojects {
     apply plugin: 'com.bmuschko.nexus'
     apply plugin: 'io.spring.dependency-management'
 
-    version = '1.0.0-beta'
+    version = '2.0.5-beta'
 
     ext {
-        projectUrl = 'http://skellig-framework.org'
+        projectUrl = 'http://skelligframework.org'
 
         projectRepo = {
             url 'https://github.com/skellig-framework/skellig-core'
@@ -106,6 +107,7 @@ subprojects {
             dependency group: 'org.junit.platform', name: 'junit-platform-runner', version: "${junitPlatformVersion}"
             dependency group: 'org.junit.platform', name: 'junit-platform-launcher', version: "${junitPlatformVersion}"
             dependency group: 'org.mockito', name: 'mockito-junit-jupiter', version: "${mockitoJunitVersion}"
+            dependency group: 'org.jetbrains', name: 'kotlin:kotlin-reflect', version: "${kotlinVersion}"
         }
     }
 
