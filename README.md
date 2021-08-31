@@ -8,8 +8,12 @@ Skellig is Automation/Performance Testing Framework with focus on writing tests 
 * Sync/Async operations with TCP / AMQP / IBMMQ channels (ex. send, read, consume, respond) with output validation
 * RMDB/NOSQL database operations (ex. select, insert, delete) with data validation
 * Remote Unix commands with response validation
+* Performance testing with build-in or Prometheus metrics
 
 ### Sample test
+A simple and quick test which demonstrates how to write a test using Skellig Framework. This test books a ticket by
+placing sending a POST request to a web service with relevant information and verifies the response. It also checks if 
+the database has a valid record and before running the test, it adds an event to book by placing it into the RMQ channel.
 
 File bookings.sf
 ```feature
@@ -17,16 +21,18 @@ Name: Booking events
 
    Test: Book seats of the event
    Steps:
-   Event Add event with available seats <available_seats>
+   Add event with available seats <available_seats>
+     |newEventCode |<eventCode> |
    Book seats <seats> of the event
    Seats <seats> have been booked successfully for the event
+  
    Data:
-     |available_seats |seats
-     |s1=10,s2=20     |s2   
+     |eventCode|available_seats |seats
+     |e0001    |s1=10,s2=20     |s2   
 ```
 
 File bookings.std
-```java
+```
 name('Add event with available seats (.+)') {
     id = addEventTest
     protocol = rmq
@@ -34,16 +40,21 @@ name('Add event with available seats (.+)') {
     properties { content_type = application/json }
 
     variables {
+        # if parameter 'newEventCode' not provided, 
+        # then use the standard function inc(event,5) to increment 5 digits every run for key 'event' 
+        # and attach it to 'evt1_'
         eventCode = ${newEventCode:evt1_inc(event,5)}
     }
 
     message {
+        # convert data to json
         json {
             code = ${eventCode}
             name = 'event 1'
-            date = toDateTime(01-01-2020 10:30:00)
+                # use standard function toDateTime(...) which returns LocalDateTime object
+            date = toDateTime(01-01-2020 10:30:00) 
             location = somewhere
-            pricePerSeats [ ${1} ]
+            pricePerSeats [ ${1} ]  # set data from captured first parameter taken from test name
             takenSeats [${takenSeats:}]
        }
     }
@@ -52,21 +63,25 @@ name('Add event with available seats (.+)') {
 name('Book seats (.+) of the event\s*(.*)') {
     url = '/booking/request'
     http_method = POST
-    http_headers{ Content-type = 'application/json'}
+    http_headers { Content-type = 'application/json'}
 
     variables {
+        # set second parameter captured from the test name to 'eventCode' var
+        # otherwise get 'eventCode' from test with id 'addEventTest'
         eventCode = '${2:${get(addEventTest).variables.eventCode}}'
      }
 
     payload {
         json {
-            eventCode = ${eventCode}
-            seats = listOf(${1})
+            eventCode = ${eventCode}  # get 'eventCode' from the variables
+            seats = listOf(${1})  # just another way of setting list, instead of [...]
         }
     }
 
     validate {
-        statusCode = int(200)
+        statusCode = int(200)  # convert to int as by default all values are String
+        # extract body from the response and convert to string, then validate some fields.
+        # Because it's json, we extract these fields by jsonPath'
         'body.toString()' {
                jsonPath(eventCode) = ${eventCode}
                jsonPath(success) = true
@@ -84,10 +99,12 @@ name('Seats (.+) have been booked successfully for the event') {
      }
 
     validate {
+         # as the result is a list of rows, we take the first row and validate just one column from it 
          skellig-db.fromIndex(0).taken_seats = contains(${1})
     }
 }
 ```
+
 SkelligDemoTestRunner class
 ```java
 @RunWith(SkelligRunner.class)
