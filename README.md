@@ -12,7 +12,7 @@ Skellig is Automation/Performance Testing Framework with focus on writing tests 
 
 ### Sample test
 A simple and quick test which demonstrates how to write a test using Skellig Framework. This test books a ticket by
-placing sending a POST request to a web service with relevant information and verifies the response. It also checks if 
+sending a POST request to a web service with relevant information and verifies the response. It also checks if 
 the database has a valid record and before running the test, it adds an event to book by placing it into the RMQ channel.
 
 File bookings.sf
