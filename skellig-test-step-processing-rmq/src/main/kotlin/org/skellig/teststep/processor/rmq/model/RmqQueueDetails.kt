@@ -8,6 +8,10 @@ class RmqQueueDetails(val name: String,
                       val isCreateIfNew: Boolean,
                       val parameters: Map<String, Any>?) {
 
+    override fun toString(): String {
+        return "$name:${routingKey ?: "#"}"
+    }
+
     class Builder {
         private var name: String? = null
         private var routingKey: String? = null

@@ -14,7 +14,7 @@ import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.runner.model.TestStepFileExtension
-import java.nio.file.Paths
+import org.skellig.teststep.runner.teststep.registry.TestStepsRegistry
 
 @DisplayName("Run test step")
 internal class DefaultTestStepRunnerTest {

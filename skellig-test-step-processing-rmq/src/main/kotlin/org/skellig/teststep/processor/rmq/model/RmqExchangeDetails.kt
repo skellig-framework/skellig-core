@@ -7,6 +7,10 @@ class RmqExchangeDetails(val name: String,
                          val isCreateIfNew: Boolean,
                          val parameters: Map<String, Any>?) {
 
+    override fun toString(): String {
+        return name
+    }
+
     class Builder {
         private var name: String? = null
         private var type: String? = null

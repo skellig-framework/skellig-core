@@ -141,7 +141,7 @@ class SkelligPerformancePageController {
 
         fun toMapParameters(): Map<String, String?> {
             val parameters =
-                HashMap(parameters?.map { it.paramName to it.paramValue.toString() }?.toMap() ?: emptyMap())
+                HashMap(parameters?.associate { it.paramName to it.paramValue.toString() } ?: emptyMap())
             timeToRunParam?.let {
                 parameters[it] = timeToRun
             }
@@ -150,6 +150,12 @@ class SkelligPerformancePageController {
             }
             return parameters
         }
+
+        override fun toString(): String {
+            return name
+        }
+
+
     }
 
     class Parameter(

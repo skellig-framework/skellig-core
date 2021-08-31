@@ -33,12 +33,14 @@ open class HttpChannel(baseUrl: String) {
             try {
                 httpClientBuilder.build().use { httpClient ->
                     val httpRequest = createHttpRequest(request)
-                    LOGGER.info("Run HTTP request {}", request.toString())
+                    LOGGER.debug("Run HTTP request {}", request.toString())
 
                     val response: org.apache.http.HttpResponse = httpClient.execute(httpRequest)
 
                     val localResponse = convertToLocalResponse(response)
+
                     LOGGER.info("Received HTTP response from {}: {}", httpRequest.uri, localResponse.toString())
+
                     localResponse
                 }
             } catch (e: Exception) {

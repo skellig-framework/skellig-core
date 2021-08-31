@@ -19,6 +19,16 @@ open class TestScenarioRunner protected constructor(private val testScenario: Te
                                                private val testStepRunner: TestStepRunner?)
     : ParentRunner<TestStep>(testScenario.javaClass) {
 
+    companion object {
+        fun create(testScenario: TestScenario, testStepRunner: TestStepRunner?): TestScenarioRunner {
+            return try {
+                TestScenarioRunner(testScenario, testStepRunner)
+            } catch (e: InitializationError) {
+                throw FeatureRunnerException(e.message, e)
+            }
+        }
+    }
+
     private var stepDescriptions = hashMapOf<Any, Description>()
     private var testStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
     private var testStepRunResults :MutableList<TestStepRunResult>? = mutableListOf()
@@ -109,15 +119,6 @@ open class TestScenarioRunner protected constructor(private val testScenario: Te
         return TestScenarioReportDetails(name, testStepReportDetails)
     }
 
-    companion object {
-        fun create(testScenario: TestScenario, testStepRunner: TestStepRunner?): TestScenarioRunner {
-            return try {
-                TestScenarioRunner(testScenario, testStepRunner)
-            } catch (e: InitializationError) {
-                throw FeatureRunnerException(e.message, e)
-            }
-        }
-    }
 
     private fun attachStackTrace(e: Throwable): String {
         try {

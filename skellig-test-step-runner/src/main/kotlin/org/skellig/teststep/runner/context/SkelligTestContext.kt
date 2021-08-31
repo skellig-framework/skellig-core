@@ -2,9 +2,14 @@ package org.skellig.teststep.runner.context
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import org.skellig.teststep.processing.converter.*
+import org.skellig.teststep.processing.converter.DefaultTestStepResultConverter
+import org.skellig.teststep.processing.converter.DefaultValueConverter
+import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.TestStep
-import org.skellig.teststep.processing.model.factory.*
+import org.skellig.teststep.processing.model.factory.CompositeTestStepFactory
+import org.skellig.teststep.processing.model.factory.TestStepFactory
+import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.CompositeTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
@@ -17,17 +22,25 @@ import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.reader.sts.StsTestStepReader
-import org.skellig.teststep.runner.*
+import org.skellig.teststep.runner.DefaultTestStepRunner
+import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.skellig.teststep.runner.model.TestStepFileExtension
+import org.skellig.teststep.runner.teststep.registry.CachedTestStepsRegistry
+import org.skellig.teststep.runner.teststep.registry.ClassTestStepsRegistry
+import org.skellig.teststep.runner.teststep.registry.TestStepsRegistry
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.net.URI
 import java.net.URISyntaxException
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.*
 
 abstract class SkelligTestContext : Closeable {
+
+    companion object {
+        private val LOGGER : Logger = LoggerFactory.getLogger(SkelligTestContext.javaClass)
+    }
 
     private var testStepValueConverter: TestStepValueConverter? = null
     private var testStepResultConverter: TestStepResultConverter? = null
@@ -38,6 +51,9 @@ abstract class SkelligTestContext : Closeable {
     private var testStepsRegistry: TestStepRegistry? = null
 
     fun initialize(classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null): TestStepRunner {
+        LOGGER.info(("Initializing Skellig Context with test steps in '$testStepPaths'" +
+                configPath?.let { "and config file '$it'" }))
+
         config = createConfig(classLoader, configPath)
         val testStepReader = createTestStepReader()
         testScenarioState = createTestScenarioState()
@@ -258,7 +274,11 @@ abstract class SkelligTestContext : Closeable {
     }
 
     override fun close() {
+        LOGGER.info("Shutting down the Skellig Context")
+
         rootTestStepProcessor!!.close()
+
+        LOGGER.info("Skellig Context has been shut down")
     }
 
     protected class TestStepProcessorDetails(val testStepProcessor: TestStepProcessor<*>, val testStepFactory: TestStepFactory<out TestStep>)

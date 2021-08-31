@@ -2,6 +2,8 @@ package org.skellig.teststep.processor.tcp
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.tcp.model.TcpDetails
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -15,6 +17,8 @@ import java.util.concurrent.Executors
 class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(TcpChannel::class.java)
+
         private const val DEFAULT_TIMEOUT = 30000
     }
 
@@ -33,6 +37,8 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
                 socket!!.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
                 inputStream = DataInputStream(socket!!.getInputStream())
                 outputStream = DataOutputStream(socket!!.getOutputStream())
+
+                LOGGER.info("TCP channel has been connected on ${getRemoteAddressAsString()}")
             } catch (e: IOException) {
                 throw TestStepProcessingException(e.message, e)
             }
@@ -53,25 +59,23 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
                     it.flush()
                 }
             } catch (e: Exception) {
-                // log later
-                e.printStackTrace()
+                LOGGER.error("Failed to send request to ${getRemoteAddressAsString()}", e)
             }
-        } ?: error("Request was not sent to ${socket?.remoteSocketAddress} as it must be String or Byte Array");
+        } ?: error("Request was not sent to ${getRemoteAddressAsString()} as it must be String or Byte Array");
     }
 
     fun read(timeout: Int, bufferSize: Int): Any? {
         lazyConnectSocket()
-        try {
+        return try {
             initTimeout(timeout)
-            return readAllBytes(bufferSize)
+            readAllBytes(bufferSize)
         } catch (e: Exception) {
-            //log later
-            e.printStackTrace();
+            LOGGER.error("Failed to read response from ${getRemoteAddressAsString()}", e)
+            null
         }
-        return null
     }
 
-    fun consume(response: Any?, timeout: Int, bufferSize: Int, callback: (message: Any?) -> Unit) {
+    fun consume(response: Any?, timeout: Int, bufferSize: Int, responseHandler: (message: Any?) -> Unit) {
 //        if (consumerThread != null) {
 //            close()
 //        }
@@ -83,7 +87,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
             initTimeout(timeout)
             while (!consumerThread!!.isShutdown) {
                 val bytes = readAllBytes(bufferSize)
-                callback(bytes)
+                responseHandler(bytes)
                 response?.let { send(it) }
             }
         }
@@ -98,12 +102,13 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         try {
             closeConsumer()
             if (socket?.isClosed == false) {
+                LOGGER.debug("Closing TCP channel ${getRemoteAddressAsString()}")
                 inputStream!!.close()
                 outputStream!!.close()
                 socket?.close()
             }
         } catch (e: Exception) {
-            //log later
+            LOGGER.warn("Could not safely close TCP channel ${getRemoteAddressAsString()}", e)
         }
     }
 
@@ -131,4 +136,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         }
         return if (response.isEmpty()) null else response
     }
+
+    private fun getRemoteAddressAsString() = socket?.let { "'${socket!!.inetAddress}:${socket!!.port}'" } ?: ""
+
 }

@@ -12,8 +12,6 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 
 
-
-
 @Configuration
 open class HtmlTemplateResolverConfig : WebMvcConfigurer {
 

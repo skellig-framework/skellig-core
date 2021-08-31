@@ -36,14 +36,18 @@ open class SkelligPerformanceRunner(clazz: Class<*>) : Runner() {
     override fun getDescription(): Description = Description.createTestDescription(testName, testName)
 
     override fun run(notifier: RunNotifier?) {
+        LOGGER.info("Start to run the test '$testName'")
+
         skelligTestContext.use {
             testStepRunner.run(testName)
                 .subscribe { _, r, _ ->
                     val longRunResult = r as LongRunResponse
                     longRunResult.getTimeSeries().forEach {
                         LOGGER.info("Start writing time series data into file '${it.key}'")
+
                         val file = File("${it.key}.sts")
                         it.value.consumeTimeSeriesRecords { record -> file.appendText(record) }
+
                         LOGGER.info("File '${it.key}' with time series data has been created")
                     }
                 }
@@ -52,11 +56,11 @@ open class SkelligPerformanceRunner(clazz: Class<*>) : Runner() {
 
     private fun getConfig(config: String): String {
         val key = config.substringAfter("\${").substringBefore("}")
-        if (key.isNotEmpty()) {
+        return if (key.isNotEmpty()) {
             val property = System.getProperty(key, "")
-            return config.replace("\${$key}", property)
+            config.replace("\${$key}", property)
         } else {
-            return config
+            config
         }
     }
 

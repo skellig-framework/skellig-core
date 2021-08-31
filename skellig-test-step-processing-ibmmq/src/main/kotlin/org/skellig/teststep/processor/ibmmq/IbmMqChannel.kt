@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.ibmmq.model.IbmMqManagerDetails
 import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 import java.util.*
@@ -14,6 +16,8 @@ import java.util.*
 class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable {
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(IbmMqChannel::class.java)
+
         private const val DEFAULT_MSG_EXPIRY = 100
         private val queueManagerFactory = IbmMqManagerFactory()
     }
@@ -29,8 +33,9 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
         try {
             val mqMessage = convertMqMessage(request)
             queue!!.put(mqMessage)
+            LOGGER.debug("Message sent to IBMMQ '${ibmMqQueueDetails.queueName}'")
         } catch (e: Exception) {
-            throw TestStepProcessingException(e.message, e)
+            LOGGER.error("Failed to send a message to IBMMQ '${ibmMqQueueDetails.queueName}'", e)
         }
     }
 
@@ -43,8 +48,13 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
 
                 queue!![message, options]
 
-                getMessageBody(message)
-            } catch (ex: Exception) {
+                val messageBody = getMessageBody(message)
+
+                LOGGER.debug("Received message from IBMMQ '${ibmMqQueueDetails.queueName}'")
+
+                messageBody
+            } catch (e: Exception) {
+                LOGGER.error("Failed to read a message from IBMMQ '${ibmMqQueueDetails.queueName}'", e)
                 null
             }
 

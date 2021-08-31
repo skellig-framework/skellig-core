@@ -2,10 +2,16 @@ package org.skellig.teststep.processor.jdbc
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.db.model.DatabaseRequest
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.sql.SQLException
 
 internal abstract class BaseJdbcUpdateRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
+
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(BaseJdbcUpdateRequestExecutor::class.java)
+    }
 
     override fun execute(databaseRequest: DatabaseRequest): Any? {
         var result: Int
@@ -14,6 +20,8 @@ internal abstract class BaseJdbcUpdateRequestExecutor(private val connection: Co
             if (databaseRequest.query != null) {
                 query = databaseRequest.query
                 result = connection!!.createStatement().executeUpdate(query)
+
+                LOGGER.debug("Query has been executed successfully: $query")
             } else {
                 query = composeQuery(databaseRequest, databaseRequest.columnValuePairs)
 
@@ -23,6 +31,9 @@ internal abstract class BaseJdbcUpdateRequestExecutor(private val connection: Co
                         preparedStatement.setObject(i + 1, rawParameters[i])
                     }
                     result = preparedStatement.executeUpdate()
+
+                    LOGGER.debug("Query has been executed successfully: $query " +
+                                         "with parameters: ${rawParameters.contentToString()}")
                 }
             }
             connection.commit()
@@ -30,7 +41,7 @@ internal abstract class BaseJdbcUpdateRequestExecutor(private val connection: Co
             try {
                 connection!!.rollback()
             } catch (e: SQLException) {
-                //log later
+                LOGGER.error("Could not rollback transaction", e)
             }
             throw TestStepProcessingException(ex.message, ex)
         }

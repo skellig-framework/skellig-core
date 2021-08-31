@@ -4,10 +4,14 @@ class RmqDetails private constructor(val hostDetails: RmqHostDetails,
                                      val exchange: RmqExchangeDetails,
                                      val queue: RmqQueueDetails) {
 
-    class Builder {
+    override fun toString(): String {
+        return "$hostDetails:$exchange:$queue"
+    }
 
+    class Builder {
         private var hostDetails: RmqHostDetails? = null
         private var exchange: RmqExchangeDetails? = null
+
         private var queue: RmqQueueDetails? = null
 
         fun hostDetails(hostDetails: RmqHostDetails?) = apply {

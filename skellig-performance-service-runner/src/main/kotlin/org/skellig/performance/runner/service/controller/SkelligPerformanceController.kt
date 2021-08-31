@@ -63,6 +63,9 @@ class SkelligPerformanceController {
         runningTest = details
         startTime = LocalDateTime.now()
         lastError = null
+
+        LOGGER.info("Start to run the test '$runningTest'")
+
         taskExecutor.execute {
             try {
                 testStepRunner?.run(details.name, details.toMapParameters())
@@ -70,9 +73,12 @@ class SkelligPerformanceController {
                         val longRunResult = r as LongRunResponse
                         longRunResult.getTimeSeries().forEach {
                             stopCurrentRunningTest()
+
                             LOGGER.info("Start writing time series data into file '${it.key}'")
+
                             val file = File("${it.key}.sts")
                             it.value.consumeTimeSeriesRecords { record -> file.appendText(record) }
+
                             LOGGER.info("File '${it.key}' with time series data has been created")
                         }
                     }
@@ -102,6 +108,8 @@ class SkelligPerformanceController {
     }
 
     private fun stopCurrentRunningTest() {
+        LOGGER.info("Stop running current test '$runningTest'")
+
         runningTest = null
         startTime = null
         skelligTestContext?.close()

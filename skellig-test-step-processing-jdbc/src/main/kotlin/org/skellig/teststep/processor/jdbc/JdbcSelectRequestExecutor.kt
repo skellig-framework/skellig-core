@@ -2,11 +2,15 @@ package org.skellig.teststep.processor.jdbc
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.db.model.DatabaseRequest
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.sql.*
 
 internal class JdbcSelectRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(JdbcSelectRequestExecutor::class.java)
+
         private const val COMPARATOR = "comparator"
         private const val DEFAULT_VALUE_PLACEHOLDER = "?"
         private const val DEFAULT_COMPARATOR = "="
@@ -17,7 +21,10 @@ internal class JdbcSelectRequestExecutor(private val connection: Connection?) : 
             val query: String?
             if (databaseRequest.query != null) {
                 query = databaseRequest.query
-                return executeQuery(query!!, connection!!.createStatement())
+                val response = executeQuery(query!!, connection!!.createStatement())
+
+                LOGGER.debug("Query has been executed successfully: $query and response: $response")
+                return response
             } else {
                 val searchCriteria = databaseRequest.columnValuePairs ?: emptyMap()
                 query = composeFindQuery(databaseRequest, searchCriteria)
@@ -26,7 +33,12 @@ internal class JdbcSelectRequestExecutor(private val connection: Connection?) : 
                     for (i in rawParameters.indices) {
                         preparedStatement.setObject(i + 1, rawParameters[i])
                     }
-                    return executeQuery(preparedStatement)
+                    val response = executeQuery(preparedStatement)
+
+                    LOGGER.debug("Query has been executed successfully: $query " +
+                                         "with parameters: ${rawParameters.contentToString()} " +
+                                         "and response: $response")
+                    return response
                 }
             }
         } catch (ex: Exception) {

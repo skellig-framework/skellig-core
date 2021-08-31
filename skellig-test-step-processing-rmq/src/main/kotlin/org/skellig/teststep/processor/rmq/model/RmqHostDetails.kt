@@ -5,6 +5,10 @@ class RmqHostDetails(val host: String,
                      val user: String?,
                      val password: String?) {
 
+    override fun toString(): String {
+        return "$host:$port"
+    }
+
     class Builder {
 
         private var host: String? = null
@@ -32,4 +36,5 @@ class RmqHostDetails(val host: String,
             return RmqHostDetails(host!!, port, user, password)
         }
     }
+
 }
