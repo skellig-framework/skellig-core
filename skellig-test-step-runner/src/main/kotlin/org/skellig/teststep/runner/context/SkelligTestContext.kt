@@ -104,7 +104,6 @@ abstract class SkelligTestContext : Closeable {
 
     private fun extractTestStepPaths(testStepPaths: Collection<String>?, classLoader: ClassLoader): Collection<URI> {
         return testStepPaths
-            ?.filter { !it.contains(".") }
             ?.map {
                 try {
                     val resource = classLoader.getResource(it)

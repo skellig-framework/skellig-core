@@ -69,15 +69,21 @@ internal class TestStepsRegistry(private val testStepFileExtension: TestStepFile
             walkThroughFiles(Paths.get(rootUri))
 
         protected fun walkThroughFiles(root: Path): Collection<Map<String, Any?>> =
-            Files.walk(root)
-                .parallel()
-                .filter { it.toString().endsWith(testStepFileExtension.extension) }
-                .map {
-                    LOGGER.debug("Extract test steps from file '$it'")
-                    testStepReader.read(it.toUri().toURL().openStream())
-                }
-                .flatMap { it.stream() }
-                .collect(Collectors.toList())
+            if (Files.isDirectory(root)) {
+                Files.walk(root)
+                    .parallel()
+                    .filter { it.toString().endsWith(testStepFileExtension.extension) }
+                    .map { readFileFromPath(it) }
+                    .flatMap { it.stream() }
+                    .collect(Collectors.toList())
+            } else {
+                readFileFromPath(root)
+            }
+
+        private fun readFileFromPath(it: Path): List<Map<String, Any?>> {
+            LOGGER.debug("Extract test steps from file '$it'")
+            return testStepReader.read(it.toUri().toURL().openStream())
+        }
     }
 
     private inner class RawTestStepsFromJarFileReader : RawTestStepsFromFileReader() {
