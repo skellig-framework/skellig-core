@@ -43,7 +43,9 @@ open class TcpConsumableTestStepProcessor(
                 try {
                     validate(testStep, receivedMessage)
                     respondTo?.let {
-                        if (isValid(testStep, response)) send(response, respondTo[index])
+                        response?.let {
+                            if (isValid(testStep, receivedMessage)) send(response, respondTo[index])
+                        }
                     }
                 } catch (ex: Exception) {
                     error = when (ex) {
@@ -57,8 +59,8 @@ open class TcpConsumableTestStepProcessor(
         }
     }
 
-    private fun send(testData: Any?, sendTo: String) {
-        val channel = tcpChannels[sendTo] ?: error(getChannelNotExistErrorMessage(sendTo))
+    private fun send(testData: Any, respondTo: String) {
+        val channel = tcpChannels[respondTo] ?: error(getChannelNotExistErrorMessage(respondTo))
         channel.send(testData)
     }
 

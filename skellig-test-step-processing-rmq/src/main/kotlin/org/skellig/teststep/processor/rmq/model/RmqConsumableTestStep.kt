@@ -22,8 +22,6 @@ open class RmqConsumableTestStep protected constructor(id: String?,
 
         private var consumeFrom: List<String>? = null
         private var respondTo: List<String>? = null
-        private var routingKey: String? = null
-        private var properties: Map<String, Any?>? = null
 
         fun consumeFrom(consumeFrom: List<String>?) = apply {
             this.consumeFrom = consumeFrom

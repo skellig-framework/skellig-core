@@ -125,7 +125,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         var read: Int
         var response = ByteArray(0)
         val bytes = ByteArray(bufferSize)
-        if (inputStream!!.read(bytes).also { read = it } != -1) {
+        while (inputStream!!.read(bytes).also { read = it } != -1) {
             val shift = response.size
             response = response.copyOf(read + response.size)
             var i = shift
@@ -133,8 +133,17 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
             while (j < read) {
                 response[i++] = bytes[j++]
             }
+            // break the cycle if nothing remains in the stream
+            if(inputStream!!.available() <= 0){
+                break
+            }
         }
-        return if (response.isEmpty()) null else response
+
+        return if (response.isEmpty()) null
+        else {
+            LOGGER.debug("Tcp channel ${getRemoteAddressAsString()} received ${response.size}")
+            response
+        }
     }
 
     private fun getRemoteAddressAsString() = socket?.let { "'${socket!!.inetAddress}:${socket!!.port}'" } ?: ""

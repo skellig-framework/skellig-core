@@ -30,7 +30,6 @@ internal class TcpChannelTest {
     private var server: ServerSocket? = null
 
     @AfterEach
-    @Throws(IOException::class)
     fun tearDown() {
         executorService.shutdown()
         tcpChannel!!.close()
@@ -40,7 +39,6 @@ internal class TcpChannelTest {
 
     @Test
     @DisplayName("Send and read When Server get request and responds only Then received response")
-    @Throws(InterruptedException::class)
     fun testSendAndReadTwoTimes() {
         startSocketServer()
         tcpChannel!!.send(DEFAULT_DATA.toByteArray())
@@ -56,7 +54,6 @@ internal class TcpChannelTest {
 
     @Test
     @DisplayName("Read once When Server responds only once Then response received")
-    @Throws(InterruptedException::class)
     fun testRead() {
         startSocketServer(0, 1)
 
@@ -67,7 +64,6 @@ internal class TcpChannelTest {
 
     @Test
     @DisplayName("Read once When times out Then response not received")
-    @Throws(InterruptedException::class)
     fun testReadWhenTimedOut() {
         startSocketServer(200, 1)
 
@@ -78,7 +74,6 @@ internal class TcpChannelTest {
 
     @Test
     @DisplayName("Read 2 times When first read times out Then last read receives response")
-    @Throws(InterruptedException::class)
     fun testReadSeveralTimesWhenTimedOut() {
         startSocketServer(200, 1)
 
@@ -91,7 +86,6 @@ internal class TcpChannelTest {
 
     @Test
     @DisplayName("Read 2 times When Server responds only once Then last read times out")
-    @Throws(InterruptedException::class)
     fun testReadSeveralTimesWhenServerRespondedOnce() {
         startSocketServer(0, 1)
 
@@ -105,7 +99,6 @@ internal class TcpChannelTest {
     @Test
     @DisplayName("Read 3 times with different timeouts When Server responds only 2 times with delay " +
             "Then verify receives 2 responses")
-    @Throws(InterruptedException::class)
     fun testReadSeveralTimesWhenServerRespondedTwiceAndDelay() {
         startSocketServer(300, 2)
 
@@ -120,17 +113,15 @@ internal class TcpChannelTest {
     }
 
     @Test
-    @DisplayName("Read once When Server responds only once Then response received")
-    @Throws(InterruptedException::class)
+    @DisplayName("Read once with small buffer When Server responds only once Then response whole received")
     fun testReadLargeDataAndMaxBufferIsLimited() {
         startSocketServer(0, 1)
 
         val response = tcpChannel!!.read(100, 32)
 
-        Assertions.assertEquals(32, String((response as ByteArray?)!!).length)
+        Assertions.assertEquals(DEFAULT_DATA.length, String((response as ByteArray?)!!).length)
     }
 
-    @Throws(InterruptedException::class)
     private fun startSocketServer(delay: Int = 0, respondTimes: Int = 0) {
         val countDownLatch = CountDownLatch(1)
         executorService.execute {

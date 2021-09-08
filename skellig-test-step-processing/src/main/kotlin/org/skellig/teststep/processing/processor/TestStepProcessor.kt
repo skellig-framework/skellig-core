@@ -39,9 +39,9 @@ interface TestStepProcessor<T : TestStep> : Closeable {
 
         @Throws(TestStepProcessingException::class)
         fun awaitResult() {
-            if (testStep != null && isFinished()) {
+            if (testStep != null && !isFinished()) {
                 try {
-                    countDownLatch.await(getTimeout(), TimeUnit.SECONDS)
+                    countDownLatch.await(getTimeout(), TimeUnit.MILLISECONDS)
                     if (error != null) {
                         error = TestStepProcessingException(String.format("Failed to process test step '%s'",
                                                                           testStep.name), error)

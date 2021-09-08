@@ -39,7 +39,7 @@ open class HttpChannel(baseUrl: String) {
 
                     val localResponse = convertToLocalResponse(response)
 
-                    LOGGER.info("Received HTTP response from {}: {}", httpRequest.uri, localResponse.toString())
+                    LOGGER.debug("Received HTTP response from {}: {}", httpRequest.uri, localResponse.toString())
 
                     localResponse
                 }

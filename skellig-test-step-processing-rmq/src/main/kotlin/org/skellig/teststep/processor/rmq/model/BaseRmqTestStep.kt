@@ -30,8 +30,8 @@ open class BaseRmqTestStep protected constructor(id: String?,
 
     abstract class Builder<T : BaseRmqTestStep> : DefaultTestStep.Builder<T>() {
 
-        private var routingKey: String? = null
-        private var properties: Map<String, Any?>? = null
+        protected var routingKey: String? = null
+        protected var properties: Map<String, Any?>? = null
 
         fun routingKey(routingKey: String?) = apply {
             this.routingKey = routingKey

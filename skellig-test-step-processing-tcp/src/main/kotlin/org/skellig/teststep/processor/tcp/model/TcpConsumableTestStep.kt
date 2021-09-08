@@ -32,7 +32,7 @@ open class TcpConsumableTestStep protected constructor(id: String?,
 
         override fun build(): TcpConsumableTestStep {
             val consumeChannelsSize = (consumeFrom ?: throw TestStepCreationException(
-                "consumeFrom is mandatory for RmqConsumableTestStep")).size
+                "consumeFrom is mandatory for TcpConsumableTestStep")).size
             respondTo?.let {
                 if (consumeChannelsSize != it.size)
                     throw TestStepCreationException("consumeFrom and respondTo must have the same size")

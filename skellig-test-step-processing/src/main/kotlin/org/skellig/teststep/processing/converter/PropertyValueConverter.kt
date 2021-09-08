@@ -8,7 +8,7 @@ class PropertyValueConverter(var valueConverter: TestStepValueConverter,
                              private val propertyExtractorFunction: ((String) -> String?)?) : TestStepValueConverter {
 
     companion object {
-        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_.]+)(\\s*:\\s*(.+))?}|\\\$\\{(.+)}")
+        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_.]+)(\\s*:\\s*(.*))?}|\\\$\\{(.+)}")
         private const val NULL = "null"
     }
 

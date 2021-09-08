@@ -7,7 +7,7 @@ class TestStepFactoryValueConverter(val testStepValueConverter: TestStepValueCon
 
     companion object {
         //TODO: doesn't work for /${prefix:data}/${id}
-        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_]+)(\\s*:\\s*(.+))?}")
+        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_]+)(\\s*:\\s*(.*))?}")
     }
 
     /**

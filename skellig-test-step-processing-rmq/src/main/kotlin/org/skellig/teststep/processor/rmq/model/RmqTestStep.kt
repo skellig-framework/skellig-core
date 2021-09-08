@@ -26,8 +26,6 @@ open class RmqTestStep protected constructor(id: String?,
         private var sendTo: Set<String>? = null
         private var receiveFrom: Set<String>? = null
         private var respondTo: Set<String>? = null
-        private var routingKey: String? = null
-        private var properties: Map<String, Any?>? = null
 
         fun sendTo(sendTo: Set<String>?) = apply {
             this.sendTo = sendTo

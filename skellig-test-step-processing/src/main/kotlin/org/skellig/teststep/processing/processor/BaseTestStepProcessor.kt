@@ -12,9 +12,9 @@ import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 
 abstract class BaseTestStepProcessor<T : DefaultTestStep>(
-        testScenarioState: TestScenarioState,
-        validator: TestStepResultValidator,
-        testStepResultConverter: TestStepResultConverter?)
+    testScenarioState: TestScenarioState,
+    validator: TestStepResultValidator,
+    testStepResultConverter: TestStepResultConverter?)
     : ValidatableTestStepProcessor<T>(testScenarioState, validator, testStepResultConverter) {
 
     override fun process(testStep: T): TestStepRunResult {
@@ -55,13 +55,13 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(
         protected var testStepResultConverter: TestStepResultConverter? = null
 
         fun withTestScenarioState(testScenarioState: TestScenarioState?) =
-                apply { this.testScenarioState = testScenarioState }
+            apply { this.testScenarioState = testScenarioState }
 
         fun withValidator(validator: TestStepResultValidator?) =
-                apply { this.validator = validator }
+            apply { this.validator = validator }
 
         fun withTestStepResultConverter(testStepResultConverter: TestStepResultConverter?) =
-                apply { this.testStepResultConverter = testStepResultConverter }
+            apply { this.testStepResultConverter = testStepResultConverter }
 
         abstract fun build(): TestStepProcessor<T>
     }
@@ -70,7 +70,8 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(
         : TestStepProcessor.TestStepRunResult(testStep) {
 
         override fun getTimeout(): Long {
-            return (testStep?.timeout ?: 0).toLong()
+            val attempts = testStep?.attempts ?: 1
+            return ((if (attempts == 0) 1 else attempts) * (testStep?.timeout ?: 0)).toLong()
         }
     }
 }

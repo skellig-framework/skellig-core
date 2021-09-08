@@ -1,8 +1,8 @@
 package org.skellig.feature
 
-class Feature protected constructor(val name: String,
-                                    val scenarios: List<TestScenario>?,
-                                    val testPreRequisites: List<TestPreRequisites<*>>?) {
+open class Feature protected constructor(val name: String,
+                                         val scenarios: List<TestScenario>?,
+                                         val testPreRequisites: List<TestPreRequisites<*>>?) {
 
     class Builder {
 
@@ -17,7 +17,8 @@ class Feature protected constructor(val name: String,
         fun withTestPreRequisites(testPreRequisites: List<TestPreRequisites<*>>?) = apply { this.testPreRequisites = testPreRequisites }
 
         fun build(): Feature {
-            return Feature(name!!, scenarios, testPreRequisites)
+            return Feature(name?: error("Feature cannot have empty name"),
+                           scenarios, testPreRequisites)
         }
     }
 }
