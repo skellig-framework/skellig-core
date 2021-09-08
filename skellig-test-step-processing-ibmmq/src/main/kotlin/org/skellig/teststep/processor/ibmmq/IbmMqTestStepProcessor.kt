@@ -7,6 +7,7 @@ import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
 import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 
@@ -17,7 +18,7 @@ open class IbmMqTestStepProcessor protected constructor(
     private val ibmMqChannels: Map<String, IbmMqChannel>
 ) : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
-    protected override fun processTestStep(testStep: IbmMqTestStep): Any? {
+    override fun processTestStep(testStep: IbmMqTestStep): Any? {
         var response: Map<*, Any?>? = null
         val sendTo = testStep.sendTo
         val readFrom = testStep.readFrom
@@ -74,19 +75,7 @@ open class IbmMqTestStepProcessor protected constructor(
         return IbmMqTestStep::class.java
     }
 
-    class Builder : BaseTestStepProcessor.Builder<IbmMqTestStep>() {
-
-        private val ibmMqChannels = mutableMapOf<String, IbmMqChannel>()
-        private val ibmmqDetailsConfigReader = IbmmqDetailsConfigReader()
-
-        fun ibmMqChannel(mqQueueDetails: IbmMqQueueDetails) = apply {
-            ibmMqChannels.putIfAbsent(mqQueueDetails.queueName, IbmMqChannel(mqQueueDetails))
-        }
-
-        fun ibmMqChannels(config: Config?) = apply {
-            ibmmqDetailsConfigReader.read(config).forEach { ibmMqChannel(it) }
-        }
-
+    class Builder : BaseIbmMqTestStepProcessorBuilder<IbmMqTestStep>() {
         override fun build(): TestStepProcessor<IbmMqTestStep> {
             return IbmMqTestStepProcessor(testScenarioState, validator, testStepResultConverter, ibmMqChannels)
         }

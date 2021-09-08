@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
 
 class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable {
 
@@ -24,6 +27,7 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
 
     private var queueManager: MQQueueManager? = null
     private var queue: MQQueue? = null
+    private var consumerThread: ExecutorService? = null
 
     init {
         connectQueue()
@@ -58,6 +62,44 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
                 null
             }
 
+    fun consume(response: Any?, timeout: Int, responseHandler: (message: Any?) -> Unit) {
+       /*
+        TODO: consider this later
+        val cf = MQQueueConnectionFactory()
+        cf.hostName = ibmMqQueueDetails.ibmMqManagerDetails.host;
+        cf.port = ibmMqQueueDetails.ibmMqManagerDetails.port;
+        cf.queueManager = ibmMqQueueDetails.ibmMqManagerDetails.name;
+        cf.channel = ibmMqQueueDetails.ibmMqManagerDetails.channel;
+        cf.transportType = WMQConstants.WMQ_CM_CLIENT;
+        val conn = cf.createQueueConnection() as MQQueueConnection
+        val session = conn.createSession(false, 1) as MQQueueSession
+
+        val queue = session.createQueue(ibmMqQueueDetails.queueName)
+
+        val receiver = session.createReceiver(queue) as MQQueueReceiver
+
+        receiver.messageListener = MessageListener {
+            responseHandler(it)
+            response?.let {
+                send(response)
+            }
+        }
+
+        conn.start()*/
+
+        if (consumerThread == null || consumerThread!!.isShutdown) {
+            consumerThread = Executors.newCachedThreadPool()
+        }
+        LOGGER.info("Start listener for IbmMq queue: ${ibmMqQueueDetails.queueName}")
+        consumerThread?.execute {
+            while (!consumerThread!!.isShutdown) {
+                val data = read(timeout)
+                responseHandler(data)
+                response?.let { send(it) }
+            }
+        }
+    }
+
     @Throws(IOException::class)
     private fun convertMqMessage(request: Any): MQMessage {
         val mqMessage = MQMessage()
@@ -91,11 +133,12 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
 
     override fun close() {
         try {
+            consumerThread?.shutdownNow()
             queueManager!!.disconnect()
             queueManager!!.close()
             queue!!.close()
         } catch (e: Exception) {
-            //log later
+            LOGGER.warn("Could not safely close IBMMQ channel ${ibmMqQueueDetails.queueName}", e)
         }
     }
 

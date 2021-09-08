@@ -8,14 +8,11 @@ import java.util.*
 
 open class IbmMqTestStepFactory(keywordsProperties: Properties?,
                                 testStepValueConverter: TestStepValueConverter?)
-    : BaseDefaultTestStepFactory<IbmMqTestStep>(keywordsProperties, testStepValueConverter) {
+    : BaseIbmMqTestStepFactory<IbmMqTestStep>(keywordsProperties, testStepValueConverter) {
 
     companion object {
-        private const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"
         private const val SEND_TO_KEYWORD = "test.step.keyword.sendTo"
         private const val RECEIVE_FROM_KEYWORD = "test.step.keyword.receiveFrom"
-        private const val RESPOND_TO_KEYWORD = "test.step.keyword.respondTo"
-        private const val IBMMQ = "ibmmq"
         private const val DEFAULT_DELAY = 250
         private const val DEFAULT_ATTEMPTS = 20
     }
@@ -43,9 +40,8 @@ open class IbmMqTestStepFactory(keywordsProperties: Properties?,
         }
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
-        return rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == IBMMQ
-    }
+    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
+        !rawTestStep.containsKey(getConsumeFromKeyword()) && hasIbmMqRequiredData(rawTestStep)
 
     override fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
         val delay = super.getDelay(rawTestStep, parameters)
@@ -56,4 +52,5 @@ open class IbmMqTestStepFactory(keywordsProperties: Properties?,
         val attempts = super.getAttempts(rawTestStep, parameters)
         return if (attempts == 0) DEFAULT_ATTEMPTS else attempts
     }
+
 }
