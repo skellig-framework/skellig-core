@@ -22,7 +22,7 @@ internal class CassandraInsertRequestExecutorTest {
         val databaseRequest = DatabaseRequest(query = "insert query")
 
         val response = Mockito.mock(ResultSet::class.java)
-        whenever(session.execute(databaseRequest.query)).thenReturn(response)
+        whenever(session.execute(ArgumentMatchers.any(Statement::class.java))).thenReturn(response)
 
         Assertions.assertEquals(response, executor.execute(databaseRequest))
     }

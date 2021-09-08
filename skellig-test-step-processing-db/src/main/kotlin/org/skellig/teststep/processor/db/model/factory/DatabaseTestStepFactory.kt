@@ -2,8 +2,10 @@ package org.skellig.teststep.processor.db.model.factory
 
 import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
+import org.skellig.teststep.processor.db.model.DatabaseRequest
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 import java.util.*
 
@@ -29,8 +31,13 @@ abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(keywordsProperties
 
     override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): TS {
         val testStep = super.create(testStepName, rawTestStep, parameters)
-        if (testStep.testData != null && testStep.testData !is Map<*, *>) {
-            throw TestDataConversionException("Test Data of Database Test Step must be class of Map<String,Object>")
+        if (testStep.testData != null) {
+            if (testStep.query != null && testStep.testData !is List<*>) {
+                throw TestStepProcessingException("Test data for Database Test Step with query must be list of values")
+            } else if (testStep.query == null && testStep.testData !is Map<*, *>) {
+                throw TestStepProcessingException("Test data for Database Test Step with command and table" +
+                                                          " must be column-value pairs")
+            }
         }
         return testStep
     }

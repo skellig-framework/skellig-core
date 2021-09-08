@@ -1,10 +1,9 @@
 package org.skellig.teststep.processor.jdbc
 
-import com.nhaarman.mockitokotlin2.argThat
-import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.skellig.teststep.processor.db.model.DatabaseRequest
@@ -13,6 +12,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicInteger
 
+@DisplayName("Execute select request")
 internal class JdbcSelectRequestExecutorTest {
 
     private var executorSelect: JdbcSelectRequestExecutor? = null
@@ -25,15 +25,16 @@ internal class JdbcSelectRequestExecutorTest {
     }
 
     @Test
-    @Throws(SQLException::class)
+    @DisplayName("When query provided with no parameters Then check parameters ignored")
     fun testFindUsingQuery() {
+        val sql = "select query"
         val databaseRequest = Mockito.mock(DatabaseRequest::class.java)
-        whenever(databaseRequest.query).thenReturn("select query")
+        whenever(databaseRequest.query).thenReturn(sql)
 
         val resultSet = createResultSet()
-        val statement = Mockito.mock(Statement::class.java)
-        whenever(statement.executeQuery(databaseRequest.query)).thenReturn(resultSet)
-        whenever(connection!!.createStatement()).thenReturn(statement)
+        val statement = Mockito.mock(PreparedStatement::class.java)
+        whenever(statement.executeQuery()).thenReturn(resultSet)
+        whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
 
         val response = executorSelect!!.execute(databaseRequest) as List<Map<*, *>>?
 
@@ -42,12 +43,32 @@ internal class JdbcSelectRequestExecutorTest {
                 { Assertions.assertEquals(3, response!![0].size) },
                 { Assertions.assertEquals("v1", response!![0]["c1"]) },
                 { Assertions.assertEquals("v2", response!![0]["c2"]) },
-                { Assertions.assertNull(response!![0]["c3"]) }
+                { Assertions.assertNull(response!![0]["c3"]) },
+                { verify(statement, times(0)).setObject(any(), any()) }
         )
     }
 
     @Test
-    @Throws(SQLException::class)
+    @DisplayName("When query provided with parameters Then check parameters applied")
+    fun testFindUsingQueryWithParameters() {
+        val queryParameters = listOf(LocalDateTime.of(2020, 1, 1, 10, 10), 10)
+        val databaseRequest = DatabaseRequest("select * from A where c2 = ? OR c1 > ?", queryParameters)
+        val resultSet = createResultSet()
+        val statement = Mockito.mock(PreparedStatement::class.java)
+        whenever(statement.executeQuery()).thenReturn(resultSet)
+        whenever(connection!!.prepareStatement(databaseRequest.query)).thenReturn(statement)
+
+        val response = executorSelect!!.execute(databaseRequest) as List<Map<*, *>>?
+
+        Assertions.assertAll(
+            { Assertions.assertEquals(1, response!!.size) },
+            { verify(statement).setObject(1, Timestamp.valueOf(queryParameters[0] as LocalDateTime)) },
+            { verify(statement).setObject(2, queryParameters[1]) }
+        )
+    }
+
+    @Test
+    @DisplayName("When command provided without filter Then check query created correctly")
     fun testFindUsingCommandWithoutFilter() {
         val sql = "SELECT * FROM t1"
         val databaseRequest = DatabaseRequest("select", "t1", null)
@@ -63,7 +84,7 @@ internal class JdbcSelectRequestExecutorTest {
     }
 
     @Test
-    @Throws(SQLException::class)
+    @DisplayName("When command provided with filter Then check query created correctly")
     fun testFindUsingCommandWithFilter() {
         val sql = "SELECT * FROM t1 WHERE c3 like ? AND c4 in (?) AND c5 = ? AND c6 = ? AND c1 = ? AND c2 > ?"
         val filter = hashMapOf(
@@ -115,7 +136,6 @@ internal class JdbcSelectRequestExecutorTest {
         )
     }
 
-    @Throws(SQLException::class)
     private fun createResultSet(): ResultSet {
         val resultSet = Mockito.mock(ResultSet::class.java)
         val metaData = Mockito.mock(ResultSetMetaData::class.java)

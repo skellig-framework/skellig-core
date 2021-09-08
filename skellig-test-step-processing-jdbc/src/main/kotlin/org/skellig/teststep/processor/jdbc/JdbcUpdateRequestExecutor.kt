@@ -3,7 +3,7 @@ package org.skellig.teststep.processor.jdbc
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.sql.Connection
 
-internal class JdbcUpdateRequestExecutor(connection: Connection?,
+internal class JdbcUpdateRequestExecutor(connection: Connection,
                                          private val selectExecutor: JdbcSelectRequestExecutor,
                                          private val insertExecutor: JdbcInsertRequestExecutor)
     : BaseJdbcUpdateRequestExecutor(connection) {
@@ -42,10 +42,10 @@ internal class JdbcUpdateRequestExecutor(connection: Connection?,
         return queryBuilder.toString()
     }
 
-    override fun convertToRawParameters(columnValuePairs: Map<String, Any?>): Array<Any?> {
+    override fun convertToRawParameters(columnValuePairs: Map<String, Any?>): List<Any?> {
         return extractAllColumnValuePairs(columnValuePairs, columnValuePairs[WHERE] as Map<String, Any?>).values
                 .map { getParameterValue(it) }
-                .toTypedArray()
+                .toList()
     }
 
     private fun extractAllColumnValuePairs(columnValuePairs: Map<String, Any?>?, where: Map<String, Any?>): MutableMap<String, Any?> {

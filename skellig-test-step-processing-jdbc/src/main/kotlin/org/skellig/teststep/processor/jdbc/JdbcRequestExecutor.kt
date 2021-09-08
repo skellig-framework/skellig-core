@@ -15,7 +15,7 @@ class JdbcRequestExecutor(details: JdbcDetails) : DatabaseRequestExecutor {
 
     init {
         connectToDatabase(details)
-        factory = JdbcRequestExecutorFactory(connection)
+        factory = JdbcRequestExecutorFactory(connection!!)
     }
 
     override fun execute(request: DatabaseRequest): Any? {

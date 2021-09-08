@@ -37,7 +37,7 @@ abstract class DatabaseTestStepProcessor<T : DatabaseRequestExecutor, TS : Datab
     }
 
     private fun getDatabaseRequest(testStep: TS): DatabaseRequest {
-        return if (testStep.query != null) DatabaseRequest(testStep.query)
+        return if (testStep.query != null) DatabaseRequest(testStep.query, testStep.testData as List<*>?)
         else DatabaseRequest(testStep.command, testStep.table, testStep.testData as Map<String, Any?>?)
     }
 

@@ -17,38 +17,45 @@ internal class JdbcSelectRequestExecutor(private val connection: Connection?) : 
     }
 
     override fun execute(databaseRequest: DatabaseRequest): Any {
-        try {
+        return try {
             val query: String?
             if (databaseRequest.query != null) {
                 query = databaseRequest.query
-                val response = executeQuery(query!!, connection!!.createStatement())
-
-                LOGGER.debug("Query has been executed successfully: $query and response: $response")
-                return response
+                executeQuery(query!!,
+                             databaseRequest.queryParameters
+                                 ?.map { getParameterValue(it) } ?: emptyList())
             } else {
                 val searchCriteria = databaseRequest.columnValuePairs ?: emptyMap()
                 query = composeFindQuery(databaseRequest, searchCriteria)
-                connection!!.prepareStatement(query).use { preparedStatement ->
-                    val rawParameters = convertToRawParameters(searchCriteria)
-                    for (i in rawParameters.indices) {
-                        preparedStatement.setObject(i + 1, rawParameters[i])
-                    }
-                    val response = executeQuery(preparedStatement)
-
-                    LOGGER.debug("Query has been executed successfully: $query " +
-                                         "with parameters: ${rawParameters.contentToString()} " +
-                                         "and response: $response")
-                    return response
-                }
+                executeQuery(query, searchCriteria)
             }
         } catch (ex: Exception) {
             throw TestStepProcessingException(ex.message, ex)
         }
     }
 
-    @Throws(SQLException::class)
-    private fun executeQuery(query: String, statement: Statement): List<Map<String, Any?>> {
-        return extractFromResultSet(statement.executeQuery(query))
+    private fun executeQuery(query: String, searchCriteria: Map<String, Any?>): Any =
+        connection!!.prepareStatement(query).use { preparedStatement ->
+            executeQuery(preparedStatement, query, convertToRawParameters(searchCriteria))
+        }
+
+    private fun executeQuery(query: String, queryParameters: List<Any?>): Any =
+        connection!!.prepareStatement(query).use { preparedStatement ->
+            executeQuery(preparedStatement, query, queryParameters)
+        }
+
+    private fun executeQuery(preparedStatement: PreparedStatement,
+                             query: String,
+                             queryParameters: List<Any?>): List<Map<String, Any?>> {
+        for (i in queryParameters.indices) {
+            preparedStatement.setObject(i + 1, queryParameters[i])
+        }
+        val response = executeQuery(preparedStatement)
+
+        LOGGER.debug("Query has been executed successfully: $query " +
+                             "with parameters: $queryParameters " +
+                             "and response: $response")
+        return response
     }
 
     @Throws(SQLException::class)
@@ -70,10 +77,10 @@ internal class JdbcSelectRequestExecutor(private val connection: Connection?) : 
         return result
     }
 
-    private fun convertToRawParameters(searchCriteria: Map<String, Any?>): Array<Any?> {
+    private fun convertToRawParameters(searchCriteria: Map<String, Any?>): List<Any?> {
         return searchCriteria.values
-                .map { getParameterValue(it) }
-                .toTypedArray()
+            .map { getParameterValue(it) }
+            .toList()
     }
 
     private fun composeFindQuery(databaseRequest: DatabaseRequest, searchCriteria: Map<String, Any?>): String {
@@ -82,19 +89,17 @@ internal class JdbcSelectRequestExecutor(private val connection: Connection?) : 
         queryBuilder.append(databaseRequest.table)
         if (searchCriteria.isNotEmpty()) {
             queryBuilder.append(" WHERE ")
-            val columns = searchCriteria.entries
-                    .map {
-                        var comparator: String? = DEFAULT_COMPARATOR
-                        var valuePlaceholder = DEFAULT_VALUE_PLACEHOLDER
-                        if (it.value is Map<*, *>) {
-                            comparator = (it.value as Map<*, *>)[COMPARATOR] as String?
-                            if ("in" == comparator) {
-                                valuePlaceholder = "(?)"
-                            }
-                        }
-                        String.format("%s %s %s", it.key, comparator, valuePlaceholder)
+            val columns = searchCriteria.entries.joinToString(separator = " AND ") {
+                var comparator: String? = DEFAULT_COMPARATOR
+                var valuePlaceholder = DEFAULT_VALUE_PLACEHOLDER
+                if (it.value is Map<*, *>) {
+                    comparator = (it.value as Map<*, *>)[COMPARATOR] as String?
+                    if ("in" == comparator) {
+                        valuePlaceholder = "(?)"
                     }
-                    .joinToString(separator = " AND ")
+                }
+                String.format("%s %s %s", it.key, comparator, valuePlaceholder)
+            }
             queryBuilder.append(columns)
         }
         return queryBuilder.toString()

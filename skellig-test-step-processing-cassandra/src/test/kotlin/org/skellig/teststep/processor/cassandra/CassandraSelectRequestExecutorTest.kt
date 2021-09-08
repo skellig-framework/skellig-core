@@ -17,10 +17,10 @@ internal class CassandraSelectRequestExecutorTest {
 
     @Test
     fun testFindUsingQuery() {
-        val databaseRequest = DatabaseRequest(query = "select query")
+        val databaseRequest = DatabaseRequest(query = "select query", listOf(1, "2"))
 
         val resultSet = createResultSet()
-        whenever(session.execute(databaseRequest.query)).thenReturn(resultSet)
+        makeSessionReturnResultSet(databaseRequest.query!!, databaseRequest.queryParameters?.size ?: 0, resultSet)
 
         val response = executor.execute(databaseRequest) as List<Map<*, *>>
 
@@ -31,15 +31,7 @@ internal class CassandraSelectRequestExecutorTest {
     fun testFindUsingCommandWithoutFilter() {
         val sql = "SELECT * FROM t1 ALLOW FILTERING"
         val resultSet = createResultSet()
-        whenever(session.execute(ArgumentMatchers.any(Statement::class.java)))
-                .thenAnswer { o: InvocationOnMock ->
-                    val statement = o.arguments[0] as SimpleStatement
-                    if (statement.queryString == sql) {
-                        return@thenAnswer resultSet
-                    } else {
-                        return@thenAnswer null
-                    }
-                }
+        makeSessionReturnResultSet(sql, 0, resultSet)
         val response = executor.execute(DatabaseRequest("select", "t1", null)) as List<Map<*, *>>
 
         Assertions.assertEquals(1, response.size)
@@ -49,22 +41,27 @@ internal class CassandraSelectRequestExecutorTest {
     fun testFindUsingCommandWithFilter() {
         val sql = "SELECT * FROM t1 WHERE c1 = ? AND c2 = ? ALLOW FILTERING"
         val filter = hashMapOf(
-                Pair("c1", "v1"),
-                Pair("c2", 20))
+            Pair("c1", "v1"),
+            Pair("c2", 20))
 
         val resultSet = createResultSet()
-        whenever(session.execute(ArgumentMatchers.any(Statement::class.java)))
-                .thenAnswer { o: InvocationOnMock ->
-                    val statement = o.arguments[0] as SimpleStatement
-                    if (statement.queryString == sql) {
-                        return@thenAnswer resultSet
-                    } else {
-                        return@thenAnswer null
-                    }
-                }
+        makeSessionReturnResultSet(sql, filter.size, resultSet)
         val response = executor.execute(DatabaseRequest("select", "t1", filter)) as List<Map<*, *>>
 
         Assertions.assertEquals(1, response.size)
+    }
+
+    private fun makeSessionReturnResultSet(sql: String, parametersCount: Int, resultSet: ResultSet) {
+        whenever(session.execute(ArgumentMatchers.any(Statement::class.java)))
+            .thenAnswer { o: InvocationOnMock ->
+                val statement = o.arguments[0] as SimpleStatement
+                if (statement.queryString == sql &&
+                    statement.valuesCount() == parametersCount) {
+                    return@thenAnswer resultSet
+                } else {
+                    return@thenAnswer null
+                }
+            }
     }
 
     private fun createResultSet(): ResultSet {

@@ -3,6 +3,7 @@ package org.skellig.teststep.processor.jdbc
 import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.skellig.teststep.processor.db.model.DatabaseRequest
@@ -10,6 +11,7 @@ import java.sql.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+@DisplayName("Execute update")
 internal class JdbcUpdateRequestExecutorTest {
 
     private var updateExecutor: JdbcUpdateRequestExecutor? = null
@@ -22,22 +24,39 @@ internal class JdbcUpdateRequestExecutorTest {
         connection = mock()
         insertRequestExecutor = mock()
         selectRequestExecutor = mock()
-        updateExecutor = JdbcUpdateRequestExecutor(connection, selectRequestExecutor!!, insertRequestExecutor!!)
+        updateExecutor = JdbcUpdateRequestExecutor(connection!!, selectRequestExecutor!!, insertRequestExecutor!!)
     }
 
     @Test
+    @DisplayName("When query without parameters Then verify executed successfully")
     fun testUpdateUsingQuery() {
         val databaseRequest = Mockito.mock(DatabaseRequest::class.java)
         whenever(databaseRequest.query).thenReturn("update query")
 
-        val statement = mock<Statement>()
-        whenever(statement.executeUpdate(databaseRequest.query)).thenReturn(1)
-        whenever(connection!!.createStatement()).thenReturn(statement)
+        val statement = createMockStatement(databaseRequest.query!!)
 
-        assertEquals(1, updateExecutor!!.execute(databaseRequest))
+        assertAll(
+            { assertEquals(1, updateExecutor!!.execute(databaseRequest)) },
+            { verify(statement, times(0)).setObject(any(), any()) }
+        )
     }
 
     @Test
+    @DisplayName("When query with parameters Then verify executed successfully with parameters")
+    fun testUpdateUsingQueryWithParameters() {
+        val databaseRequest = DatabaseRequest("update query", listOf(1, "2"))
+
+        val statement = createMockStatement(databaseRequest.query!!)
+
+        assertAll(
+            { assertEquals(1, updateExecutor!!.execute(databaseRequest)) },
+            { verify(statement).setObject(1, 1) },
+            { verify(statement).setObject(2, "2") }
+        )
+    }
+
+    @Test
+    @DisplayName("When command provided Then verify query created And executed successfully")
     fun testUpdateUsingCommand() {
         val sql = "UPDATE t1 SET c3=?,c4=?,c2=? WHERE c1=?"
         val data = hashMapOf(
@@ -47,9 +66,7 @@ internal class JdbcUpdateRequestExecutorTest {
                 Pair("c4", LocalDate.of(2020, 2, 2)))
 
         val databaseRequest = DatabaseRequest("update", "t1", data)
-        val statement = mock<PreparedStatement>()
-        whenever(statement.executeUpdate()).thenReturn(1)
-        whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
+        val statement = createMockStatement(sql)
         whenever(selectRequestExecutor!!.execute(any())).thenReturn(listOf("record with id c1 = v1"))
 
         assertAll(
@@ -70,6 +87,7 @@ internal class JdbcUpdateRequestExecutorTest {
     }
 
     @Test
+    @DisplayName("When record not exist Then verify it is inserted")
     fun testUpdateWhenRecordNotExist() {
         val data = hashMapOf(
                 Pair("where", mapOf(Pair("c1", "v1"), Pair("c4", "v4"))),
@@ -88,6 +106,7 @@ internal class JdbcUpdateRequestExecutorTest {
     }
 
     @Test
+    @DisplayName("When Where clause not provided Then throw exception")
     fun testUpdateWhenWhereClauseNotProvided() {
         val databaseRequest = DatabaseRequest("update", "t1", hashMapOf(Pair("c3", "v3")))
 
@@ -97,11 +116,19 @@ internal class JdbcUpdateRequestExecutorTest {
     }
 
     @Test
+    @DisplayName("When no data provided for table Then throw exception")
     fun testUpdateUsingCommandWithoutData() {
         val databaseRequest = DatabaseRequest("update", "t1", null)
 
         val ex = assertThrows(IllegalStateException::class.java) { updateExecutor!!.execute(databaseRequest) }
 
         assertEquals("Cannot update empty data in table t1", ex.message)
+    }
+
+    private fun createMockStatement(sql: String): PreparedStatement {
+        val statement = mock<PreparedStatement>()
+        whenever(statement.executeUpdate()).thenReturn(1)
+        whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
+        return statement
     }
 }

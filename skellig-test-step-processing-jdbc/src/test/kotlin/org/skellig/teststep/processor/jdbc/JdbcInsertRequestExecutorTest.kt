@@ -1,10 +1,9 @@
 package org.skellig.teststep.processor.jdbc
 
-import com.nhaarman.mockitokotlin2.argThat
-import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 import org.mockito.Mockito
@@ -14,6 +13,7 @@ import java.sql.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+@DisplayName("Execute insert")
 internal class JdbcInsertRequestExecutorTest {
 
     private var executorInsert: JdbcInsertRequestExecutor? = null
@@ -22,24 +22,39 @@ internal class JdbcInsertRequestExecutorTest {
     @BeforeEach
     fun setUp() {
         connection = Mockito.mock(Connection::class.java)
-        executorInsert = JdbcInsertRequestExecutor(connection)
+        executorInsert = JdbcInsertRequestExecutor(connection!!)
     }
 
     @Test
-    @Throws(SQLException::class)
+    @DisplayName("When query provided without parameters Then execute successfully")
     fun testInsertUsingQuery() {
         val databaseRequest = Mockito.mock(DatabaseRequest::class.java)
         whenever(databaseRequest.query).thenReturn("insert query")
 
-        val statement = Mockito.mock(Statement::class.java)
-        whenever(statement.executeUpdate(databaseRequest.query)).thenReturn(1)
-        whenever(connection!!.createStatement()).thenReturn(statement)
+        val statement = createMockStatement(databaseRequest.query!!)
 
-        Assertions.assertEquals(1, executorInsert!!.execute(databaseRequest))
+        Assertions.assertAll(
+            { Assertions.assertEquals(1, executorInsert!!.execute(databaseRequest)) },
+            { verify(statement, times(0)).setObject(any(), any()) }
+        )
     }
 
     @Test
-    @Throws(SQLException::class)
+    @DisplayName("When query provided with parameters Then execute successfully with parameters")
+    fun testInsertUsingQueryWithParameters() {
+        val databaseRequest = DatabaseRequest("insert query", listOf("1", "2"))
+
+        val statement = createMockStatement(databaseRequest.query!!)
+
+        Assertions.assertAll(
+            { Assertions.assertEquals(1, executorInsert!!.execute(databaseRequest)) },
+            { verify(statement).setObject(1, "1") },
+            { verify(statement).setObject(2, "2") }
+        )
+    }
+
+    @Test
+    @DisplayName("When query provided without parameters Then execute successfully")
     fun testInsertUsingCommand() {
         val sql = "insert INTO t1 (c3,c4,c1,c2) VALUES(?,?,?,?)"
         val data = hashMapOf(
@@ -49,9 +64,8 @@ internal class JdbcInsertRequestExecutorTest {
                 Pair("c4", LocalDate.of(2020, 2, 2)))
 
         val databaseRequest = DatabaseRequest("insert", "t1", data)
-        val statement = Mockito.mock(PreparedStatement::class.java)
-        whenever(statement.executeUpdate()).thenReturn(1)
-        whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
+
+        val statement = createMockStatement(sql)
 
         Assertions.assertAll(
                 Executable { Assertions.assertEquals(1, executorInsert!!.execute(databaseRequest)) },
@@ -78,5 +92,12 @@ internal class JdbcInsertRequestExecutorTest {
         val ex = Assertions.assertThrows(TestStepProcessingException::class.java) { executorInsert!!.execute(databaseRequest) }
 
         Assertions.assertEquals("Cannot insert empty data to table t1", ex.message)
+    }
+
+    private fun createMockStatement(sql: String): PreparedStatement {
+        val statement = Mockito.mock(PreparedStatement::class.java)
+        whenever(statement.executeUpdate()).thenReturn(1)
+        whenever(connection!!.prepareStatement(sql)).thenReturn(statement)
+        return statement
     }
 }

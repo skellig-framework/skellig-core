@@ -5,41 +5,32 @@ import org.skellig.teststep.processor.db.model.DatabaseRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.Connection
+import java.sql.PreparedStatement
 import java.sql.SQLException
 
-internal abstract class BaseJdbcUpdateRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
+internal abstract class BaseJdbcUpdateRequestExecutor(private val connection: Connection) : BaseJdbcRequestExecutor() {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(BaseJdbcUpdateRequestExecutor::class.java)
     }
 
     override fun execute(databaseRequest: DatabaseRequest): Any? {
-        var result: Int
+        val result: Int
         try {
             val query: String?
-            if (databaseRequest.query != null) {
+            result = if (databaseRequest.query != null) {
                 query = databaseRequest.query
-                result = connection!!.createStatement().executeUpdate(query)
-
-                LOGGER.debug("Query has been executed successfully: $query")
+                executeUpdate(query!!,
+                              databaseRequest.queryParameters
+                                  ?.map { getParameterValue(it) } ?: emptyList())
             } else {
                 query = composeQuery(databaseRequest, databaseRequest.columnValuePairs)
-
-                connection!!.prepareStatement(query).use { preparedStatement ->
-                    val rawParameters = convertToRawParameters(databaseRequest.columnValuePairs?: emptyMap())
-                    for (i in rawParameters.indices) {
-                        preparedStatement.setObject(i + 1, rawParameters[i])
-                    }
-                    result = preparedStatement.executeUpdate()
-
-                    LOGGER.debug("Query has been executed successfully: $query " +
-                                         "with parameters: ${rawParameters.contentToString()}")
-                }
+                executeUpdate(query, databaseRequest.columnValuePairs ?: emptyMap())
             }
             connection.commit()
         } catch (ex: Exception) {
             try {
-                connection!!.rollback()
+                connection.rollback()
             } catch (e: SQLException) {
                 LOGGER.error("Could not rollback transaction", e)
             }
@@ -48,11 +39,33 @@ internal abstract class BaseJdbcUpdateRequestExecutor(private val connection: Co
         return result
     }
 
+    private fun executeUpdate(query: String, searchCriteria: Map<String, Any?>): Int =
+        connection.prepareStatement(query).use { preparedStatement ->
+            executeUpdate(preparedStatement, query, convertToRawParameters(searchCriteria))
+        }
+
+    private fun executeUpdate(query: String, queryParameters: List<Any?>): Int =
+        connection.prepareStatement(query).use { preparedStatement ->
+            executeUpdate(preparedStatement, query, queryParameters)
+        }
+
+    private fun executeUpdate(preparedStatement: PreparedStatement,
+                              query: String,
+                              parameters: List<Any?>): Int {
+        for (i in parameters.indices) {
+            preparedStatement.setObject(i + 1, parameters[i])
+        }
+        val response = preparedStatement.executeUpdate()
+        LOGGER.debug("Query has been executed successfully: $query " +
+                             "with parameters: $parameters")
+        return response
+    }
+
     protected abstract fun composeQuery(request: DatabaseRequest, columnValuePairs: Map<String, Any?>?): String
 
-    protected open fun convertToRawParameters(columnValuePairs: Map<String, Any?>): Array<Any?> {
+    protected open fun convertToRawParameters(columnValuePairs: Map<String, Any?>): List<Any?> {
         return columnValuePairs.values
-                .map { getParameterValue(it) }
-                .toTypedArray()
+            .map { getParameterValue(it) }
+            .toList()
     }
 }

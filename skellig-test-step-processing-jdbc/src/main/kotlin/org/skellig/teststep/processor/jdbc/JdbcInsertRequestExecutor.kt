@@ -3,7 +3,7 @@ package org.skellig.teststep.processor.jdbc
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.sql.Connection
 
-internal class JdbcInsertRequestExecutor(private val connection: Connection?)
+internal class JdbcInsertRequestExecutor(private val connection: Connection)
     : BaseJdbcUpdateRequestExecutor(connection) {
 
     override fun composeQuery(request: DatabaseRequest, columnValuePairs: Map<String, Any?>?): String {
