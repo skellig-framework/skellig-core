@@ -61,6 +61,11 @@ class PropertyValueConverterTest {
     }
 
     @Test
+    fun testSimpleParameterWithNoValueAndDefaultIsEmpty() {
+        Assertions.assertEquals("", valueConverter!!.convert("\${1:}"))
+    }
+
+    @Test
     fun testConvertNull() {
         Assertions.assertNull(valueConverter!!.convert(null))
     }
