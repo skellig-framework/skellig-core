@@ -31,6 +31,7 @@ internal class IbmmqDetailsConfigReaderTest {
                 {
                     assertTrue(mqDetails
                             .any { item: IbmMqQueueDetails ->
+                                item.id == "client_A_CHN_1" &&
                                 item.queueName == "client_A_CHN_1" &&
                                         item.ibmMqManagerDetails.name == "TEST_MQ1" &&
                                         item.ibmMqManagerDetails.channel == "TEST_CHANNEL_1" &&
@@ -43,6 +44,7 @@ internal class IbmmqDetailsConfigReaderTest {
                 {
                     assertTrue(mqDetails
                             .any { item: IbmMqQueueDetails ->
+                                item.id == "CHN_2" &&
                                 item.queueName == "client_A_CHN_2" &&
                                         item.ibmMqManagerDetails.name == "TEST_MQ1"
                             })
@@ -50,6 +52,7 @@ internal class IbmmqDetailsConfigReaderTest {
                 {
                     assertTrue(mqDetails
                             .any { item: IbmMqQueueDetails ->
+                                item.id == "client_A_CHN_3" &&
                                 item.queueName == "client_A_CHN_3" &&
                                         item.ibmMqManagerDetails.name == "TEST_MQ2" &&
                                         item.ibmMqManagerDetails.channel == "TEST_CHANNEL_2" &&

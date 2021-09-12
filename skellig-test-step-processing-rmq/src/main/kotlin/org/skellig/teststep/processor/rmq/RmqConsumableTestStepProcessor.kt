@@ -9,7 +9,6 @@ import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
-import org.slf4j.LoggerFactory
 
 open class RmqConsumableTestStepProcessor(
     protected val rmqChannels: Map<String, RmqChannel>,
@@ -18,9 +17,6 @@ open class RmqConsumableTestStepProcessor(
     testStepResultConverter: TestStepResultConverter?
 ) : ValidatableTestStepProcessor<RmqConsumableTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(RmqConsumableTestStepProcessor::class.java)
-    }
 
     override fun process(testStep: RmqConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
@@ -60,7 +56,6 @@ open class RmqConsumableTestStepProcessor(
     }
 
     private fun send(testData: Any?, sendTo: String, routingKey: String?, properties: AMQP.BasicProperties?) {
-//        LOGGER.info("Sending data with routing $routingKey to RMQ channels $channels")
         val channel = rmqChannels[sendTo] ?: error(getChannelNotExistErrorMessage(sendTo))
         channel.send(testData, routingKey, properties)
     }

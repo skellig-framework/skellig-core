@@ -12,7 +12,7 @@ abstract class BaseIbmMqTestStepProcessorBuilder<T : DefaultTestStep>
     private val ibmmqDetailsConfigReader = IbmmqDetailsConfigReader()
 
     fun ibmMqChannel(mqQueueDetails: IbmMqQueueDetails) = apply {
-        ibmMqChannels.putIfAbsent(mqQueueDetails.queueName, IbmMqChannel(mqQueueDetails))
+        ibmMqChannels.putIfAbsent(mqQueueDetails.id, IbmMqChannel(mqQueueDetails))
     }
 
     fun ibmMqChannels(config: Config?) = apply {

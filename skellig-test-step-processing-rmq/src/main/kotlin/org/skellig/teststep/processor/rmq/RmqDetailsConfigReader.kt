@@ -70,12 +70,14 @@ internal class RmqDetailsConfigReader {
 
     private fun createQueueDetails(item: Map<*, *>, exchanges: Map<String, RmqExchangeDetails>,
                                    hostDetails: RmqHostDetails): RmqDetails {
+        val id = item["id"] as String?
         val name = (item["name"]?:error("Queue name was not declared for RMQ details")) as String
         val exchange = item["exchange"]?:error("Exchange name was not declared for RMQ details")
 
         Objects.requireNonNull(exchanges[exchange], String.format("No exchange name '%s' was declared", exchange))
 
         val queue = RmqQueueDetails.Builder()
+                .id(id)
                 .name(name)
                 .routingKey(extractRoutingKey(item))
                 .durable(extractIsDurable(item))

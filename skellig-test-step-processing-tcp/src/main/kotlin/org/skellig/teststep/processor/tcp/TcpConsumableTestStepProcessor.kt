@@ -8,7 +8,6 @@ import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.tcp.model.TcpConsumableTestStep
-import org.slf4j.LoggerFactory
 
 open class TcpConsumableTestStepProcessor(
     protected val tcpChannels: Map<String, TcpChannel>,
@@ -17,9 +16,6 @@ open class TcpConsumableTestStepProcessor(
     testStepResultConverter: TestStepResultConverter?
 ) : ValidatableTestStepProcessor<TcpConsumableTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(TcpConsumableTestStepProcessor::class.java)
-    }
 
     override fun process(testStep: TcpConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
@@ -35,8 +31,8 @@ open class TcpConsumableTestStepProcessor(
                         result: TestStepProcessor.TestStepRunResult) {
         val respondTo = testStep.respondTo
         val response = testStep.testData
-        channels.forEachIndexed { index, channelName ->
-            val channel = tcpChannels[channelName] ?: error(getChannelNotExistErrorMessage(channelName))
+        channels.forEachIndexed { index, id ->
+            val channel = tcpChannels[id] ?: error(getChannelNotExistErrorMessage(id))
             channel.consume(if (respondTo != null) null else response,
                             testStep.timeout, testStep.readBufferSize) { receivedMessage ->
                 var error: RuntimeException? = null
@@ -68,8 +64,8 @@ open class TcpConsumableTestStepProcessor(
         tcpChannels.values.forEach { it.close() }
     }
 
-    private fun getChannelNotExistErrorMessage(channelId: String) =
-        "Channel '$channelId' was not registered in Tcp Test Step Processor"
+    private fun getChannelNotExistErrorMessage(id: String) =
+        "Channel '$id' was not registered in Tcp Test Step Processor"
 
     override fun getTestStepClass(): Class<TcpConsumableTestStep> {
         return TcpConsumableTestStep::class.java

@@ -9,8 +9,8 @@ abstract class BaseTcpProcessorBuilder<T : BaseTcpTestStep> : BaseTestStepProces
 
     companion object {
         private const val TCP_CONFIG_KEYWORD = "tcp"
+        const val ID = "id"
         const val HOST = "host"
-        const val NAME = "name"
         const val PORT = "port"
         const val KEEP_ALIVE = "keepAlive"
 
@@ -18,7 +18,7 @@ abstract class BaseTcpProcessorBuilder<T : BaseTcpTestStep> : BaseTestStepProces
     }
 
     fun tcpChannel(tcpDetails: TcpDetails) = apply {
-        tcpChannels.putIfAbsent(tcpDetails.channelId, TcpChannel(tcpDetails))
+        tcpChannels.putIfAbsent(tcpDetails.id, TcpChannel(tcpDetails))
     }
 
     fun tcpChannels(config: Config) = apply {
@@ -28,7 +28,7 @@ abstract class BaseTcpProcessorBuilder<T : BaseTcpTestStep> : BaseTestStepProces
                     try {
                         val port = it[PORT]?.toString()?.toInt() ?: 0
                         val keepAlive = if (it.containsKey(KEEP_ALIVE)) it[KEEP_ALIVE].toString().toBoolean() else true
-                        tcpChannel(TcpDetails(it[NAME]?.toString() ?: error("TCP Connection Name must not be null"),
+                        tcpChannel(TcpDetails(it[ID]?.toString() ?: it[HOST]?.toString() ?: "",
                                               it[HOST]?.toString() ?: error("TCP host must not be null"),
                                               port,
                                               keepAlive))

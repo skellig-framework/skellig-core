@@ -50,9 +50,11 @@ internal class IbmmqDetailsConfigReader {
     }
 
     private fun createQueueDetails(item: Map<*, *>, mqManagerDetails: IbmMqManagerDetails): IbmMqQueueDetails {
+        val id = item["id"] as String?
         val name = (item["name"] ?: error("Queue name was not declared for IBMMQ details")) as String
 
         return IbmMqQueueDetails.Builder()
+                .id(id)
                 .name(name)
                 .mqManagerDetails(mqManagerDetails)
                 .build()

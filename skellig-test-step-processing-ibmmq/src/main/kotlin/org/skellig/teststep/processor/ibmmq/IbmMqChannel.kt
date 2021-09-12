@@ -37,9 +37,9 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
         try {
             val mqMessage = convertMqMessage(request)
             queue!!.put(mqMessage)
-            LOGGER.debug("Message sent to IBMMQ '${ibmMqQueueDetails.queueName}'")
+            LOGGER.debug("Message sent to IBMMQ '${ibmMqQueueDetails.id}'")
         } catch (e: Exception) {
-            LOGGER.error("Failed to send a message to IBMMQ '${ibmMqQueueDetails.queueName}'", e)
+            LOGGER.error("Failed to send a message to IBMMQ '${ibmMqQueueDetails.id}'", e)
         }
     }
 
@@ -54,11 +54,11 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
 
                 val messageBody = getMessageBody(message)
 
-                LOGGER.debug("Received message from IBMMQ '${ibmMqQueueDetails.queueName}'")
+                LOGGER.debug("Received message from IBMMQ '${ibmMqQueueDetails.id}'")
 
                 messageBody
             } catch (e: Exception) {
-                LOGGER.error("Failed to read a message from IBMMQ '${ibmMqQueueDetails.queueName}'", e)
+                LOGGER.error("Failed to read a message from IBMMQ '${ibmMqQueueDetails.id}'", e)
                 null
             }
 
@@ -90,7 +90,7 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
         if (consumerThread == null || consumerThread!!.isShutdown) {
             consumerThread = Executors.newCachedThreadPool()
         }
-        LOGGER.info("Start listener for IbmMq queue: ${ibmMqQueueDetails.queueName}")
+        LOGGER.info("Start listener for IbmMq queue: ${ibmMqQueueDetails.id}")
         consumerThread?.execute {
             while (!consumerThread!!.isShutdown) {
                 val data = read(timeout)
@@ -138,7 +138,7 @@ class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable
             queueManager!!.close()
             queue!!.close()
         } catch (e: Exception) {
-            LOGGER.warn("Could not safely close IBMMQ channel ${ibmMqQueueDetails.queueName}", e)
+            LOGGER.warn("Could not safely close IBMMQ channel ${ibmMqQueueDetails.id}", e)
         }
     }
 

@@ -11,7 +11,7 @@ abstract class BaseRmqProcessorBuilder<T : TestStep> : BaseTestStepProcessor.Bui
     private val rmqDetailsConfigReader= RmqDetailsConfigReader()
 
     fun rmqChannel(rmqDetails: RmqDetails) = apply {
-        rmqChannels.putIfAbsent(rmqDetails.queue.name, RmqChannel(rmqDetails))
+        rmqChannels.putIfAbsent(rmqDetails.queue.id, RmqChannel(rmqDetails))
     }
 
     fun rmqChannels(config: Config) = apply {

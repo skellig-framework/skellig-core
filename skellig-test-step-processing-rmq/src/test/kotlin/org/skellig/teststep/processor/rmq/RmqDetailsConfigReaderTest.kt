@@ -41,6 +41,7 @@ internal class RmqDetailsConfigReaderTest {
                                         item.exchange.isCreateIfNew &&
                                         item.exchange.isAutoDelete &&
                                         item.exchange.isDurable &&
+                                        item.queue.id == "queue1" &&
                                         item.queue.name == "queue1" &&
                                         item.queue.routingKey == "any" &&
                                         item.queue.isCreateIfNew &&
@@ -57,7 +58,9 @@ internal class RmqDetailsConfigReaderTest {
                     assertTrue(mqDetails
                             .any { item: RmqDetails? ->
                                 val hostDetails = item!!.hostDetails
-                                item.queue.name == "queue1" && item.queue.routingKey == "#" &&
+                                item.queue.id == "queue1" &&
+                                item.queue.name == "queue1" &&
+                                        item.queue.routingKey == "#" &&
                                         !item.queue.isCreateIfNew &&
                                         !item.queue.isAutoDelete &&
                                         !item.queue.isDurable &&
@@ -73,6 +76,7 @@ internal class RmqDetailsConfigReaderTest {
                     assertTrue(mqDetails
                             .any { item: RmqDetails? ->
                                 val hostDetails = item!!.hostDetails
+                                item.queue.id == "Q2" &&
                                 item.queue.name == "queue2" &&
                                         item.exchange.name == "exchange2" &&
                                         item.exchange.type == null &&

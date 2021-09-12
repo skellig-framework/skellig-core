@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.rmq.model
 
-class RmqQueueDetails(val name: String,
+class RmqQueueDetails(val id: String,
+                      val name: String,
                       val routingKey: String?,
                       val isDurable: Boolean,
                       val isExclusive: Boolean,
@@ -9,10 +10,11 @@ class RmqQueueDetails(val name: String,
                       val parameters: Map<String, Any>?) {
 
     override fun toString(): String {
-        return "$name:${routingKey ?: "#"}"
+        return "$id:${routingKey ?: "#"}"
     }
 
     class Builder {
+        private var id: String? = null
         private var name: String? = null
         private var routingKey: String? = null
         private var isDurable = true
@@ -20,6 +22,10 @@ class RmqQueueDetails(val name: String,
         private var isAutoDelete = false
         private var createIfNew = false
         private var parameters: MutableMap<String, Any>? = null
+
+        fun id(id: String?) = apply {
+            this.id = id
+        }
 
         fun name(name: String?) = apply {
             this.name = name
@@ -57,7 +63,10 @@ class RmqQueueDetails(val name: String,
         }
 
         fun build(): RmqQueueDetails {
-            return RmqQueueDetails(name!!, routingKey, isDurable, isExclusive, isAutoDelete, createIfNew, parameters)
+            return RmqQueueDetails(id ?: name ?: "",
+                                   name?:error("RMQ Queue name cannot be null"),
+                                   routingKey, isDurable, isExclusive, isAutoDelete, createIfNew, parameters)
         }
+
     }
 }
