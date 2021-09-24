@@ -6,13 +6,12 @@ import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processor.performance.metrics.MetricsFactory
 import org.skellig.teststep.processor.performance.metrics.TimeSeries
-import org.skellig.teststep.processor.performance.model.LongRunTestStep
+import org.skellig.teststep.processor.performance.model.PerformanceTestStep
 import java.time.LocalDateTime
 import kotlin.math.ceil
-import kotlin.system.measureTimeMillis
 
-internal class PeriodicRunner(private val owner: LongRunTestStepProcessor,
-                              private val testStep: LongRunTestStep,
+internal class PeriodicRunner(private val owner: PerformanceTestStepProcessor,
+                              private val testStep: PerformanceTestStep,
                               private val testStepRegistry: TestStepRegistry,
                               metricsFactory: MetricsFactory) {
 
@@ -53,7 +52,7 @@ internal class PeriodicRunner(private val owner: LongRunTestStepProcessor,
         }
     }
 
-    private fun processAndGetTime(testStep: LongRunTestStep,
+    private fun processAndGetTime(testStep: PerformanceTestStep,
                                   processingFunction: (TestStep) -> TestStepProcessor.TestStepRunResult): Long {
         var end = 0L
         var requestStatus = true

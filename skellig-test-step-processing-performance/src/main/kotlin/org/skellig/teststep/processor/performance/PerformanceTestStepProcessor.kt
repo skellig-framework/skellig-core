@@ -5,18 +5,18 @@ import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processor.performance.metrics.MetricsFactory
 import org.skellig.teststep.processor.performance.model.LongRunResponse
-import org.skellig.teststep.processor.performance.model.LongRunTestStep
+import org.skellig.teststep.processor.performance.model.PerformanceTestStep
 import java.util.concurrent.atomic.AtomicBoolean
 
-open class LongRunTestStepProcessor protected constructor(
+open class PerformanceTestStepProcessor protected constructor(
     private val testStepProcessor: TestStepProcessor<TestStep>,
     private val testStepRegistry: TestStepRegistry,
     private val metricsFactory: MetricsFactory
-) : TestStepProcessor<LongRunTestStep> {
+) : TestStepProcessor<PerformanceTestStep> {
 
     internal var isClosed = AtomicBoolean(false)
 
-    override fun process(testStep: LongRunTestStep): TestStepProcessor.TestStepRunResult {
+    override fun process(testStep: PerformanceTestStep): TestStepProcessor.TestStepRunResult {
         val response = LongRunResponse()
 
         if(!isClosed.get()) {
@@ -55,7 +55,7 @@ open class LongRunTestStepProcessor protected constructor(
         isClosed.set(true)
     }
 
-    override fun getTestStepClass(): Class<LongRunTestStep> = LongRunTestStep::class.java
+    override fun getTestStepClass(): Class<PerformanceTestStep> = PerformanceTestStep::class.java
 
 
     class Builder {
@@ -76,7 +76,7 @@ open class LongRunTestStepProcessor protected constructor(
             this.metricsFactory = metricsFactory
         }
 
-        fun build(): LongRunTestStepProcessor =
-            LongRunTestStepProcessor(testStepProcessor!!, testStepRegistry!!, metricsFactory!!)
+        fun build(): PerformanceTestStepProcessor =
+            PerformanceTestStepProcessor(testStepProcessor!!, testStepRegistry!!, metricsFactory!!)
     }
 }

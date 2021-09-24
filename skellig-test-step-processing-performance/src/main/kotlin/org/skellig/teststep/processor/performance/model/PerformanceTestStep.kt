@@ -4,7 +4,7 @@ import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import java.time.LocalTime
 
-class LongRunTestStep constructor(
+class PerformanceTestStep constructor(
     override val name: String,
     val rps: Int,
     val timeToRun: LocalTime,

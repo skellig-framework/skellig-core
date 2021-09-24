@@ -6,7 +6,7 @@ import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
-import org.skellig.teststep.processor.performance.model.LongRunTestStep
+import org.skellig.teststep.processor.performance.model.PerformanceTestStep
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -15,7 +15,7 @@ class PerformanceTestStepFactory(
     private val testStepFactory: TestStepFactory<TestStep>,
     keywordsProperties: Properties?,
     testStepValueConverter: TestStepValueConverter?
-) : BaseTestStepFactory<LongRunTestStep>(keywordsProperties, testStepValueConverter) {
+) : BaseTestStepFactory<PerformanceTestStep>(keywordsProperties, testStepValueConverter) {
 
     companion object {
         private const val RPS = "test.step.keyword.rps"
@@ -26,7 +26,7 @@ class PerformanceTestStepFactory(
         private val TIME_PATTERN = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): LongRunTestStep {
+    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): PerformanceTestStep {
         val rps = getRps(rawTestStep, parameters)
         val timeToRun = getTimeToRun(rawTestStep, parameters)
         val before = rawTestStep[getBeforeKeyword()] as List<*>?
@@ -37,7 +37,7 @@ class PerformanceTestStepFactory(
         val afterList = toListOfTestStepsToRun(after, testStepName, parameters, getAfterKeyword())
         val runList = toListOfTestStepsToRun(run, testStepName, parameters, getRunKeyword())
 
-        return LongRunTestStep(testStepName, rps, timeToRun, beforeList, afterList, runList)
+        return PerformanceTestStep(testStepName, rps, timeToRun, beforeList, afterList, runList)
     }
 
     private fun toListOfTestStepsToRun(rawListOfTestSteps: List<*>?, testStepName: String,
