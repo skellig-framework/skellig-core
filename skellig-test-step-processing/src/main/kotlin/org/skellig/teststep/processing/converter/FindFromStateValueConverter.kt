@@ -22,7 +22,7 @@ class FindFromStateValueConverter(val testScenarioState: TestScenarioState,
                         result = testScenarioState.reversed()
                                 .mapNotNull { e -> tryExtract(e, extractPath) }
                                 .firstOrNull()
-                                ?: throw(TestValueConversionException("Could not find data in the current state by '$extractPath' path"))
+                                ?: throw(TestValueConversionException("Could not find data in the current state for '$extractPath' path"))
                         if (result is String) convert(value.toString().replace("find($extractPath)", result.toString()))
                         else result
                     } else result

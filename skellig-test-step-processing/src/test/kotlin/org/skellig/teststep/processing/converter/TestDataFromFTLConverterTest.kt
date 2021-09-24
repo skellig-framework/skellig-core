@@ -9,7 +9,7 @@ import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.utils.UnitTestUtils
 
 @DisplayName("Convert test data from ftl")
-class TestDataConverterFromFTLTest {
+class TestDataFromFTLConverterTest {
 
     private var testDataFromFTLConverter: TestDataFromFTLConverter? = null
 

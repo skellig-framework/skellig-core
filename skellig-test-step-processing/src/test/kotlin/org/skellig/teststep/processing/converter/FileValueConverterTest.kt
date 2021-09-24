@@ -25,13 +25,13 @@ class FileValueConverterTest {
 
         val expectedContent = readFromFileExpectedResult("/$filePath")
 
-        Assertions.assertEquals(expectedContent, fileValueConverter!!.convert(String.format("file(%s)", filePath)))
+        Assertions.assertEquals(expectedContent, fileValueConverter!!.convert(String.format("fromFile(%s)", filePath)))
     }
 
     @Test
     @DisplayName("When file doesn't exist Then throw exception")
     fun testFilePathIsEmpty() {
-        val filePath = "file(invalid)"
+        val filePath = "fromFile(invalid)"
 
         val exception = Assertions.assertThrows(TestValueConversionException::class.java) { fileValueConverter!!.convert(filePath) }
 

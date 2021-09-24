@@ -47,29 +47,33 @@ class DefaultValueConverter private constructor(val valueConverters: List<TestSt
         fun build(): TestStepValueConverter {
             Objects.requireNonNull(testScenarioState, "Test Scenario State must be provided")
 
-            withValueConverter(TestStepStateValueConverter(testScenarioState!!, testStepValueExtractor))
-            withValueConverter(FindFromStateValueConverter(testScenarioState!!, testStepValueExtractor))
+            val allValueConverters = mutableListOf<TestStepValueConverter>()
+            val defaultValueConverter = DefaultValueConverter(allValueConverters)
+
+            allValueConverters.add(TestDataFromIfStatementConverter())
+            allValueConverters.add(PropertyValueConverter(defaultValueConverter, getPropertyFunction))
+
+            allValueConverters.add(TestStepStateValueConverter(testScenarioState!!, testStepValueExtractor))
+            allValueConverters.add(FindFromStateValueConverter(testScenarioState!!, testStepValueExtractor))
             classLoader?.let {
                 withValueConverter(FileValueConverter(it))
             }
 
-            withValueConverter(NumberValueConverter())
-            withValueConverter(IncrementValueConverter())
-            withValueConverter(CurrentDateTimeValueConverter())
-            withValueConverter(ToDateTimeValueConverter())
-            withValueConverter(ListOfValueConverter())
-            withValueConverter(TestDataToBytesConverter())
-            withValueConverter(TestDataToJsonConverter())
+            allValueConverters.add(NumberValueConverter())
+            allValueConverters.add(IncrementValueConverter())
+            allValueConverters.add(CurrentDateTimeValueConverter())
+            allValueConverters.add(ToDateTimeValueConverter())
+            allValueConverters.add(ListOfValueConverter())
+            allValueConverters.add(TestDataToBytesConverter(defaultValueConverter))
+            allValueConverters.add(TestDataToJsonConverter())
             classLoader?.let {
                 val testDataFromCsvConverter = TestDataFromCsvConverter(it)
-                withValueConverter(testDataFromCsvConverter)
-                withValueConverter(TestDataFromCsvConverter(it))
-                withValueConverter(TestDataFromFTLConverter(it, testDataFromCsvConverter))
+                allValueConverters.add(testDataFromCsvConverter)
+                allValueConverters.add(TestDataFromCsvConverter(it))
+                allValueConverters.add(TestDataFromFTLConverter(it, testDataFromCsvConverter))
             }
 
-            val defaultValueConverter = DefaultValueConverter(valueConverters)
-            valueConverters.add(0, TestDataFromIfStatementConverter())
-            valueConverters.add(1, PropertyValueConverter(defaultValueConverter, getPropertyFunction))
+            allValueConverters.addAll(valueConverters)
 
             return defaultValueConverter
         }

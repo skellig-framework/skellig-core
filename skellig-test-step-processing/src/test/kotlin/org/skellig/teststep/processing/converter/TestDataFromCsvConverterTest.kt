@@ -8,7 +8,7 @@ import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.utils.UnitTestUtils
 
 @DisplayName("Convert csv test data")
-class TestDataConverterFromCsvTest {
+class TestDataFromCsvConverterTest {
 
     private var testDataFromCsvConverter: TestDataFromCsvConverter? = null
 

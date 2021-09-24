@@ -222,7 +222,7 @@ class TestDataFromIfStatementConverterTest {
 
     @Test
     fun testManyInnerConditions() {
-        val expectedValue = "success"
+        val expectedValue = mapOf(Pair("r", "success"))
         val data = createMap("a", createMap("if", createMap("condition", "a==a", "then",
                 createMap("if", createMap("condition", "a==b", "then", "fail", "else", expectedValue)))))
 

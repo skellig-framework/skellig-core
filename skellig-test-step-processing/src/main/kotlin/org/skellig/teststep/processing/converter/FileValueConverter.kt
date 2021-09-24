@@ -9,7 +9,7 @@ import java.util.regex.Pattern
 class FileValueConverter(val classLoader: ClassLoader) : TestStepValueConverter {
 
     companion object {
-        private val FILE_PATTERN = Pattern.compile("file\\((.+)\\)")
+        private val FILE_PATTERN = Pattern.compile("fromFile\\((.+)\\)")
     }
 
     override fun convert(value: Any?): Any? =

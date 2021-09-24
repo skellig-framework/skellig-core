@@ -37,4 +37,13 @@ class FindFromStateValueConverterTest {
 
         assertEquals("prefix_v1-v1_suffix", converter.convert("prefix_find(a.b.c)-find(a.b.c)_suffix"))
     }
+
+    @Test
+    fun testFindWithJsonExtractor() {
+        val stateValue1 = mapOf(Pair("a", mapOf(Pair("body",
+                                                     """{ "a":{ "b":"true"} }"""))))
+        testScenarioState.set("result1", stateValue1)
+
+        assertEquals("true", converter.convert("find(a.body.jsonPath(a.b))"))
+    }
 }

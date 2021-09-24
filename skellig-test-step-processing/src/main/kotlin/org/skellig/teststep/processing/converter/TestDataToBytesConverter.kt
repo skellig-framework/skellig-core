@@ -5,7 +5,7 @@ import org.skellig.teststep.processing.exception.TestDataConversionException
 import java.io.Serializable
 import java.nio.charset.StandardCharsets
 
-class TestDataToBytesConverter : TestStepValueConverter {
+class TestDataToBytesConverter(val testStepValueConverter: TestStepValueConverter) : TestStepValueConverter {
 
     companion object {
         private const val VALUE = "value"
@@ -14,23 +14,21 @@ class TestDataToBytesConverter : TestStepValueConverter {
 
     override fun convert(value: Any?): Any? {
         var newTestData = value
-        if (value is Map<*, *>) {
-            if (value.containsKey(TO_BYTES)) {
-                val toBytes = value[TO_BYTES] as Map<*, *>
-                val valueToConvert = toBytes[VALUE]
-                newTestData = when (valueToConvert) {
-                    is String -> {
-                        valueToConvert.toByteArray(StandardCharsets.UTF_8)
-                    }
-                    is Serializable -> {
-                        SerializationUtils.serialize(valueToConvert as Serializable?)
-                    }
-                    else -> {
-                        throw TestDataConversionException(String.format("""
-                    Failed to convert to bytes the test data: %s
+        if (value is Map<*, *> && value.containsKey(TO_BYTES)) {
+            val toBytes = value[TO_BYTES] as Map<*, *>
+            val valueToConvert = testStepValueConverter.convert(toBytes[VALUE] ?: toBytes)
+            newTestData = when (valueToConvert) {
+                is String -> {
+                    valueToConvert.toByteArray(StandardCharsets.UTF_8)
+                }
+                is Serializable -> {
+                    SerializationUtils.serialize(valueToConvert as Serializable?)
+                }
+                else -> {
+                    throw TestDataConversionException(String.format("""
+                    Failed to convert to bytes the value: %s
                     It must be either String or Serializable object
                     """.trimIndent(), newTestData))
-                    }
                 }
             }
         }
