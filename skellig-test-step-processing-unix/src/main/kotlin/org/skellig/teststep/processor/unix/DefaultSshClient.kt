@@ -23,12 +23,12 @@ class DefaultSshClient private constructor(private val host: String,
 
     private var sshSession: Session? = null
 
-    fun runShellCommand(command: String, timeoutSec: Int): String {
+    fun runShellCommand(command: String, timeout: Int): String {
         startSshSessionLazy()
         var response = ""
         try {
             val cmd = sshSession!!.exec(command)
-            cmd.join(timeoutSec.toLong(), TimeUnit.SECONDS)
+            cmd.join(timeout.toLong(), TimeUnit.MILLISECONDS)
 
             IOUtils.readFully(cmd.inputStream).use { outputStream -> response = outputStream.toString() }
         } catch (ex: Exception) {

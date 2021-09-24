@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.unix
 
 import com.typesafe.config.Config
+import org.skellig.task.async.AsyncTaskUtils
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
@@ -17,27 +18,45 @@ open class UnixShellTestStepProcessor(testScenarioState: TestScenarioState,
                                       private val hosts: Map<String, DefaultSshClient>)
     : BaseTestStepProcessor<UnixShellTestStep>(testScenarioState, validator, testStepResultConverter) {
 
-    protected override fun processTestStep(testStep: UnixShellTestStep): Any? {
-        if (testStep.hosts.isEmpty()) {
-            throw TestStepProcessingException("No hosts were provided to run a command." +
-                    " Registered hosts are: " + hosts.keys.toString())
+    override fun processTestStep(testStep: UnixShellTestStep): Any? {
+        var hostsToUse: Collection<String>? = testStep.hosts
+        if (hostsToUse.isNullOrEmpty()) {
+            if (hosts.size > 1) {
+                throw TestStepProcessingException("No hosts were provided to run a command." +
+                                                          " Registered hosts are: ${hosts.keys}")
+            } else {
+                hostsToUse = hosts.keys
+            }
         }
 
-        return testStep.hosts.parallelStream()
-                .collect(Collectors.toMap({ it },
-                        {
-                            val sshClient = getDefaultSshClient(it)
-                            sshClient!!.runShellCommand(testStep.getCommand(), testStep.timeout)
-                        }))
+
+        val tasks = hostsToUse
+            .map {
+                it to {
+                    val sshClient = getSshClient(it)
+                    sshClient.runShellCommand(testStep.getCommand(), testStep.timeout)
+                }
+            }
+            .toMap()
+        val results = AsyncTaskUtils.runTasksAsyncAndWait(
+            tasks,
+            { isValid(testStep, it) },
+            testStep.delay,
+            testStep.attempts,
+            testStep.timeout
+        )
+        return if (isResultForSingleService(results, testStep)) results.values.first() else results
     }
 
-    private fun getDefaultSshClient(host: String): DefaultSshClient? {
-        if (!hosts.containsKey(host)) {
-            throw TestStepProcessingException(String.format("No hosts was registered for host name '%s'." +
-                    " Registered hosts are: %s", host, hosts.keys.toString()))
-        }
+    private fun getSshClient(host: String): DefaultSshClient {
         return hosts[host]
+            ?: throw TestStepProcessingException("No hosts was registered for host name '$host'." +
+                                                         " Registered hosts are: ${hosts.keys}")
     }
+
+    private fun isResultForSingleService(results: Map<*, *>, testStep: UnixShellTestStep) =
+        // when only one service is registered and test step doesn't have service name then return non-grouped result
+        results.size == 1 && hosts.size == 1 && testStep.hosts.isNullOrEmpty()
 
     override fun getTestStepClass(): Class<UnixShellTestStep> {
         return UnixShellTestStep::class.java
@@ -50,12 +69,12 @@ open class UnixShellTestStepProcessor(testScenarioState: TestScenarioState,
 
         fun withHost(unixShellHostDetails: UnixShellHostDetails) = apply {
             hosts[unixShellHostDetails.hostName] = DefaultSshClient.Builder()
-                    .withHost(unixShellHostDetails.hostAddress)
-                    .withPort(unixShellHostDetails.port)
-                    .withUser(unixShellHostDetails.userName)
-                    .withPassword(unixShellHostDetails.password)
-                    .withPassword(unixShellHostDetails.sshKeyPath)
-                    .build()
+                .withHost(unixShellHostDetails.hostAddress)
+                .withPort(unixShellHostDetails.port)
+                .withUser(unixShellHostDetails.userName)
+                .withPassword(unixShellHostDetails.password)
+                .withPassword(unixShellHostDetails.sshKeyPath)
+                .build()
         }
 
         fun withHost(config: Config) = apply {
