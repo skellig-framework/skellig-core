@@ -39,7 +39,7 @@ import java.util.*
 abstract class SkelligTestContext : Closeable {
 
     companion object {
-        private val LOGGER : Logger = LoggerFactory.getLogger(SkelligTestContext.javaClass)
+        private val LOGGER: Logger = LoggerFactory.getLogger(SkelligTestContext.javaClass)
     }
 
     private var testStepValueConverter: TestStepValueConverter? = null
@@ -52,7 +52,8 @@ abstract class SkelligTestContext : Closeable {
 
     fun initialize(classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null): TestStepRunner {
         LOGGER.info(("Initializing Skellig Context with test steps in '$testStepPaths'" +
-                configPath?.let { "and config file '$it'" }))
+                configPath?.let { "and config file '$it'" })
+        )
 
         config = createConfig(classLoader, configPath)
         val testStepReader = createTestStepReader()
@@ -86,7 +87,11 @@ abstract class SkelligTestContext : Closeable {
             .build()
     }
 
-    private fun createTestStepsRegistry(testStepPaths: List<String>, classLoader: ClassLoader, testStepReader: TestStepReader): CachedTestStepsRegistry {
+    private fun createTestStepsRegistry(
+        testStepPaths: List<String>,
+        classLoader: ClassLoader,
+        testStepReader: TestStepReader
+    ): CachedTestStepsRegistry {
         val paths = extractTestStepPaths(testStepPaths, classLoader)
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STD, testStepReader)
@@ -125,7 +130,10 @@ abstract class SkelligTestContext : Closeable {
         }
     }
 
-    private fun createTestStepFactory(testStepProcessorsDetails: List<TestStepProcessorDetails>, testStepsRegistry: TestStepRegistry): TestStepFactory<TestStep> {
+    private fun createTestStepFactory(
+        testStepProcessorsDetails: List<TestStepProcessorDetails>,
+        testStepsRegistry: TestStepRegistry
+    ): TestStepFactory<TestStep> {
         testStepProcessorsDetails.forEach { rootTestStepFactory!!.registerTestStepFactory(it.testStepFactory) }
 
         return rootTestStepFactory!!
@@ -193,51 +201,38 @@ abstract class SkelligTestContext : Closeable {
         return valueExtractorBuilder.build()
     }
 
-    protected fun createTestStepReader(): TestStepReader {
+    protected open fun createTestStepReader(): TestStepReader {
         return StsTestStepReader()
     }
 
-    protected fun createTestScenarioState(): TestScenarioState {
+    protected open fun createTestScenarioState(): TestScenarioState {
         return DefaultTestScenarioState()
     }
 
-    protected val additionalTestStepValueExtractors: List<TestStepValueExtractor>
-        protected get() = emptyList()
+    protected open val additionalTestStepValueExtractors: List<TestStepValueExtractor>
+        get() = emptyList()
 
-    protected val additionalValueComparators: List<ValueComparator>
-        protected get() = emptyList()
+    protected open val additionalValueComparators: List<ValueComparator>
+        get() = emptyList()
 
-    protected val additionalTestStepValueConverters: List<TestStepValueConverter>
-        protected get() = emptyList()
+    protected open val additionalTestStepValueConverters: List<TestStepValueConverter>
+        get() = emptyList()
 
-    protected val additionalTestStepResultConverters: List<TestStepResultConverter>
-        protected get() = emptyList()
+    protected open val additionalTestStepResultConverters: List<TestStepResultConverter>
+        get() = emptyList()
 
     protected open val testStepProcessors: List<TestStepProcessorDetails>
-        protected get() = emptyList()
+        get() = emptyList()
 
     protected open val propertyExtractorFunction: ((String) -> String?)?
-        protected get() = { key -> config?.getString(key) }
+        get() = { key -> config?.getString(key) }
 
     open val testStepKeywordsProperties: Properties?
-         get() = null
+        get() = null
 
     protected var config: Config? = null
         protected get() = field
         private set
-
-    /* protected fun createTestStepFactoryFrom(
-         delegate: (
-             keywordsProperties: Properties?,
-             testStepValueConverter: TestStepValueConverter?
-         ) -> TestStepFactory<out TestStep>
-     ): TestStepFactory<out TestStep> {
-         return delegate(
-             testStepKeywordsProperties,
-             testStepValueConverter
-                 ?: error("TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?")
-         )
-     }*/
 
     protected fun <T : TestStep> createTestStepProcessorFrom(
         createTestStepProcessorDelegate: (
@@ -269,7 +264,12 @@ abstract class SkelligTestContext : Closeable {
     ): TestStepProcessorDetails {
         return createTestStepProcessorFrom(
             { testStepProcessor },
-            { _, keywordsProperties, testStepValueConverter -> createTestStepFactoryDelegate(keywordsProperties, testStepValueConverter) })
+            { _, keywordsProperties, testStepValueConverter ->
+                createTestStepFactoryDelegate(
+                    keywordsProperties,
+                    testStepValueConverter
+                )
+            })
     }
 
     override fun close() {
@@ -280,6 +280,9 @@ abstract class SkelligTestContext : Closeable {
         LOGGER.info("Skellig Context has been shut down")
     }
 
-    protected class TestStepProcessorDetails(val testStepProcessor: TestStepProcessor<*>, val testStepFactory: TestStepFactory<out TestStep>)
+    protected class TestStepProcessorDetails(
+        val testStepProcessor: TestStepProcessor<*>,
+        val testStepFactory: TestStepFactory<out TestStep>
+    )
 
 }
