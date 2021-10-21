@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.utils.UnitTestUtils
+import java.util.regex.Pattern
 
 @DisplayName("Convert test data from ftl")
 class TestDataFromFTLConverterTest {
@@ -22,87 +23,83 @@ class TestDataFromFTLConverterTest {
     @Test
     @DisplayName("When file and simple data model provided")
     fun testFtlConversion() {
-        val templateDetails = UnitTestUtils.createMap("template",
-                UnitTestUtils.createMap(
-                        "file", "template/test.ftl",
-                        "name", "n1",
-                        "value", "v1"
-                ))
+        val templateDetails = UnitTestUtils.createMap(
+            "template",
+            UnitTestUtils.createMap(
+                "file", "template/test.ftl",
+                "name", "n1",
+                "value", "v1"
+            )
+        )
 
         val result = testDataFromFTLConverter!!.convert(templateDetails)
 
         Assertions.assertAll(
-                Executable {
-                    Assertions.assertEquals(
-                            """{
- "name" : "n1"
- "value" : "v1"
-}""",
-                            result
-                    )
-                }
+            Executable {
+                Assertions.assertEquals("""{ "name" : "n1" "value" : "v1"}""", inlineString(result))
+            }
         )
     }
+
+    private fun inlineString(result: Any?) = result.toString().replace(Regex.fromLiteral("\r\n"), "")
 
     @Test
     @DisplayName("When file and csv data model provided with row filter Then check correct row applied")
     fun testFtlConversionWithCsvDataModel() {
-        val templateDetails = UnitTestUtils.createMap("template",
-                UnitTestUtils.createMap(
-                        "file", "template/test.ftl",
-                        "csv", UnitTestUtils.createMap(
-                        "file", "csv/test-file.csv",
-                        "row", UnitTestUtils.createMap("id", "3")
+        val templateDetails = UnitTestUtils.createMap(
+            "template",
+            UnitTestUtils.createMap(
+                "file", "template/test.ftl",
+                "csv", UnitTestUtils.createMap(
+                    "file", "csv/test-file.csv",
+                    "row", UnitTestUtils.createMap("id", "3")
                 )
-                ))
+            )
+        )
 
         val result = testDataFromFTLConverter!!.convert(templateDetails)
 
         Assertions.assertAll(
-                Executable {
-                    Assertions.assertEquals(
-                            """{
- "name" : "n3"
- "value" : "v3"
-}""",
-                            result
-                    )
-                }
+            Executable {
+                Assertions.assertEquals("""{ "name" : "n3" "value" : "v3"}""", inlineString(result))
+            }
         )
     }
 
     @Test
     @DisplayName("When file and csv data model provided without filter Then check first row from csv applied")
     fun testFtlConversionWithCsvDataModelWithoutFilter() {
-        val templateDetails = UnitTestUtils.createMap("template",
-                UnitTestUtils.createMap(
-                        "file", "template/test.ftl",
-                        "csv", UnitTestUtils.createMap("file", "csv/test-file.csv")
-                ))
+        val templateDetails = UnitTestUtils.createMap(
+            "template",
+            UnitTestUtils.createMap(
+                "file", "template/test.ftl",
+                "csv", UnitTestUtils.createMap("file", "csv/test-file.csv")
+            )
+        )
 
         val result = testDataFromFTLConverter!!.convert(templateDetails)
 
         Assertions.assertAll(
-                Executable {
-                    Assertions.assertEquals(
-                            """{
- "name" : "n1"
- "value" : "v1"
-}""",
-                            result
-                    )
-                }
+            Executable {
+                Assertions.assertEquals("""{ "name" : "n1" "value" : "v1"}""", inlineString(result))
+            }
         )
     }
 
     @Test
     @DisplayName("When file and csv data model provided without filter Then check first row from csv applied")
     fun testFtlConversionWhenFileNotExist() {
-        val templateDetails = UnitTestUtils.createMap("template",
-                UnitTestUtils.createMap(
-                        "file", "template/invalid.ftl"
-                ))
+        val templateDetails = UnitTestUtils.createMap(
+            "template",
+            UnitTestUtils.createMap(
+                "file", "template/invalid.ftl"
+            )
+        )
 
-        Assertions.assertThrows(TestDataConversionException::class.java) { testDataFromFTLConverter!!.convert(templateDetails) }
+        Assertions.assertThrows(TestDataConversionException::class.java) {
+            testDataFromFTLConverter!!.convert(
+                templateDetails
+            )
+        }
     }
 }
