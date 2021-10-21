@@ -7,11 +7,12 @@ sourceSets {
 }
 
 dependencies {
-    compile 'log4j:log4j:1.2.17'
-    compile 'org.slf4j:slf4j-log4j12:1.7.25'
-    compile group: 'com.typesafe', name: 'config'
+    implementation 'log4j:log4j'
+    implementation 'org.slf4j:slf4j-log4j12'
+    implementation group: 'com.typesafe', name: 'config'
 
-    compile project(':skellig-test-step-processing')
+    implementation project(':skellig-test-step-processing')
+    implementation project(':skellig-task')
 
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
@@ -22,16 +23,4 @@ dependencies {
 
 test {
     useJUnitPlatform()
-}
-
-modifyPom {
-    project {
-        name = 'Skellig Test Step Database processing'
-        packaging = 'jar'
-        description = 'Processes database Skellig Test Step'
-        url = "$projectUrl"
-        scm(projectRepo)
-        licenses(projectLicenses)
-        developers(projectDevelopers)
-    }
 }

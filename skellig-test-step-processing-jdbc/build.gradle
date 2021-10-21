@@ -8,8 +8,12 @@ sourceSets {
 
 dependencies {
 
-    compile project(':skellig-test-step-processing-db')
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: "1.4.21"
+    implementation project(':skellig-test-step-processing')
+    implementation project(':skellig-test-step-processing-db')
+
+    implementation group: 'org.slf4j', name: 'slf4j-api'
+    implementation group: 'com.typesafe', name: 'config'
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: "1.4.21"
 
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
@@ -17,10 +21,10 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 
-    testCompile group: 'org.postgresql', name: 'postgresql', version: '42.2.18'
-    testCompile 'org.testcontainers:testcontainers:1.15.0'
-    testCompile "org.testcontainers:junit-jupiter:1.15.0"
-    testCompile "org.testcontainers:postgresql:1.15.0"
+    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.2.18'
+    testImplementation 'org.testcontainers:testcontainers:1.15.0'
+    testImplementation "org.testcontainers:junit-jupiter:1.15.0"
+    testImplementation "org.testcontainers:postgresql:1.15.0"
 }
 
 test {

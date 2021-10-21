@@ -7,13 +7,14 @@ sourceSets {
 }
 
 dependencies {
-    compile 'log4j:log4j:1.2.17'
-    compile 'org.slf4j:slf4j-log4j12'
-    compile group: 'org.junit.platform', name: 'junit-platform-runner'
-    compile "org.jetbrains.kotlin:kotlin-reflect"
+    implementation 'log4j:log4j:1.2.17'
+    implementation 'org.slf4j:slf4j-log4j12'
+    implementation group: 'org.junit.platform', name: 'junit-platform-runner'
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    compile project(':skellig-test-step-processing-performance')
-    compile project(':skellig-test-step-runner')
+    implementation project(':skellig-test-step-processing')
+    implementation project(':skellig-test-step-processing-performance')
+    implementation project(':skellig-test-step-runner')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'org.mockito', name: 'mockito-all'

@@ -1,5 +1,6 @@
 package org.skellig.teststep.processor.cassandra
 
+import org.junit.Ignore
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -14,7 +15,7 @@ import java.sql.Date
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-@Testcontainers
+//@Testcontainers
 internal class CassandraRequestExecutorCT {
 
     companion object {
@@ -32,7 +33,7 @@ internal class CassandraRequestExecutorCT {
         cassandraContainer.close()
     }
 
-    @Test
+//    @Test
     @DisplayName("Insert and read data from table Then verify response is correct")
     fun testInsertAndReadFromDb() {
         initDatabase()
