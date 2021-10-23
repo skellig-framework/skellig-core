@@ -124,4 +124,10 @@ subprojects {
             excludeTags "component-test"
         }
     }
+
+    tasks.register("componentTest", Test) {
+        useJUnitPlatform {
+            includeTags "component-test"
+        }
+    }
 }
