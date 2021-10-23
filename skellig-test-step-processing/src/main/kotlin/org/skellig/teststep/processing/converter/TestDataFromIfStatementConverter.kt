@@ -13,7 +13,7 @@ class TestDataFromIfStatementConverter : TestStepValueConverter {
         private const val ELSE_KEYWORD = "else"
     }
 
-    private val engine = ScriptEngineManager().getEngineByName("JavaScript")
+    private val engine = ScriptEngineManager().getEngineByName("graal.js")
 
     override fun convert(value: Any?): Any? =
             when (value) {

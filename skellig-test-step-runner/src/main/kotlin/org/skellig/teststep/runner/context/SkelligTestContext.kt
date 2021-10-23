@@ -26,9 +26,9 @@ import org.skellig.teststep.runner.DefaultTestStepRunner
 import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.skellig.teststep.runner.model.TestStepFileExtension
-import org.skellig.teststep.runner.teststep.registry.CachedTestStepsRegistry
-import org.skellig.teststep.runner.teststep.registry.ClassTestStepsRegistry
-import org.skellig.teststep.runner.teststep.registry.TestStepsRegistry
+import org.skellig.teststep.runner.registry.CachedTestStepsRegistry
+import org.skellig.teststep.runner.registry.ClassTestStepsRegistry
+import org.skellig.teststep.runner.registry.TestStepsRegistry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Closeable

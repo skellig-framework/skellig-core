@@ -21,20 +21,12 @@ ext {
 dependencies {
     implementation group: 'org.thymeleaf', name: 'thymeleaf', version: "${springThimeleafVersion}"
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: "${springBootVersion}"
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "${springBootVersion}"
-    compile group: 'io.prometheus', name: 'simpleclient_servlet', version: "${prometheusVersion}"
-    compile group: 'org.freemarker', name: 'freemarker', version: "${freemarkerVersion}"
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "${springBootVersion}"
+    implementation group: 'io.prometheus', name: 'simpleclient_servlet', version: "${prometheusVersion}"
+    implementation group: 'org.freemarker', name: 'freemarker', version: "${freemarkerVersion}"
 
-    compile project(':skellig-test-step-processing-performance')
-    compile project(':skellig-test-step-runner')
-
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'org.mockito', name: 'mockito-all'
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
-}
-
-test {
-    useJUnitPlatform()
+    implementation project(':skellig-test-step-processing')
+    implementation project(':skellig-test-step-processing-performance')
+    implementation project(':skellig-test-step-runner')
 }

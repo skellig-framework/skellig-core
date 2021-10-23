@@ -8,6 +8,7 @@ class RawTestStepHandler : Closeable {
 
     companion object {
         private const val NULL = "null"
+        private const val NEW_LINE_CHAR = '\n'
     }
 
     private var isSpecialCharacter: Boolean = false     // ",',\,\n,\r,\t,
@@ -47,7 +48,7 @@ class RawTestStepHandler : Closeable {
                     handleEqualSignCharacter()
                 } else if (character == '[' && rawTestStepBuilder.isNotEmpty()) {
                     handleArrayBracketCharacter(reader, rawTestStep)
-                } else if (character == '\n') {
+                } else if (isNewLineCharacter(character)) {
                     handleNewLineCharacter(character, rawTestStep)
                 } else {
                     addCharacter(character)
@@ -71,7 +72,7 @@ class RawTestStepHandler : Closeable {
                 handleSingleQuoteCharacter()
             } else if (character == '{') {
                 handleListOpenedCurlyBracketCharacter(character, reader, result)
-            } else if (character == '\n' && rawTestStepBuilder.isNotEmpty()) {
+            } else if ((isNewLineCharacter(character)) && rawTestStepBuilder.isNotEmpty()) {
                 result.add(rawTestStepBuilder.toString())
                 emptyBuffer()
             } else if (character == ']') {
@@ -160,19 +161,19 @@ class RawTestStepHandler : Closeable {
     }
 
     private fun handleCommentCharacter(reader: StsFileBufferedReader) {
-        reader.readUntilFindCharacter('\n')
+        reader.readUntilFindCharacter(NEW_LINE_CHAR)
     }
 
     @Throws(IOException::class)
     private fun handleCommentCharacter(reader: StsFileBufferedReader, rawTestStep: MutableMap<String, Any?>) {
-        reader.readUntilFindCharacter('\n')
+        reader.readUntilFindCharacter(NEW_LINE_CHAR)
         //TODO: if comment goes after value enclosed in quotes, it can trim spaces
         // in case if comment goes after the value, try to trim spaces
         val value = rawTestStepBuilder.trim()
         if (value.isNotEmpty()) {
             // if value not empty then assign it
             rawTestStepBuilder = rawTestStepBuilder.clear().append(value)
-            handleNewLineCharacter('\n', rawTestStep)
+            handleNewLineCharacter(NEW_LINE_CHAR, rawTestStep)
         }
     }
 
@@ -237,7 +238,7 @@ class RawTestStepHandler : Closeable {
                 // if text is inside quotes then just add the character
                 rawTestStepBuilder.append(character)
             } else {
-                if (isValueOfPropertyUnderConstruction() || character != ' ' && character != '\n') {
+                if (isValueOfPropertyUnderConstruction() || character != ' ' && !isNewLineCharacter(character)) {
                     // add leftover spaces before the character
                     if (!isValueOfPropertyUnderConstruction() && spacesBuilder.isNotEmpty()) {
                         rawTestStepBuilder.append(spacesBuilder.toString())
@@ -266,6 +267,8 @@ class RawTestStepHandler : Closeable {
         rawTestStepBuilder.setLength(0)
         spacesBuilder.setLength(0)
     }
+
+    private fun isNewLineCharacter(character: Char) = character == NEW_LINE_CHAR || character == '\r'
 
     override fun close() {
         rawTestStepBuilder.setLength(0)

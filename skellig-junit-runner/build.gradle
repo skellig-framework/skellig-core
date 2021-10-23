@@ -8,33 +8,20 @@ sourceSets {
 
 
 dependencies {
-    compile 'log4j:log4j:1.2.17'
-    compile 'org.slf4j:slf4j-log4j12:1.7.25'
-    compile group: 'org.junit.platform', name: 'junit-platform-runner'
-    compile "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
+    implementation group: 'log4j', name:'log4j'
+    implementation group: 'org.slf4j', name:'slf4j-log4j12'
+    implementation group: 'org.junit.platform', name: 'junit-platform-runner'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
+    implementation group: 'org.freemarker', name: 'freemarker'
+    implementation group: 'org.apache.commons', name: 'commons-lang3'
 
-    compile project(':skellig-feature')
-    compile project(':skellig-test-step-runner')
-    compile project(':skellig-test-step-processing-db')
+    implementation project(':skellig-task')
+    implementation project(':skellig-feature')
+    implementation project(':skellig-test-step-runner')
+    implementation project(':skellig-test-step-processing')
+    implementation project(':skellig-test-step-processing-db')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'org.mockito', name: 'mockito-all'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
-}
-
-test {
-    useJUnitPlatform()
-}
-
-modifyPom {
-    project {
-        name = 'Skellig Framework JUnit Runner'
-        packaging = 'jar'
-        description = 'JUnit Runner to run feature-files of Skellig Framework'
-        url = "$projectUrl"
-        scm(projectRepo)
-        licenses(projectLicenses)
-        developers(projectDevelopers)
-    }
 }

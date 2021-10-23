@@ -14,7 +14,7 @@ import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.runner.model.TestStepFileExtension
-import org.skellig.teststep.runner.teststep.registry.TestStepsRegistry
+import org.skellig.teststep.runner.registry.TestStepsRegistry
 
 @DisplayName("Run test step")
 internal class DefaultTestStepRunnerTest {
@@ -50,7 +50,7 @@ internal class DefaultTestStepRunnerTest {
 
         Assertions.assertThrows(IllegalStateException::class.java) { testStepRunner!!.run(testStepName) }
 
-        Mockito.verifyZeroInteractions(testStepProcessor)
+        Mockito.verifyNoInteractions(testStepProcessor)
     }
 
     @Test
@@ -61,7 +61,7 @@ internal class DefaultTestStepRunnerTest {
 
         Assertions.assertThrows(IllegalStateException::class.java) { testStepRunner!!.run("test2") }
 
-        Mockito.verifyZeroInteractions(testStepProcessor)
+        Mockito.verifyNoInteractions(testStepProcessor)
     }
 
     private fun initializeTestSteps(testStepName: String, parameters: Map<String, String?>) {

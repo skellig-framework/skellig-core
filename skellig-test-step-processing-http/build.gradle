@@ -7,29 +7,16 @@ sourceSets {
 }
 
 dependencies {
-    compile group: 'com.typesafe', name: 'config'
-    compile group: 'org.junit.platform', name: 'junit-platform-runner'
-    compile 'org.apache.httpcomponents:httpclient:4.5.6'
-    compile project(':skellig-test-step-processing')
+    implementation group: 'org.slf4j', name: 'slf4j-api'
+    implementation group: 'com.typesafe', name: 'config'
+    implementation group: 'org.junit.platform', name: 'junit-platform-runner'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.6'
+
+    implementation project(':skellig-task')
+    implementation project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
-}
-
-test {
-    useJUnitPlatform()
-}
-
-modifyPom {
-    project {
-        name = 'Skellig Test Step HTTP processing'
-        packaging = 'jar'
-        description = 'Processes HTTP Skellig Test Step'
-        url = "$projectUrl"
-        scm(projectRepo)
-        licenses(projectLicenses)
-        developers(projectDevelopers)
-    }
 }

@@ -1,20 +1,11 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-    }
-}
-
 plugins {
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
 }
 
 ext {
     version = '2.0.5-beta'
-    mockitoAllVersion = '1.10.19'
-    junitApiVersion = '5.2.0'
+    mockitoVersion = '4.0.0'
+    junitApiVersion = '5.8.1'
     junitPlatformVersion = '1.2.0'
     mockitoJunitVersion = '2.18.0'
     typesafeConfigVersion = '1.4.0'
@@ -31,11 +22,14 @@ allprojects {
 subprojects {
 
     apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'com.bmuschko.nexus'
+    apply plugin: 'maven-publish'
     apply plugin: 'io.spring.dependency-management'
 
     version = '2.0.5-beta'
+
+    test {
+        reports.html.enabled = false
+    }
 
     ext {
         projectUrl = 'http://skelligframework.org'
@@ -65,7 +59,16 @@ subprojects {
         }
     }
 
-    sourceCompatibility = 1.8
+    configurations {
+        bundler {
+            transitive = true
+        }
+
+        bundlerTansitive {
+            extendsFrom bundler
+            transitive = true
+        }
+    }
 
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
@@ -74,7 +77,6 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
     }
 
     sourceCompatibility = 1.8
@@ -98,8 +100,12 @@ subprojects {
         dependencies {
             dependency group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jLogVersion}"
             dependency group: 'org.slf4j', name: 'slf4j-log4j12', version: "${slf4jLogVersion}"
+            dependency group: 'log4j', name: 'log4j', version: '1.2.17'
             dependency group: 'com.typesafe', name: 'config', version: "${typesafeConfigVersion}"
-            dependency group: 'org.mockito', name: 'mockito-all', version: "${mockitoAllVersion}"
+            dependency group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+            dependency group: 'org.freemarker', name: 'freemarker', version: "2.3.30"
+
+            dependency group: 'org.mockito', name: 'mockito-core', version: "${mockitoVersion}"
             dependency group: 'com.nhaarman', name: 'mockito-kotlin', version: '1.6.0'
             dependency group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin', version: '2.2.0'
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "${junitApiVersion}"
@@ -111,14 +117,34 @@ subprojects {
         }
     }
 
-    nexus {
-        sign = true
-        repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-        snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+    java {
+        withSourcesJar()
+        withJavadocJar()
     }
 
-    extraArchive {
-        sources = true
-        javadoc = true
+    test {
+        useJUnitPlatform {
+            excludeTags "component-test"
+            testLogging {
+                events "failed"
+
+                showExceptions true
+                exceptionFormat "full"
+                showCauses true
+                showStackTraces true
+                showStandardStreams = false
+            }
+        }
     }
+
+    tasks.register("componentTest", Test) {
+        useJUnitPlatform {
+            includeTags "component-test"
+        }
+    }
+}
+
+task testReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn subprojects*.test
 }

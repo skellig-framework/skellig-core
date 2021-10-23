@@ -1,9 +1,6 @@
 package org.skellig.teststep.processor.cassandra
 
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.skellig.teststep.processor.cassandra.model.CassandraDetails
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import org.testcontainers.containers.CassandraContainer
@@ -14,6 +11,7 @@ import java.sql.Date
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
+@Tag("component-test")
 @Testcontainers
 internal class CassandraRequestExecutorCT {
 

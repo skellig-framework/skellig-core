@@ -7,30 +7,16 @@ sourceSets {
 }
 
 dependencies {
-    compile 'log4j:log4j:1.2.17'
-    compile 'org.slf4j:slf4j-log4j12:1.7.25'
-    compile group: 'org.junit.platform', name: 'junit-platform-runner'
-    compile group: 'com.typesafe', name: 'config'
-    compile project(':skellig-test-step-processing')
+    implementation 'log4j:log4j:1.2.17'
+    implementation 'org.slf4j:slf4j-log4j12:1.7.25'
+    implementation group: 'org.junit.platform', name: 'junit-platform-runner'
+    implementation group: 'com.typesafe', name: 'config'
+    implementation project(':skellig-test-step-reader')
+    implementation project(':skellig-test-step-reader-sts')
+    implementation project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
-}
-
-test {
-    useJUnitPlatform()
-}
-
-modifyPom {
-    project {
-        name = 'Skellig Test Step Runner'
-        packaging = 'jar'
-        description = 'Runs Skellig Test Step by provided name'
-        url = "$projectUrl"
-        scm(projectRepo)
-        licenses(projectLicenses)
-        developers(projectDevelopers)
-    }
 }

@@ -7,9 +7,11 @@ sourceSets {
 }
 
 dependencies {
-    compile 'com.datastax.cassandra:cassandra-driver-core:3.6.0'
+    implementation 'com.datastax.cassandra:cassandra-driver-core:3.6.0'
+    implementation group: 'com.typesafe', name: 'config'
 
-    compile project(':skellig-test-step-processing-db')
+    implementation project(':skellig-test-step-processing')
+    implementation project(':skellig-test-step-processing-db')
 
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
@@ -17,11 +19,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 
-    testCompile 'org.testcontainers:testcontainers:1.15.0'
-    testCompile "org.testcontainers:junit-jupiter:1.15.0"
-    testCompile "org.testcontainers:cassandra:1.15.0"
-}
-
-test {
-    useJUnitPlatform()
+    testImplementation 'org.testcontainers:testcontainers:1.15.0'
+    testImplementation "org.testcontainers:junit-jupiter:1.15.0"
+    testImplementation "org.testcontainers:cassandra:1.15.0"
 }
