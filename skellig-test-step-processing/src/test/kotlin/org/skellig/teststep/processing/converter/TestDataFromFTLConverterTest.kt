@@ -34,14 +34,8 @@ class TestDataFromFTLConverterTest {
 
         val result = testDataFromFTLConverter!!.convert(templateDetails)
 
-        Assertions.assertAll(
-            Executable {
-                Assertions.assertEquals("""{ "name" : "n1" "value" : "v1"}""", inlineString(result))
-            }
-        )
+        Assertions.assertEquals("""{ "name" : "n1" "value" : "v1"}""", inlineString(result))
     }
-
-    private fun inlineString(result: Any?) = result.toString().replace(Regex.fromLiteral("\r\n"), "")
 
     @Test
     @DisplayName("When file and csv data model provided with row filter Then check correct row applied")
@@ -59,11 +53,7 @@ class TestDataFromFTLConverterTest {
 
         val result = testDataFromFTLConverter!!.convert(templateDetails)
 
-        Assertions.assertAll(
-            Executable {
-                Assertions.assertEquals("""{ "name" : "n3" "value" : "v3"}""", inlineString(result))
-            }
-        )
+        Assertions.assertEquals("""{ "name" : "n3" "value" : "v3"}""", inlineString(result))
     }
 
     @Test
@@ -79,11 +69,7 @@ class TestDataFromFTLConverterTest {
 
         val result = testDataFromFTLConverter!!.convert(templateDetails)
 
-        Assertions.assertAll(
-            Executable {
-                Assertions.assertEquals("""{ "name" : "n1" "value" : "v1"}""", inlineString(result))
-            }
-        )
+        Assertions.assertEquals("""{ "name" : "n1" "value" : "v1"}""", inlineString(result))
     }
 
     @Test
@@ -102,4 +88,6 @@ class TestDataFromFTLConverterTest {
             )
         }
     }
+
+    private fun inlineString(result: Any?) = result.toString().replace("\r\n", "")
 }
