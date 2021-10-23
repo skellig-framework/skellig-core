@@ -22,4 +22,4 @@ jobs:
       - name: Build components
         run: ./gradlew build -x test
       - name: Run unit tests
-        run: ./gradlew test
+        run: ./gradlew test --stacktrace
