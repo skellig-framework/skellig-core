@@ -122,6 +122,15 @@ subprojects {
     test {
         useJUnitPlatform {
             excludeTags "component-test"
+            testLogging {
+                events "failed"
+
+                showExceptions true
+                exceptionFormat "full"
+                showCauses true
+                showStackTraces true
+                showStandardStreams = false
+            }
         }
     }
 
