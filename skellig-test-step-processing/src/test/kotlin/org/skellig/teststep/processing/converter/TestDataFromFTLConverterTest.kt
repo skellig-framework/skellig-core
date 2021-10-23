@@ -89,5 +89,5 @@ class TestDataFromFTLConverterTest {
         }
     }
 
-    private fun inlineString(result: Any?) = result.toString().replace("\r\n", "")
+    private fun inlineString(result: Any?) = result.toString().replace(Regex("[\r\n]+"), "")
 }
