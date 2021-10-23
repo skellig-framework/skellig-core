@@ -9,6 +9,7 @@ sourceSets {
 dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api'
     implementation group: 'com.typesafe', name: 'config'
+    implementation group: 'org.apache.commons', name: 'commons-lang3'
 
     implementation project(':skellig-task')
     implementation project(':skellig-test-step-processing')
@@ -18,8 +19,4 @@ dependencies {
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
     testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
-}
-
-test {
-    useJUnitPlatform()
 }

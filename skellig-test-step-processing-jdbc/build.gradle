@@ -26,7 +26,3 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:1.15.0"
     testImplementation "org.testcontainers:postgresql:1.15.0"
 }
-
-test {
-    useJUnitPlatform()
-}

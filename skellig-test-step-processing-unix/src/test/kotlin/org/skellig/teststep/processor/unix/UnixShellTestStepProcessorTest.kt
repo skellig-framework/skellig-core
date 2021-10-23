@@ -6,10 +6,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import org.skellig.teststep.processing.converter.TestStepResultConverter
-import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
-import org.skellig.teststep.processor.unix.DefaultSshClient
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 
 internal class UnixShellTestStepProcessorTest {
@@ -91,7 +87,7 @@ internal class UnixShellTestStepProcessorTest {
                 Assertions.assertEquals(1, result.size)
                 Assertions.assertEquals("r1", result["h1"])
             }
-        Mockito.verifyZeroInteractions(sshClient2)
+        Mockito.verifyNoInteractions(sshClient2)
     }
 
     @Test

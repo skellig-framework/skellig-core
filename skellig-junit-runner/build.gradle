@@ -12,7 +12,7 @@ dependencies {
     implementation group: 'org.slf4j', name:'slf4j-log4j12'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
-    implementation group: 'org.freemarker', name: 'freemarker', version: "2.3.30"
+    implementation group: 'org.freemarker', name: 'freemarker'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
 
     implementation project(':skellig-task')
@@ -22,11 +22,6 @@ dependencies {
     implementation project(':skellig-test-step-processing-db')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'org.mockito', name: 'mockito-all'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
-}
-
-test {
-    useJUnitPlatform()
 }

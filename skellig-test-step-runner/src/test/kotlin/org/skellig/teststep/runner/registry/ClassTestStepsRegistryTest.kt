@@ -1,9 +1,9 @@
-package org.skellig.teststep.runner
+package org.skellig.teststep.runner.registry
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.runner.annotation.TestStep
-import org.skellig.teststep.runner.teststep.registry.ClassTestStepsRegistry
+import org.skellig.teststep.runner.registry.ClassTestStepsRegistry
 
 class ClassTestStepsRegistryTest {
 
@@ -17,7 +17,7 @@ class ClassTestStepsRegistryTest {
 
     @Test
     fun testExtractTestStepsFromClasses() {
-        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner"), javaClass.classLoader)
+        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.registry"), javaClass.classLoader)
 
         val testSteps = registry.getTestSteps()
         assertAll(

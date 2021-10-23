@@ -12,7 +12,7 @@ internal class CassandraDetailsConfigReaderTest {
 
 
     @Test
-    fun testReadJdbcConfig() {
+    fun testReadCassandraConfig() {
         val details: List<CassandraDetails> = ArrayList(configReader.read(ConfigFactory.load("cassandra-test.conf")))
         Assertions.assertAll(
                 { Assertions.assertEquals(2, details.size) },

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URISyntaxException
-import java.nio.file.Paths
 
 @DisplayName("Read sts-file")
 class StsFileParserTest {
@@ -69,15 +68,13 @@ class StsFileParserTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-                { assertEquals("Run command (.*)", firstTestStep["name"]) },
-                {
-                    assertEquals(
-                            """{
-          command: $1
-          value: v1
-        }""",
-                            firstTestStep["payload"])
-                }
+            { assertEquals("Run command (.*)", firstTestStep["name"]) },
+            {
+                assertEquals(
+                    """{          command: ${'$'}1          value: v1        }""",
+                    firstTestStep["payload"].toString().replace("\r\n", "")
+                )
+            }
         )
     }
 

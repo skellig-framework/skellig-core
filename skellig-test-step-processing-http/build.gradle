@@ -20,7 +20,3 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }
-
-test {
-    useJUnitPlatform()
-}

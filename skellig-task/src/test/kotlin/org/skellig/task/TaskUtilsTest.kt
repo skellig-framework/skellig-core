@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.skellig.task.TaskUtils.Companion.runTask
-import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 @DisplayName("Run task")

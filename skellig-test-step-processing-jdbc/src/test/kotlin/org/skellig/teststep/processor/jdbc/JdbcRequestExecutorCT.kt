@@ -1,10 +1,7 @@
 package org.skellig.teststep.processor.jdbc
 
-import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import org.skellig.teststep.processor.jdbc.model.JdbcDetails
 import org.testcontainers.containers.BindMode
@@ -14,6 +11,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.sql.Date
 import java.time.LocalDate
 
+@Tag("component-test")
 @Testcontainers
 internal class JdbcRequestExecutorCT {
 

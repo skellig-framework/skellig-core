@@ -19,10 +19,7 @@ dependencies {
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito', name: 'mockito-core'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
-}
-
-test {
-    useJUnitPlatform()
 }

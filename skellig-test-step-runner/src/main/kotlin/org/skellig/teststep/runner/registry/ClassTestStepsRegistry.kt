@@ -1,10 +1,11 @@
-package org.skellig.teststep.runner.teststep.registry
+package org.skellig.teststep.runner.registry
 
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.net.URI
 import java.nio.file.*
 import java.util.regex.Pattern
@@ -25,7 +26,7 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
 
     init {
         packages.forEach { resourcePath: String ->
-            val packagePath = resourcePath.replace('.', '/')
+            val packagePath = resourcePath.replace('.', File.separatorChar)
             val resource = classLoader.getResource(packagePath)
             resource?.let {
                 LOGGER.debug("Extracting test steps from classes in '$packagePath'")
@@ -45,15 +46,19 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
 
 
     private inner class ClassTestStepsReaderStrategy(packageName: String) : RawTestStepsReader {
-        private val fileReader = mapOf(Pair("file", ClassTestStepsFromFileReader(packageName)),
-                                       Pair("jar", ClassTestStepsFromJarFileReader(packageName)))
+        private val fileReader = mapOf(
+            Pair("file", ClassTestStepsFromFileReader(packageName)),
+            Pair("jar", ClassTestStepsFromJarFileReader(packageName))
+        )
 
         override fun getTestStepsFromUri(rootUri: URI): Collection<Map<String, Any?>> =
             try {
                 val protocol = rootUri.toURL().protocol
                 fileReader[protocol]?.getTestStepsFromUri(rootUri)
-                    ?: error("File protocol '$protocol' is not supported " +
-                                     "when reading test steps from classes on URI '$rootUri'")
+                    ?: error(
+                        "File protocol '$protocol' is not supported " +
+                                "when reading test steps from classes on URI '$rootUri'"
+                    )
             } catch (ex: Exception) {
                 throw TestStepRegistryException(ex.message, ex)
             }
@@ -61,7 +66,7 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
 
     private open inner class ClassTestStepsFromFileReader(val packageName: String) : RawTestStepsReader {
 
-        private val classPackageName = packageName.replace('/', '.')
+        private val classPackageName = packageName.replace(File.separatorChar, '.')
 
         override fun getTestStepsFromUri(rootUri: URI): Collection<Map<String, Any?>> =
             walkThroughFiles(Paths.get(rootUri)) { it.toString().endsWith(CLASS_EXTENSION) }
@@ -76,7 +81,7 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
 
         private fun readFromFile(file: Path): Collection<Map<String, Any?>> {
             val testStepsPerClass = mutableListOf<Map<String, Any?>>()
-            val fileName = file.toString().substringAfter(packageName).replace('/', '.')
+            val fileName = file.toString().substringAfter(packageName).replace(File.separatorChar, '.')
             val className = classPackageName + fileName.substringBeforeLast(CLASS_EXTENSION)
             val foundClass = Class.forName(className)
             var foundClassInstance: Any? = null
@@ -89,12 +94,19 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
                     val testStepAnnotation = it.getAnnotation(TestStep::class.java)
                     val testStepNamePattern = Pattern.compile(testStepAnnotation.name)
                     foundClassInstance.let {
-                        foundClassInstance = foundClass.newInstance()
+                        try {
+                            foundClassInstance = foundClass.getDeclaredConstructor().newInstance()
+                        } catch (ex: NoSuchMethodException) {
+                            throw TestStepRegistryException("Failed to instantiate class '$className'", ex)
+                        }
                     }
-                    testStepsPerClass.add(mapOf(
-                        Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
-                        Pair(TEST_STEP_DEF_INSTANCE, foundClassInstance!!),
-                        Pair(TEST_STEP_METHOD, it)))
+                    testStepsPerClass.add(
+                        mapOf(
+                            Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
+                            Pair(TEST_STEP_DEF_INSTANCE, foundClassInstance!!),
+                            Pair(TEST_STEP_METHOD, it)
+                        )
+                    )
                 }
             return testStepsPerClass
         }

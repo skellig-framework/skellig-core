@@ -1,4 +1,4 @@
-package org.skellig.teststep.runner.teststep.registry
+package org.skellig.teststep.runner.registry
 
 import java.net.URI
 

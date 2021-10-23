@@ -1,9 +1,6 @@
 package org.skellig.teststep.processor.rmq
 
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.skellig.teststep.processor.rmq.model.RmqDetails
 import org.skellig.teststep.processor.rmq.model.RmqExchangeDetails
 import org.skellig.teststep.processor.rmq.model.RmqHostDetails
@@ -13,6 +10,7 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
 
+@Tag("component-test")
 @Testcontainers
 internal class RmqChannelCT {
 

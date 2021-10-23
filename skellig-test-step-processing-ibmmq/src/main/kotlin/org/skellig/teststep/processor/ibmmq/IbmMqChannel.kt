@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
-class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable {
+open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(IbmMqChannel::class.java)

@@ -1,4 +1,4 @@
-package org.skellig.teststep.runner.teststep.registry
+package org.skellig.teststep.runner.registry
 
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 
