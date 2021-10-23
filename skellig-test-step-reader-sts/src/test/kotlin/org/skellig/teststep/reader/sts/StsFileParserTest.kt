@@ -72,7 +72,7 @@ class StsFileParserTest {
             {
                 assertEquals(
                     """{          command: ${'$'}1          value: v1        }""",
-                    firstTestStep["payload"].toString().replace("\r\n", "")
+                    firstTestStep["payload"].toString().replace(Regex("[\r\n]+"), "")
                 )
             }
         )

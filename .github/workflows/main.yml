@@ -23,9 +23,3 @@ jobs:
         run: ./gradlew build -x test
       - name: Run unit tests
         run: ./gradlew test --stacktrace
-      - name: Unit tests results
-        uses: actions/upload-artifact@v1
-        if: always()
-        with:
-          name: unit-tests-results
-          path: reports/tests/index.html
