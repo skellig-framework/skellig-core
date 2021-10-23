@@ -23,6 +23,7 @@ jobs:
         run: ./gradlew build -x test
 
   test:
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -43,4 +44,4 @@ jobs:
         if: always()
         with:
           name: unit-tests-results
-          path: reports/tests/index.html
+          path: build/reports/tests/index.html
