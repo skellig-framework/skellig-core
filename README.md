@@ -1,5 +1,11 @@
 ## What is Skellig Framework
 
+[![Build Status](https://github.com/skellig-framework/skellig-core/actions/workflows/main.yml/badge.svg)](https://github.com/skellig-framework/skellig-core/actions)
+[![License:MIT](https://img.shields.io/badge/license-Apache%202-yellow)](http://www.apache.org/licenses/)
+[![Documentation](https://img.shields.io/badge/development-wiki-yellowgreen.svg)](https://github.com/skellig-framework/skellig-core/wiki)
+[![Coverage Status](https://codecov.io/gh/skellig-framework/skellig-core/branch/master/graph/badge.svg?token=KSM07J2MJD)](https://codecov.io/gh/skellig-framework/skellig-core)
+
+
 Skellig is Automation/Performance Testing Framework with focus on writing tests with minimal coding. It has its own DSL which is designed to write various tests data and validation rules for execution result. The Skellig DSL provides essential built-in functions and data converters which help to work with test data, although providing enough flexibility to write your own plugins or specific logic on Kotlin/Java. 
 
 ## What Skellig Framework can do
