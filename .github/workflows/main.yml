@@ -17,22 +17,37 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up JDK 17
         uses: actions/setup-java@v1
         with:
           java-version: '17'
           distribution: 'adopt'
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - name: Build components
         run: ./gradlew build -x test
+
       - name: Run unit tests
         run: ./gradlew test
+
       - name: Generate test report
         run: ./gradlew testReport
+
       - name: Publish test report
         uses: actions/upload-artifact@v2
         if: always()
         with:
           name: reports
           path: build/reports
+
+      - name: Generate code coverage
+        run: ./gradlew codeCoverageReport
+
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/reports/jacoco/report.xml

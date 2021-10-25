@@ -15,8 +15,15 @@ ext {
 }
 
 allprojects {
+    apply plugin: 'jacoco'
+
     group 'org.skelligframework'
     version "${version}"
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
 }
 
 subprojects {
@@ -72,11 +79,6 @@ subprojects {
 
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
-    }
-
-    repositories {
-        mavenLocal()
-        mavenCentral()
     }
 
     sourceCompatibility = 1.8
@@ -147,4 +149,23 @@ subprojects {
 task testReport(type: TestReport) {
     destinationDir = file("$buildDir/reports/tests")
     reportOn subprojects*.test
+}
+
+task codeCoverageReport(type: JacocoReport) {
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+    subprojects.each {
+        sourceSets it.sourceSets.main
+    }
+
+    reports {
+        xml.enabled true
+        xml.destination file("${buildDir}/reports/jacoco/report.xml")
+        html.enabled false
+        csv.enabled false
+    }
+}
+
+codeCoverageReport.dependsOn {
+    subprojects*.test
 }
