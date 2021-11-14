@@ -1,25 +1,129 @@
 package org.skellig.teststep.processing.converter
 
 import org.apache.commons.lang3.StringUtils
+import org.skellig.teststep.processing.exception.TestValueConversionException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class PropertyValueConverter(var valueConverter: TestStepValueConverter,
-                             private val propertyExtractorFunction: ((String) -> String?)?) : TestStepValueConverter {
+class PropertyValueConverter(
+    var valueConverter: TestStepValueConverter,
+    private val propertyExtractorFunction: ((String) -> String?)?
+) : TestStepValueConverter {
 
     companion object {
-        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_.]+)(\\s*:\\s*(.*))?}|\\\$\\{(.+)}")
+        private val PARAMETER_REGEX2 = Pattern.compile("\\$\\{([\\w-_.]+)(\\s*:\\s*(.*))?}|\\\$\\{(.+)}")
         private const val NULL = "null"
     }
 
     override fun convert(value: Any?): Any? =
-            when (value) {
-                is String -> {
-                    val matcher = PARAMETER_REGEX.matcher(value.toString())
-                    if (matcher.find()) convert(value.toString(), matcher) else value
+        when (value) {
+            is String -> {
+                var group = ""
+                var result = ""
+                var isPropertyGroupActive = false
+                var isPropertyFound = false
+                var isDefaultValueActive = false
+                var isPropertyKeyActive = false
+                for (i in 0 until value.length) {
+                    when (value[i]) {
+                        ' ' -> {
+                            if (value[i + 1] != ':' && value[i - 1] != ':' &&
+                                value[i + 1] != '}' && value[i - 1] != '{'
+                            ) {
+                                group += value[i]
+                            }
+                        }
+                        '$' -> {
+                            if (value[i + 1] != '{') {
+                                group += value[i]
+                            }
+                        }
+                        '{' -> {
+                            if (value[i - 1] != '\\') {
+                                if (!isPropertyGroupActive) {
+                                    isPropertyFound = false
+                                }
+
+                                if (!isPropertyFound) {
+                                    result += group
+                                }
+                                group = ""
+                                isPropertyGroupActive = true
+                                isPropertyKeyActive = true
+                            } else {
+                                group += value[i]
+                            }
+                        }
+                        '}' -> {
+                            if (value[i - 1] != '\\') {
+                                if (!isPropertyGroupActive && !isDefaultValueActive) {
+                                    result += group
+                                }
+                                isPropertyGroupActive = false
+
+                                if (!isPropertyFound) {
+                                    if (isDefaultValueActive) {
+                                        result += group
+                                        isPropertyFound = true
+                                    } else {
+                                        val propertyValue = getPropertyValue(group)
+                                        if (StringUtils.isNotEmpty(propertyValue)) {
+                                            result += propertyValue
+                                            isPropertyFound = true
+                                        } else {
+                                            throw TestValueConversionException("No value found for the property '$group'")
+                                        }
+                                    }
+                                    isDefaultValueActive = false
+                                }
+                                group = ""
+                            } else {
+                                group += value[i]
+                            }
+                        }
+                        ':' -> {
+                            if (value[i - 1] != '\\') {
+                                if (group.isNotEmpty() && !isPropertyKeyActive) {
+                                    group += value[i]
+                                } else if (!isPropertyFound) {
+                                    if (isPropertyGroupActive) {
+                                        val propertyValue = getPropertyValue(group)
+                                        if (StringUtils.isNotEmpty(propertyValue)) {
+                                            result += propertyValue
+                                            isPropertyFound = true
+                                            isDefaultValueActive = false
+                                        } else {
+                                            isDefaultValueActive = true
+                                        }
+                                        group = ""
+                                    } else {
+                                        group += value[i]
+                                    }
+                                    isPropertyKeyActive = false
+                                } else {
+                                    isDefaultValueActive = false
+                                    isPropertyKeyActive = false
+                                }
+                            } else {
+                                group += value[i]
+                            }
+                        }
+                        '\\' -> {
+                            if(i + 1 >= value.length ||
+                                value[i + 1] != ':' && value[i + 1] != '}' && value[i + 1] != '{') {
+                                group += value[i]
+                            }
+                        }
+                        else -> {
+                            group += value[i]
+                        }
+                    }
                 }
-                else -> value
+
+                if (result == NULL) null else result + group
             }
+            else -> value
+        }
 
     private fun convert(value: String, matcher: Matcher): Any? {
         var result: Any? = null
