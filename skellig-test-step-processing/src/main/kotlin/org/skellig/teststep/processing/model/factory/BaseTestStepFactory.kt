@@ -1,20 +1,16 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.util.CachedPattern
 import java.util.*
-import kotlin.collections.HashMap
 
 abstract class BaseTestStepFactory<T : TestStep>(
         val keywordsProperties: Properties?,
-        val testStepValueConverter: TestStepValueConverter?) : TestStepFactory<T> {
+        val testStepFactoryValueConverter: TestStepFactoryValueConverter) : TestStepFactory<T> {
 
     companion object {
         protected const val TEST_STEP_NAME_KEYWORD = "test.step.keyword.name"
     }
-
-    protected var testStepFactoryValueConverter = TestStepFactoryValueConverter(testStepValueConverter!!)
 
     protected open fun <T> convertValue(value: Any?, parameters: Map<String, Any?>): T? {
         return testStepFactoryValueConverter.convertValue(value, parameters)

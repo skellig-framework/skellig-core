@@ -1,8 +1,6 @@
 package org.skellig.teststep.processor.cassandra
 
-import com.datastax.driver.core.Cluster
-import com.datastax.driver.core.PlainTextAuthProvider
-import com.datastax.driver.core.Session
+import com.datastax.oss.driver.api.core.CqlSession
 import org.skellig.teststep.processor.cassandra.model.CassandraDetails
 import org.skellig.teststep.processor.db.DatabaseRequestExecutor
 import org.skellig.teststep.processor.db.model.DatabaseRequest
@@ -10,17 +8,14 @@ import org.skellig.teststep.processor.db.model.DatabaseRequest
 class CassandraRequestExecutor(cassandraDetails: CassandraDetails) : DatabaseRequestExecutor {
 
     private val factory: CassandraRequestExecutorFactory
-    private val cluster: Cluster
-    private val session: Session
+    private val session: CqlSession
 
     init {
-        val clusterBuilder = Cluster.builder().addContactPointsWithPorts(cassandraDetails.nodes)
+        val sessionBuilder = CqlSession.builder().addContactPoints(cassandraDetails.nodes)
         cassandraDetails.userName?.let {
-            clusterBuilder.withAuthProvider(
-                    PlainTextAuthProvider(cassandraDetails.userName, cassandraDetails.password))
+            sessionBuilder.withAuthCredentials(cassandraDetails.userName, cassandraDetails.password?:"")
         }
-        cluster = clusterBuilder.build()
-        session = cluster.connect()
+        session = sessionBuilder.build();
         factory = CassandraRequestExecutorFactory(session)
     }
 
@@ -30,6 +25,5 @@ class CassandraRequestExecutor(cassandraDetails: CassandraDetails) : DatabaseReq
 
     override fun close() {
         session.close()
-        cluster.close()
     }
 }

@@ -1,12 +1,12 @@
 package org.skellig.teststep.processor.ibmmq.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
 import java.util.*
 
 class IbmMqConsumableTestStepFactory(keywordsProperties: Properties?,
-                                     testStepValueConverter: TestStepValueConverter?)
-    : BaseIbmMqTestStepFactory<IbmMqConsumableTestStep>(keywordsProperties, testStepValueConverter) {
+                                     testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseIbmMqTestStepFactory<IbmMqConsumableTestStep>(keywordsProperties, testStepFactoryValueConverter) {
 
     override fun createTestStepBuilder(rawTestStep: Map<String, Any?>,
                                        parameters: Map<String, Any?>): IbmMqConsumableTestStep.Builder {

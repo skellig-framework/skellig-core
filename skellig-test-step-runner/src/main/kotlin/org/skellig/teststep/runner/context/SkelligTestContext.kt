@@ -9,6 +9,7 @@ import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.CompositeTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepFactory
+import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.CompositeTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -42,7 +43,7 @@ abstract class SkelligTestContext : Closeable {
         private val LOGGER: Logger = LoggerFactory.getLogger(SkelligTestContext.javaClass)
     }
 
-    private var testStepValueConverter: TestStepValueConverter? = null
+    private var testStepFactoryValueConverter: TestStepFactoryValueConverter? = null
     private var testStepResultConverter: TestStepResultConverter? = null
     private var testScenarioState: TestScenarioState? = null
     private var testStepResultValidator: TestStepResultValidator? = null
@@ -59,10 +60,12 @@ abstract class SkelligTestContext : Closeable {
         val testStepReader = createTestStepReader()
         testScenarioState = createTestScenarioState()
         val valueExtractor = createTestStepValueExtractor()
-        testStepValueConverter = createTestStepValueConverter(classLoader, valueExtractor, testScenarioState)
         testStepResultConverter = createTestDataResultConverter()
         testStepResultValidator = createTestStepValidator(valueExtractor)
         testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader)
+
+        testStepFactoryValueConverter = TestStepFactoryValueConverter(
+            createTestStepValueConverter(classLoader, valueExtractor, testScenarioState), propertyExtractorFunction)
 
         rootTestStepProcessor = CompositeTestStepProcessor.Builder()
             .withTestScenarioState(testScenarioState)
@@ -72,7 +75,7 @@ abstract class SkelligTestContext : Closeable {
 
         rootTestStepFactory = CompositeTestStepFactory.Builder()
             .withKeywordsProperties(testStepKeywordsProperties)
-            .withTestStepValueConverter(testStepValueConverter)
+            .withTestStepFactoryValueConverter(testStepFactoryValueConverter!!)
             .withTestDataRegistry(getTestStepRegistry())
             .build()
 
@@ -225,7 +228,7 @@ abstract class SkelligTestContext : Closeable {
         get() = emptyList()
 
     protected open val propertyExtractorFunction: ((String) -> String?)?
-        get() = { key -> config?.getString(key) }
+        get() = { key -> if (config?.hasPath(key) == true) config?.getString(key) else null }
 
     open val testStepKeywordsProperties: Properties?
         get() = null
@@ -241,7 +244,7 @@ abstract class SkelligTestContext : Closeable {
         createTestStepFactoryDelegate: (
             rootTestStepFactory: TestStepFactory<TestStep>,
             keywordsProperties: Properties?,
-            testStepValueConverter: TestStepValueConverter?
+            testStepFactoryValueConverter: TestStepFactoryValueConverter
         ) -> TestStepFactory<T>
     ): TestStepProcessorDetails {
         return TestStepProcessorDetails(
@@ -249,8 +252,8 @@ abstract class SkelligTestContext : Closeable {
             createTestStepFactoryDelegate(
                 rootTestStepFactory!!,
                 testStepKeywordsProperties,
-                testStepValueConverter
-                    ?: error("TestStepValueConverter must be initialized first. Did you forget to call 'initialize'?")
+                testStepFactoryValueConverter
+                    ?: error("TestStepFactoryValueConverter must be initialized first. Did you forget to call 'initialize'?")
             )
         )
     }
@@ -259,15 +262,15 @@ abstract class SkelligTestContext : Closeable {
         testStepProcessor: TestStepProcessor<T>,
         createTestStepFactoryDelegate: (
             keywordsProperties: Properties?,
-            testStepValueConverter: TestStepValueConverter?
+            testStepFactoryValueConverter: TestStepFactoryValueConverter
         ) -> TestStepFactory<T>
     ): TestStepProcessorDetails {
         return createTestStepProcessorFrom(
             { testStepProcessor },
-            { _, keywordsProperties, testStepValueConverter ->
+            { _, keywordsProperties, testStepFactoryValueConverter ->
                 createTestStepFactoryDelegate(
                     keywordsProperties,
-                    testStepValueConverter
+                    testStepFactoryValueConverter
                 )
             })
     }

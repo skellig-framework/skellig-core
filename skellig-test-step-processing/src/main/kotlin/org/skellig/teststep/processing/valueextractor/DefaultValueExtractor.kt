@@ -84,6 +84,8 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
                 mutableListOf(
                         ConcatTestStepValueExtractor(),
                         JsonPathTestStepValueExtractor(),
+                        JsonToMapTestStepValueExtractor(),
+                        JsonToListTestStepValueExtractor(),
                         XPathTestStepValueExtractor(),
                         ObjectTestStepValueExtractor(),
                         FromIndexTestStepValueExtractor(),

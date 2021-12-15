@@ -1,15 +1,13 @@
 package org.skellig.teststep.processor.rmq.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
+import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
-import org.skellig.teststep.processor.rmq.model.factory.BaseRmqTestStepFactory.Companion.RMQ
 import java.util.*
 
 class RmqTestStepFactory(keywordsProperties: Properties?,
-                         testStepValueConverter: TestStepValueConverter?)
-    : BaseRmqTestStepFactory<RmqTestStep>(keywordsProperties, testStepValueConverter) {
+                         testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseRmqTestStepFactory<RmqTestStep>(keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private const val SEND_TO_KEYWORD = "test.step.keyword.sendTo"

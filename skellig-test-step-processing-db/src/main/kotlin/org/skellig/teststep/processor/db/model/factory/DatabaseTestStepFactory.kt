@@ -1,17 +1,15 @@
 package org.skellig.teststep.processor.db.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
-import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
-import org.skellig.teststep.processor.db.model.DatabaseRequest
+import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 import java.util.*
 
 abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(keywordsProperties: Properties?,
-                                                              testStepValueConverter: TestStepValueConverter?)
-    : BaseDefaultTestStepFactory<TS>(keywordsProperties, testStepValueConverter) {
+                                                              testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseDefaultTestStepFactory<TS>(keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private const val PROVIDER_KEYWORD = "test.step.keyword.db.provide"

@@ -1,29 +1,23 @@
 package org.skellig.teststep.processor.cassandra
 
-import com.datastax.driver.core.ResultSet
-import com.datastax.driver.core.Session
-import com.datastax.driver.core.SimpleStatement
-import com.datastax.driver.core.Statement
+import com.datastax.oss.driver.api.core.CqlSession
+import com.datastax.oss.driver.api.core.cql.ResultSet
+import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.invocation.InvocationOnMock
 import org.skellig.teststep.processor.db.model.DatabaseRequest
-import java.sql.Connection
-import java.sql.Date
-import java.sql.PreparedStatement
-import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 @DisplayName("Execute update")
 internal class CassandraUpdateRequestExecutorTest {
 
-    private var session : Session = mock()
+    private var session: CqlSession = mock()
     private var insertRequestExecutor: CassandraInsertRequestExecutor = mock()
     private var selectRequestExecutor: CassandraSelectRequestExecutor = mock()
     private var updateExecutor = CassandraUpdateRequestExecutor(session, insertRequestExecutor, selectRequestExecutor)
@@ -56,7 +50,8 @@ internal class CassandraUpdateRequestExecutorTest {
         val data = hashMapOf(
             Pair("where", mapOf(Pair("c1", "v1"))),
             Pair("c2", LocalDateTime.of(2020, 1, 1, 10, 10)),
-            Pair("c3", LocalDate.of(2020, 2, 2)))
+            Pair("c3", LocalDate.of(2020, 2, 2))
+        )
 
         val databaseRequest = DatabaseRequest("update", "t1", data)
         val resultSet = makeSessionReturnResultSet(sql, data.size)
@@ -70,7 +65,8 @@ internal class CassandraUpdateRequestExecutorTest {
     fun testUpdateWhenRecordNotExist() {
         val data = hashMapOf(
             Pair("where", mapOf(Pair("c1", "v1"), Pair("c4", "v4"))),
-            Pair("c3", "v3"))
+            Pair("c3", "v3")
+        )
 
         val databaseRequest = DatabaseRequest("update", "t1", data)
         whenever(selectRequestExecutor.execute(any())).thenReturn(emptyList<String>())
@@ -91,8 +87,10 @@ internal class CassandraUpdateRequestExecutorTest {
 
         val ex = assertThrows(IllegalStateException::class.java) { updateExecutor.execute(databaseRequest) }
 
-        assertEquals("Update operation for table t1 must have 'where' clause to understand which records to update",
-                     ex.message)
+        assertEquals(
+            "Update operation for table t1 must have 'where' clause to understand which records to update",
+            ex.message
+        )
     }
 
     @Test
@@ -107,11 +105,12 @@ internal class CassandraUpdateRequestExecutorTest {
 
     private fun makeSessionReturnResultSet(sql: String, parametersCount: Int): ResultSet {
         val resultSet = Mockito.mock(ResultSet::class.java)
-        whenever(session.execute(ArgumentMatchers.any(Statement::class.java)))
+        whenever(session.execute(ArgumentMatchers.any(SimpleStatement::class.java)))
             .thenAnswer { o: InvocationOnMock ->
                 val statement = o.arguments[0] as SimpleStatement
-                if (statement.queryString == sql &&
-                    statement.valuesCount() == parametersCount) {
+                if (statement.query == sql &&
+                    statement.namedValues.size == parametersCount
+                ) {
                     return@thenAnswer resultSet
                 } else {
                     return@thenAnswer null

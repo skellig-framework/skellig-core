@@ -1,11 +1,9 @@
 package org.skellig.teststep.processor.cassandra
 
-import com.datastax.driver.core.Session
-import com.datastax.driver.core.SimpleStatement
-import org.skellig.teststep.processing.exception.TestStepProcessingException
+import com.datastax.oss.driver.api.core.CqlSession
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 
-internal open class CassandraInsertRequestExecutor(session: Session) : BaseCassandraUpdateRequestExecutor(session) {
+internal open class CassandraInsertRequestExecutor(session: CqlSession) : BaseCassandraUpdateRequestExecutor(session) {
 
     override fun composeQuery(request: DatabaseRequest, columnValuePairs: Map<String, Any?>): String {
         val queryBuilder = StringBuilder()

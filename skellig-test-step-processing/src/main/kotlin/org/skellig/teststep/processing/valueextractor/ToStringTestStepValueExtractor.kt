@@ -2,7 +2,7 @@ package org.skellig.teststep.processing.valueextractor
 
 import java.nio.charset.Charset
 
-class ToStringTestStepValueExtractor : SubStringTestStepValueExtractor() {
+class ToStringTestStepValueExtractor : TestStepValueExtractor {
 
     override fun extract(value: Any?, extractionParameter: String?): Any {
         return value?.let {

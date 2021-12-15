@@ -1,10 +1,10 @@
 package org.skellig.teststep.processor.performance.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepFactory
+import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processor.performance.model.PerformanceTestStep
 import java.time.LocalTime
@@ -14,8 +14,8 @@ import java.util.*
 class PerformanceTestStepFactory(
     private val testStepFactory: TestStepFactory<TestStep>,
     keywordsProperties: Properties?,
-    testStepValueConverter: TestStepValueConverter?
-) : BaseTestStepFactory<PerformanceTestStep>(keywordsProperties, testStepValueConverter) {
+    testStepFactoryValueConverter: TestStepFactoryValueConverter
+) : BaseTestStepFactory<PerformanceTestStep>(keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private const val RPS = "test.step.keyword.rps"

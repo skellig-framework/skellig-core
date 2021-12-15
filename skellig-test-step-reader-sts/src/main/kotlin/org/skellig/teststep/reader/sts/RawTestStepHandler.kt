@@ -92,7 +92,7 @@ class RawTestStepHandler : Closeable {
         // '{' for list-type value means that its item will be Map
         if (rawTestStepBuilder.isEmpty() || isPreviousCharacterNotParameterSign()) {
             openedBrackets++
-            result.add(readMap(reader, hashMapOf()))
+            result.add(readMap(reader, linkedMapOf()))
             emptyBuffer()
         } else {
             addCharacter(character)
@@ -150,7 +150,7 @@ class RawTestStepHandler : Closeable {
             addCharacter(character)
         } else {
             openedBrackets++
-            rawTestStep[rawTestStepBuilder.toString()] = readMap(reader, hashMapOf())
+            rawTestStep[rawTestStepBuilder.toString()] = readMap(reader, linkedMapOf())
             emptyBuffer()
         }
     }
@@ -191,7 +191,7 @@ class RawTestStepHandler : Closeable {
     private fun handleClosedParenthesis(character: Char, reader: StsFileBufferedReader, rawTestSteps: MutableList<Map<String, Any?>>) {
         // usually after it read name of test step, the next char must be '{'
         if (--bracketsNumber == 0) {
-            val rawTestStep = hashMapOf<String, Any?>()
+            val rawTestStep = linkedMapOf<String, Any?>()
             rawTestStep[propertyName!!] = rawTestStepBuilder.toString()
             reader.readUntilFindCharacter('{')
             openedBrackets++

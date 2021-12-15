@@ -1,14 +1,13 @@
 package org.skellig.teststep.processor.tcp.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
+import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
 import java.util.*
 
 class TcpTestStepFactory(keywordsProperties: Properties?,
-                         testStepValueConverter: TestStepValueConverter?)
-    : BaseTcpTestStepFactory<TcpTestStep>(keywordsProperties, testStepValueConverter) {
+                         testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseTcpTestStepFactory<TcpTestStep>(keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private const val SEND_TO_KEYWORD = "test.step.keyword.sendTo"

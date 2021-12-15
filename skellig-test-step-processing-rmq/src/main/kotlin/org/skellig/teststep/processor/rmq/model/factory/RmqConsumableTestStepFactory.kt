@@ -1,13 +1,13 @@
 package org.skellig.teststep.processor.rmq.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processor.rmq.model.BaseRmqTestStep
 import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
 import java.util.*
 
 class RmqConsumableTestStepFactory(keywordsProperties: Properties?,
-                                   testStepValueConverter: TestStepValueConverter?)
-    : BaseRmqTestStepFactory<RmqConsumableTestStep>(keywordsProperties, testStepValueConverter) {
+                                   testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseRmqTestStepFactory<RmqConsumableTestStep>(keywordsProperties, testStepFactoryValueConverter) {
 
     override fun createTestStepBuilder(rawTestStep: Map<String, Any?>,
                                        parameters: Map<String, Any?>): BaseRmqTestStep.Builder<RmqConsumableTestStep> {

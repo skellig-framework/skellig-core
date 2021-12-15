@@ -12,6 +12,15 @@ class StsFileParserTest {
     private var stsFileParser = StsFileParser()
 
     @Test
+    fun testReturnedDataPreserveOrder() {
+        val filePath = javaClass.getResource("/simple-test-step.std").toURI().toURL()
+
+        val testSteps = stsFileParser.parse(filePath.openStream())
+
+        assertTrue(testSteps[0] is LinkedHashMap)
+    }
+
+    @Test
     @DisplayName("When test step is simple with parameters, regex and functions")
     @Throws(URISyntaxException::class)
     fun testParseSimpleTestStep() {
@@ -48,7 +57,7 @@ class StsFileParserTest {
                             getValueFromMap(secondTestStep, "body", "template", "csv", "convert"))
                 },
                 {
-                    assertEquals("\\\ttest da\'ta wi\'th \'valid\' values",
+                    assertEquals("\\\ttest da'ta wi'th 'valid' values",
                             getValueFromMap(secondTestStep, "body", "template", "csv", "row", "name"))
                 },
                 {

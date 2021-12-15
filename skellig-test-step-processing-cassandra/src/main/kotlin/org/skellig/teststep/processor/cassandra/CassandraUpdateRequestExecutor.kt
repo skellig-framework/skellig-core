@@ -1,9 +1,9 @@
 package org.skellig.teststep.processor.cassandra
 
-import com.datastax.driver.core.Session
+import com.datastax.oss.driver.api.core.CqlSession
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 
-internal class CassandraUpdateRequestExecutor(session: Session,
+internal class CassandraUpdateRequestExecutor(session: CqlSession,
                                               private val insertExecutor: CassandraInsertRequestExecutor,
                                               private val selectExecutor: CassandraSelectRequestExecutor)
     : BaseCassandraUpdateRequestExecutor(session) {

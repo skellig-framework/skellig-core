@@ -1,16 +1,15 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.HashMap
 
 abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         keywordsProperties: Properties?,
-        testStepValueConverter: TestStepValueConverter?)
-    : BaseTestStepFactory<T>(keywordsProperties, testStepValueConverter) {
+        testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseTestStepFactory<T>(keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private val COMMA_SPLIT_PATTERN = Pattern.compile(",")
@@ -44,10 +43,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
             additionalParameters.putAll(parametersFromTestName)
         }
 
-        val variables = extractVariables(rawTestStep, additionalParameters)
-        variables?.let {
-            additionalParameters.putAll(variables)
-        }
+        val variables = extractVariablesToParameters(rawTestStep, additionalParameters)
 
         return createTestStepBuilder(rawTestStep, additionalParameters)
                 .withId(getId(rawTestStep, additionalParameters))
@@ -82,10 +78,20 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         return testDataKeywords
     }
 
-    private fun extractVariables(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Map<String, Any?>? {
+    private fun extractVariablesToParameters(
+        rawTestStep: Map<String, Any?>,
+        parameters: MutableMap<String, Any?>
+    ): Map<String, Any?>? {
         val rawVariables = rawTestStep[getKeywordName(VARIABLES_KEYWORD, "variables")]
-        val convertedVariables = convertValue<Any>(rawVariables, parameters)
-        return if (convertedVariables is Map<*, *>) convertedVariables as Map<String, Any?> else null
+        return rawVariables?.let {
+            if (rawVariables is Map<*, *>) {
+                rawVariables.map {
+                    val convertedVar = convertValue<Any>(it.value, parameters)
+                    parameters[it.key.toString()] = convertedVar
+                    it.key.toString() to convertedVar
+                }.toMap()
+            } else throw TestStepCreationException("variables of the test step must have key-value pair (ex. type: Map<*, *>)")
+        }
     }
 
     private fun extractTestData(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Any? {

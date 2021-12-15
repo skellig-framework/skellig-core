@@ -8,11 +8,8 @@ open class SubStringTestStepValueExtractor : TestStepValueExtractor {
     override fun extract(value: Any?, extractionParameter: String?): Any {
         return value?.let {
             var newValue: String = value as String
-            extractionParameter?.split(",")?.let {
-                newValue = subStringAfter(newValue, it[0])
-                if (it.size > 1 && it[1].isNotEmpty()) {
-                    newValue = newValue.substringBefore(it[1])
-                }
+            extractionParameter?.let {
+                newValue = subStringAfter(newValue, it)
             }
             return newValue
         } ?: throw ValueExtractionException(format("Cannot extract sub string '%s' from null value", extractionParameter))

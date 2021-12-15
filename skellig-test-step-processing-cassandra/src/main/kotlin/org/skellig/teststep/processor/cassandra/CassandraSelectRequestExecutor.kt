@@ -1,13 +1,16 @@
 package org.skellig.teststep.processor.cassandra
 
-import com.datastax.driver.core.*
+import com.datastax.oss.driver.api.core.CqlSession
+import com.datastax.oss.driver.api.core.cql.ResultSet
+import com.datastax.oss.driver.api.core.cql.Row
+import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
 
-internal open class CassandraSelectRequestExecutor(private val session: Session) : BaseCassandraRequestExecutor() {
+internal open class CassandraSelectRequestExecutor(private val session: CqlSession) : BaseCassandraRequestExecutor() {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(CassandraSelectRequestExecutor::class.java)
@@ -33,7 +36,7 @@ internal open class CassandraSelectRequestExecutor(private val session: Session)
     }
 
     private fun executeQuery(query: String, queryParameters: Array<Any?>): Any {
-        val response = extractFromResultSet(session.execute(SimpleStatement(query, *queryParameters)))
+        val response = extractFromResultSet(session.execute(SimpleStatement.newInstance(query, *queryParameters)))
         LOGGER.debug("Query has been executed successfully: $query " +
                              "with parameters: ${queryParameters.contentToString()} " +
                              "and response: $response")
@@ -46,8 +49,8 @@ internal open class CassandraSelectRequestExecutor(private val session: Session)
             val resultRow: MutableMap<String, Any?> = LinkedHashMap()
             result.add(resultRow)
             row.columnDefinitions
-                .forEach(Consumer { column: ColumnDefinitions.Definition ->
-                    resultRow[column.name] = row.getObject(column.name)
+                .forEach(Consumer { column ->
+                    resultRow[column.name.asInternal()] = row.getObject(column.name)
                 })
         })
         return result

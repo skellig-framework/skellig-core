@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.converter
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 
 class NumberValueConverterTest {
 
@@ -14,6 +15,16 @@ class NumberValueConverterTest {
     }
 
     @Test
+    fun testConvertByte() {
+        Assertions.assertEquals(56.toByte(), numberValueConverter!!.convert("byte(56)"))
+    }
+
+    @Test
+    fun testConvertShort() {
+        Assertions.assertEquals(255.toShort(), numberValueConverter!!.convert("short(255)"))
+    }
+
+    @Test
     fun testConvertInt() {
         Assertions.assertEquals(450, numberValueConverter!!.convert("int(450)"))
     }
@@ -21,6 +32,11 @@ class NumberValueConverterTest {
     @Test
     fun testConvertLong() {
         Assertions.assertEquals(450L, numberValueConverter!!.convert("long(450)"))
+    }
+
+    @Test
+    fun testConvertBigDecimal() {
+        Assertions.assertEquals(BigDecimal(450), numberValueConverter!!.convert("bigDecimal(450)"))
     }
 
     @Test

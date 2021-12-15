@@ -9,19 +9,19 @@ import java.util.*
 class CompositeTestStepFactory private constructor(
     testStepsRegistry: TestStepRegistry,
     keywordsProperties: Properties?,
-    testStepValueConverter: TestStepValueConverter?
+    testStepFactoryValueConverter: TestStepFactoryValueConverter
 ) : TestStepFactory<TestStep> {
 
     private val factories: MutableList<TestStepFactory<out TestStep>> = mutableListOf()
     private var defaultTestStepFactory: TestStepFactory<DefaultTestStep>
 
     init {
-        registerTestStepFactory(GroupedTestStepFactory(testStepsRegistry, this, keywordsProperties, testStepValueConverter))
+        registerTestStepFactory(GroupedTestStepFactory(testStepsRegistry, this, keywordsProperties, testStepFactoryValueConverter))
         registerTestStepFactory(ClassTestStepFactory())
 
         defaultTestStepFactory = DefaultTestStepFactory.Builder()
             .withKeywordsProperties(keywordsProperties)
-            .withTestStepValueConverter(testStepValueConverter)
+            .withTestStepValueConverter(testStepFactoryValueConverter)
             .build()
     }
 
@@ -42,19 +42,19 @@ class CompositeTestStepFactory private constructor(
 
         private var testStepsRegistry: TestStepRegistry? = null
         private var keywordsProperties: Properties? = null
-        private var testStepValueConverter: TestStepValueConverter? = null
+        private var testStepFactoryValueConverter: TestStepFactoryValueConverter? = null
 
         fun withKeywordsProperties(keywordsProperties: Properties?) =
             apply { this.keywordsProperties = keywordsProperties }
 
-        fun withTestStepValueConverter(testStepValueConverter: TestStepValueConverter?) =
-            apply { this.testStepValueConverter = testStepValueConverter }
+        fun withTestStepFactoryValueConverter(testStepFactoryValueConverter: TestStepFactoryValueConverter) =
+            apply { this.testStepFactoryValueConverter = testStepFactoryValueConverter }
 
         fun withTestDataRegistry(testStepsRegistry: TestStepRegistry) =
             apply { this.testStepsRegistry = testStepsRegistry }
 
         fun build(): CompositeTestStepFactory {
-            return CompositeTestStepFactory(testStepsRegistry!!, keywordsProperties, testStepValueConverter)
+            return CompositeTestStepFactory(testStepsRegistry!!, keywordsProperties, testStepFactoryValueConverter!!)
         }
 
     }

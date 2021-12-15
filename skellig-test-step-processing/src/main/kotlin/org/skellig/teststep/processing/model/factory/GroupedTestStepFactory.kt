@@ -1,16 +1,14 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.GroupedTestStep
 import org.skellig.teststep.processing.model.TestStep
 import java.util.*
-import kotlin.collections.HashMap
 
 internal class GroupedTestStepFactory(private val testStepRegistry: TestStepRegistry,
                                       private val testStepFactory: TestStepFactory<TestStep>,
                                       keywordsProperties: Properties?,
-                                      testStepValueConverter: TestStepValueConverter?)
-    : BaseTestStepFactory<GroupedTestStep>(keywordsProperties, testStepValueConverter) {
+                                      testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseTestStepFactory<GroupedTestStep>(keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private const val TEST = "test"

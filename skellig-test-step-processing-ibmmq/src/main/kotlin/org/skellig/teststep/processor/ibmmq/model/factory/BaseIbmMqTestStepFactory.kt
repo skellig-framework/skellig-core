@@ -1,14 +1,13 @@
 package org.skellig.teststep.processor.ibmmq.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
-import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
+import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import java.util.*
 
 abstract class BaseIbmMqTestStepFactory<T : DefaultTestStep>(keywordsProperties: Properties?,
-                                                                  testStepValueConverter: TestStepValueConverter?)
-    : BaseDefaultTestStepFactory<T>(keywordsProperties, testStepValueConverter) {
+                                                             testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseDefaultTestStepFactory<T>(keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         protected const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"

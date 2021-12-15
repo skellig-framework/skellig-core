@@ -18,22 +18,12 @@ internal class SubStringTestStepValueExtractorTest {
     }
 
     @Test
-    fun testSubstringWithEmptyParams() {
+    fun testSubstringWithNonExistentDelimiter() {
         assertEquals("a/b/c", valueExtractor.extract("a/b/c", ","))
     }
 
     @Test
     fun testSubstringFirst() {
         assertEquals("b/c", valueExtractor.extract("a/b/c", "/"))
-    }
-
-    @Test
-    fun testSubstringBetween() {
-        assertEquals("b", valueExtractor.extract("a/b/c", "/,/"))
-    }
-
-    @Test
-    fun testSubstringFromStart() {
-        assertEquals("a", valueExtractor.extract("a/b/c", ",/"))
     }
 }

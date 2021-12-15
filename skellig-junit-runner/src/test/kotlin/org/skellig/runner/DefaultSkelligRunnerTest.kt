@@ -1,7 +1,6 @@
 package org.skellig.runner
 
 import org.junit.runner.RunWith
-import org.skellig.runner.SkelligRunner
 import org.skellig.runner.annotation.SkelligOptions
 import org.skellig.runner.config.TestSkelligContext
 

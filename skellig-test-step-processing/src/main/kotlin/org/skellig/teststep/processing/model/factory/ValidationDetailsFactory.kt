@@ -8,7 +8,7 @@ import java.util.regex.Pattern
 import kotlin.collections.HashMap
 
 class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
-                               val testStepFactoryValueConverter: TestStepFactoryValueConverter) {
+                               private val testStepFactoryValueConverter: TestStepFactoryValueConverter) {
 
     companion object {
         private val GROUPED_PROPERTIES_PATTERN = Pattern.compile("\\[([\\w,\\s]+)\\]")
@@ -52,12 +52,15 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
                                     .filter { it.key != getFromTestKeyword() && it.key != getConvertToKeyword() }
                                     .map { it.key to it.value }
                                     .toMap()
-                    builder.withExpectedResult(createExpectedResult("", rawExpectedResult, parameters))
+                    val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawExpectedResult, parameters)
+                    builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
                 } else {
-                    builder.withExpectedResult(createExpectedResult("", rawValidationDetails, parameters))
+                    val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawValidationDetails, parameters)
+                    builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
                 }
             } else {
-                builder.withExpectedResult(createExpectedResult("", rawValidationDetails, parameters))
+                val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawValidationDetails, parameters)
+                builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
             }
             builder.build()
         }
@@ -71,7 +74,7 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
 
     private fun createExpectedResult(propertyName: String?, expectedResult: Any?, parameters: Map<String, Any?>): ExpectedResult? {
         var newPropertyName = propertyName
-        var newExpectedResult = testStepFactoryValueConverter.convertValue<Any?>(expectedResult, parameters)
+        var newExpectedResult = expectedResult
 
         var validationType: MatchingType? = MatchingType.ALL_MATCH
         if (validationTypeKeywords.containsKey(propertyName)) {
