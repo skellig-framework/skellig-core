@@ -8,8 +8,7 @@ sourceSets {
 
 dependencies {
 
-    implementation project(':skellig-test-step-processing')
-    implementation project(':skellig-test-step-processing-db')
+    api project(':skellig-test-step-processing-db')
 
     implementation group: 'org.slf4j', name: 'slf4j-api'
     implementation group: 'com.typesafe', name: 'config'

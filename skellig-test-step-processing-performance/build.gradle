@@ -10,11 +10,11 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api'
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0-RC")
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0-RC"
     implementation group: 'io.prometheus', name: 'simpleclient', version: '0.11.0'
     implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.7.1'
 
-    implementation project(':skellig-test-step-processing')
+    api project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'

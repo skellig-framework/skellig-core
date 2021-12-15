@@ -12,10 +12,8 @@ dependencies {
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
     implementation 'com.ibm.mq:com.ibm.mq.allclient:9.0.4.0'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
-    implementation group: 'io.rest-assured', name: 'json-path', version: '4.3.0'
 
-    implementation project(':skellig-task')
-    implementation project(':skellig-test-step-processing')
+    api project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'

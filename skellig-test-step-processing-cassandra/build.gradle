@@ -7,11 +7,9 @@ sourceSets {
 }
 
 dependencies {
-    implementation 'com.datastax.cassandra:cassandra-driver-core:3.6.0'
-    implementation group: 'com.typesafe', name: 'config'
+    implementation group: 'com.datastax.oss', name: 'java-driver-core', version: '4.13.0'
 
-    implementation project(':skellig-test-step-processing')
-    implementation project(':skellig-test-step-processing-db')
+    api project(':skellig-test-step-processing-db')
 
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'

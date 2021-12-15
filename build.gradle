@@ -1,4 +1,5 @@
 plugins {
+    id 'maven-publish'
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
 }
 
@@ -16,7 +17,7 @@ ext {
 
 allprojects {
     apply plugin: 'jacoco'
-
+    apply plugin: 'maven-publish'
     group 'org.skelligframework'
     version "${version}"
 
@@ -33,6 +34,18 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
 
     version = '2.0.5-beta'
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId = 'org.skelligframework'
+                afterEvaluate {
+                    artifactId = jar.baseName
+                }
+                from components.java
+            }
+        }
+    }
 
     test {
         reports.html.enabled = false
@@ -66,24 +79,12 @@ subprojects {
         }
     }
 
-    configurations {
-        bundler {
-            transitive = true
-        }
-
-        bundlerTansitive {
-            extendsFrom bundler
-            transitive = true
-        }
-    }
-
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
     }
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
-
 
     jar {
         manifest {

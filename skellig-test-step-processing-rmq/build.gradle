@@ -12,8 +12,7 @@ dependencies {
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
     implementation 'com.rabbitmq:amqp-client:3.6.6'
 
-    implementation project(':skellig-task')
-    implementation project(':skellig-test-step-processing')
+    api project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
