@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.exception.TestValueConversionException
+import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
 
 class PropertyParserTest {
     companion object {
@@ -22,15 +23,14 @@ class PropertyParserTest {
 
     @BeforeEach
     fun setUp() {
-
-        propertyParser = PropertyParser { when(it) {
+        propertyParser = PropertyParser({ when(it) {
             CUSTOM_PROPERTY_KEY -> DEFAULT_CUSTOM_PROPERTY_VALUE
             CUSTOM_PROPERTY_KEY_2 -> DEFAULT_CUSTOM_PROPERTY_VALUE_2
             KEY_REF -> CUSTOM_PROPERTY_KEY
             KEY_ONE -> "a"
             KEY_TWO -> "b"
             else -> null
-        } }
+        }}, DefaultValueExtractor.Builder().build())
     }
 
     @Test
@@ -92,6 +92,12 @@ class PropertyParserTest {
     @Test
     fun testWithNestedParametersAndDefault() {
         assertEquals("v3", propertyParser!!.parse("\${key_1 : \${key_2 : v3}}", emptyMap()))
+    }
+
+    @Test
+    fun testWithValueExtractors() {
+        assertEquals("15", propertyParser!!.parse("\${key_1 : 10}.plus(5).toString()", emptyMap()))
+        assertEquals(DEFAULT_CUSTOM_PROPERTY_VALUE.length, propertyParser!!.parse("\${$CUSTOM_PROPERTY_KEY}.length", emptyMap()))
     }
 
     @Test

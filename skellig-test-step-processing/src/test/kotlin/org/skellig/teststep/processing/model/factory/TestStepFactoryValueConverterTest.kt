@@ -5,11 +5,13 @@ import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 
 internal class TestStepFactoryValueConverterTest {
 
     private val testStepValueConverter = mock<TestStepValueConverter>()
-    private val testStepFactoryConverter = TestStepFactoryValueConverter(testStepValueConverter, null)
+    private val valueExtractor = mock<TestStepValueExtractor>()
+    private val testStepFactoryConverter = TestStepFactoryValueConverter(testStepValueConverter, valueExtractor, null)
 
     @Test
     fun testConvertWithNoParametersAndDefaultValue() {

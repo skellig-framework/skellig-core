@@ -1,9 +1,11 @@
 package org.skellig.teststep.processing.model.factory
 
 import org.skellig.teststep.processing.exception.TestValueConversionException
+import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 
 internal class PropertyParser(
-    private val propertyExtractorFunction: ((String) -> String?)?
+    private val propertyExtractorFunction: ((String) -> String?)?,
+    private val valueExtractor: TestStepValueExtractor
 ) {
 
     companion object {
@@ -129,10 +131,18 @@ internal class PropertyParser(
                 else if (result == null && group.isEmpty()) {
                     value
                 } else if (group.isNotEmpty()) {
-                    (result?.toString() ?: "") + group
+                    /* TODO:
+                        For now extractions only available at the end of the parameter object, for ex:
+                        ${a}.toInt().plus(1).
+                        Extractions are NOT available for mid-parameters, for ex:
+                        a / ${b}.plus(1) / c - in this example the code will take '.plus(1) / c'
+                        This feature will be added later */
+                    if (group[0] == '.') valueExtractor.extract((result?.toString() ?: ""), group)
+                    else (result?.toString() ?: "") + group
                 } else {
                     result
                 }
+
             }
             else -> value
         }

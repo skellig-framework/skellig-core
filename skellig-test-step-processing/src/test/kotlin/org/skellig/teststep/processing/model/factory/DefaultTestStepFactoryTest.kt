@@ -27,6 +27,7 @@ class DefaultTestStepFactoryTest {
                                 .withTestScenarioState(testScenarioState)
                                 .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
                                 .build(),
+                            DefaultValueExtractor.Builder().build(),
                             null)
                 )
                 .build()

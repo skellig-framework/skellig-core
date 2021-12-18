@@ -40,7 +40,7 @@ import java.util.*
 abstract class SkelligTestContext : Closeable {
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(SkelligTestContext.javaClass)
+        private val LOGGER: Logger = LoggerFactory.getLogger(SkelligTestContext::class.java)
     }
 
     private var testStepFactoryValueConverter: TestStepFactoryValueConverter? = null
@@ -65,7 +65,7 @@ abstract class SkelligTestContext : Closeable {
         testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader)
 
         testStepFactoryValueConverter = TestStepFactoryValueConverter(
-            createTestStepValueConverter(classLoader, valueExtractor, testScenarioState), propertyExtractorFunction)
+            createTestStepValueConverter(classLoader, valueExtractor, testScenarioState), valueExtractor, propertyExtractorFunction)
 
         rootTestStepProcessor = CompositeTestStepProcessor.Builder()
             .withTestScenarioState(testScenarioState)
@@ -124,7 +124,7 @@ abstract class SkelligTestContext : Closeable {
             ?.toSet() ?: emptySet()
     }
 
-    private fun createConfig(classLoader: ClassLoader, configPath: String?): Config? {
+    protected open fun createConfig(classLoader: ClassLoader, configPath: String?): Config? {
         return configPath?.let {
             if (classLoader.getResource(configPath) == null) {
                 throw IllegalArgumentException("Path to config file $configPath does not exist")

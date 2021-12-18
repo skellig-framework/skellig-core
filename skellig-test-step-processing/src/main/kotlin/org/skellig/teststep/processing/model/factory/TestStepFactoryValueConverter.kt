@@ -1,13 +1,15 @@
 package org.skellig.teststep.processing.model.factory
 
 import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 
 open class TestStepFactoryValueConverter(
     private val testStepValueConverter: TestStepValueConverter,
+    valueExtractor : TestStepValueExtractor,
     getPropertyFunction: ((String) -> String?)?
 ) {
 
-    private val propertyParser = PropertyParser(getPropertyFunction);
+    private val propertyParser = PropertyParser(getPropertyFunction, valueExtractor);
 
     open fun <T> convertValue(value: Any?, parameters: Map<String, Any?>): T? {
         var result: Any? = value

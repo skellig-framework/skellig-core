@@ -136,6 +136,11 @@ class DefaultValueExtractorTest {
                     "params.data.toString(utf8).jsonPath(a).concat(_._)"))
         }
 
+        @Test
+        fun testExtractNumericOperations() {
+            assertEquals("5", testStepValueExtractor.extract(2.toLong(), "plus(3).toString()"))
+            assertEquals(25, testStepValueExtractor.extract("5", "toString().times(5)"))
+        }
     }
 
     inner class SimpleObject(val params: Map<String, Any?>)
