@@ -14,15 +14,15 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
         return extractionParameter?.let {
             var newValue: Any? = value
             splitExtractionParameter(extractionParameter)
-                    .forEach { p ->
-                        val matcher = EXTRACTION_PARAMETER_PATTERN.matcher(p)
-                        newValue = if (matcher.find()) {
-                            val functionName = matcher.group(1)
-                            extract(functionName ?: "", newValue, getExtractionParameter(matcher))
-                        } else {
-                            extract("", newValue, p)
-                        }
+                .forEach { p ->
+                    val matcher = EXTRACTION_PARAMETER_PATTERN.matcher(p)
+                    newValue = if (matcher.find()) {
+                        val functionName = matcher.group(1)
+                        extract(functionName ?: "", newValue, getExtractionParameter(matcher))
+                    } else {
+                        extract("", newValue, p)
                     }
+                }
             return newValue
         } ?: value
     }
@@ -33,41 +33,43 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
         var bracketsOpened = false
         var quoteOpened = false
         extractionParameter.chars()
-                .forEach {
-                    when (val character = it.toChar()) {
-                        '.' -> {
+            .forEach {
+                when (val character = it.toChar()) {
+                    '.' -> {
+                        if (accumulator.isNotEmpty()) {
                             if (!bracketsOpened && !quoteOpened) {
                                 functions.add(accumulator.toString())
                                 accumulator.setLength(0)
                             } else accumulator.append(character)
                         }
-                        '\'', '\"' -> {
-                            if (accumulator.isEmpty() || accumulator[accumulator.length - 1] != '\\') {
-                                quoteOpened = !quoteOpened
-                            } else if (accumulator[accumulator.length - 1] == '\\') {
-                                accumulator.deleteCharAt(accumulator.length - 1)
-                            }
-                            accumulator.append(character)
-                        }
-                        '(' -> {
-                            bracketsOpened = true
-                            accumulator.append(character)
-                        }
-                        ')' -> {
-                            bracketsOpened = false
-                            accumulator.append(character)
-                        }
-                        else -> accumulator.append(character)
                     }
+                    '\'', '\"' -> {
+                        if (accumulator.isEmpty() || accumulator[accumulator.length - 1] != '\\') {
+                            quoteOpened = !quoteOpened
+                        } else if (accumulator[accumulator.length - 1] == '\\') {
+                            accumulator.deleteCharAt(accumulator.length - 1)
+                        }
+                        accumulator.append(character)
+                    }
+                    '(' -> {
+                        bracketsOpened = true
+                        accumulator.append(character)
+                    }
+                    ')' -> {
+                        bracketsOpened = false
+                        accumulator.append(character)
+                    }
+                    else -> accumulator.append(character)
                 }
+            }
         if (accumulator.isNotEmpty()) functions.add(accumulator.toString())
         return functions
     }
 
     private fun extract(extractFunctionName: String, value: Any?, parameter: String): Any? {
         val extractor = valueExtractors
-                .firstOrNull { it.getExtractFunctionName() == extractFunctionName }
-                ?:throw IllegalArgumentException("No extraction function found for name '$extractFunctionName'")
+            .firstOrNull { it.getExtractFunctionName() == extractFunctionName }
+            ?: throw IllegalArgumentException("No extraction function found for name '$extractFunctionName'")
         return extractor.extract(value, parameter)
     }
 
@@ -81,18 +83,30 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
 
     class Builder {
         private val valueExtractors =
-                mutableListOf(
-                        ConcatTestStepValueExtractor(),
-                        JsonPathTestStepValueExtractor(),
-                        JsonToMapTestStepValueExtractor(),
-                        JsonToListTestStepValueExtractor(),
-                        XPathTestStepValueExtractor(),
-                        ObjectTestStepValueExtractor(),
-                        FromIndexTestStepValueExtractor(),
-                        RegexTestStepValueExtractor(),
-                        ToStringTestStepValueExtractor(),
-                        SubStringTestStepValueExtractor(),
-                        SubStringLastTestStepValueExtractor())
+            mutableListOf(
+                ConcatTestStepValueExtractor(),
+                JsonPathTestStepValueExtractor(),
+                JsonToMapTestStepValueExtractor(),
+                JsonToListTestStepValueExtractor(),
+                XPathTestStepValueExtractor(),
+                ObjectTestStepValueExtractor(),
+                FromIndexTestStepValueExtractor(),
+                ToStringTestStepValueExtractor(),
+                SubStringTestStepValueExtractor(),
+                SubStringLastTestStepValueExtractor(),
+                PlusOperatorTestStepValueExtractor(),
+                MinusOperatorTestStepValueExtractor(),
+                TimesOperatorTestStepValueExtractor(),
+                DivOperatorTestStepValueExtractor(),
+                ToIntTestStepValueExtractor(),
+                ToLongTestStepValueExtractor(),
+                RegexTestStepValueExtractor(),
+                ToByteTestStepValueExtractor(),
+                ToShortTestStepValueExtractor(),
+                ToFloatTestStepValueExtractor(),
+                ToDoubleTestStepValueExtractor(),
+                ToBigDecimalTestStepValueExtractor(),
+            )
 
 
         fun valueExtractor(valueExtractor: TestStepValueExtractor) = apply {
