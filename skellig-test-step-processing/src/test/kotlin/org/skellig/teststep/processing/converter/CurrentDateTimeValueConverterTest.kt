@@ -36,7 +36,7 @@ class CurrentDateTimeValueConverterTest {
 
             val dateTime = valueConverter.convert("now()") as LocalDateTime?
 
-            Assertions.assertEquals(expectedTime, dateTime!!.truncatedTo(ChronoUnit.MINUTES))
+            assertEquals(expectedTime, dateTime!!.truncatedTo(ChronoUnit.MINUTES))
         }
 
         @Test
@@ -59,18 +59,16 @@ class CurrentDateTimeValueConverterTest {
 
             val dateTime = valueConverter.convert("now(UTC)") as LocalDateTime?
 
-            Assertions.assertEquals(expectedTime, dateTime!!.truncatedTo(ChronoUnit.MINUTES))
+            assertEquals(expectedTime, dateTime!!.truncatedTo(ChronoUnit.MINUTES))
         }
 
         @Test
         @DisplayName("With invalid timezone Then check date with default timezone returned")
         fun testGetDateTimeWithInvalidTimezone() {
-            val expectedTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES)
-
             val ex = Assertions.assertThrows(TestDataConversionException::class.java)
             { valueConverter.convert("now(invalid)") as LocalDateTime? }
 
-            Assertions.assertEquals("Cannot get current date for the timezone 'invalid'", ex.message)
+            assertEquals("Cannot get current date for the timezone 'invalid'", ex.message)
         }
     }
 
@@ -91,7 +89,7 @@ class CurrentDateTimeValueConverterTest {
             val ex = Assertions.assertThrows(TestDataConversionException::class.java)
             { valueConverter.convert("now().format($formatPattern)") }
 
-            Assertions.assertEquals("Cannot format current date with the format 'invalid'", ex.message)
+            assertEquals("Cannot format current date with the format 'invalid'", ex.message)
         }
 
         @Test
@@ -101,7 +99,7 @@ class CurrentDateTimeValueConverterTest {
 
             val result = valueConverter.convert("now().format($formatPattern)")
 
-            Assertions.assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
+            assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
         }
 
         @Test
@@ -111,7 +109,7 @@ class CurrentDateTimeValueConverterTest {
 
             val result = valueConverter.convert("now().format($formatPattern)")
 
-            Assertions.assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
+            assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
         }
 
         @Test
@@ -121,7 +119,7 @@ class CurrentDateTimeValueConverterTest {
 
             val result = valueConverter.convert("now().format($formatPattern)")
 
-            Assertions.assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
+            assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
         }
 
         @Test
@@ -143,7 +141,7 @@ class CurrentDateTimeValueConverterTest {
 
             val result = valueConverter.convert("now().format($formatPattern)")
 
-            Assertions.assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
+            assertEquals(LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)), result)
         }
 
         @Test
@@ -154,7 +152,7 @@ class CurrentDateTimeValueConverterTest {
 
             val result = valueConverter.convert("now($timezone).format($formatPattern)")
 
-            Assertions.assertEquals(LocalDateTime.now(ZoneId.of(timezone)).format(DateTimeFormatter.ofPattern(formatPattern)), result)
+            assertEquals(LocalDateTime.now(ZoneId.of(timezone)).format(DateTimeFormatter.ofPattern(formatPattern)), result)
         }
 
         @Test
@@ -164,7 +162,7 @@ class CurrentDateTimeValueConverterTest {
 
             val result = valueConverter.convert("_now().format($formatPattern)_")
 
-            Assertions.assertEquals("_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)) + "_", result)
+            assertEquals("_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern(formatPattern)) + "_", result)
         }
     }
 }
