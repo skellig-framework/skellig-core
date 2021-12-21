@@ -113,6 +113,7 @@ class PropertyParserTest {
 
     @Test
     fun testWithValueExtractors() {
+        assertEquals("a", propertyParser!!.parse("#[\${$KEY_ONE}]", emptyMap()))
         assertEquals(1, propertyParser!!.parse("#[\${key.\${1}.end}.size]", mapOf(Pair("1", "a"), Pair("key.a.end", mutableListOf("a")))))
         assertEquals("15", propertyParser!!.parse("#[\${key_1 : 10}.plus(5).toString()]", emptyMap()))
         assertEquals("a - b", propertyParser!!.parse("#[\${$KEY_ONE : #[get(\${$KEY_ONE}).toString()]}.toString()] - b", emptyMap()))
@@ -121,7 +122,7 @@ class PropertyParserTest {
         assertEquals("5 /  custom properties / c", propertyParser!!.parse("\${a} / #[\${$CUSTOM_PROPERTY_KEY}.regex('from([\\w\\s]+)')] / c", mapOf(Pair("a", "5"))))
         assertEquals(" custom properties", propertyParser!!.parse("#[\${$CUSTOM_PROPERTY_KEY}.regex('from([\\w\\s]+)')]", mapOf(Pair("a", "5"))))
         assertEquals("_v_", propertyParser!!.parse("_\${key_#[ \${ $KEY_ONE }.length ]_ : 0}_", mapOf(Pair("key_1_", "v"))))
-        assertEquals("_value_", propertyParser!!.parse("_\${f1 : #[\${key.\${$KEY_ONE : '[{0]'}.2}.a ] }_", mapOf(Pair("key.a.2", mapOf(Pair("a", "value"))))))
+        assertEquals("_value_", propertyParser!!.parse("_\${f1 : #[\${key.\${$KEY_ONE : \"[{0]\"}.2}.a ] }_", mapOf(Pair("key.a.2", mapOf(Pair("a", "value"))))))
         assertEquals("#[get(a).b.c]", propertyParser!!.parse("#[get(a).b.c]", emptyMap()))
         assertEquals("#[get(a).b.c]", propertyParser!!.parse("#[get(a).b.\${ key : c }]", emptyMap()))
     }
@@ -151,7 +152,6 @@ class PropertyParserTest {
 
     @Test
     fun testWithSpecialCharsAsValue() {
-//        assertEquals("{a} - \${:)}} $1 \\", propertyParser!!.parse("\\{\${$KEY_ONE}\\} - $\\{\\:)\\}\\} $1 \\", emptyMap()))
         assertEquals("'{'a'} -  \${:)}} $1 \\'", propertyParser!!.parse("'{'\${$KEY_ONE}'} -  \${:)}} $1 \\'", emptyMap()))
     }
 
