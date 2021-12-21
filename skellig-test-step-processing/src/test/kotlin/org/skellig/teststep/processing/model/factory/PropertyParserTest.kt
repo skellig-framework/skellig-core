@@ -25,15 +25,17 @@ class PropertyParserTest {
 
     @BeforeEach
     fun setUp() {
-        propertyParser = PropertyParser({ when(it) {
-            CUSTOM_PROPERTY_KEY -> DEFAULT_CUSTOM_PROPERTY_VALUE
-            CUSTOM_PROPERTY_KEY_2 -> DEFAULT_CUSTOM_PROPERTY_VALUE_2
-            KEY_REF -> CUSTOM_PROPERTY_KEY
-            KEY_ONE -> "a"
-            KEY_TWO -> "b"
-            KEY_B -> VALUE_B
-            else -> null
-        }}, DefaultValueExtractor.Builder().build())
+        propertyParser = PropertyParser({
+            when (it) {
+                CUSTOM_PROPERTY_KEY -> DEFAULT_CUSTOM_PROPERTY_VALUE
+                CUSTOM_PROPERTY_KEY_2 -> DEFAULT_CUSTOM_PROPERTY_VALUE_2
+                KEY_REF -> CUSTOM_PROPERTY_KEY
+                KEY_ONE -> "a"
+                KEY_TWO -> "b"
+                KEY_B -> VALUE_B
+                else -> null
+            }
+        }, DefaultValueExtractor.Builder().build())
     }
 
     @Test
@@ -58,8 +60,9 @@ class PropertyParserTest {
     }
 
     @Test
-    fun testSimpleParameterWithNoValueAndDefault() {
+    fun testSimpleParameterWithDefault() {
         assertEquals("def", propertyParser!!.parse("\${a:def}", emptyMap()))
+        assertEquals("b_", propertyParser!!.parse("\${a:def_\${c}}_", mapOf(Pair("a", "b"))))
     }
 
     @Test
@@ -110,9 +113,13 @@ class PropertyParserTest {
 
     @Test
     fun testWithValueExtractors() {
+        assertEquals(1, propertyParser!!.parse("#[\${key.\${1}.end}.size]", mapOf(Pair("1", "a"), Pair("key.a.end", mutableListOf("a")))))
         assertEquals("15", propertyParser!!.parse("#[\${key_1 : 10}.plus(5).toString()]", emptyMap()))
-//        assertEquals("15", propertyParser!!.parse("\${key_1 : 10}.plus(5).toString()", emptyMap()))
-//        assertEquals(DEFAULT_CUSTOM_PROPERTY_VALUE.length, propertyParser!!.parse("\${$CUSTOM_PROPERTY_KEY}.length", emptyMap()))
+        assertEquals("a - b", propertyParser!!.parse("#[\${$KEY_ONE : #[get(\${$KEY_ONE}).toString()]}.toString()] - b", emptyMap()))
+        assertEquals(DEFAULT_CUSTOM_PROPERTY_VALUE.length, propertyParser!!.parse("#[\${$CUSTOM_PROPERTY_KEY}.length]", emptyMap()))
+        assertEquals(15, propertyParser!!.parse("#[\${key_1 : 10}.plus(\${a})]", mapOf(Pair("a", "5"))))
+//        assertEquals("5 /  custom properties / c", propertyParser!!.parse("\${a} / #[\${$CUSTOM_PROPERTY_KEY}.regex('from([\\w\\s]+)')] / c", mapOf(Pair("a", "5"))))
+        assertEquals(" custom properties", propertyParser!!.parse("#[\${$CUSTOM_PROPERTY_KEY}.regex('from([\\w\\s]+)')]", mapOf(Pair("a", "5"))))
     }
 
     @Test
@@ -146,13 +153,15 @@ class PropertyParserTest {
 
     @Test
     fun testWithComplexNestedParametersAndAttachedText2() {
-        assertEquals("prefix_" +
-                " __b" + // only 1 space is removed after ':'
-                " __ " + // preserve spaces after '}' and before '${'
-                "a__" + // only 1 spaces is removed for key '1', before '}'
-                " / get(a) / v1 / " + // all spaces must be preserved as nothing is inside '{ }'
-                " ",  // 1 space is removed after ':' and another space removed before '}'
-            propertyParser!!.parse("prefix_\${a :  __\${ $KEY_TWO : 10 } __ \${$KEY_ONE }__} / get(\${$KEY_ONE}) / v1 / \${ b:   }", emptyMap()))
+        assertEquals(
+            "prefix_" +
+                    " __b" + // only 1 space is removed after ':'
+                    " __ " + // preserve spaces after '}' and before '${'
+                    "a__" + // only 1 spaces is removed for key '1', before '}'
+                    " / get(a) / v1 / " + // all spaces must be preserved as nothing is inside '{ }'
+                    " ",  // 1 space is removed after ':' and another space removed before '}'
+            propertyParser!!.parse("prefix_\${a :  __\${ $KEY_TWO : 10 } __ \${$KEY_ONE }__} / get(\${$KEY_ONE}) / v1 / \${ b:   }", emptyMap())
+        )
     }
 
     @Test
@@ -167,7 +176,8 @@ class PropertyParserTest {
     fun testWithManyParametersAndAttachedText() {
         assertEquals(
             "/$DEFAULT_CUSTOM_PROPERTY_VALUE/$DEFAULT_CUSTOM_PROPERTY_VALUE_2/get",
-            propertyParser!!.parse("/\${$CUSTOM_PROPERTY_KEY:default}/\${$CUSTOM_PROPERTY_KEY_2}/get", emptyMap()))
+            propertyParser!!.parse("/\${$CUSTOM_PROPERTY_KEY:default}/\${$CUSTOM_PROPERTY_KEY_2}/get", emptyMap())
+        )
     }
 
     @Test
