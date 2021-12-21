@@ -97,6 +97,8 @@ internal class PropertyParser(
             var chunks: Any? = null
             var isInsideQuotes = false
             var isValueFound = false
+            var containsExtractors = false
+            var extractorsGroupCounter = 0
             var isKeyReading = isNewKeyGroup
             var groupCounter = group
             var finalGroupNumber = 0
@@ -110,6 +112,41 @@ internal class PropertyParser(
                         // which will be processed in method 'convertValue'.
                         // Even if not in extraction path, these quotes will be dropped by 'convertValue'.
                         chunk += value[i]
+                    }
+                    '#' -> {
+                        if (!isInsideQuotes && value[i + 1] == '[') {
+                            var j = i + 2
+                            while (j < value.length - 1) {
+                                if (value[j] == ' ') {
+                                    j++
+                                } else {
+                                    if (value[j] == '$' && value[j + 1] == '{') {
+                                        containsExtractors = true
+                                        extractorsGroupCounter++
+                                    }
+                                    j = value.length
+                                }
+                            }
+                            if (containsExtractors) {
+                                i++
+                                if (chunk.isNotEmpty()) {
+                                    chunks = if (chunks == null) chunk
+                                    else chunks.toString() + chunk
+                                    chunk = ""
+                                }
+                            }
+                            else chunk += value[i]
+                        } else {
+                            chunk += value[i]
+                        }
+                    }
+                    ']' -> {
+                        if (!isInsideQuotes && --extractorsGroupCounter <= 0 && containsExtractors && chunk.isNotEmpty() && chunk[0] == '.') {
+                            chunks = chunk.let { valueExtractor.extract(chunks, chunk) } ?: chunks
+                            chunk = ""
+                        } else {
+                            chunk += value[i]
+                        }
                     }
                     '$' -> {
                         if (!isInsideQuotes && value[i + 1] == '{') {
@@ -128,28 +165,38 @@ internal class PropertyParser(
                             i += 2
                             val result = innerConvert(value, true, 1, parameters)
                             if (chunk.isEmpty() && chunks == null) chunks = result
-                            else if (chunks != null) {
+                            else if (chunks != null && !containsExtractors) {
                                 chunks = chunks.toString() + chunk + result
                                 chunk = ""
-                            }
-                            else chunk += result
+                            } else chunk += result
                         } else {
                             chunk += value[i]
                         }
                     }
-                    ' ' -> if (isInsideQuotes ||
-                        (value[i + 1] != ':' && value[i - 1] != ':' &&
-                                value[i + 1] != '}' /*&& value[i - 1] != '}'*/ &&
-                                /*value[i + 1] != '{' &&*/ value[i - 1] != '{')
-                    ) chunk += value[i]
+                    ' ' -> if (isInsideQuotes || (value[i + 1] != ':' && value[i - 1] != ':' && value[i + 1] != '}' && value[i - 1] != '{')) chunk += value[i]
                     ':' -> {
                         if (!isInsideQuotes) {
                             if (chunks != null && chunk.isNotEmpty()) chunk = chunks.toString() + chunk
-                            convertValue(chunk, parameters)?.let {
+                            val convertedValue = convertValue(chunk, parameters)
+                            if (convertedValue != null) {
                                 isValueFound = true
-                                chunks = if (chunks == null) it else chunks.toString() + it
+                                chunks = if (chunks == null) convertedValue else chunks.toString() + convertedValue
                                 finalGroupNumber = groupCounter - 1
-                            } ?: run { isValueFound = false }
+
+                                var keyGroup = 1
+                                var j = i + 1
+                                var isEnclosedInQuotes = false
+                                while (j < value.length && keyGroup > 0) {
+                                    if (value[j] == '\'') isEnclosedInQuotes = true
+                                    else if (!isEnclosedInQuotes && value[j] == '{') keyGroup++
+                                    else if (!isEnclosedInQuotes && value[j] == '}') keyGroup--
+                                    i++
+                                    j++
+                                }
+                                chunk = ""
+                                isKeyReading = false
+                                continue
+                            } else isValueFound = false
                             chunk = ""
                             isKeyReading = false
                         } else {
