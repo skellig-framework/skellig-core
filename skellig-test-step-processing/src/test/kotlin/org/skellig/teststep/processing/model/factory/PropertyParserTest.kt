@@ -118,8 +118,12 @@ class PropertyParserTest {
         assertEquals("a - b", propertyParser!!.parse("#[\${$KEY_ONE : #[get(\${$KEY_ONE}).toString()]}.toString()] - b", emptyMap()))
         assertEquals(DEFAULT_CUSTOM_PROPERTY_VALUE.length, propertyParser!!.parse("#[\${$CUSTOM_PROPERTY_KEY}.length]", emptyMap()))
         assertEquals(15, propertyParser!!.parse("#[\${key_1 : 10}.plus(\${a})]", mapOf(Pair("a", "5"))))
-//        assertEquals("5 /  custom properties / c", propertyParser!!.parse("\${a} / #[\${$CUSTOM_PROPERTY_KEY}.regex('from([\\w\\s]+)')] / c", mapOf(Pair("a", "5"))))
+        assertEquals("5 /  custom properties / c", propertyParser!!.parse("\${a} / #[\${$CUSTOM_PROPERTY_KEY}.regex('from([\\w\\s]+)')] / c", mapOf(Pair("a", "5"))))
         assertEquals(" custom properties", propertyParser!!.parse("#[\${$CUSTOM_PROPERTY_KEY}.regex('from([\\w\\s]+)')]", mapOf(Pair("a", "5"))))
+        assertEquals("_v_", propertyParser!!.parse("_\${key_#[ \${ $KEY_ONE }.length ]_ : 0}_", mapOf(Pair("key_1_", "v"))))
+        assertEquals("_value_", propertyParser!!.parse("_\${f1 : #[\${key.\${$KEY_ONE : '[{0]'}.2}.a ] }_", mapOf(Pair("key.a.2", mapOf(Pair("a", "value"))))))
+        assertEquals("#[get(a).b.c]", propertyParser!!.parse("#[get(a).b.c]", emptyMap()))
+        assertEquals("#[get(a).b.c]", propertyParser!!.parse("#[get(a).b.\${ key : c }]", emptyMap()))
     }
 
     @Test

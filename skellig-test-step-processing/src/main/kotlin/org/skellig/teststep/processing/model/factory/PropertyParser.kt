@@ -78,7 +78,7 @@ internal class PropertyParser(
     fun parse(value: Any?, parameters: Map<String, Any?>): Any? =
         when (value) {
             is String -> {
-                val result = InnerPropertyParser(this, propertyExtractorFunction, valueExtractor).innerConvert(value, false, 0, parameters)
+                val result = InnerPropertyParser(this, propertyExtractorFunction, valueExtractor).innerConvert(value, false, 0, false, 0, parameters)
                 if (NULL == result) null else result
             }
             else -> value
@@ -92,13 +92,15 @@ internal class PropertyParser(
 
         private var i = 0
 
-        fun innerConvert(value: String, isNewKeyGroup: Boolean, group: Int, parameters: Map<String, Any?>): Any? {
+        fun innerConvert(value: String, isNewKeyGroup: Boolean, group: Int,
+                         isNewGroupWithExtractors: Boolean = false, newExtractorsGroupCounter: Int = 0,
+                         parameters: Map<String, Any?>): Any? {
             var chunk = ""
             var chunks: Any? = null
             var isInsideQuotes = false
             var isValueFound = false
-            var containsExtractors = false
-            var extractorsGroupCounter = 0
+            var containsExtractors = isNewGroupWithExtractors
+            var extractorsGroupCounter = newExtractorsGroupCounter
             var isKeyReading = isNewKeyGroup
             var groupCounter = group
             var finalGroupNumber = 0
@@ -128,12 +130,14 @@ internal class PropertyParser(
                                 }
                             }
                             if (containsExtractors) {
-                                i++
-                                if (chunk.isNotEmpty()) {
-                                    chunks = if (chunks == null) chunk
-                                    else chunks.toString() + chunk
+                                i += 2
+                                val result = innerConvert(value, false, 0, true, 1, parameters)
+
+                                if (chunk.isEmpty() && chunks == null) chunks = result
+                                else if (chunks != null) {
+                                    chunks = chunks.toString() + chunk + result
                                     chunk = ""
-                                }
+                                } else chunk += result
                             }
                             else chunk += value[i]
                         } else {
@@ -144,6 +148,7 @@ internal class PropertyParser(
                         if (!isInsideQuotes && --extractorsGroupCounter <= 0 && containsExtractors && chunk.isNotEmpty() && chunk[0] == '.') {
                             chunks = chunk.let { valueExtractor.extract(chunks, chunk) } ?: chunks
                             chunk = ""
+                            if (extractorsGroupCounter == 0) break
                         } else {
                             chunk += value[i]
                         }
@@ -163,7 +168,7 @@ internal class PropertyParser(
                             isValueFound = false
 //                        isKeyReading = true
                             i += 2
-                            val result = innerConvert(value, true, 1, parameters)
+                            val result = innerConvert(value, true, 1, false, 0, parameters)
                             if (chunk.isEmpty() && chunks == null) chunks = result
                             else if (chunks != null && !containsExtractors) {
                                 chunks = chunks.toString() + chunk + result
@@ -173,11 +178,12 @@ internal class PropertyParser(
                             chunk += value[i]
                         }
                     }
-                    ' ' -> if (isInsideQuotes || (value[i + 1] != ':' && value[i - 1] != ':' && value[i + 1] != '}' && value[i - 1] != '{')) chunk += value[i]
+                    ' ' -> if (isInsideQuotes || (value[i + 1] != ':' && value[i - 1] != ':' && value[i + 1] != '}' && value[i - 1] != '{'
+                                && value[i + 1] != ']' && value[i - 1] != '[')) chunk += value[i]
                     ':' -> {
                         if (!isInsideQuotes) {
                             if (chunks != null && chunk.isNotEmpty()) chunk = chunks.toString() + chunk
-                            val convertedValue = convertValue(chunk, parameters)
+                            val convertedValue = getPropertyValue(chunk, parameters)
                             if (convertedValue != null) {
                                 isValueFound = true
                                 chunks = if (chunks == null) convertedValue else chunks.toString() + convertedValue
@@ -187,7 +193,7 @@ internal class PropertyParser(
                                 var j = i + 1
                                 var isEnclosedInQuotes = false
                                 while (j < value.length && keyGroup > 0) {
-                                    if (value[j] == '\'') isEnclosedInQuotes = true
+                                    if (value[j] == '\'') isEnclosedInQuotes = !isEnclosedInQuotes
                                     else if (!isEnclosedInQuotes && value[j] == '{') keyGroup++
                                     else if (!isEnclosedInQuotes && value[j] == '}') keyGroup--
                                     i++
@@ -208,7 +214,7 @@ internal class PropertyParser(
                             groupCounter--
                             if (isKeyReading) {
                                 if (chunks != null && chunk.isNotEmpty()) chunk = chunks.toString() + chunk
-                                convertValue(chunk, parameters)?.let {
+                                getPropertyValue(chunk, parameters)?.let {
                                     chunks = if (chunks == null) it else chunks.toString() + it
                                 } ?: run {
                                     throw TestValueConversionException("No property or parameter found for key $chunk")
@@ -233,41 +239,6 @@ internal class PropertyParser(
             }
 
             return if (chunk.isNotEmpty()) (chunks?.toString() ?: "") + chunk else chunks
-        }
-
-        private fun convertValue(value: String, parameters: Map<String, Any?>): Any? {
-            var valueToConvert = ""
-            var extractionPath = ""
-            var isExtractionPath = false
-            var isInsideQuotes = false
-            var i = 0
-            while (i < value.length) {
-                if (isExtractionPath) {
-                    extractionPath += value[i]
-                } else {
-                    when (value[i]) {
-                        '"', '\'' -> {
-                            if (i == 0 || value[i - 1] != '\\') {
-                                isInsideQuotes = !isInsideQuotes
-                            } else valueToConvert += value[i]
-                        }
-                        '.' -> {
-                            if (!isInsideQuotes) isExtractionPath = true
-                            else valueToConvert += value[i]
-                        }
-                        else -> valueToConvert += value[i]
-                    }
-                }
-                i++
-            }
-
-//            return convertWithExtractions(valueToConvert, extractionPath, parameters)
-            return getPropertyValue(value, parameters)
-        }
-
-        private fun convertWithExtractions(valueToConvert: String, extractionPath: String?, parameters: Map<String, Any?>): Any? {
-            val result = getPropertyValue(valueToConvert, parameters)
-            return extractionPath?.let { valueExtractor.extract(result, extractionPath) } ?: result
         }
 
         private fun getPropertyValue(propertyKey: String, parameters: Map<String, Any?>): Any? {
