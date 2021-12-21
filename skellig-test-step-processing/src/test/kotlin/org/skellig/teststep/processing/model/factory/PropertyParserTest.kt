@@ -15,8 +15,10 @@ class PropertyParserTest {
         private const val KEY_ONE = "1"
         private const val KEY_TWO = "2"
         private const val KEY_REF = "a-b-1"
+        private const val KEY_B = "key_b"
         private const val DEFAULT_CUSTOM_PROPERTY_VALUE = "from custom properties"
         private const val DEFAULT_CUSTOM_PROPERTY_VALUE_2 = "from custom properties 2"
+        private const val VALUE_B = "value b"
     }
 
     private var propertyParser: PropertyParser? = null
@@ -29,6 +31,7 @@ class PropertyParserTest {
             KEY_REF -> CUSTOM_PROPERTY_KEY
             KEY_ONE -> "a"
             KEY_TWO -> "b"
+            KEY_B -> VALUE_B
             else -> null
         }}, DefaultValueExtractor.Builder().build())
     }
@@ -62,6 +65,17 @@ class PropertyParserTest {
     @Test
     fun testTwoParametersMerged() {
         assertEquals("ab", propertyParser!!.parse("\${1}\${2}", emptyMap()))
+        assertEquals(
+            "$DEFAULT_CUSTOM_PROPERTY_VALUE - $DEFAULT_CUSTOM_PROPERTY_VALUE",
+            propertyParser!!.parse("\${$CUSTOM_PROPERTY_KEY} - \${$CUSTOM_PROPERTY_KEY}", emptyMap())
+        )
+    }
+
+    @Test
+    fun testNestedParameters() {
+        assertEquals("_value b", propertyParser!!.parse("_\${key_\${2}}", emptyMap()))
+        assertEquals("value b", propertyParser!!.parse("\${f_\${3:0} : \${key_\${2}}}", emptyMap()))
+        assertEquals("value b", propertyParser!!.parse("\${f_\${3:0} : \${key_\${2:0}}}", emptyMap()))
     }
 
     @Test
@@ -76,12 +90,12 @@ class PropertyParserTest {
 
     @Test
     fun testParameterWithWrappedSpecialCharacter() {
-        assertEquals("'\${b} - {}' {}", propertyParser!!.parse("\${a:'\${b} - {}'} \\{\\}", emptyMap()))
+        assertEquals("'\${b} - {}' '{}'", propertyParser!!.parse("\${a:'\${b} - {}'} '{}'", emptyMap()))
     }
 
     @Test
     fun testNoParameterWithSpecialCharacter() {
-        assertEquals("([\\w]{10})", propertyParser!!.parse("([\\w]\\{10\\})", emptyMap()))
+        assertEquals("('[\\w]{10}')", propertyParser!!.parse("('[\\w]{10}')", emptyMap()))
     }
 
     @Test
@@ -96,8 +110,9 @@ class PropertyParserTest {
 
     @Test
     fun testWithValueExtractors() {
-        assertEquals("15", propertyParser!!.parse("\${key_1 : 10}.plus(5).toString()", emptyMap()))
-        assertEquals(DEFAULT_CUSTOM_PROPERTY_VALUE.length, propertyParser!!.parse("\${$CUSTOM_PROPERTY_KEY}.length", emptyMap()))
+        assertEquals("15", propertyParser!!.parse("#[\${key_1 : 10}.plus(5).toString()]", emptyMap()))
+//        assertEquals("15", propertyParser!!.parse("\${key_1 : 10}.plus(5).toString()", emptyMap()))
+//        assertEquals(DEFAULT_CUSTOM_PROPERTY_VALUE.length, propertyParser!!.parse("\${$CUSTOM_PROPERTY_KEY}.length", emptyMap()))
     }
 
     @Test
@@ -120,12 +135,13 @@ class PropertyParserTest {
 
     @Test
     fun testWithComplexNestedParametersAndAttachedText() {
-        assertEquals("id:v3_end", propertyParser!!.parse("\${key_1 : id:\${key_2 : \${id:v3}_end}}", emptyMap()))
+        assertEquals("'id:'v3_end", propertyParser!!.parse("\${key_1 : 'id:'\${key_2 : \${id:v3}_end}}", emptyMap()))
     }
 
     @Test
     fun testWithSpecialCharsAsValue() {
-        assertEquals("{a} - \${:)}} $1 \\", propertyParser!!.parse("\\{\${$KEY_ONE}\\} - $\\{\\:)\\}\\} $1 \\", emptyMap()))
+//        assertEquals("{a} - \${:)}} $1 \\", propertyParser!!.parse("\\{\${$KEY_ONE}\\} - $\\{\\:)\\}\\} $1 \\", emptyMap()))
+        assertEquals("'{'a'} -  \${:)}} $1 \\'", propertyParser!!.parse("'{'\${$KEY_ONE}'} -  \${:)}} $1 \\'", emptyMap()))
     }
 
     @Test
@@ -152,15 +168,6 @@ class PropertyParserTest {
         assertEquals(
             "/$DEFAULT_CUSTOM_PROPERTY_VALUE/$DEFAULT_CUSTOM_PROPERTY_VALUE_2/get",
             propertyParser!!.parse("/\${$CUSTOM_PROPERTY_KEY:default}/\${$CUSTOM_PROPERTY_KEY_2}/get", emptyMap()))
-    }
-
-
-    @Test
-    fun testWithCustomProperties() {
-        assertEquals(
-            "$DEFAULT_CUSTOM_PROPERTY_VALUE - $DEFAULT_CUSTOM_PROPERTY_VALUE",
-            propertyParser!!.parse("\${$CUSTOM_PROPERTY_KEY} - \${$CUSTOM_PROPERTY_KEY}", emptyMap())
-        )
     }
 
     @Test
