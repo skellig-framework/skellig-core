@@ -39,6 +39,12 @@ class PropertyParserTest {
     }
 
     @Test
+    fun testEmptyValue() {
+        assertEquals("", propertyParser!!.parse("", emptyMap()))
+        assertNull(propertyParser!!.parse(null, emptyMap()))
+    }
+
+    @Test
     fun testSimpleParameterWithNoValue() {
         Assertions.assertThrows(TestValueConversionException::class.java) {
             propertyParser!!.parse("\${a}", emptyMap())

@@ -15,13 +15,16 @@ internal class PropertyParser(
     fun parse(value: Any?, parameters: Map<String, Any?>): Any? =
         when (value) {
             is String -> {
-                val result = InnerPropertyParser(this, propertyExtractorFunction, valueExtractor).innerParse(value, false, 0, false, 0, parameters)
+                val result =
+                    if (value.isEmpty()) ""
+                    else InnerPropertyParser(this, propertyExtractorFunction, valueExtractor).innerParse(value, false, 0, false, 0, parameters)
+
                 if (NULL == result) null else result
             }
             else -> value
         }
 
-   inner class InnerPropertyParser(
+    inner class InnerPropertyParser(
         private val parser: PropertyParser,
         private val propertyExtractorFunction: ((String) -> String?)?,
         private val valueExtractor: TestStepValueExtractor
