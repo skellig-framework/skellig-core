@@ -1,5 +1,6 @@
 package org.skellig.performance.runner.service.controller
 
+import org.skellig.teststep.processor.performance.model.factory.PerformanceTestStepFactory
 import org.skellig.teststep.runner.context.SkelligTestContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -11,7 +12,6 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.HashMap
 
 @Controller
 class SkelligPerformancePageController {
@@ -40,9 +40,11 @@ class SkelligPerformancePageController {
 
     @GetMapping("/")
     fun home(model: Model): String {
-        skelligTestContext?.initialize(javaClass.classLoader,
-                                       testSteps ?: error("No paths to test steps were provided"),
-                                       configPath)
+        skelligTestContext?.initialize(
+            javaClass.classLoader,
+            testSteps ?: error("No paths to test steps were provided"),
+            configPath
+        )
         val testStepRegistry = skelligTestContext!!.getTestStepRegistry()
         val properties = skelligTestContext!!.testStepKeywordsProperties
         var idCounter = 0
@@ -53,8 +55,10 @@ class SkelligPerformancePageController {
                 val rps = getRps(it, properties)
                 val timeToRun = getTimeToRun(it, properties)
                 val parameters = findAllParameters(it, properties)
-                PerformanceTestDetails(idCounter++, name, timeToRun?.first, timeToRun?.second,
-                                       rps?.first, rps?.second, parameters)
+                PerformanceTestDetails(
+                    (idCounter++).toString(), name, timeToRun?.first, timeToRun?.second,
+                    rps?.first, rps?.second, parameters
+                )
             }
 
         return "index"
@@ -64,7 +68,7 @@ class SkelligPerformancePageController {
         val timeToRun = rawTestStep[getTimeToRunKeyword(properties)]?.toString()
         return timeToRun?.let {
             tryExtractParameterWithDefaultValue(it)
-                ?: Pair(null, LocalTime.ofSecondOfDay(it.toInt() * 60L).format(TIME_PATTERN))
+                ?: Pair(null, LocalTime.parse(it, TIME_PATTERN).format(TIME_PATTERN))
         }
     }
 
@@ -95,18 +99,23 @@ class SkelligPerformancePageController {
     }
 
     private fun findAllParameters(rawTestStep: Map<String, Any?>?): Collection<Parameter> {
+        val variables = rawTestStep?.get("variables") as Map<String, Any?>?
         return rawTestStep?.flatMap {
-            val parameterNames = mutableListOf<Parameter>()
+            val parameterNames = mutableSetOf<Parameter>()
             val matcher = PARAMETER_REGEX.matcher(it.key)
             while (matcher.find()) {
-                parameterNames.add(Parameter(matcher.group(1)))
+                val paramName = matcher.group(1)
+                if (variables?.containsKey(paramName) == false)
+                    parameterNames.add(Parameter(paramName))
             }
             val valueMatcher = PARAMETER_REGEX.matcher(it.value?.toString() ?: "")
             while (valueMatcher.find()) {
-                parameterNames.add(Parameter(valueMatcher.group(1)))
+                val paramName = valueMatcher.group(1)
+                if (variables?.containsKey(paramName) == false)
+                    parameterNames.add(Parameter(paramName))
             }
             parameterNames
-        } ?: emptyList()
+        }?.toSet() ?: emptyList()
     }
 
     private fun tryExtractParameterWithDefaultValue(value: String): Pair<String?, String?>? {
@@ -127,7 +136,7 @@ class SkelligPerformancePageController {
     }
 
     class PerformanceTestDetails(
-        val id: Int,
+        val id: String?,
         val name: String,
         val timeToRunParam: String?,
         val timeToRun: String?,
@@ -135,6 +144,8 @@ class SkelligPerformancePageController {
         val rps: String?,
         val parameters: Collection<Parameter>?
     ) {
+        constructor() : this("0", "", null, null, null, null, null)
+
         fun isRpsSet(): Boolean = rpsParam == null && rps != null
 
         fun isTimeToRunSet(): Boolean = timeToRunParam == null && timeToRun != null
@@ -154,14 +165,22 @@ class SkelligPerformancePageController {
         override fun toString(): String {
             return name
         }
-
-
     }
 
     class Parameter(
         val paramName: String,
         var paramValue: Any?
     ) {
+        constructor() : this("")
+
         constructor(paramName: String) : this(paramName, null)
+
+        override fun equals(other: Any?): Boolean {
+            return (other as? Parameter)?.paramName == paramName
+        }
+
+        override fun hashCode(): Int {
+            return paramName.hashCode()
+        }
     }
 }

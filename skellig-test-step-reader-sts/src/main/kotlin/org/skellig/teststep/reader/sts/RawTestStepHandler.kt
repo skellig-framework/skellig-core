@@ -9,6 +9,9 @@ class RawTestStepHandler : Closeable {
     companion object {
         private const val NULL = "null"
         private const val NEW_LINE_CHAR = '\n'
+        private const val COMMENT_CHAR = '/'
+        private const val PARAM_CHAR = '$'
+        private const val FUNCTION_CHAR = '#'
     }
 
     private var isSpecialCharacter: Boolean = false     // ",',\,\n,\r,\t,
@@ -17,16 +20,29 @@ class RawTestStepHandler : Closeable {
     private var parameterBrackets = 0
     private var propertyName: String? = null
     private var isEnclosedText = false
+    private var commentCharsCounter = 0
     private var rawTestStepBuilder: StringBuilder = StringBuilder()
     private val spacesBuilder = StringBuilder()
 
     @Throws(IOException::class)
     fun handle(character: Char, reader: StsFileBufferedReader, rawTestSteps: MutableList<Map<String, Any?>>) {
         when (character) {
-            '#' -> handleCommentCharacter(reader)
-            '(' -> handleOpenParenthesis(character)
-            ')' -> handleClosedParenthesis(character, reader, rawTestSteps)
-            else -> addCharacter(character)
+            COMMENT_CHAR -> handleCommentCharacter(reader)
+            else -> {
+                checkCommentChar()
+                when (character) {
+                    '(' -> handleOpenParenthesis(character)
+                    ')' -> handleClosedParenthesis(character, reader, rawTestSteps)
+                    else -> addCharacter(character)
+                }
+            }
+        }
+    }
+
+    private fun checkCommentChar() {
+        if (commentCharsCounter > 0) {
+            commentCharsCounter = 0
+            addCharacter(COMMENT_CHAR)
         }
     }
 
@@ -35,26 +51,29 @@ class RawTestStepHandler : Closeable {
         emptyBuffer()
         var character: Char
         while (reader.read().also { character = it.toChar() } > 0) {
-            if (character == '#' && !isEnclosedText) {
+            if (character == COMMENT_CHAR && !isEnclosedText) {
                 handleCommentCharacter(reader, rawTestStep)
-            } else if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
-                handleSingleQuoteCharacter()
-            } else if (!isEnclosedText) {  // skip handling special characters if enclosed in single quotes
-                if (character == '}') {
-                    if (handleClosedBracketCharacter(character, rawTestStep)) break
-                } else if (character == '{') {
-                    handleOpenCurlyBracketCharacter(character, reader, rawTestStep)
-                } else if (character == '=') {
-                    handleEqualSignCharacter()
-                } else if (character == '[' && rawTestStepBuilder.isNotEmpty()) {
-                    handleArrayBracketCharacter(reader, rawTestStep)
-                } else if (isNewLineCharacter(character)) {
-                    handleNewLineCharacter(character, rawTestStep)
+            } else {
+                checkCommentChar()
+                if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
+                    handleSingleQuoteCharacter()
+                } else if (!isEnclosedText) {  // skip handling special characters if enclosed in single quotes
+                    if (character == '}') {
+                        if (handleClosedBracketCharacter(character, rawTestStep)) break
+                    } else if (character == '{') {
+                        handleOpenCurlyBracketCharacter(character, reader, rawTestStep)
+                    } else if (character == '=') {
+                        handleEqualSignCharacter()
+                    } else if (character == '[' && rawTestStepBuilder.isNotEmpty()) {
+                        handleArrayBracketCharacter(character, reader, rawTestStep)
+                    } else if (isNewLineCharacter(character)) {
+                        handleNewLineCharacter(character, rawTestStep)
+                    } else {
+                        addCharacter(character)
+                    }
                 } else {
                     addCharacter(character)
                 }
-            } else {
-                addCharacter(character)
             }
         }
         return rawTestStep
@@ -66,22 +85,25 @@ class RawTestStepHandler : Closeable {
         var character: Char
         val result = mutableListOf<Any>()
         while (reader.read().also { character = it.toChar() } > 0) {
-            if (character == '#' && !isEnclosedText) {
+            if (character == COMMENT_CHAR && !isEnclosedText) {
                 handleCommentCharacter(reader)
-            } else if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
-                handleSingleQuoteCharacter()
-            } else if (character == '{') {
-                handleListOpenedCurlyBracketCharacter(character, reader, result)
-            } else if ((isNewLineCharacter(character)) && rawTestStepBuilder.isNotEmpty()) {
-                result.add(rawTestStepBuilder.toString())
-                emptyBuffer()
-            } else if (character == ']') {
-                if (rawTestStepBuilder.isNotEmpty()) {
-                    result.add(rawTestStepBuilder.toString())
-                }
-                break
             } else {
-                addCharacter(character)
+                checkCommentChar()
+                if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
+                    handleSingleQuoteCharacter()
+                } else if (character == '{') {
+                    handleListOpenedCurlyBracketCharacter(character, reader, result)
+                } else if ((isNewLineCharacter(character)) && rawTestStepBuilder.isNotEmpty()) {
+                    result.add(rawTestStepBuilder.toString())
+                    emptyBuffer()
+                } else if (character == ']') {
+                    if (rawTestStepBuilder.isNotEmpty()) {
+                        result.add(rawTestStepBuilder.toString())
+                    }
+                    break
+                } else {
+                    addCharacter(character)
+                }
             }
         }
         return result
@@ -100,7 +122,7 @@ class RawTestStepHandler : Closeable {
     }
 
     private fun handleClosedBracketCharacter(character: Char, rawTestStep: MutableMap<String, Any?>): Boolean {
-        if (parameterBrackets<=0) {
+        if (parameterBrackets <= 0) {
             // for '}' if paramName is not null then add its value
             openedBrackets--
             parameterBrackets = 0
@@ -130,9 +152,13 @@ class RawTestStepHandler : Closeable {
     }
 
     @Throws(IOException::class)
-    private fun handleArrayBracketCharacter(reader: StsFileBufferedReader, rawTestStep: MutableMap<String, Any?>) {
-        rawTestStep[rawTestStepBuilder.toString()] = readList(reader)
-        emptyBuffer()
+    private fun handleArrayBracketCharacter(character: Char, reader: StsFileBufferedReader, rawTestStep: MutableMap<String, Any?>) {
+        if (rawTestStepBuilder.isNotEmpty() && !isPreviousCharacterNotFunctionSign()) {
+            addCharacter(character)
+        } else {
+            rawTestStep[rawTestStepBuilder.toString()] = readList(reader)
+            emptyBuffer()
+        }
     }
 
     private fun handleEqualSignCharacter() {
@@ -161,19 +187,27 @@ class RawTestStepHandler : Closeable {
     }
 
     private fun handleCommentCharacter(reader: StsFileBufferedReader) {
-        reader.readUntilFindCharacter(NEW_LINE_CHAR)
+        if (isEnclosedText) {
+            addCharacter(COMMENT_CHAR)
+        } else if (++commentCharsCounter == 2) {
+            commentCharsCounter = 0
+            reader.readUntilFindCharacter(NEW_LINE_CHAR)
+        }
     }
 
     @Throws(IOException::class)
     private fun handleCommentCharacter(reader: StsFileBufferedReader, rawTestStep: MutableMap<String, Any?>) {
-        reader.readUntilFindCharacter(NEW_LINE_CHAR)
-        //TODO: if comment goes after value enclosed in quotes, it can trim spaces
-        // in case if comment goes after the value, try to trim spaces
-        val value = rawTestStepBuilder.trim()
-        if (value.isNotEmpty()) {
-            // if value not empty then assign it
-            rawTestStepBuilder = rawTestStepBuilder.clear().append(value)
-            handleNewLineCharacter(NEW_LINE_CHAR, rawTestStep)
+        if (++commentCharsCounter == 2) {
+            commentCharsCounter = 0
+            reader.readUntilFindCharacter(NEW_LINE_CHAR)
+            //TODO: if comment goes after value enclosed in quotes, it can trim spaces
+            // in case if comment goes after the value, try to trim spaces
+            val value = rawTestStepBuilder.trim()
+            if (value.isNotEmpty()) {
+                // if value not empty then assign it
+                rawTestStepBuilder = rawTestStepBuilder.clear().append(value)
+                handleNewLineCharacter(NEW_LINE_CHAR, rawTestStep)
+            }
         }
     }
 
@@ -260,7 +294,11 @@ class RawTestStepHandler : Closeable {
     }
 
     private fun isPreviousCharacterNotParameterSign(): Boolean {
-        return rawTestStepBuilder[rawTestStepBuilder.length - 1] != '$'
+        return rawTestStepBuilder[rawTestStepBuilder.length - 1] != PARAM_CHAR
+    }
+
+    private fun isPreviousCharacterNotFunctionSign(): Boolean {
+        return rawTestStepBuilder[rawTestStepBuilder.length - 1] != FUNCTION_CHAR
     }
 
     private fun emptyBuffer() {

@@ -163,13 +163,13 @@ class DefaultValueConverter private constructor(
         private val valueConverters = mutableListOf<TestStepValueConverter>()
         private var testScenarioState: TestScenarioState? = null
         private var testStepValueExtractor: TestStepValueExtractor? = null
-        private var getPropertyFunction: ((String) -> String?)? = null
+        private var getPropertyFunction: ((String) -> Any?)? = null
         private var classLoader: ClassLoader? = null
 
         fun withTestScenarioState(testScenarioState: TestScenarioState?) =
             apply { this.testScenarioState = testScenarioState }
 
-        fun withGetPropertyFunction(getPropertyFunction: ((String) -> String?)?) =
+        fun withGetPropertyFunction(getPropertyFunction: ((String) -> Any?)?) =
             apply { this.getPropertyFunction = getPropertyFunction }
 
         fun withClassLoader(classLoader: ClassLoader?) = apply { this.classLoader = classLoader }

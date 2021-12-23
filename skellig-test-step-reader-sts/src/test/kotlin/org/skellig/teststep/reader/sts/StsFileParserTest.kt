@@ -36,7 +36,8 @@ class StsFileParserTest {
                 { assertEquals("POST", firstTestStep["method"]) },
                 { assertEquals("\${baseUrl}/a/b/c", firstTestStep["url"]) },
                 { assertEquals("v 1 2 3", getValueFromMap(firstTestStep, "payload", "json", "value")) },
-                { assertEquals("go", getValueFromMap(firstTestStep, "payload", "json", "command")) }
+                { assertEquals("go", getValueFromMap(firstTestStep, "payload", "json", "command")) },
+                { assertEquals("#[\${a : #[\${b}.length]}.size]", getValueFromMap(firstTestStep, "payload", "json", "v2")) }
         )
         assertAll(
                 { assertEquals("Send \\d{1} message (.*) from csv \\(test\\)", secondTestStep["name"]) },
@@ -45,7 +46,7 @@ class StsFileParserTest {
                 { assertEquals("\${user}", getValueFromMap(secondTestStep, "auth", "username")) },
                 { assertEquals("\${password}\\_", getValueFromMap(secondTestStep, "auth", "password")) },
                 {
-                    assertEquals("/resources/\"templates\"/msg_get(id).ftl",
+                    assertEquals("//resources/\"templates\"/msg_get(id).ftl",
                             getValueFromMap(secondTestStep, "body", "template", "file"))
                 },
                 {

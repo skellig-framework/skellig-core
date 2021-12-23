@@ -45,6 +45,11 @@ class PropertyParserTest {
     }
 
     @Test
+    fun testNoParametersWithSpecialChars() {
+        assertEquals("00:10:20", propertyParser!!.parse("00:10:20", emptyMap()))
+    }
+
+    @Test
     fun testSimpleParameterWithNoValue() {
         Assertions.assertThrows(TestValueConversionException::class.java) {
             propertyParser!!.parse("\${a}", emptyMap())
@@ -100,6 +105,7 @@ class PropertyParserTest {
     @Test
     fun testParameterWithWrappedSpecialCharacter() {
         assertEquals("'\${b} - {}' '{}'", propertyParser!!.parse("\${a:'\${b} - {}'} '{}'", emptyMap()))
+        assertEquals("match('[\\w]{44}')", propertyParser!!.parse("match('[\\w]{44}')", emptyMap()))
     }
 
     @Test
@@ -131,6 +137,8 @@ class PropertyParserTest {
         assertEquals("_value_", propertyParser!!.parse("_\${f1 : #[\${key.\${$KEY_ONE : \"[{0]\"}.2}.a ] }_", mapOf(Pair("key.a.2", mapOf(Pair("a", "value"))))))
         assertEquals("#[get(a).b.c]", propertyParser!!.parse("#[get(a).b.c]", emptyMap()))
         assertEquals("#[get(a).b.c]", propertyParser!!.parse("#[get(a).b.\${ key : c }]", emptyMap()))
+        assertEquals(11, propertyParser!!.parse("#[\${a}.times(10).plus(\${b}).minus(100).div(\${b})]",
+            mapOf(Pair("a", 20), Pair("b", 10))))
     }
 
     @Test

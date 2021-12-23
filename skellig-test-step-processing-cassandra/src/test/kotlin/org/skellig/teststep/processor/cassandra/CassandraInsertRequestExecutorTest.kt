@@ -48,7 +48,7 @@ internal class CassandraInsertRequestExecutorTest {
                  { Assertions.assertEquals(response, actualResponse) },
                  {
                     verify(session).execute(argThat<SimpleStatement>{ o : SimpleStatement ->
-                        o.query == sql && o.namedValues.size == 4
+                        o.query == sql && o.positionalValues.size == 4
                     })
                 })
     }

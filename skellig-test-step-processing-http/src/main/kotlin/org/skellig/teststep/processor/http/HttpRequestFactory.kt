@@ -14,7 +14,7 @@ import org.skellig.teststep.processor.http.model.HttpRequestDetails
 import java.io.UnsupportedEncodingException
 import java.nio.charset.StandardCharsets
 
-class HttpRequestFactory(val baseUrl: String?) {
+class HttpRequestFactory(private val baseUrl: String?) {
 
     fun createRequest(httpRequestDetails: HttpRequestDetails): HttpUriRequest {
         val request: HttpRequestBase
@@ -25,6 +25,7 @@ class HttpRequestFactory(val baseUrl: String?) {
                     .setConnectTimeout(httpRequestDetails.timeout)
                     .setConnectionRequestTimeout(httpRequestDetails.timeout)
                     .build()
+            httpRequestDetails.headers.forEach { request.addHeader(it.key, it.value) }
         } catch (e: UnsupportedEncodingException) {
             throw TestStepProcessingException(e.message)
         }
@@ -38,7 +39,6 @@ class HttpRequestFactory(val baseUrl: String?) {
             HttpMethodName.DELETE -> HttpDelete(url)
             HttpMethodName.POST -> createRequestWithEntity(httpRequestDetails, HttpPost(url))
             HttpMethodName.PUT -> createRequestWithEntity(httpRequestDetails, HttpPut(url))
-            else -> throw IllegalArgumentException("Supported HTTP methods: " + HttpMethodName.values().contentToString())
         }
     }
 
@@ -59,7 +59,7 @@ class HttpRequestFactory(val baseUrl: String?) {
             request.entity = StringEntity(httpRequestDetails.body)
         } else if (httpRequestDetails.formParams.isNotEmpty()) {
             val params = mutableListOf<NameValuePair>()
-            httpRequestDetails.formParams.forEach { (key: String, value: String?) -> params.add(BasicNameValuePair(key, value)) }
+            httpRequestDetails.formParams.forEach { params.add(BasicNameValuePair(it.key, it.value)) }
             request.entity = UrlEncodedFormEntity(params)
         }
         return request as HttpRequestBase

@@ -9,7 +9,7 @@ internal class FeatureBuilder {
 
     companion object {
         private const val TAG_PREFIX = "@"
-        private const val COMMENT_PREFIX = "#"
+        private const val COMMENT_PREFIX = "//"
         private const val TEST_SCENARIO_DATA_PREFIX = "Data:"
         private const val TEST_SCENARIO_PREFIX = "Test:"
         private const val FEATURE_NAME_PREFIX = "Name:"

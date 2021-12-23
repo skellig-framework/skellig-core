@@ -98,6 +98,7 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
                 MinusOperatorTestStepValueExtractor(),
                 TimesOperatorTestStepValueExtractor(),
                 DivOperatorTestStepValueExtractor(),
+                PowOperatorTestStepValueExtractor(),
                 ToIntTestStepValueExtractor(),
                 ToLongTestStepValueExtractor(),
                 RegexTestStepValueExtractor(),

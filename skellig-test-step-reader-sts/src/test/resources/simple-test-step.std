@@ -1,4 +1,4 @@
-# simple test step
+// simple test step
 
 name('Simple test step'){
  url = '${baseUrl}/a/b/c'

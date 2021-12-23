@@ -4,7 +4,7 @@ import org.skellig.teststep.processing.exception.TestValueConversionException
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 
 internal class PropertyParser(
-    private val propertyExtractorFunction: ((String) -> String?)?,
+    private val propertyExtractorFunction: ((String) -> Any?)?,
     private val valueExtractor: TestStepValueExtractor
 ) {
 
@@ -26,7 +26,7 @@ internal class PropertyParser(
 
     inner class InnerPropertyParser(
         private val parser: PropertyParser,
-        private val propertyExtractorFunction: ((String) -> String?)?,
+        private val propertyExtractorFunction: ((String) -> Any?)?,
         private val valueExtractor: TestStepValueExtractor
     ) {
 
@@ -107,7 +107,9 @@ internal class PropertyParser(
                     if (isInsideQuotes || (value[i + 1] != ':' && value[i - 1] != ':' && value[i + 1] != '}'
                                 && value[i - 1] != '{' && value[i + 1] != ']' && value[i - 1] != '[')
                     ) chunk += value[i]
-                } else if (!isInsideQuotes && value[i] == ':') {  // process default value if property value for a key not found
+                }
+                // process default value if property value for a key not found, or if found then ignore what comes after : till the end of the group
+                else if (!isInsideQuotes && value[i] == ':' && isKeyReading) {
                     val propertyValue = getPropertyValue(chunk, parameters)
                     if (propertyValue != null) {
                         isValueFound = true

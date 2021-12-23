@@ -91,6 +91,20 @@ class DefaultValueConverterTest {
     }
 
     @Test
+    fun testWhenFixedCharsInRegexForExtraction() {
+        whenever(testScenarioState.get("a")).thenReturn("__'$EXPECTED_RESULT'__")
+
+        val result = converter.convert("#[get(a).regex('[\\w]{4}')]")
+
+        assertEquals(listOf("some", "thin"), result)
+    }
+
+    @Test
+    fun testWhenSpecialCharsInRegexNotInQuotes() {
+        assertEquals("match([\\w]{44})", converter.convert("match([\\w]{44})"))
+    }
+
+    @Test
     fun testFunctionNotWrapped() {
         whenever(testScenarioState.get("1")).thenReturn(listOf(EXPECTED_RESULT))
 

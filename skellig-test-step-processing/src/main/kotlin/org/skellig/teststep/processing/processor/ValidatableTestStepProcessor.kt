@@ -15,7 +15,7 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
         protected val testStepResultConverter: TestStepResultConverter?) : TestStepProcessor<T> {
 
     companion object {
-        const val RESULT_SAVE_SUFFIX = ".result"
+        const val RESULT_SAVE_SUFFIX = "_result"
     }
 
     protected fun validate(testStep: DefaultTestStep) {

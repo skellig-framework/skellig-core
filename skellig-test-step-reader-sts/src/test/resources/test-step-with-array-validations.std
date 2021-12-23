@@ -1,18 +1,18 @@
-name ('Validate response')   # some comment
+name ('Validate response')   // some comment
 {
-    services [ srv1 ]  # some comment
+    services [ srv1 ]  // some comment
 
     validate {
         size = 3
         all_match
-        [  # some comment
+        [  // some comment
             {
                 c1 {
                        none_match [
                                   v1
                                   v2
                                   v3
-                                  ]   # some comment
+                                  ]   // some comment
                    }
 
                 c2 {
@@ -24,14 +24,14 @@ name ('Validate response')   # some comment
             }
 
             {
-                c1 = v2  # some comment
+                c1 = v2  // some comment
             }
         ]
 
-        records {  # some comment
+        records {  // some comment
                     fromIndex(0) = contains(v1)
                     fromIndex(1) = contains(v2)
-                }  # some comment
+                }  // some comment
 
         records.fromIndex(2).fromIndex(1).toString() = contains(v3)
 

@@ -109,7 +109,7 @@ internal class CassandraUpdateRequestExecutorTest {
             .thenAnswer { o: InvocationOnMock ->
                 val statement = o.arguments[0] as SimpleStatement
                 if (statement.query == sql &&
-                    statement.namedValues.size == parametersCount
+                    statement.positionalValues.size == parametersCount
                 ) {
                     return@thenAnswer resultSet
                 } else {

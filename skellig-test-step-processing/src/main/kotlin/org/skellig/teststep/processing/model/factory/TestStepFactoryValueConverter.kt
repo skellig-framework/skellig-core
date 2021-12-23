@@ -6,7 +6,7 @@ import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 open class TestStepFactoryValueConverter(
     private val testStepValueConverter: TestStepValueConverter,
     valueExtractor : TestStepValueExtractor,
-    getPropertyFunction: ((String) -> String?)?
+    getPropertyFunction: ((String) -> Any?)?
 ) {
 
     private val propertyParser = PropertyParser(getPropertyFunction, valueExtractor);

@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.TaskExecutor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.io.File
 import java.time.Duration
 import java.time.LocalDateTime
@@ -54,7 +52,7 @@ class SkelligPerformanceController {
     }
 
     @PostMapping("/run")
-    fun run(details: SkelligPerformancePageController.PerformanceTestDetails) {
+    fun run(@RequestBody details: SkelligPerformancePageController.PerformanceTestDetails) {
         stopCurrentRunningTest();
         val testStepRunner = skelligTestContext?.initialize(javaClass.classLoader,
                                                             testSteps ?: error("No paths to test steps were provided"),
@@ -91,12 +89,14 @@ class SkelligPerformanceController {
     }
 
     @PostMapping("/stop")
+    @ResponseBody
     fun stop(): SkelligPerformancePageController.PerformanceTestDetails? {
         stopCurrentRunningTest()
         return runningTest
     }
 
     @GetMapping("/progress/get")
+    @ResponseBody
     fun getProgress(): Progress? {
         return runningTest?.let {
             val timeToRun = runningTest?.timeToRun ?: "0"

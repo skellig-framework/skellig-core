@@ -59,6 +59,10 @@ class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
                 .build()
     }
 
+    override fun close() {
+        httpServices.values.forEach {it.close()}
+    }
+
     override fun getTestStepClass(): Class<HttpTestStep> {
         return HttpTestStep::class.java
     }
