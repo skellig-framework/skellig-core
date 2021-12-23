@@ -39,7 +39,7 @@ internal class PeriodicRunner(private val owner: PerformanceTestStepProcessor,
         coroutineScope {
             do {
                 val durationMetric = durationPercentileMetric.createPercentileBucket()
-                repeat((1 until rps).count()) {
+                repeat((0 until rps).count()) {
                     val startTime = System.nanoTime()
                     launch {
                         val totalElapsedTime = processAndGetTime(testStep, processingFunction)

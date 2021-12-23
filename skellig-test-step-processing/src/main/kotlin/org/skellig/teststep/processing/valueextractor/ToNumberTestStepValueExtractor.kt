@@ -6,13 +6,13 @@ import java.math.BigDecimal
 abstract class ToNumberTestStepValueExtractor : TestStepValueExtractor {
 
     protected fun getParseException(value: Any?): ValueExtractionException =
-        ValueExtractionException("Failed to extract numeric value from type ${value?.javaClass?.simpleName}")
+        ValueExtractionException("Failed to extract numeric value from type ${value?.javaClass?.simpleName} for value: $value")
 }
 
 class ToIntTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 
     override fun extract(value: Any?, extractionParameter: String?): Any {
-        return value as? Int ?: (value as? String ?: throw getParseException(value)).toInt()
+        return (value as? Number)?.toInt() ?: (value as? String ?: throw getParseException(value)).toInt()
     }
 
     override fun getExtractFunctionName(): String {
@@ -23,7 +23,7 @@ class ToIntTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 class ToByteTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 
     override fun extract(value: Any?, extractionParameter: String?): Any {
-        return value as? Byte ?: (value as? String ?: throw getParseException(value)).toByte()
+        return (value as? Number)?.toByte() ?: (value as? String ?: throw getParseException(value)).toByte()
     }
 
     override fun getExtractFunctionName(): String {
@@ -34,7 +34,7 @@ class ToByteTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 class ToShortTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 
     override fun extract(value: Any?, extractionParameter: String?): Any {
-        return value as? Short ?: (value as? String ?: throw getParseException(value)).toShort()
+        return (value as? Number)?.toShort() ?: (value as? String ?: throw getParseException(value)).toShort()
     }
 
     override fun getExtractFunctionName(): String {
@@ -45,7 +45,7 @@ class ToShortTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 class ToLongTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 
     override fun extract(value: Any?, extractionParameter: String?): Any {
-        return value as? Long ?: (value as? String ?: throw getParseException(value)).toLong()
+        return (value as? Number)?.toLong() ?: (value as? String ?: throw getParseException(value)).toLong()
     }
 
     override fun getExtractFunctionName(): String {
@@ -56,7 +56,7 @@ class ToLongTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 class ToFloatTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 
     override fun extract(value: Any?, extractionParameter: String?): Any {
-        return value as? Float ?: (value as? String ?: throw getParseException(value)).toFloat()
+        return (value as? Number)?.toFloat() ?: (value as? String ?: throw getParseException(value)).toFloat()
     }
 
     override fun getExtractFunctionName(): String {
@@ -67,7 +67,7 @@ class ToFloatTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 class ToDoubleTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 
     override fun extract(value: Any?, extractionParameter: String?): Any {
-        return value as? Double ?: (value as? String ?: throw getParseException(value)).toDouble()
+        return (value as? Number)?.toDouble() ?: (value as? String ?: throw getParseException(value)).toDouble()
     }
 
     override fun getExtractFunctionName(): String {
@@ -78,7 +78,11 @@ class ToDoubleTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 class ToBigDecimalTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 
     override fun extract(value: Any?, extractionParameter: String?): Any {
-        return value as? BigDecimal ?: (value as? String ?: throw getParseException(value)).toBigDecimal()
+        return when (value) {
+            is BigDecimal -> value
+            is Number -> BigDecimal(value.toString())
+            else -> (value as? String ?: throw getParseException(value)).toBigDecimal()
+        }
     }
 
     override fun getExtractFunctionName(): String {

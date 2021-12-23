@@ -150,7 +150,7 @@
             dataType: 'json',
             complete: function (data) {
                 data = data.responseJSON === undefined ? data : data.responseJSON
-                if (data != null && data.test.id !== undefined && !hasError(data)) {
+                if (data != null && data.test !== undefined && data.test.id !== undefined && !hasError(data)) {
                     currentTestId = data.test.id
                     setUiForRunningTest(currentTestId)
                     $("#timeToRun-" + currentTestId).val(data.test.timeToRun);
@@ -171,6 +171,8 @@
         $.ajax({
             type: "POST",
             url: "/run",
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
             data: getFormData($("#form-" + testId)),
             success: function (data) {
                 if (currentTestId != null) {
@@ -261,7 +263,7 @@
         })
         result['parameters'] = parameters
 
-        return result;
+        return JSON.stringify(result);
     }
 </script>
 

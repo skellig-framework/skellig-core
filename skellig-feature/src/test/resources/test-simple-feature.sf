@@ -3,6 +3,6 @@ Name: Simple feature
     Test: Simple scenario
     Steps:
     Given something
-    # run something
+    // run something
     Run it
     Check result

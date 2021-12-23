@@ -227,8 +227,8 @@ abstract class SkelligTestContext : Closeable {
     protected open val testStepProcessors: List<TestStepProcessorDetails>
         get() = emptyList()
 
-    protected open val propertyExtractorFunction: ((String) -> String?)?
-        get() = { key -> if (config?.hasPath(key) == true) config?.getString(key) else null }
+    protected open val propertyExtractorFunction: ((String) -> Any?)?
+        get() = { key -> if (config?.hasPath(key) == true) config?.getAnyRef(key) else null }
 
     open val testStepKeywordsProperties: Properties?
         get() = null

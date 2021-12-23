@@ -14,6 +14,11 @@ class ToNumberTestStepValueExtractorTest {
     }
 
     @Test
+    fun testToDoubleFromInteger() {
+        assertEquals(100.0, ToDoubleTestStepValueExtractor().extract(100, null));
+    }
+
+    @Test
     fun testToNumberWhenNotString() {
         assertThrows<ValueExtractionException>("Failed to extract numeric value from type class kotlin.collections.EmptyList")
         { ToBigDecimalTestStepValueExtractor().extract(listOf<String>(), null) }

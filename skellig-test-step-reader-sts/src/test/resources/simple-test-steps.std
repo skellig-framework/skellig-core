@@ -1,4 +1,4 @@
-# simple test step
+// simple test step
 
 name ('Simple test step'){
  url = '${baseUrl}/a/b/c'
@@ -8,6 +8,7 @@ name ('Simple test step'){
       json {
              command = "go"
             value = "v 1 2 3"
+             v2 = #[${a : #[${b}.length]}.size]
       }
  }
 }
@@ -21,7 +22,7 @@ name(' Send \d{1} message (.*) from csv \(test\)') {
  }
  body {
     template {
-        file = '/resources/\"templates\"/msg_get(id).ftl'
+        file = '//resources/\"templates\"/msg_get(id).ftl'
         csv
         {
           file = '/resources/data/test1.csv'

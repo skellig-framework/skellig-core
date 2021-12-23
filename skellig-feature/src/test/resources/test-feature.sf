@@ -2,7 +2,7 @@
 @User
 Name: Sign in user
 
-   #@E2E-light
+   //@E2E-light
    Test: Sign in user <user> with valid credentials
    Steps:
    User <user> exist in system
@@ -13,8 +13,8 @@ Name: Sign in user
      | usr_1| 12345    |
      | usr_2| pswd1    |
 
-   #@Init(id = default)
-   #@Data
+   //@Init(id = default)
+   //@Data
    Test: Sign in user with invalid credentials
    Steps:
    User <user> exist in system

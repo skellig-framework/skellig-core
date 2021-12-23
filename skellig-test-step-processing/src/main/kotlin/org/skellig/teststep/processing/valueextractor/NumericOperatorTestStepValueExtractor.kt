@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.valueextractor
 import org.skellig.teststep.processing.exception.ValueExtractionException
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlin.math.pow
 
 abstract class NumericOperatorTestStepValueExtractor : TestStepValueExtractor {
 
@@ -27,7 +28,7 @@ abstract class NumericOperatorTestStepValueExtractor : TestStepValueExtractor {
     protected fun toInt(extractionParameter: String?) =
         extractionParameter?.toIntOrNull() ?: throw getParseException(extractionParameter)
 
-    protected fun getParseException(extractionParameter: String?) : ValueExtractionException =
+    protected fun getParseException(extractionParameter: String?): ValueExtractionException =
         ValueExtractionException("Failed to parse $extractionParameter to numeric type")
 }
 
@@ -37,7 +38,7 @@ class PlusOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor
         return value?.let {
             when (it) {
                 is String ->
-                    (it.toIntOrNull()?: throw getParseException(extractionParameter))
+                    (it.toIntOrNull() ?: throw getParseException(it))
                         .plus(toInt(extractionParameter))
                 is Byte -> it.plus(toByte(extractionParameter)).toByte()
                 is Short -> it.plus(toShort(extractionParameter)).toShort()
@@ -62,7 +63,7 @@ class MinusOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtracto
         return value?.let {
             when (it) {
                 is String ->
-                    (it.toIntOrNull()?: throw getParseException(extractionParameter))
+                    (it.toIntOrNull() ?: throw getParseException(extractionParameter))
                         .minus(toInt(extractionParameter))
                 is Byte -> it.minus(toByte(extractionParameter)).toByte()
                 is Short -> it.minus(toShort(extractionParameter)).toShort()
@@ -77,7 +78,7 @@ class MinusOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtracto
     }
 
     override fun getExtractFunctionName(): String {
-        return "plus"
+        return "minus"
     }
 }
 
@@ -87,7 +88,7 @@ class TimesOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtracto
         return value?.let {
             when (it) {
                 is String ->
-                    (it.toIntOrNull()?: throw getParseException(extractionParameter))
+                    (it.toIntOrNull() ?: throw getParseException(extractionParameter))
                         .times(toInt(extractionParameter))
                 is Byte -> it.times(toByte(extractionParameter)).toByte()
                 is Short -> it.times(toShort(extractionParameter)).toShort()
@@ -112,7 +113,7 @@ class DivOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor(
         return value?.let {
             when (it) {
                 is String ->
-                    (it.toIntOrNull()?: throw getParseException(extractionParameter))
+                    (it.toIntOrNull() ?: throw getParseException(extractionParameter))
                         .div(toInt(extractionParameter))
                 is Byte -> it.div(toByte(extractionParameter)).toByte()
                 is Short -> it.div(toShort(extractionParameter)).toShort()
@@ -128,5 +129,25 @@ class DivOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor(
 
     override fun getExtractFunctionName(): String {
         return "div"
+    }
+}
+
+class PowOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor() {
+
+    override fun extract(value: Any?, extractionParameter: String?): Any? {
+        return value?.let {
+            when (it) {
+                is String ->
+                    (it.toDoubleOrNull() ?: throw getParseException(it)).pow(toDouble(extractionParameter))
+                is Number -> {
+                    it.toDouble().pow(toDouble(extractionParameter))
+                }
+                else -> throw ValueExtractionException("Cannot apply 'plus' operator to type '${value.javaClass}'")
+            }
+        }
+    }
+
+    override fun getExtractFunctionName(): String {
+        return "pow"
     }
 }
