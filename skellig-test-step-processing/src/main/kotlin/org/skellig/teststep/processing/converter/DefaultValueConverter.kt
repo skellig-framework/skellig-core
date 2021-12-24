@@ -10,22 +10,30 @@ class DefaultValueConverter private constructor(
     private val extractor: TestStepValueExtractor
 ) : TestStepValueConverter {
 
+    companion object {
+        private val notToParseValues = mutableSetOf<String>()
+    }
+
     override fun convert(value: Any?): Any? {
         val newValue = when (value) {
             is Map<*, *> -> value.entries.map { it.key to convert(it.value) }.toMap()
             is Collection<*> -> value.map { convert(it) }.toList()
-            else -> convertWithConverters(value)
+            else -> innerConvert(value)
         }
         // If collection then go through conversion again to avoid missed function processing
-        return if (newValue is Map<*, *> || newValue is Collection<*>) convertWithConverters(newValue)
+        return if (newValue is Map<*, *> || newValue is Collection<*>) innerConvert(newValue)
         else newValue
     }
 
-    private fun convertWithConverters(value: Any?): Any? =
+    private fun innerConvert(value: Any?): Any? =
         when (value) {
             is String -> {
                 try {
-                    processAndConvertStringValue(value)
+                    if (!notToParseValues.contains(value)) {
+                        val convertedValue = processAndConvertStringValue(value)
+                        if (convertedValue == value) notToParseValues.add(value)
+                        convertedValue
+                    } else value
                 } catch (ex: ValueExtractionException) {
                     throw ValueExtractionException("${ex.message}. Original value: $value")
                 }

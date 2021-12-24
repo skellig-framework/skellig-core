@@ -1,9 +1,12 @@
 package org.skellig.teststep.processing.converter
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
 
@@ -141,5 +144,16 @@ class DefaultValueConverterTest {
         val result = converter.convert("v1 / #[get(1)] / #[get(2).fromIndex(0).length] / list")
 
         assertEquals("v1 / a / ${EXPECTED_RESULT.length} / list", result)
+    }
+
+    @Test
+    fun testCacheValue() {
+        val value = "get(100)"
+        // return the same value in order to check if it was cached on second call
+        whenever(testScenarioState.get("100")).thenReturn(value)
+
+        assertEquals(value, converter.convert(value))
+        assertEquals(value, converter.convert(value))
+        verify(testScenarioState, times(1)).get("100")
     }
 }

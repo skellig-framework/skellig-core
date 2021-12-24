@@ -135,6 +135,12 @@ internal class PropertyParser(
                     }
                     chunk = ""
                     if (groupCounter == 0) break
+                } else if (!isInsideQuotes && value[i] == '\\' && (i + 1 < value.length &&
+                            (value[i + 1] == ':' || value[i + 1] == '}' || value[i + 1] == '{' ||
+                                    value[i + 1] == ']' || value[i + 1] == '['))
+                ) {
+                    chunk += value[i + 1]
+                    i++
                 } else {
                     chunk += value[i]
                 }

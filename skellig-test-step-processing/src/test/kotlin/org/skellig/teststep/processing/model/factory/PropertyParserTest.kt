@@ -106,6 +106,8 @@ class PropertyParserTest {
     fun testParameterWithWrappedSpecialCharacter() {
         assertEquals("'\${b} - {}' '{}'", propertyParser!!.parse("\${a:'\${b} - {}'} '{}'", emptyMap()))
         assertEquals("match('[\\w]{44}')", propertyParser!!.parse("match('[\\w]{44}')", emptyMap()))
+        assertEquals("match('  [\\w]\\{44\\}')", propertyParser!!.parse("match('  [\\w]\\{44\\}')", emptyMap()))
+        assertEquals("match([\\w]{44})", propertyParser!!.parse("match([\\w]\\{44\\})", emptyMap()))
     }
 
     @Test
