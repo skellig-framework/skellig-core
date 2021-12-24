@@ -38,7 +38,7 @@ open class MessageReceptionPrometheusMetric(private val name: String,
     }
 
     override fun consumeTimeSeriesRecords(recordConsumer: (String) -> Unit) {
-        recordConsumer("Name: $name")
+        recordConsumer("\nName: $name")
         recordConsumer("\nTotal requests: ${getTotalRequests()}")
         recordConsumer("\nMPS: ${getMps()}")
         startTime = -1
