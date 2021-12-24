@@ -114,7 +114,7 @@ class RmqTestStepProcessorTest {
             assertAll(
                 { assertTrue(isPassed.get()) },
                 {
-                    verify(testScenarioState!!).set(eq(testStep.getId + ".result"),
+                    verify(testScenarioState!!).set(eq(testStep.getId + "_result"),
                                                     argThat { args -> (args as Map<*, *>).containsKey(CHANNEL_NAME) })
                 }
             )

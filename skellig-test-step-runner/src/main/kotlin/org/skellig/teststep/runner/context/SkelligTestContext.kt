@@ -52,8 +52,9 @@ abstract class SkelligTestContext : Closeable {
     private var testStepsRegistry: TestStepRegistry? = null
 
     fun initialize(classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null): TestStepRunner {
-        LOGGER.info(("Initializing Skellig Context with test steps in '$testStepPaths'" +
-                configPath?.let { "and config file '$it'" })
+        LOGGER.info(
+            ("Initializing Skellig Context with test steps in '$testStepPaths'" +
+                    configPath?.let { "and config file '$it'" })
         )
 
         config = createConfig(classLoader, configPath)
@@ -64,8 +65,12 @@ abstract class SkelligTestContext : Closeable {
         testStepResultValidator = createTestStepValidator(valueExtractor)
         testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader)
 
-        testStepFactoryValueConverter = TestStepFactoryValueConverter(
-            createTestStepValueConverter(classLoader, valueExtractor, testScenarioState), valueExtractor, propertyExtractorFunction)
+        testStepFactoryValueConverter =
+            TestStepFactoryValueConverter.Builder()
+                .withValueConverter(createTestStepValueConverter(classLoader, valueExtractor, testScenarioState))
+                .withTestStepValueExtractor(valueExtractor)
+                .withGetPropertyFunction(propertyExtractorFunction)
+                .build()
 
         rootTestStepProcessor = CompositeTestStepProcessor.Builder()
             .withTestScenarioState(testScenarioState)

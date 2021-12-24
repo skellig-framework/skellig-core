@@ -103,7 +103,7 @@ internal class IbmMqTestStepProcessorTest {
             assertAll(
                 { Assertions.assertTrue(isPassed.get()) },
                 {
-                    verify(testScenarioState!!).set(eq(testStep.getId + ".result"),
+                    verify(testScenarioState!!).set(eq(testStep.getId + "_result"),
                         argThat { args -> (args as Map<String, Any>).containsKey(CHANNEL_ID) })
                 }
             )
