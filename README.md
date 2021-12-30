@@ -38,7 +38,7 @@ Name: Booking events
      |e0001    |s1=10,s2=20     |s2   
 ```
 
-File bookings.std
+File bookings.sts
 ```
 name('Add event with available seats (.+)') {
     id = addEventTest
