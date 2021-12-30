@@ -8,7 +8,7 @@ name (Validate response)
        equals to something
        contains(success)
        contains(go go go)
-       match('.*get(\\\"id\\\").*')
+       match('.*get(\"id\").*')
     ]
     'has_\'fields\'' {
       f1 = v1

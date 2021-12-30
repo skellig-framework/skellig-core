@@ -21,7 +21,7 @@ class RawTestStepHandler : Closeable {
     private var propertyName: String? = null
     private var isEnclosedText = false
     private var commentCharsCounter = 0
-    private var rawTestStepBuilder: StringBuilder = StringBuilder()
+    private var rawTestStepBuilder = StringBuilder()
     private val spacesBuilder = StringBuilder()
 
     @Throws(IOException::class)
@@ -56,7 +56,7 @@ class RawTestStepHandler : Closeable {
             } else {
                 checkCommentChar()
                 if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
-                    handleSingleQuoteCharacter()
+                    handleQuoteCharacter(character)
                 } else if (!isEnclosedText) {  // skip handling special characters if enclosed in single quotes
                     if (character == '}') {
                         if (handleClosedBracketCharacter(character, rawTestStep)) break
@@ -90,7 +90,7 @@ class RawTestStepHandler : Closeable {
             } else {
                 checkCommentChar()
                 if (!isSpecialCharacter && isEnclosedStringCharacter(character)) {
-                    handleSingleQuoteCharacter()
+                    handleQuoteCharacter(character)
                 } else if (character == '{') {
                     handleListOpenedCurlyBracketCharacter(character, reader, result)
                 } else if ((isNewLineCharacter(character)) && rawTestStepBuilder.isNotEmpty()) {
@@ -181,9 +181,13 @@ class RawTestStepHandler : Closeable {
         }
     }
 
-    private fun handleSingleQuoteCharacter() {
-        // Single quote character means that we need to read the value till the next single quote
-        isEnclosedText = !isEnclosedText
+    private fun handleQuoteCharacter(character: Char) {
+        if(!isEnclosedText && rawTestStepBuilder.isNotEmpty()) {
+            rawTestStepBuilder.append(character)
+        } else {
+            // Single quote character means that we need to read the value till the next single quote
+            isEnclosedText = !isEnclosedText
+        }
     }
 
     private fun handleCommentCharacter(reader: StsFileBufferedReader) {

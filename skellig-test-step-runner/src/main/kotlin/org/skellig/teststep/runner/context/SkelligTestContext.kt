@@ -102,7 +102,7 @@ abstract class SkelligTestContext : Closeable {
     ): CachedTestStepsRegistry {
         val paths = extractTestStepPaths(testStepPaths, classLoader)
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
-        val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STD, testStepReader)
+        val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader)
         testStepsRegistry.registerFoundTestStepsInPath(paths)
         val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths, classLoader)
 

@@ -84,7 +84,7 @@ internal class DefaultTestStepRunnerTest {
     }
 
     private fun createTestStepsRegistry(testStepsPath: String): TestStepsRegistry {
-        val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STD, testStepReader)
+        val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader)
         val resource = javaClass.classLoader.getResource(testStepsPath)
         resource?.let {
             testStepsRegistry.registerFoundTestStepsInPath(listOf(it.toURI()))

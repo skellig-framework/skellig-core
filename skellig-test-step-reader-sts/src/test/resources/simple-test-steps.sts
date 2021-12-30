@@ -9,6 +9,7 @@ name ('Simple test step'){
              command = "go"
             value = "v 1 2 3"
              v2 = #[${a : #[${b}.length]}.size]
+             v3 = ${a : ${b}.'a.b' }
       }
  }
 }
