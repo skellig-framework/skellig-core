@@ -6,6 +6,9 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-test-step-processing-cassandra')
+ext.set("project_description", 'Processing functionality for Cassandra-based Skellig Test Step')
+
 dependencies {
     implementation group: 'com.datastax.oss', name: 'java-driver-core', version: '4.13.0'
 

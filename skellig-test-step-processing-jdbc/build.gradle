@@ -6,6 +6,9 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-test-step-processing-jdbc')
+ext.set("project_description", 'Processing functionality for JDBC-based Skellig Test Step')
+
 dependencies {
 
     api project(':skellig-test-step-processing-db')

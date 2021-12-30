@@ -6,6 +6,9 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-test-step-reader-sts')
+ext.set("project_description", 'Reader of Skellig Test Step files (.sts)')
+
 dependencies {
     implementation 'log4j:log4j:1.2.17'
     implementation 'org.slf4j:slf4j-log4j12:1.7.25'

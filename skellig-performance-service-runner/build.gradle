@@ -6,6 +6,9 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-performance-service-runner')
+ext.set("project_description", 'Web-service (Spring-Boot) runner for Skellig performance tests')
+
 configurations.all {
     exclude group: "ch.qos.logback", module: "logback-classic"
     exclude group: "ch.qos.logback", module: "logback-core"

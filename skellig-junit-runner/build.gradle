@@ -6,6 +6,9 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-junit-runner')
+ext.set("project_description", 'JUnit runner for Skellig tests')
+
 dependencies {
     implementation group: 'log4j', name:'log4j'
     implementation group: 'org.slf4j', name:'slf4j-log4j12'

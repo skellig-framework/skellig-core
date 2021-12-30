@@ -6,6 +6,9 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-test-step-processing-tcp')
+ext.set("project_description", 'Processing functionality for TCP-based Skellig Test Step')
+
 dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api'
     api group: 'com.typesafe', name: 'config'

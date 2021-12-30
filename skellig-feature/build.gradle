@@ -6,6 +6,8 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-feature')
+ext.set("project_description", 'Reader and domain classes for Skellig Feature file')
 
 dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'

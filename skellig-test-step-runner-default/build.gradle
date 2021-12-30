@@ -6,6 +6,9 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-test-step-runner-default')
+ext.set("project_description", 'Default configuration for the Skellig Context which includes all processing classes for Skellig Test Steps (ex. http, jdbc, rmq, etc.)')
+
 dependencies {
     api group: 'org.slf4j', name: 'slf4j-api'
     api group: 'com.typesafe', name: 'config'
