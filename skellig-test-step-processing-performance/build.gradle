@@ -6,6 +6,9 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-test-step-processing-performance')
+ext.set("project_description", 'Processing functionality for Performance-based Skellig Test Step')
+
 dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api'
     implementation 'org.junit.jupiter:junit-jupiter:5.4.2'

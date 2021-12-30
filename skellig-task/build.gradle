@@ -6,6 +6,9 @@ sourceSets {
     main.kotlin.srcDirs += 'src/main/kotlin'
 }
 
+ext.set("project_name", 'skellig-task')
+ext.set("project_description", 'Utility component of Skellig Framework providing static methods for running tasks in coroutines or threads')
+
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0-RC")
 

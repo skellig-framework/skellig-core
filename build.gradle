@@ -1,9 +1,31 @@
+buildscript {
+    dependencies {
+        classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
+    }
+}
+
 plugins {
     id 'maven-publish'
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+}
+
+apply plugin: 'io.github.gradle-nexus.publish-plugin'
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            stagingProfileId = '5d4516aee10f28'
+            username = ossrhUsername
+            password = ossrhPassword
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        }
+    }
 }
 
 ext {
+    group_id = 'org.skelligframework'
     version = '2.0.5-beta'
     mockitoVersion = '4.0.0'
     junitApiVersion = '5.8.1'
@@ -12,7 +34,6 @@ ext {
     typesafeConfigVersion = '1.4.0'
     slf4jLogVersion = '1.7.30'
     kotlinVersion = '1.5.0'
-//    kotlinReflectionVersion = '1.4.21'
 }
 
 allprojects {
@@ -31,62 +52,35 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'maven-publish'
+    apply plugin: 'signing'
     apply plugin: 'io.spring.dependency-management'
 
     version = '2.0.5-beta'
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                groupId = 'org.skelligframework'
-                afterEvaluate {
-                    artifactId = jar.baseName
-                }
-                from components.java
-            }
-        }
-    }
-
-    test {
-        reports.html.enabled = false
-    }
-
     ext {
-        projectUrl = 'http://skelligframework.org'
-
-        projectRepo = {
-            url 'https://github.com/skellig-framework/skellig-core'
-            connection 'https://github.com/skellig-framework/skellig-core.git'
-        }
-
-        projectLicenses = {
-            license {
-                name = 'The Apache Software License, Version 2.0'
-                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                distribution = 'repo'
-            }
-        }
-
-        projectDevelopers = {
-            developer {
-                id = 'skellig-framework-team'
-                name = 'Skellig Framework Development Team'
-                roles {
-                    role = 'developer'
-                    role = 'tester'
-                }
-            }
-        }
+        project_name = 'Skellig Framework'
+        project_description = 'Skellig Framework'
     }
 
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
+    task sourceJar(type: Jar) {
+        classifier "sources"
+        from sourceSets.main.allJava
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier "javadoc"
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives jar
+        archives sourceJar
+        archives javadocJar
+    }
 
     jar {
+        from sourceSets.main.output
+        from sourceSets.main.allJava
         manifest {
             attributes(
                     "Manifest-Version": "1.0",
@@ -98,6 +92,70 @@ subprojects {
             )
         }
     }
+
+    afterEvaluate {
+        publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                    groupId = 'org.skelligframework'
+                    afterEvaluate {
+                        artifactId = jar.baseName
+                    }
+                    from components.java
+                }
+
+                release(MavenPublication) {
+                    groupId = 'org.skelligframework'
+                    version = "${version}"
+                    afterEvaluate {
+                        artifactId = jar.baseName
+                    }
+
+                    from components.java
+
+                    pom {
+                        url = 'https://skelligframework.org'
+                        name = project_name
+                        description = project_description
+
+                        developers {
+                            developer {
+                                id = 'Shendor'
+                                email = 'shendor1988@gmail.com'
+                            }
+                        }
+
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = 'repo'
+                        }
+
+                        scm {
+                            connection = 'https://github.com/skellig-framework/skellig-core.git'
+                            url = 'https://github.com/skellig-framework/skellig-core'
+                        }
+
+                        signing {
+                            sign publishing.publications.release
+                            sign configurations.archives
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    test {
+        reports.html.enabled = false
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
     dependencyManagement {
         dependencies {
