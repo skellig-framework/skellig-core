@@ -1,6 +1,7 @@
 ## What is Skellig Framework
 
 [![Build Status](https://github.com/skellig-framework/skellig-core/actions/workflows/main.yml/badge.svg)](https://github.com/skellig-framework/skellig-core/actions)
+[![Release](https://img.shields.io/maven-central/v/org.skelligframework/skellig-junit-runner)](https://repo1.maven.org/maven2/org/skelligframework/)
 [![License:MIT](https://img.shields.io/badge/license-Apache%202-yellow)](http://www.apache.org/licenses/)
 [![Documentation](https://img.shields.io/badge/development-wiki-yellowgreen.svg)](https://github.com/skellig-framework/skellig-core/wiki)
 [![Coverage Status](https://codecov.io/gh/skellig-framework/skellig-core/branch/master/graph/badge.svg?token=KSM07J2MJD)](https://codecov.io/gh/skellig-framework/skellig-core)
