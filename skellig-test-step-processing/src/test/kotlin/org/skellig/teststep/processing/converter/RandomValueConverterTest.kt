@@ -14,6 +14,11 @@ class RandomValueConverterTest{
             val value = random.convert("rand(10, 20)") as Long
             assertTrue(value in 10..20)
         }
+
+        repeat((0 until 1000).count()) {
+            val value = random.convert("rand(, 20)") as Long
+            assertTrue(value in 0..20)
+        }
     }
 
     @Test

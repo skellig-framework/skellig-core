@@ -204,6 +204,7 @@ class DefaultValueConverter private constructor(
             }
 
             allValueConverters.add(NumberValueConverter())
+            allValueConverters.add(RandomValueConverter())
             allValueConverters.add(IncrementValueConverter())
             allValueConverters.add(CurrentDateTimeValueConverter())
             allValueConverters.add(ToDateTimeValueConverter())
