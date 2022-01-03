@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.model.factory
 
+import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.*
@@ -16,6 +17,7 @@ class DefaultTestStepFactoryTest {
 
     private var testStepFactory: TestStepFactory<DefaultTestStep>? = null
     private var testScenarioState: TestScenarioState? = null
+    private val testStepRegistry = mock<TestStepRegistry>()
 
     @BeforeEach
     fun setUp() {
@@ -32,6 +34,7 @@ class DefaultTestStepFactoryTest {
                     .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
                     .build()
             )
+            .withTestStepRegistry(testStepRegistry)
             .build()
     }
 
@@ -229,6 +232,37 @@ class DefaultTestStepFactoryTest {
         Assertions.assertAll(
             { Assertions.assertEquals("v1", variables["f2"]) },
             { Assertions.assertEquals(variables["f1"], variables["f2"]) },
+        )
+    }
+
+    @Test
+    @DisplayName("When has reference to parent test step Then check all data merged")
+    fun testCreateTestStepWithRefToParent() {
+        val parentTestStep = UnitTestUtils.createMap(
+            "id", "stepA",
+            "variables", UnitTestUtils.createMap("f1", "v1"),
+            "payload", "to replace by child"
+        )
+        whenever(testStepRegistry.getById(parentTestStep["id"] as String)).thenReturn(parentTestStep)
+
+        val rawTestStep = UnitTestUtils.createMap(
+            "parent", parentTestStep["id"],
+            "payload",
+            UnitTestUtils.createMap(
+                "new_f1", "\${f1}",  // this reference must be taken from parent's vars
+                "f2", "\${1}",
+                "f3", "something"
+            )
+        )
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("1", "v2")))
+
+        Assertions.assertAll(
+            { Assertions.assertEquals(parentTestStep["id"], testStep.id) },
+            { Assertions.assertEquals(parentTestStep["variables"], testStep.variables) },
+            { Assertions.assertEquals("v1", (testStep.testData as Map<*, *>?)!!["new_f1"]) },
+            { Assertions.assertEquals("v2", (testStep.testData as Map<*, *>?)!!["f2"]) },
+            { Assertions.assertEquals("something", (testStep.testData as Map<*, *>?)!!["f3"]) }
         )
     }
 }

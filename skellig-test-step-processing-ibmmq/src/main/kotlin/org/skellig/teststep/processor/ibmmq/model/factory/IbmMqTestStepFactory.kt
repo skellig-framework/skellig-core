@@ -2,12 +2,14 @@ package org.skellig.teststep.processor.ibmmq.model.factory
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
+import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 import java.util.*
 
-open class IbmMqTestStepFactory(keywordsProperties: Properties?,
+open class IbmMqTestStepFactory(testStepRegistry: TestStepRegistry,
+                                keywordsProperties: Properties?,
                                 testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseIbmMqTestStepFactory<IbmMqTestStep>(keywordsProperties, testStepFactoryValueConverter) {
+    : BaseIbmMqTestStepFactory<IbmMqTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private const val SEND_TO_KEYWORD = "test.step.keyword.sendTo"

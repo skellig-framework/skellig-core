@@ -3,12 +3,14 @@ package org.skellig.teststep.processor.unix.model.factory
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
+import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 import java.util.*
 
-class UnixShellTestStepFactory(keywordsProperties: Properties?,
+class UnixShellTestStepFactory(testStepRegistry: TestStepRegistry,
+                               keywordsProperties: Properties?,
                                testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<UnixShellTestStep>(keywordsProperties, testStepFactoryValueConverter) {
+    : BaseDefaultTestStepFactory<UnixShellTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private const val HOSTS_KEYWORD = "test.step.keyword.hosts"

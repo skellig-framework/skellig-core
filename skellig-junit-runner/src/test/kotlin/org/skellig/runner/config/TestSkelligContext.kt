@@ -11,12 +11,12 @@ class TestSkelligContext : SkelligTestContext() {
                         .withTestScenarioState(getTestScenarioState())
                         .withValidator(getTestStepResultValidator())
                         .build()
-            ) { props, converter -> SimpleMessageTestStepFactory(props, converter) },
+            ) { testStepRegistry, props, converter -> SimpleMessageTestStepFactory(testStepRegistry, props, converter) },
             createTestStepProcessorFrom(
                     SimpleTestStepProcessor.Builder()
                         .withTestScenarioState(getTestScenarioState())
                         .withValidator(getTestStepResultValidator())
                         .build()
-            ) { props, converter -> SimpleTestStepFactory(props, converter) }
+            ) { testStepRegistry, props, converter -> SimpleTestStepFactory(testStepRegistry, props, converter) }
         )
 }

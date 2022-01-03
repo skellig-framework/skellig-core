@@ -6,6 +6,7 @@ import org.skellig.teststep.processing.converter.DefaultTestStepResultConverter
 import org.skellig.teststep.processing.converter.DefaultValueConverter
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.CompositeTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepFactory
@@ -263,9 +264,10 @@ abstract class SkelligTestContext : Closeable {
         )
     }
 
-    protected fun <T : TestStep> createTestStepProcessorFrom(
+    protected fun <T : DefaultTestStep> createTestStepProcessorFrom(
         testStepProcessor: TestStepProcessor<T>,
         createTestStepFactoryDelegate: (
+            testStepsRegistry : TestStepRegistry,
             keywordsProperties: Properties?,
             testStepFactoryValueConverter: TestStepFactoryValueConverter
         ) -> TestStepFactory<T>
@@ -274,6 +276,7 @@ abstract class SkelligTestContext : Closeable {
             { testStepProcessor },
             { _, keywordsProperties, testStepFactoryValueConverter ->
                 createTestStepFactoryDelegate(
+                    testStepsRegistry!!,
                     keywordsProperties,
                     testStepFactoryValueConverter
                 )
