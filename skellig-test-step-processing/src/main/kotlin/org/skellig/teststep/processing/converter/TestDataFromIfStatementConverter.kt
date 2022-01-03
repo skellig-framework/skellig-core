@@ -64,7 +64,7 @@ class TestDataFromIfStatementConverter : TestStepValueConverter {
                     i++
                 }
                 value = value.trim { it <= ' ' }
-                newCondition.append(if (value == "" || NumberUtils.isNumber(value)) value else "'$value'")
+                newCondition.append(if (value == "" || NumberUtils.isCreatable(value)) value else "'$value'")
             }
             i++
         }
