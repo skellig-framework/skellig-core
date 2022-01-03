@@ -7,6 +7,7 @@ import org.junit.jupiter.api.*
 import org.mockito.Mockito
 import org.skellig.teststep.processing.converter.DefaultValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
 import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
@@ -238,31 +239,59 @@ class DefaultTestStepFactoryTest {
     @Test
     @DisplayName("When has reference to parent test step Then check all data merged")
     fun testCreateTestStepWithRefToParent() {
-        val parentTestStep = UnitTestUtils.createMap(
+        val testStepA = UnitTestUtils.createMap(
+            "id", "stepA",
+            "payload", "parent payload"
+        )
+
+        whenever(testStepRegistry.getById(testStepA["id"] as String)).thenReturn(testStepA)
+
+        val rawTestStep = UnitTestUtils.createMap(
+            "parent", testStepA["id"],
+        )
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("1", "v2")))
+
+        Assertions.assertAll(
+            { Assertions.assertEquals(testStepA["id"], testStep.id) },  // id is replaced by the latest parent
+            { Assertions.assertEquals(testStepA["payload"], testStep.testData) }
+        )
+    }
+
+    @Test
+    @DisplayName("When has reference to parent test steps Then check all data merged")
+    fun testCreateTestStepWithRefToParents() {
+        val testStepA = UnitTestUtils.createMap(
             "id", "stepA",
             "variables", UnitTestUtils.createMap("f1", "v1"),
             "payload", "to replace by child"
         )
-        whenever(testStepRegistry.getById(parentTestStep["id"] as String)).thenReturn(parentTestStep)
+        val testStepB = UnitTestUtils.createMap(
+            "id", "stepB",
+            "assert", UnitTestUtils.createMap("f4", "v4"),
+        )
+        whenever(testStepRegistry.getById(testStepA["id"] as String)).thenReturn(testStepA)
+        whenever(testStepRegistry.getById(testStepB["id"] as String)).thenReturn(testStepB)
 
         val rawTestStep = UnitTestUtils.createMap(
-            "parent", parentTestStep["id"],
+            "parent", listOf(testStepA["id"], testStepB["id"]),
             "payload",
             UnitTestUtils.createMap(
-                "new_f1", "\${f1}",  // this reference must be taken from parent's vars
+                "new_f1", "\${f1}",  // this reference must be taken from testStepA vars
                 "f2", "\${1}",
-                "f3", "something"
+                "f3", "something",
             )
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("1", "v2")))
 
         Assertions.assertAll(
-            { Assertions.assertEquals(parentTestStep["id"], testStep.id) },
-            { Assertions.assertEquals(parentTestStep["variables"], testStep.variables) },
+            { Assertions.assertEquals(testStepB["id"], testStep.id) },  // id is replaced by the latest parent
+            { Assertions.assertEquals(testStepA["variables"], testStep.variables) },
             { Assertions.assertEquals("v1", (testStep.testData as Map<*, *>?)!!["new_f1"]) },
             { Assertions.assertEquals("v2", (testStep.testData as Map<*, *>?)!!["f2"]) },
-            { Assertions.assertEquals("something", (testStep.testData as Map<*, *>?)!!["f3"]) }
+            { Assertions.assertEquals("something", (testStep.testData as Map<*, *>?)!!["f3"]) },
+            { Assertions.assertEquals("v4", ((testStep.validationDetails?.expectedResult?.expectedResult as List<*>)[0] as ExpectedResult).expectedResult) }
         )
     }
 }
