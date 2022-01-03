@@ -21,6 +21,7 @@ class DefaultValueComparator(private val comparators: Collection<ValueComparator
             valueComparators = ArrayList()
             withValueComparator(ContainsValueComparator())
             withValueComparator(MatchValueComparator())
+            withValueComparator(NumericValueComparator())
         }
 
         fun withValueComparator(valueComparator: ValueComparator) = apply {
