@@ -278,12 +278,12 @@ class DefaultTestStepFactoryTest {
             "payload",
             UnitTestUtils.createMap(
                 "new_f1", "\${f1}",  // this reference must be taken from testStepA vars
-                "f2", "\${1}",
+                "f2", "\${f2}",
                 "f3", "something",
             )
         )
 
-        val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("1", "v2")))
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("f2", "v2")))
 
         Assertions.assertAll(
             { Assertions.assertEquals(testStepB["id"], testStep.id) },  // id is replaced by the latest parent
