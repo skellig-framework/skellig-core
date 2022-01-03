@@ -13,7 +13,7 @@ class NumericValueComparatorTest {
     @Test
     fun testLessThanOrEqual() {
         assertTrue(comparator.compare("lessThan(15)", 10))
-        assertTrue(comparator.compare("lessThan(0.1)", -1.01))
+        assertTrue(comparator.compare("lessThan( 0.1 )", -1.01))
         assertTrue(comparator.compare("lessThan(0.05)", 0.0001))
         assertFalse(comparator.compare("lessThan(5)", 10))
         assertFalse(comparator.compare("lessThan(10)", 10))
@@ -26,8 +26,8 @@ class NumericValueComparatorTest {
     @Test
     fun testMoreThanOrEqual() {
         assertFalse(comparator.compare("moreThan(15)", 10))
-        assertTrue(comparator.compare("moreThan(5)", 10))
-        assertTrue(comparator.compare("moreThan(-155)", 3))
+        assertTrue(comparator.compare("moreThan(5 )", 10))
+        assertTrue(comparator.compare("moreThan( -155 )", 3))
         assertTrue(comparator.compare("moreThan(10.788888)", 10.788889))
         assertFalse(comparator.compare("moreThan(10)", 10))
         assertTrue(comparator.compare("moreThan(5)", BigDecimal(10)))
