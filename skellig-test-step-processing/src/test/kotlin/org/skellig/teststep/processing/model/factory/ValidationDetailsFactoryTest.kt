@@ -30,6 +30,7 @@ class ValidationDetailsFactoryTest {
                     .withTestStepValueExtractor(mock())
                     .build()
             )
+            .withTestStepRegistry(mock())
             .build()
     }
 

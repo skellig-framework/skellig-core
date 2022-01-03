@@ -5,8 +5,10 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.HashMap
 
 abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
+        private val testStepRegistry: TestStepRegistry,
         keywordsProperties: Properties?,
         testStepFactoryValueConverter: TestStepFactoryValueConverter)
     : BaseTestStepFactory<T>(keywordsProperties, testStepFactoryValueConverter) {
@@ -14,6 +16,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     companion object {
         private val COMMA_SPLIT_PATTERN = Pattern.compile(",")
 
+        private const val PARENT_KEYWORD = "test.step.keyword.parent"
         private const val VARIABLES_KEYWORD = "test.step.keyword.variables"
         private const val EXECUTION_KEYWORD = "test.step.keyword.execution"
         private const val TIMEOUT_KEYWORD = "test.step.keyword.timeout"
@@ -37,6 +40,16 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     }
 
     override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): T {
+        val parentTestStep = rawTestStep[getKeywordName(PARENT_KEYWORD, "parent")]
+        return if (parentTestStep != null) {
+            // if parent exists, then merge its data with rawTestStep
+            val newRawTestStep = HashMap(testStepRegistry.getById(parentTestStep as String))
+            newRawTestStep.putAll(rawTestStep)
+            createTestStep(testStepName, newRawTestStep, parameters)
+        } else createTestStep(testStepName, rawTestStep, parameters)
+    }
+
+    fun createTestStep(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): T {
         val additionalParameters: MutableMap<String, Any?> = HashMap(parameters)
         val parametersFromTestName = extractParametersFromTestStepName(testStepName, rawTestStep)
         parametersFromTestName?.let {
@@ -46,16 +59,16 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         val variables = extractVariablesToParameters(rawTestStep, additionalParameters)
 
         return createTestStepBuilder(rawTestStep, additionalParameters)
-                .withId(getId(rawTestStep, additionalParameters))
-                .withName(convertValue<String>(testStepName, additionalParameters))
-                .withTestData(extractTestData(rawTestStep, additionalParameters))
-                .withValidationDetails(validationDetailsFactory.create(rawTestStep, additionalParameters))
-                .withVariables(variables)
-                .withExecution(getExecutionType(rawTestStep))
-                .withTimeout(getTimeout(rawTestStep, additionalParameters))
-                .withDelay(getDelay(rawTestStep, additionalParameters))
-                .withAttempts(getAttempts(rawTestStep, additionalParameters))
-                .build()
+            .withId(getId(rawTestStep, additionalParameters))
+            .withName(convertValue<String>(testStepName, additionalParameters))
+            .withTestData(extractTestData(rawTestStep, additionalParameters))
+            .withValidationDetails(validationDetailsFactory.create(rawTestStep, additionalParameters))
+            .withVariables(variables)
+            .withExecution(getExecutionType(rawTestStep))
+            .withTimeout(getTimeout(rawTestStep, additionalParameters))
+            .withDelay(getDelay(rawTestStep, additionalParameters))
+            .withAttempts(getAttempts(rawTestStep, additionalParameters))
+            .build()
     }
 
     protected abstract fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<T>

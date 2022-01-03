@@ -19,6 +19,11 @@ internal class CachedTestStepsRegistry(private val testStepRegistries: List<Test
         return testStep
     }
 
+    override fun getById(testStepId: String): Map<String, Any?>? =
+        testStepRegistries
+            .mapNotNull { it.getById(testStepId) }
+            .firstOrNull()
+
     override fun getTestSteps(): Collection<Map<String, Any?>> =
         testStepRegistries.flatMap { it.getTestSteps() }
 }

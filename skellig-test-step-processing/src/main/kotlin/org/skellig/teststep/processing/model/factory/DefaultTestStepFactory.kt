@@ -4,9 +4,11 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import java.util.*
 
 
-internal class DefaultTestStepFactory(keywordsProperties: Properties?,
-                                      testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<DefaultTestStep>(keywordsProperties, testStepFactoryValueConverter) {
+internal class DefaultTestStepFactory(
+    testStepRegistry: TestStepRegistry,
+    keywordsProperties: Properties?,
+    testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseDefaultTestStepFactory<DefaultTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
     override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<DefaultTestStep> {
         return DefaultTestStep.DefaultTestStepBuilder()
@@ -19,15 +21,23 @@ internal class DefaultTestStepFactory(keywordsProperties: Properties?,
     class Builder {
         private var keywordsProperties: Properties? = null
         private var testStepFactoryValueConverter: TestStepFactoryValueConverter? = null
+        private var testStepRegistry: TestStepRegistry? = null;
 
         fun withKeywordsProperties(keywordsProperties: Properties?) =
-                apply { this.keywordsProperties = keywordsProperties }
+            apply { this.keywordsProperties = keywordsProperties }
 
         fun withTestStepValueConverter(testStepFactoryValueConverter: TestStepFactoryValueConverter?) =
-                apply { this.testStepFactoryValueConverter = testStepFactoryValueConverter }
+            apply { this.testStepFactoryValueConverter = testStepFactoryValueConverter }
+
+        fun withTestStepRegistry(testStepRegistry: TestStepRegistry?) =
+            apply { this.testStepRegistry = testStepRegistry }
 
         fun build(): TestStepFactory<DefaultTestStep> {
-            return DefaultTestStepFactory(keywordsProperties, testStepFactoryValueConverter!!)
+            return DefaultTestStepFactory(
+                testStepRegistry ?: error("TestStepRegistry is mandatory for DefaultTestStepFactory"),
+                keywordsProperties,
+                testStepFactoryValueConverter ?: error("TestStepFactoryValueConverter is mandatory for DefaultTestStepFactory")
+            )
         }
     }
 }

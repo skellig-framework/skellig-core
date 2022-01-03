@@ -1,13 +1,15 @@
 package org.skellig.teststep.processor.tcp.model.factory
 
 import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
+import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processor.tcp.model.BaseTcpTestStep
 import org.skellig.teststep.processor.tcp.model.TcpConsumableTestStep
 import java.util.*
 
-class TcpConsumableTestStepFactory(keywordsProperties: Properties?,
+class TcpConsumableTestStepFactory(testStepRegistry: TestStepRegistry,
+                                   keywordsProperties: Properties?,
                                    testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseTcpTestStepFactory<TcpConsumableTestStep>(keywordsProperties, testStepFactoryValueConverter) {
+    : BaseTcpTestStepFactory<TcpConsumableTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
     override fun createTestStepBuilder(rawTestStep: Map<String, Any?>,
                                        parameters: Map<String, Any?>): BaseTcpTestStep.Builder<TcpConsumableTestStep> {

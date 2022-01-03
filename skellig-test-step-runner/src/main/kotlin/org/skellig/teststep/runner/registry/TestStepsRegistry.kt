@@ -11,17 +11,22 @@ import java.net.URI
 import java.nio.file.*
 import java.util.stream.Collectors
 
-internal class TestStepsRegistry(private val testStepFileExtension: TestStepFileExtension,
-                                 private val testStepReader: TestStepReader) : TestStepRegistry {
+internal class TestStepsRegistry(
+    private val testStepFileExtension: TestStepFileExtension,
+    private val testStepReader: TestStepReader
+) : TestStepRegistry {
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(TestStepsRegistry.javaClass)
+        private const val ID = "id"
+        private val LOGGER: Logger = LoggerFactory.getLogger(TestStepsRegistry::class.java)
     }
 
     private var testSteps: Collection<Map<String, Any?>> = emptyList()
+    private var testStepsGroupedById: Map<String, Map<String, Any?>> = mutableMapOf()
 
     fun registerFoundTestStepsInPath(testStepsPaths: Collection<URI>) {
         testSteps = getTestStepsFromPath(testStepsPaths)
+        testStepsGroupedById = testSteps.filter { it.containsKey(ID) }.associateBy { it[ID].toString() }
     }
 
     override fun getByName(testStepName: String): Map<String, Any?>? =
@@ -31,6 +36,9 @@ internal class TestStepsRegistry(private val testStepFileExtension: TestStepFile
             }
             .findFirst()
             .orElse(null)
+
+    override fun getById(testStepId: String): Map<String, Any?>? =
+        testStepsGroupedById[testStepId]
 
     override fun getTestSteps(): Collection<Map<String, Any?>> = testSteps
 
@@ -48,16 +56,20 @@ internal class TestStepsRegistry(private val testStepFileExtension: TestStepFile
     }
 
     private inner class RawTestStepsReaderStrategy : RawTestStepsReader {
-        private val fileReader = mapOf(Pair("file", RawTestStepsFromFileReader()),
-                                       Pair("jar", RawTestStepsFromJarFileReader()))
+        private val fileReader = mapOf(
+            Pair("file", RawTestStepsFromFileReader()),
+            Pair("jar", RawTestStepsFromJarFileReader())
+        )
 
 
         override fun getTestStepsFromUri(rootUri: URI): Collection<Map<String, Any?>> =
             try {
                 val protocol = rootUri.toURL().protocol
                 fileReader[protocol]?.getTestStepsFromUri(rootUri)
-                    ?: error("File protocol '$protocol' is not supported " +
-                                     "when reading test steps from files on URI '$rootUri'")
+                    ?: error(
+                        "File protocol '$protocol' is not supported " +
+                                "when reading test steps from files on URI '$rootUri'"
+                    )
             } catch (ex: Exception) {
                 throw TestStepRegistryException(ex.message, ex)
             }

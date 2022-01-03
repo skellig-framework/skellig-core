@@ -2,12 +2,14 @@ package org.skellig.teststep.processor.tcp.model.factory
 
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
+import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processor.tcp.model.BaseTcpTestStep
 import java.util.*
 
-abstract class BaseTcpTestStepFactory<T : BaseTcpTestStep>(keywordsProperties: Properties?,
+abstract class BaseTcpTestStepFactory<T : BaseTcpTestStep>(testStepRegistry: TestStepRegistry,
+                                                           keywordsProperties: Properties?,
                                                            testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<T>(keywordsProperties, testStepFactoryValueConverter) {
+    : BaseDefaultTestStepFactory<T>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         internal const val RESPOND_TO_KEYWORD = "test.step.keyword.respondTo"

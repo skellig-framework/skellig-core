@@ -1,6 +1,5 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import java.util.*
@@ -22,6 +21,7 @@ class CompositeTestStepFactory private constructor(
         defaultTestStepFactory = DefaultTestStepFactory.Builder()
             .withKeywordsProperties(keywordsProperties)
             .withTestStepValueConverter(testStepFactoryValueConverter)
+            .withTestStepRegistry(testStepsRegistry)
             .build()
     }
 

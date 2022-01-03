@@ -4,12 +4,14 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
+import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 import java.util.*
 
-abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(keywordsProperties: Properties?,
+abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(testStepRegistry: TestStepRegistry,
+                                                              keywordsProperties: Properties?,
                                                               testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<TS>(keywordsProperties, testStepFactoryValueConverter) {
+    : BaseDefaultTestStepFactory<TS>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private const val PROVIDER_KEYWORD = "test.step.keyword.db.provide"

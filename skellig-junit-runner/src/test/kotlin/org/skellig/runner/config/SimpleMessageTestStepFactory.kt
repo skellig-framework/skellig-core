@@ -3,11 +3,14 @@ package org.skellig.runner.config
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
+import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import java.util.*
 
-class SimpleMessageTestStepFactory(keywordsProperties: Properties?,
-                                   testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<SimpleMessageTestStep>(keywordsProperties, testStepFactoryValueConverter) {
+class SimpleMessageTestStepFactory(
+    testStepRegistry: TestStepRegistry,
+    keywordsProperties: Properties?,
+    testStepFactoryValueConverter: TestStepFactoryValueConverter)
+    : BaseDefaultTestStepFactory<SimpleMessageTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
     override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<SimpleMessageTestStep> {
         return SimpleMessageTestStep.Builder()
