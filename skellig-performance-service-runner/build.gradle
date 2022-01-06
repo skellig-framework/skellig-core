@@ -24,6 +24,7 @@ ext {
 dependencies {
     api group: 'org.thymeleaf', name: 'thymeleaf', version: "${springThimeleafVersion}"
     api group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: "${springBootVersion}"
+    api group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.3'
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect'
     api group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "${springBootVersion}"
     implementation group: 'io.prometheus', name: 'simpleclient_servlet', version: "${prometheusVersion}"

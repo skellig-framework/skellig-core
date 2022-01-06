@@ -31,6 +31,6 @@ open class RequestDurationPrometheusMetric(private val name: String,
     }
 
     override fun consumeTimeSeriesRecords(recordConsumer: (String) -> Unit) {
-        recordConsumer("Name: $name")
+        recordConsumer("\nName: $name")
     }
 }

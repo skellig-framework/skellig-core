@@ -18,7 +18,7 @@ open class MessageReceptionDefaultMetric(private val name: String) : MessageRece
     }
 
     override fun consumeTimeSeriesRecords(recordConsumer: (String) -> Unit) {
-        recordConsumer("name: $name")
+        recordConsumer("\nname: $name")
         timeSeriesSuccessfulReceptions.forEach { recordConsumer("\n${it.key}=${it.value.get()}") }
         recordConsumer("\ntotal passed: ${getTotalPassedRequests()}")
         timeSeriesFailedReceptions.forEach { recordConsumer("\n${it.key}=${it.value.get()}") }
