@@ -239,8 +239,8 @@ abstract class SkelligTestContext : Closeable {
     open val testStepKeywordsProperties: Properties?
         get() = null
 
-    protected var config: Config? = null
-        protected get() = field
+    var config: Config? = null
+        get() = field
         private set
 
     protected fun <T : TestStep> createTestStepProcessorFrom(
@@ -284,11 +284,13 @@ abstract class SkelligTestContext : Closeable {
     }
 
     override fun close() {
-        LOGGER.info("Shutting down the Skellig Context")
+        rootTestStepProcessor?.let {
+            LOGGER.info("Shutting down the Skellig Context")
 
-        rootTestStepProcessor!!.close()
+            it.close()
 
-        LOGGER.info("Skellig Context has been shut down")
+            LOGGER.info("Skellig Context has been shut down")
+        }
     }
 
     protected class TestStepProcessorDetails(

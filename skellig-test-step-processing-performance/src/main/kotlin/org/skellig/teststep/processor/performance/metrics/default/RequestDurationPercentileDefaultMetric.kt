@@ -36,7 +36,7 @@ open class RequestDurationPercentileDefaultMetric(private val name: String) : Du
     }
 
     override fun consumeTimeSeriesRecords(recordConsumer: (String) -> Unit) {
-        recordConsumer("name: $name")
+        recordConsumer("\nname: $name")
         recordConsumer("\nstart: $startTime")
         recordConsumer("\nbuckets: ${RequestDurationDefaultMetric.bucketPercentages.joinToString(",") { (it * 100).toString() }}")
         timeSeriesItems.forEach {
