@@ -105,8 +105,12 @@ abstract class SkelligTestContext : Closeable {
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader)
         testStepsRegistry.registerFoundTestStepsInPath(paths)
-        val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths, classLoader)
 
+        val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths, classLoader)
+        classTestStepsRegistry.getTestSteps().forEach { testStep ->
+            testStep.values.filterIsInstance<SkelligTestContextAware>()
+                .forEach { it.setSkelligTestContext(this) }
+        }
         return CachedTestStepsRegistry(listOf(testStepsRegistry, classTestStepsRegistry))
     }
 
@@ -165,14 +169,21 @@ abstract class SkelligTestContext : Closeable {
 
 
     private fun createTestStepProcessor(additionalTestStepProcessors: List<TestStepProcessorDetails>): TestStepProcessor<TestStep> {
-        additionalTestStepProcessors.forEach { rootTestStepProcessor!!.registerTestStepProcessor(it.testStepProcessor) }
+        additionalTestStepProcessors.forEach {
+            rootTestStepProcessor!!.registerTestStepProcessor(it.testStepProcessor)
+            injectTestContextIfRequired(it.testStepFactory)
+            injectTestContextIfRequired(it.testStepProcessor)
+        }
 
         return rootTestStepProcessor!!
     }
 
     private fun createTestStepValidator(valueExtractor: TestStepValueExtractor): TestStepResultValidator {
         val valueComparatorBuilder = DefaultValueComparator.Builder()
-        additionalValueComparators.forEach { valueComparatorBuilder.withValueComparator(it) }
+        additionalValueComparators.forEach {
+            valueComparatorBuilder.withValueComparator(it)
+            injectTestContextIfRequired(it)
+        }
 
         return DefaultTestStepResultValidator.Builder()
             .withValueExtractor(valueExtractor)
@@ -186,7 +197,10 @@ abstract class SkelligTestContext : Closeable {
         testScenarioState: TestScenarioState?
     ): TestStepValueConverter {
         val valueConverterBuilder = DefaultValueConverter.Builder()
-        additionalTestStepValueConverters.forEach { valueConverterBuilder.withValueConverter(it) }
+        additionalTestStepValueConverters.forEach {
+            valueConverterBuilder.withValueConverter(it)
+            injectTestContextIfRequired(it)
+        }
 
         return valueConverterBuilder
             .withClassLoader(classLoader)
@@ -198,14 +212,20 @@ abstract class SkelligTestContext : Closeable {
 
     private fun createTestDataResultConverter(): TestStepResultConverter {
         val builder = DefaultTestStepResultConverter.Builder()
-        additionalTestStepResultConverters.forEach { builder.withTestStepResultConverter(it) }
+        additionalTestStepResultConverters.forEach {
+            builder.withTestStepResultConverter(it)
+            injectTestContextIfRequired(it)
+        }
 
         return builder.build()
     }
 
     private fun createTestStepValueExtractor(): TestStepValueExtractor {
         val valueExtractorBuilder = DefaultValueExtractor.Builder()
-        additionalTestStepValueExtractors.forEach { valueExtractorBuilder.valueExtractor(it) }
+        additionalTestStepValueExtractors.forEach {
+            valueExtractorBuilder.valueExtractor(it)
+            injectTestContextIfRequired(it)
+        }
 
         return valueExtractorBuilder.build()
     }
@@ -267,7 +287,7 @@ abstract class SkelligTestContext : Closeable {
     protected fun <T : DefaultTestStep> createTestStepProcessorFrom(
         testStepProcessor: TestStepProcessor<T>,
         createTestStepFactoryDelegate: (
-            testStepsRegistry : TestStepRegistry,
+            testStepsRegistry: TestStepRegistry,
             keywordsProperties: Properties?,
             testStepFactoryValueConverter: TestStepFactoryValueConverter
         ) -> TestStepFactory<T>
@@ -281,6 +301,12 @@ abstract class SkelligTestContext : Closeable {
                     testStepFactoryValueConverter
                 )
             })
+    }
+
+    private fun injectTestContextIfRequired(it: Any) {
+        if (it is SkelligTestContextAware) {
+            it.setSkelligTestContext(this)
+        }
     }
 
     override fun close() {
