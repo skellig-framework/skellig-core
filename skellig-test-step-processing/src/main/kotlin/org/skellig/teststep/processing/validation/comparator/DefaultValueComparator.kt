@@ -22,6 +22,7 @@ class DefaultValueComparator(private val comparators: Collection<ValueComparator
             withValueComparator(ContainsValueComparator())
             withValueComparator(MatchValueComparator())
             withValueComparator(NumericValueComparator())
+            withValueComparator(DateTimeValueComparator())
         }
 
         fun withValueComparator(valueComparator: ValueComparator) = apply {
