@@ -107,6 +107,8 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
                 ToFloatTestStepValueExtractor(),
                 ToDoubleTestStepValueExtractor(),
                 ToBigDecimalTestStepValueExtractor(),
+                ToDateTimeValueExtractor(),
+                ToDateValueExtractor()
             )
 
 
