@@ -43,7 +43,7 @@ private constructor(private val valueExtractors: Collection<TestStepValueExtract
                             } else accumulator.append(character)
                         }
                     }
-                    '\'', '\"' -> {
+                    '\'', '"' -> {
                         if (accumulator.isEmpty() || accumulator[accumulator.length - 1] != '\\') {
                             quoteOpened = !quoteOpened
                         } else if (accumulator[accumulator.length - 1] == '\\') {

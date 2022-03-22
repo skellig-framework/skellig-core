@@ -141,8 +141,12 @@ class DefaultValueConverter private constructor(
             } else {
                 when (value[i]) {
                     '"', '\'' -> {
-                        if (i == 0 || value[i - 1] != '\\') {
-                            isInsideQuotes = !isInsideQuotes
+                        isInsideQuotes = !isInsideQuotes
+                    }
+                    '\\' -> {
+                        if (i < value.length && isQuotes(value[i + 1])) {
+                            valueToConvert += value[i + 1]
+                            i++
                         } else valueToConvert += value[i]
                     }
                     '.' -> {
@@ -157,6 +161,8 @@ class DefaultValueConverter private constructor(
 
         return convertWithExtractions(valueToConvert, extractionPath)
     }
+
+    private fun isQuotes(character : Char) = character == '\'' || character == '"'
 
     private fun convertWithExtractions(valueToConvert: Any?, extractionPath: String?): Any? {
         var result: Any? = valueToConvert

@@ -104,8 +104,11 @@ internal class PropertyParser(
                 }
                 // ignore a space if it's near some special chars
                 else if (value[i] == ' ') {
-                    if (isInsideQuotes || (value[i + 1] != ':' && value[i - 1] != ':' && value[i + 1] != '}'
-                                && value[i - 1] != '{' && value[i + 1] != ']' && value[i - 1] != '[')
+                    if (isInsideQuotes ||
+                        // accept space if next or previous char is : only if it's not inside a property group, ex "a : b : c"
+                        (((value[i + 1] != ':' && value[i - 1] != ':') || (groupCounter == 0 && (value[i + 1] == ':' || value[i - 1] == ':'))) &&
+                                value[i + 1] != '}' && value[i - 1] != '{' &&
+                                value[i + 1] != ']' && value[i - 1] != '[')
                     ) chunk += value[i]
                 }
                 // process default value if property value for a key not found, or if found then ignore what comes after : till the end of the group

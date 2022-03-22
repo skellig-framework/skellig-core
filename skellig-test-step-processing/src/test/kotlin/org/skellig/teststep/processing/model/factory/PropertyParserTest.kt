@@ -47,6 +47,7 @@ class PropertyParserTest {
     @Test
     fun testNoParametersWithSpecialChars() {
         assertEquals("00:10:20", propertyParser!!.parse("00:10:20", emptyMap()))
+        assertEquals("Can\\'t do anything: [...]", propertyParser!!.parse("Can\\'t do anything: [...]", emptyMap()))
     }
 
     @Test

@@ -72,6 +72,6 @@ internal class CassandraRequestExecutorCT {
 
     private fun createCassandraDetails(): CassandraDetails {
         return CassandraDetails("s1", listOf(InetSocketAddress("localhost", cassandraContainer.getMappedPort(9042))),
-                USER_NAME, PASSWORD)
+                null, USER_NAME, PASSWORD)
     }
 }

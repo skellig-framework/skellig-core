@@ -91,7 +91,7 @@ class DefaultFeatureParserTest {
                     Assertions.assertEquals("User usr_2 requests to sign in with 54321 password",
                             thirdTestScenario.steps!![1].name)
                 },
-                { Assertions.assertEquals("User usr_2 received error", thirdTestScenario.steps!![2].name) }
+                { Assertions.assertEquals("User usr_2 received error \"can't log in\"", thirdTestScenario.steps!![2].name) }
         )
     }
 

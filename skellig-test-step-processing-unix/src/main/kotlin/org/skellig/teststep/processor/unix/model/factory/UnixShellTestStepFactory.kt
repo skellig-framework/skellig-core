@@ -19,16 +19,19 @@ class UnixShellTestStepFactory(testStepRegistry: TestStepRegistry,
     }
 
     override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<UnixShellTestStep> {
-        val services = getStringArrayDataFromRawTestStep(getKeywordName(HOSTS_KEYWORD, "hosts"), rawTestStep, parameters)
+        val services = getStringArrayDataFromRawTestStep(getHostsKeyword(), rawTestStep, parameters)
         return UnixShellTestStep.Builder()
                 .withHosts(services)
-                .withCommand(convertValue(rawTestStep[commandKeyword], parameters))
+                .withCommand(convertValue(rawTestStep[getCommandKeyword()], parameters))
                 .withArgs(convertValue(rawTestStep[getKeywordName(ARGS_KEYWORD, "args")], parameters))
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
-        return rawTestStep.containsKey(commandKeyword)
-    }
+    private fun getCommandKeyword() = getKeywordName(COMMAND_KEYWORD, "command")
 
-    private val commandKeyword: String = getKeywordName(COMMAND_KEYWORD, "command")
+    private fun getHostsKeyword() = getKeywordName(HOSTS_KEYWORD, "hosts")
+
+    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+        return rawTestStep.containsKey(getHostsKeyword()) &&
+                rawTestStep.containsKey(getCommandKeyword())
+    }
 }

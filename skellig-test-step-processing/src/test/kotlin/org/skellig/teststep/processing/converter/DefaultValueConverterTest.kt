@@ -117,6 +117,13 @@ class DefaultValueConverterTest {
     }
 
     @Test
+    fun testWhenTextWithOneQuote() {
+        assertEquals("Can't find something", converter.convert("Can\\'t find something"))
+        assertEquals("one \" two", converter.convert("one \\\" two"))
+        assertEquals("Can't occupy already taken seats: [s1]", converter.convert("Can\\'t occupy already taken seats: [s1]"))
+    }
+
+    @Test
     fun testCombinationOfInnerWrappedFunctionsAndAttachedTexts() {
         whenever(testScenarioState.get("key_1")).thenReturn("key_2")
         whenever(testScenarioState.get("key_2")).thenReturn(mapOf(Pair("a", mapOf(Pair("b", "key_3")))))

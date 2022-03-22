@@ -21,7 +21,7 @@ Name: Sign in user
      | p1 | v1                 |
      | p2 | pass: <password> |
    User <user> requests to sign in with <password> password
-   User <user> received error
+   User <user> received error <error>
    Data:
-     | user | password |
-     | usr_2| 54321    |
+     | user | password | error          |
+     | usr_2| 54321    | "can't log in" |

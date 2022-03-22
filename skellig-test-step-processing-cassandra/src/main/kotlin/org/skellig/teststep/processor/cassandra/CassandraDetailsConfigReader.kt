@@ -28,9 +28,10 @@ internal class CassandraDetailsConfigReader {
         val server = rawCassandraDetails["server"] ?: error("Server name must be declared for Cassandra instance")
         val userName = rawCassandraDetails["userName"] as String?
         val password = rawCassandraDetails["password"] as String?
+        val datacenter = rawCassandraDetails["datacenter"] as String?
         val nodes = createNodes(rawCassandraDetails)
 
-        return CassandraDetails(server as String, nodes, userName, password)
+        return CassandraDetails(server as String, nodes, datacenter, userName, password)
     }
 
     private fun createNodes(rawExchangesDetails: Map<*, *>): Collection<InetSocketAddress> {

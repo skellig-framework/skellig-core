@@ -5,5 +5,6 @@ import java.net.InetSocketAddress
 
 class CassandraDetails(serverName: String,
                        val nodes: Collection<InetSocketAddress>,
+                       val datacenter: String?,
                        userName: String?,
                        password: String?) : DatabaseDetails(serverName, userName, password)

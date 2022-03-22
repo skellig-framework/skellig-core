@@ -17,6 +17,7 @@ internal class CassandraDetailsConfigReaderTest {
         Assertions.assertAll(
                 { Assertions.assertEquals(2, details.size) },
                 { Assertions.assertEquals("srv1", details[0].serverName) },
+                { Assertions.assertEquals("datacenter-1", details[0].datacenter) },
                 { Assertions.assertEquals(2, details[0].nodes.size) },
                 { Assertions.assertEquals("0.0.0.10", ArrayList(details[0].nodes)[0].hostName) },
                 { Assertions.assertEquals(1001, ArrayList(details[0].nodes)[0].port) },

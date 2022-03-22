@@ -19,7 +19,7 @@ open class RmqTestStepProcessor(
         testStepResultConverter: TestStepResultConverter?
 ) : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
 
-    protected override fun processTestStep(testStep: RmqTestStep): Any? {
+    override fun processTestStep(testStep: RmqTestStep): Any? {
         var response: Map<*, Any?>? = null
         val sendTo = testStep.sendTo
         val receiveFrom = testStep.receiveFrom
