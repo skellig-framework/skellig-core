@@ -1,10 +1,545 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Freelancer - Start Bootstrap Theme</title>
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+          href="../js/prism/prism.css">
 
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../css/styles.css" rel="stylesheet">
+    <!-- Fonts CSS-->
+    <link rel="stylesheet" href="../css/heading.css">
+    <link rel="stylesheet" href="../css/body.css">
+    <link rel="stylesheet" href="../css/docs.css">
 </head>
-<body>
-api doc
+<body id="page-top">
+<nav class="navbar navbar-expand-lg bg-secondary fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand js-scroll-trigger" href="#page-top">
+            skellig
+        </a>
+        <!--                <button class="navbar-toggler navbar-toggler-right font-weight-bold bg-primary text-white rounded" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">Menu <i class="fas fa-bars"></i></button>-->
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger"
+                                                     href="#">learn</a>
+                </li>
+                <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger"
+                                                     href="pages/api-doc.html">api doc</a>
+                </li>
+                <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger"
+                                                     href="#">blog</a>
+                </li>
+                <li class="nav-item mx-0 mx-lg-1">
+                    <a target="_blank" class="navbar-item navbar-icon tk-social"
+                       href="https://github.com/skellig-framework/skellig-core">
+                                <span class="icon "><svg width="45" height="45" viewBox="0 0 1792 1792"
+                                                         xmlns="http://www.w3.org/2000/svg">
+                                <path class="tk-svg-path"
+                                      d="M896 128q209 0 385.5 103t279.5 279.5 103 385.5q0 251-146.5 451.5t-378.5 277.5q-27 5-40-7t-13-30q0-3 .5-76.5t.5-134.5q0-97-52-142 57-6 102.5-18t94-39 81-66.5 53-105 20.5-150.5q0-119-79-206 37-91-8-204-28-9-81 11t-92 44l-38 24q-93-26-192-26t-192 26q-16-11-42.5-27t-83.5-38.5-85-13.5q-45 113-8 204-79 87-79 206 0 85 20.5 150t52.5 105 80.5 67 94 39 102.5 18q-39 36-49 103-21 10-45 15t-57 5-65.5-21.5-55.5-62.5q-19-32-48.5-52t-49.5-24l-20-3q-21 0-29 4.5t-5 11.5 9 14 13 12l7 5q22 10 43.5 38t31.5 51l10 23q13 38 44 61.5t67 30 69.5 7 55.5-3.5l23-4q0 38 .5 88.5t.5 54.5q0 18-13 30t-40 7q-232-77-378.5-277.5t-146.5-451.5q0-209 103-385.5t279.5-279.5 385.5-103zm-477 1103q3-7-7-12-10-3-13 2-3 7 7 12 9 6 13-2zm31 34q7-5-2-16-10-9-16-3-7 5 2 16 10 10 16 3zm30 45q9-7 0-19-8-13-17-6-9 5 0 18t17 7zm42 42q8-8-4-19-12-12-20-3-9 8 4 19 12 12 20 3zm57 25q3-11-13-16-15-4-19 7t13 15q15 6 19-6zm63 5q0-13-17-11-16 0-16 11 0 13 17 11 16 0 16-11zm58-10q-2-11-18-9-16 3-14 15t18 8 14-14z"
+                                      fill="#fff"></path></svg></span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
+<div class="docs-container container-xxl bd-layout">
+    <aside class="bd-sidebar">
+        <nav class="collapse bd-links" id="bd-docs-nav" aria-label="Docs navigation">
+            <ul class="list-unstyled mb-0 py-3 pt-md-1">
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse"
+                            data-bs-target="#getting-started-collapse" aria-expanded="false">
+                        Getting started
+                    </button>
+
+                    <div class="collapse" id="getting-started-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/getting-started/introduction/"
+                                   class="d-inline-flex align-items-center rounded">Introduction</a></li>
+                            <li><a href="/docs/5.1/getting-started/download/"
+                                   class="d-inline-flex align-items-center rounded">Download</a></li>
+                            <li><a href="/docs/5.1/getting-started/contents/"
+                                   class="d-inline-flex align-items-center rounded">Contents</a></li>
+                            <li><a href="/docs/5.1/getting-started/browsers-devices/"
+                                   class="d-inline-flex align-items-center rounded">Browsers &amp; devices</a></li>
+                            <li><a href="/docs/5.1/getting-started/javascript/"
+                                   class="d-inline-flex align-items-center rounded">JavaScript</a></li>
+                            <li><a href="/docs/5.1/getting-started/webpack/"
+                                   class="d-inline-flex align-items-center rounded">Webpack</a></li>
+                            <li><a href="/docs/5.1/getting-started/parcel/"
+                                   class="d-inline-flex align-items-center rounded">Parcel</a></li>
+                            <li><a href="/docs/5.1/getting-started/accessibility/"
+                                   class="d-inline-flex align-items-center rounded">Accessibility</a></li>
+                            <li><a href="/docs/5.1/getting-started/rfs/"
+                                   class="d-inline-flex align-items-center rounded">RFS</a></li>
+                            <li><a href="/docs/5.1/getting-started/rtl/"
+                                   class="d-inline-flex align-items-center rounded">RTL</a></li>
+                            <li><a href="/docs/5.1/getting-started/contribute/"
+                                   class="d-inline-flex align-items-center rounded">Contribute</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded" data-bs-toggle="collapse"
+                            data-bs-target="#customize-collapse" aria-expanded="true" aria-current="true">
+                        Customize
+                    </button>
+
+                    <div class="collapse show" id="customize-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/customize/overview/"
+                                   class="d-inline-flex align-items-center rounded active"
+                                   aria-current="page">Overview</a></li>
+                            <li><a href="/docs/5.1/customize/sass/" class="d-inline-flex align-items-center rounded">Sass</a>
+                            </li>
+                            <li><a href="/docs/5.1/customize/options/" class="d-inline-flex align-items-center rounded">Options</a>
+                            </li>
+                            <li><a href="/docs/5.1/customize/color/" class="d-inline-flex align-items-center rounded">Color</a>
+                            </li>
+                            <li><a href="/docs/5.1/customize/components/"
+                                   class="d-inline-flex align-items-center rounded">Components</a></li>
+                            <li><a href="/docs/5.1/customize/css-variables/"
+                                   class="d-inline-flex align-items-center rounded">CSS variables</a></li>
+                            <li><a href="/docs/5.1/customize/optimize/"
+                                   class="d-inline-flex align-items-center rounded">Optimize</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse"
+                            data-bs-target="#layout-collapse" aria-expanded="false">
+                        Layout
+                    </button>
+
+                    <div class="collapse" id="layout-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/layout/breakpoints/"
+                                   class="d-inline-flex align-items-center rounded">Breakpoints</a></li>
+                            <li><a href="/docs/5.1/layout/containers/" class="d-inline-flex align-items-center rounded">Containers</a>
+                            </li>
+                            <li><a href="/docs/5.1/layout/grid/"
+                                   class="d-inline-flex align-items-center rounded">Grid</a></li>
+                            <li><a href="/docs/5.1/layout/columns/" class="d-inline-flex align-items-center rounded">Columns</a>
+                            </li>
+                            <li><a href="/docs/5.1/layout/gutters/" class="d-inline-flex align-items-center rounded">Gutters</a>
+                            </li>
+                            <li><a href="/docs/5.1/layout/utilities/" class="d-inline-flex align-items-center rounded">Utilities</a>
+                            </li>
+                            <li><a href="/docs/5.1/layout/z-index/" class="d-inline-flex align-items-center rounded">Z-index</a>
+                            </li>
+                            <li><a href="/docs/5.1/layout/css-grid/" class="d-inline-flex align-items-center rounded">CSS
+                                Grid</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse"
+                            data-bs-target="#content-collapse" aria-expanded="false">
+                        Content
+                    </button>
+
+                    <div class="collapse" id="content-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/content/reboot/" class="d-inline-flex align-items-center rounded">Reboot</a>
+                            </li>
+                            <li><a href="/docs/5.1/content/typography/"
+                                   class="d-inline-flex align-items-center rounded">Typography</a></li>
+                            <li><a href="/docs/5.1/content/images/" class="d-inline-flex align-items-center rounded">Images</a>
+                            </li>
+                            <li><a href="/docs/5.1/content/tables/" class="d-inline-flex align-items-center rounded">Tables</a>
+                            </li>
+                            <li><a href="/docs/5.1/content/figures/" class="d-inline-flex align-items-center rounded">Figures</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse"
+                            data-bs-target="#forms-collapse" aria-expanded="false">
+                        Forms
+                    </button>
+
+                    <div class="collapse" id="forms-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/forms/overview/" class="d-inline-flex align-items-center rounded">Overview</a>
+                            </li>
+                            <li><a href="/docs/5.1/forms/form-control/"
+                                   class="d-inline-flex align-items-center rounded">Form control</a></li>
+                            <li><a href="/docs/5.1/forms/select/" class="d-inline-flex align-items-center rounded">Select</a>
+                            </li>
+                            <li><a href="/docs/5.1/forms/checks-radios/"
+                                   class="d-inline-flex align-items-center rounded">Checks &amp; radios</a></li>
+                            <li><a href="/docs/5.1/forms/range/"
+                                   class="d-inline-flex align-items-center rounded">Range</a></li>
+                            <li><a href="/docs/5.1/forms/input-group/" class="d-inline-flex align-items-center rounded">Input
+                                group</a></li>
+                            <li><a href="/docs/5.1/forms/floating-labels/"
+                                   class="d-inline-flex align-items-center rounded">Floating labels</a></li>
+                            <li><a href="/docs/5.1/forms/layout/" class="d-inline-flex align-items-center rounded">Layout</a>
+                            </li>
+                            <li><a href="/docs/5.1/forms/validation/" class="d-inline-flex align-items-center rounded">Validation</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse"
+                            data-bs-target="#components-collapse" aria-expanded="false">
+                        Components
+                    </button>
+
+                    <div class="collapse" id="components-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/components/accordion/"
+                                   class="d-inline-flex align-items-center rounded">Accordion</a></li>
+                            <li><a href="/docs/5.1/components/alerts/" class="d-inline-flex align-items-center rounded">Alerts</a>
+                            </li>
+                            <li><a href="/docs/5.1/components/badge/" class="d-inline-flex align-items-center rounded">Badge</a>
+                            </li>
+                            <li><a href="/docs/5.1/components/breadcrumb/"
+                                   class="d-inline-flex align-items-center rounded">Breadcrumb</a></li>
+                            <li><a href="/docs/5.1/components/buttons/"
+                                   class="d-inline-flex align-items-center rounded">Buttons</a></li>
+                            <li><a href="/docs/5.1/components/button-group/"
+                                   class="d-inline-flex align-items-center rounded">Button group</a></li>
+                            <li><a href="/docs/5.1/components/card/" class="d-inline-flex align-items-center rounded">Card</a>
+                            </li>
+                            <li><a href="/docs/5.1/components/carousel/"
+                                   class="d-inline-flex align-items-center rounded">Carousel</a></li>
+                            <li><a href="/docs/5.1/components/close-button/"
+                                   class="d-inline-flex align-items-center rounded">Close button</a></li>
+                            <li><a href="/docs/5.1/components/collapse/"
+                                   class="d-inline-flex align-items-center rounded">Collapse</a></li>
+                            <li><a href="/docs/5.1/components/dropdowns/"
+                                   class="d-inline-flex align-items-center rounded">Dropdowns</a></li>
+                            <li><a href="/docs/5.1/components/list-group/"
+                                   class="d-inline-flex align-items-center rounded">List group</a></li>
+                            <li><a href="/docs/5.1/components/modal/" class="d-inline-flex align-items-center rounded">Modal</a>
+                            </li>
+                            <li><a href="/docs/5.1/components/navs-tabs/"
+                                   class="d-inline-flex align-items-center rounded">Navs &amp; tabs</a></li>
+                            <li><a href="/docs/5.1/components/navbar/" class="d-inline-flex align-items-center rounded">Navbar</a>
+                            </li>
+                            <li><a href="/docs/5.1/components/offcanvas/"
+                                   class="d-inline-flex align-items-center rounded">Offcanvas</a></li>
+                            <li><a href="/docs/5.1/components/pagination/"
+                                   class="d-inline-flex align-items-center rounded">Pagination</a></li>
+                            <li><a href="/docs/5.1/components/placeholders/"
+                                   class="d-inline-flex align-items-center rounded">Placeholders</a></li>
+                            <li><a href="/docs/5.1/components/popovers/"
+                                   class="d-inline-flex align-items-center rounded">Popovers</a></li>
+                            <li><a href="/docs/5.1/components/progress/"
+                                   class="d-inline-flex align-items-center rounded">Progress</a></li>
+                            <li><a href="/docs/5.1/components/scrollspy/"
+                                   class="d-inline-flex align-items-center rounded">Scrollspy</a></li>
+                            <li><a href="/docs/5.1/components/spinners/"
+                                   class="d-inline-flex align-items-center rounded">Spinners</a></li>
+                            <li><a href="/docs/5.1/components/toasts/" class="d-inline-flex align-items-center rounded">Toasts</a>
+                            </li>
+                            <li><a href="/docs/5.1/components/tooltips/"
+                                   class="d-inline-flex align-items-center rounded">Tooltips</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse"
+                            data-bs-target="#helpers-collapse" aria-expanded="false">
+                        Helpers
+                    </button>
+
+                    <div class="collapse" id="helpers-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/helpers/clearfix/" class="d-inline-flex align-items-center rounded">Clearfix</a>
+                            </li>
+                            <li><a href="/docs/5.1/helpers/colored-links/"
+                                   class="d-inline-flex align-items-center rounded">Colored links</a></li>
+                            <li><a href="/docs/5.1/helpers/ratio/" class="d-inline-flex align-items-center rounded">Ratio</a>
+                            </li>
+                            <li><a href="/docs/5.1/helpers/position/" class="d-inline-flex align-items-center rounded">Position</a>
+                            </li>
+                            <li><a href="/docs/5.1/helpers/stacks/" class="d-inline-flex align-items-center rounded">Stacks</a>
+                            </li>
+                            <li><a href="/docs/5.1/helpers/visually-hidden/"
+                                   class="d-inline-flex align-items-center rounded">Visually hidden</a></li>
+                            <li><a href="/docs/5.1/helpers/stretched-link/"
+                                   class="d-inline-flex align-items-center rounded">Stretched link</a></li>
+                            <li><a href="/docs/5.1/helpers/text-truncation/"
+                                   class="d-inline-flex align-items-center rounded">Text truncation</a></li>
+                            <li><a href="/docs/5.1/helpers/vertical-rule/"
+                                   class="d-inline-flex align-items-center rounded">Vertical rule</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse"
+                            data-bs-target="#utilities-collapse" aria-expanded="false">
+                        Utilities
+                    </button>
+
+                    <div class="collapse" id="utilities-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/utilities/api/"
+                                   class="d-inline-flex align-items-center rounded">API</a></li>
+                            <li><a href="/docs/5.1/utilities/background/"
+                                   class="d-inline-flex align-items-center rounded">Background</a></li>
+                            <li><a href="/docs/5.1/utilities/borders/" class="d-inline-flex align-items-center rounded">Borders</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/colors/" class="d-inline-flex align-items-center rounded">Colors</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/display/" class="d-inline-flex align-items-center rounded">Display</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/flex/" class="d-inline-flex align-items-center rounded">Flex</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/float/" class="d-inline-flex align-items-center rounded">Float</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/interactions/"
+                                   class="d-inline-flex align-items-center rounded">Interactions</a></li>
+                            <li><a href="/docs/5.1/utilities/opacity/" class="d-inline-flex align-items-center rounded">Opacity</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/overflow/"
+                                   class="d-inline-flex align-items-center rounded">Overflow</a></li>
+                            <li><a href="/docs/5.1/utilities/position/"
+                                   class="d-inline-flex align-items-center rounded">Position</a></li>
+                            <li><a href="/docs/5.1/utilities/shadows/" class="d-inline-flex align-items-center rounded">Shadows</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/sizing/" class="d-inline-flex align-items-center rounded">Sizing</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/spacing/" class="d-inline-flex align-items-center rounded">Spacing</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/text/" class="d-inline-flex align-items-center rounded">Text</a>
+                            </li>
+                            <li><a href="/docs/5.1/utilities/vertical-align/"
+                                   class="d-inline-flex align-items-center rounded">Vertical align</a></li>
+                            <li><a href="/docs/5.1/utilities/visibility/"
+                                   class="d-inline-flex align-items-center rounded">Visibility</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse"
+                            data-bs-target="#extend-collapse" aria-expanded="false">
+                        Extend
+                    </button>
+
+                    <div class="collapse" id="extend-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/extend/approach/" class="d-inline-flex align-items-center rounded">Approach</a>
+                            </li>
+                            <li><a href="/docs/5.1/extend/icons/"
+                                   class="d-inline-flex align-items-center rounded">Icons</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="mb-1">
+                    <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse"
+                            data-bs-target="#about-collapse" aria-expanded="false">
+                        About
+                    </button>
+
+                    <div class="collapse" id="about-collapse">
+                        <ul class="list-unstyled fw-normal pb-1 small">
+                            <li><a href="/docs/5.1/about/overview/" class="d-inline-flex align-items-center rounded">Overview</a>
+                            </li>
+                            <li><a href="/docs/5.1/about/team/"
+                                   class="d-inline-flex align-items-center rounded">Team</a></li>
+                            <li><a href="/docs/5.1/about/brand/"
+                                   class="d-inline-flex align-items-center rounded">Brand</a></li>
+                            <li><a href="/docs/5.1/about/license/" class="d-inline-flex align-items-center rounded">License</a>
+                            </li>
+                            <li><a href="/docs/5.1/about/translations/"
+                                   class="d-inline-flex align-items-center rounded">Translations</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="my-3 mx-4 border-top"></li>
+                <li>
+                    <a href="/docs/5.1/migration/" class="d-inline-flex align-items-center rounded">
+                        Migration
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+    </aside>
+
+    <main class="bd-main order-1">
+        <div class="bd-intro ps-lg-4">
+            <div class="d-md-flex flex-md-row-reverse align-items-center justify-content-between">
+                <a class="btn btn-sm btn-bd-light mb-2 mb-md-0"
+                   href="https://github.com/twbs/bootstrap/blob/main/site/content/docs/5.1/customize/overview.md"
+                   title="View and edit this file on GitHub" target="_blank" rel="noopener">View on GitHub</a>
+                <h1 class="bd-title" id="content">Customize</h1>
+            </div>
+            <p class="bd-lead">Learn how to theme, customize, and extend Bootstrap with Sass, a boatload of global
+                options, an expansive color system, and more.</p>
+
+        </div>
+
+        <div class="bd-content ps-lg-4">
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <a class="d-block text-decoration-none" href="../sass/">
+                        <strong class="d-block h5 mb-0">Sass</strong>
+                        <span class="text-secondary">Utilize our source Sass files to take advantage of variables, maps, mixins, and functions.</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6">
+                    <a class="d-block text-decoration-none" href="../options/">
+                        <strong class="d-block h5 mb-0">Options</strong>
+                        <span class="text-secondary">Customize Bootstrap with built-in variables to easily toggle global CSS preferences.</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6">
+                    <a class="d-block text-decoration-none" href="../color/">
+                        <strong class="d-block h5 mb-0">Color</strong>
+                        <span class="text-secondary">Learn about and customize the color systems that support the entire toolkit.</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6">
+                    <a class="d-block text-decoration-none" href="../components/">
+                        <strong class="d-block h5 mb-0">Components</strong>
+                        <span class="text-secondary">Learn how we build nearly all our components responsively and with base and modifier classes.</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6">
+                    <a class="d-block text-decoration-none" href="../css-variables/">
+                        <strong class="d-block h5 mb-0">CSS variables</strong>
+                        <span class="text-secondary">Use Bootstrap's CSS custom properties for fast and forward-looking design and development.</span>
+                    </a>
+                </div>
+
+                <div class="col-md-6">
+                    <a class="d-block text-decoration-none" href="../optimize/">
+                        <strong class="d-block h5 mb-0">Optimize</strong>
+                        <span class="text-secondary">Keep your projects lean, responsive, and maintainable so you can deliver the best experience.</span>
+                    </a>
+                </div>
+
+            </div>
+
+<pre><code class="language-javascript">$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});</code></pre>
+
+<pre><code class="language-kotlin">package org.skellig.feature
+
+open class Feature protected constructor(val name: String,
+                                         val scenarios: List<TestScenario>?,
+                                         val testPreRequisites: List<TestPreRequisites<*>>?) {
+
+    class Builder {
+
+        private var name: String? = null
+        private val scenarios = mutableListOf<TestScenario>()
+        private var testPreRequisites: List<TestPreRequisites<*>>? = null
+
+        fun withName(name: String) = apply { this.name = name.trim { it <= ' ' } }
+
+        fun withScenarios(scenarios: List<TestScenario>) = apply { this.scenarios.addAll(scenarios) }
+
+        fun withTestPreRequisites(testPreRequisites: List<TestPreRequisites<*>>?) = apply { this.testPreRequisites = testPreRequisites }
+
+        fun build(): Feature {
+            return Feature(name?: error("Feature cannot have empty name"),
+                           scenarios, testPreRequisites)
+        }
+    }
+}</code></pre>
+
+
+            <h2 id="overview">Overview<a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#"
+                                         href="#overview" style="padding-left: 0.375em;"></a></h2>
+            <p>There are multiple ways to customize Bootstrap. Your best path can depend on your project, the complexity
+                of your build tools, the version of Bootstrap you’re using, browser support, and more.</p>
+            <p>Our two preferred methods are:</p>
+            <ol>
+                <li>Using Bootstrap <a href="/docs/5.1/getting-started/download/#package-managers">via package
+                    manager</a> so you can use and extend our source files.
+                </li>
+                <li>Using Bootstrap’s compiled distribution files or <a
+                        href="/docs/5.1/getting-started/download/#cdn-via-jsdelivr">jsDelivr</a> so you can add onto or
+                    override Bootstrap’s styles.
+                </li>
+            </ol>
+            <p>While we cannot go into details here on how to use every package manager, we can give some guidance on <a
+                    href="/docs/5.1/customize/sass/">using Bootstrap with your own Sass compiler</a>.</p>
+            <p>For those who want to use the distribution files, review the <a
+                    href="/docs/5.1/getting-started/introduction/">getting started page</a> for how to include those
+                files and an example HTML page. From there, consult the docs for the layout, components, and behaviors
+                you’d like to use.</p>
+            <p>As you familiarize yourself with Bootstrap, continue exploring this section for more details on how to
+                utilize our global options, making use of and changing our color system, how we build our components,
+                how to use our growing list of CSS custom properties, and how to optimize your code when building with
+                Bootstrap.</p>
+            <h2 id="csps-and-embedded-svgs">CSPs and embedded SVGs<a class="anchorjs-link " aria-label="Anchor"
+                                                                     data-anchorjs-icon="#"
+                                                                     href="#csps-and-embedded-svgs"
+                                                                     style="padding-left: 0.375em;"></a></h2>
+            <p>Several Bootstrap components include embedded SVGs in our CSS to style components consistently and easily
+                across browsers and devices. <strong>For organizations with more strict <abbr
+                        title="Content Security Policy">CSP</abbr> configurations</strong>, we’ve documented all
+                instances of our embedded SVGs (all of which are applied via <code>background-image</code>) so you can
+                more thoroughly review your options.</p>
+            <ul>
+                <li><a href="/docs/5.1/components/accordion/">Accordion</a></li>
+                <li><a href="/docs/5.1/components/close-button/">Close button</a> (used in alerts and modals)</li>
+                <li><a href="/docs/5.1/forms/checks-radios/">Form checkboxes and radio buttons</a></li>
+                <li><a href="/docs/5.1/forms/checks-radios/#switches">Form switches</a></li>
+                <li><a href="/docs/5.1/forms/validation/#server-side">Form validation icons</a></li>
+                <li><a href="/docs/5.1/forms/select/">Select menus</a></li>
+                <li><a href="/docs/5.1/components/carousel/#with-controls">Carousel controls</a></li>
+                <li><a href="/docs/5.1/components/navbar/#responsive-behaviors">Navbar toggle buttons</a></li>
+            </ul>
+            <p>Based on <a href="https://github.com/twbs/bootstrap/issues/25394">community conversation</a>, some
+                options for addressing this in your own codebase include replacing the URLs with locally hosted assets,
+                removing the images and using inline images (not possible in all components), and modifying your CSP.
+                Our recommendation is to carefully review your own security policies and decide on the best path
+                forward, if necessary.</p>
+
+        </div>
+    </main>
+</div>
+
+<!-- Copyright Section-->
+<section class="copyright py-4 text-center text-white">
+    <div class="container"><small class="pre-wrap">Copyright © Skellig Framework 2016 - 2022</small></div>
+</section>
+<!-- Scroll to Top Button (Only visible on small and extra-small screen sizes)-->
+<div class="scroll-to-top d-lg-none position-fixed"><a class="js-scroll-trigger d-block text-center text-white rounded"
+                                                       href="#page-top"><i class="fa fa-chevron-up"></i></a></div>
+<!-- Bootstrap core JS-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+<!-- Third party plugin JS-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+<!-- Contact form JS-->
+<script src="../assets/mail/jqBootstrapValidation.js"></script>
+<script src="../assets/mail/contact_me.js"></script>
+<!-- Core theme JS-->
+<script src="../js/scripts.js"></script>
+
+<script src="../js/prism/prism.js"></script>
+<script>hljs.highlightAll();
+hljs.configure({
+    languages: ['kotlin']
+});
+</script>
 </body>
 </html>
