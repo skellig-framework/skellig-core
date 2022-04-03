@@ -4317,6 +4317,15 @@ input[type=button].btn-block {
   flex: 1 1 auto;
   min-height: 1px;
   padding: 1.25rem;
+  height: 230px;
+  background: #1aafaf0d;
+}
+
+.code-card-body {
+  flex: 1 1 auto;
+  min-height: 1px;
+  padding: 1.25rem;
+  background: #1aafaf0d;
 }
 
 .card-title {
@@ -4330,6 +4339,13 @@ input[type=button].btn-block {
 
 .card-text:last-child {
   margin-bottom: 0;
+  font-size: 18px;
+}
+
+.code-text:last-child {
+  margin-bottom: 0;
+  font-size: 18px;
+  color: #d5d5d5;
 }
 
 .card-link:hover {
@@ -10180,4 +10196,9 @@ form .row:first-child .floating-label-form-group {
 
 .btn-social {
   margin-bottom: 0.5rem;
+}
+
+.header-text {
+  color: #00cfd5;
+  font-size: 25px;
 }
