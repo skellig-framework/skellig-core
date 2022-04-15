@@ -4342,6 +4342,11 @@ input[type=button].btn-block {
   font-size: 18px;
 }
 
+.card-text-md:last-child {
+  margin-bottom: 0;
+  font-size: 22px;
+}
+
 .code-text:last-child {
   margin-bottom: 0;
   font-size: 18px;
