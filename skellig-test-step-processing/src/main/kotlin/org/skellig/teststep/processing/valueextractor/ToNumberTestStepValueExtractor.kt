@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.valueextractor
 
 import org.skellig.teststep.processing.exception.ValueExtractionException
 import java.math.BigDecimal
+import java.math.BigInteger
 
 abstract class ToNumberTestStepValueExtractor : TestStepValueExtractor {
 
@@ -87,5 +88,20 @@ class ToBigDecimalTestStepValueExtractor : ToNumberTestStepValueExtractor() {
 
     override fun getExtractFunctionName(): String {
         return "toBigDecimal"
+    }
+}
+
+class ToBigIntegerTestStepValueExtractor : ToNumberTestStepValueExtractor() {
+
+    override fun extract(value: Any?, extractionParameter: String?): Any {
+        return when (value) {
+            is BigInteger -> value
+            is Number -> BigInteger(value.toString())
+            else -> (value as? String ?: throw getParseException(value)).toBigInteger()
+        }
+    }
+
+    override fun getExtractFunctionName(): String {
+        return "toBigInteger"
     }
 }

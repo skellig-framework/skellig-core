@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.valueextractor
 
 import org.skellig.teststep.processing.exception.ValueExtractionException
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.math.RoundingMode
 import kotlin.math.pow
 
@@ -47,6 +48,7 @@ class PlusOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor
                 is Double -> it.plus(toDouble(extractionParameter))
                 is Long -> it.plus(toLong(extractionParameter))
                 is BigDecimal -> it.plus(toBigDecimal(extractionParameter))
+                is BigInteger -> it.plus(toBigDecimal(extractionParameter).toBigInteger())
                 else -> throw ValueExtractionException("Cannot apply 'plus' operator to type '${value.javaClass}'")
             }
         }
@@ -72,6 +74,7 @@ class MinusOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtracto
                 is Double -> it.minus(toDouble(extractionParameter))
                 is Long -> it.minus(toLong(extractionParameter))
                 is BigDecimal -> it.minus(toBigDecimal(extractionParameter))
+                is BigInteger -> it.minus(toBigDecimal(extractionParameter).toBigInteger())
                 else -> throw ValueExtractionException("Cannot apply 'minus' operator to type '${value.javaClass}'")
             }
         }
@@ -97,6 +100,7 @@ class TimesOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtracto
                 is Double -> it.times(toDouble(extractionParameter))
                 is Long -> it.times(toLong(extractionParameter))
                 is BigDecimal -> it.times(toBigDecimal(extractionParameter))
+                is BigInteger -> it.times(toBigDecimal(extractionParameter).toBigInteger())
                 else -> throw ValueExtractionException("Cannot apply 'times' operator to type '${value.javaClass}'")
             }
         }
@@ -122,6 +126,7 @@ class DivOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor(
                 is Double -> it.div(toDouble(extractionParameter))
                 is Long -> it.div(toLong(extractionParameter))
                 is BigDecimal -> it.divide(toBigDecimal(extractionParameter), RoundingMode.FLOOR)
+                is BigInteger -> it.divide(toBigDecimal(extractionParameter).toBigInteger())
                 else -> throw ValueExtractionException("Cannot apply 'times' operator to type '${value.javaClass}'")
             }
         }

@@ -13,7 +13,7 @@ dependencies {
     implementation group: 'log4j', name:'log4j'
     implementation group: 'org.slf4j', name:'slf4j-log4j12'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.21"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
     implementation group: 'org.freemarker', name: 'freemarker'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
 

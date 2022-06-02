@@ -1,0 +1,25 @@
+plugins {
+        id "org.jetbrains.kotlin.jvm" version "${kotlinVersion}"
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/kotlin'
+}
+
+ext.set("project_name", 'skellig-test-step-processing-web3')
+ext.set("project_description", 'Processing interaction with Web3 JSON-RPC calls to blockchains like ETH')
+
+dependencies {
+    implementation group: 'org.slf4j', name: 'slf4j-api'
+    api group: 'com.typesafe', name: 'config'
+    implementation 'org.web3j:core:4.9.2'
+    implementation 'org.web3j:crypto:4.9.2'
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+
+    api project(':skellig-test-step-processing')
+
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+}
