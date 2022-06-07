@@ -18,11 +18,19 @@ import org.web3j.protocol.core.Response
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthCall
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount
+import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt
+import org.web3j.protocol.core.methods.response.EthSendRawTransaction
 import org.web3j.utils.Numeric
+import java.lang.Thread.sleep
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
 class Web3MethodExecutor {
+
+    companion object {
+        private const val WAIT_TX_DELAY = 500
+        private const val WAIT_TX_ATTEMPTS = 20
+    }
 
     private val typeReferencesMap = TypeReferencesMap()
 
@@ -94,24 +102,31 @@ class Web3MethodExecutor {
             val encodedFunction = if (data is Map<*, *>) FunctionEncoder.encode(createFunction(data as Map<String, Any>)) else data as String
             val nonce = getNonce(from, web3)
 
-            runAsync(web3.ethSendTransaction(Transaction.createFunctionCallTransaction(from, nonce, gasPrice, gas, to, value, encodedFunction)))
+            val response = runAsync(web3.ethSendTransaction(Transaction.createFunctionCallTransaction(from, nonce, gasPrice, gas, to, value, encodedFunction)))
+            waitForTransactionIfRequired(web3, rawTransaction["wait"], response)
         },
         Pair("eth_sendRawTransaction") { web3: Web3j, params: List<Any> ->
             val rawTransaction = params[0] as Map<String, Any>
             val from = rawTransaction["from"] as String
+            val credentials = Credentials.create(from)
             val to = rawTransaction["to"] as String
             val gas = toBigInteger(rawTransaction["gas"])
             val gasPrice = toBigInteger(rawTransaction["gasPrice"])
+            val maxPriorityFeePerGas = toBigInteger(rawTransaction["maxPriorityFeePerGas"])
             val value = toBigInteger(rawTransaction["value"])
+            val nonce = rawTransaction["nonce"]?.toString()?.toBigInteger() ?: getNonce(credentials.address, web3)
             val data = rawTransaction["data"]
             val encodedFunction = if (data is Map<*, *>) FunctionEncoder.encode(createFunction(data as Map<String, Any>)) else data as String
-            val nonce = getNonce(from, web3)
 
             val signedMessage = TransactionEncoder.signMessage(
-                RawTransaction.createTransaction(nonce, gasPrice, gas, to, value, encodedFunction), Credentials.create(from)
+                if (maxPriorityFeePerGas == null) RawTransaction.createTransaction(nonce, gasPrice, gas, to, value, encodedFunction)
+                else RawTransaction.createTransaction(
+                    rawTransaction["chainId"]?.toString()?.toLong() ?: getChainId(web3), nonce, gas, to, value, encodedFunction, maxPriorityFeePerGas, gasPrice
+                ),
+                credentials
             )
 
-            runAsync(web3.ethSendRawTransaction(Numeric.toHexString(signedMessage)))
+            waitForTransactionIfRequired(web3, rawTransaction["wait"], runAsync(web3.ethSendRawTransaction(Numeric.toHexString(signedMessage))))
         },
         Pair("eth_call") { web3: Web3j, params: List<Any> ->
             val rawTransaction = params[0] as Map<String, Any>
@@ -211,15 +226,28 @@ class Web3MethodExecutor {
     private fun runAsync(function: Request<*, out Response<out Any>>): Any? = function.sendAsync().get(5, TimeUnit.MINUTES)
 
     private fun createFunction(data: Map<String, Any>): Function {
-        val params = (data["params"] as List<Any>).map { convertParam(it) }
-        val typeReferences = (data["returns"] as List<Any>).map {
+        val params = (data["params"] as List<Any>?)?.map { convertParam(it) } ?: emptyList()
+        val typeReferences = (data["returns"] as List<Any>?)?.map {
             typeReferencesMap.get(it.toString()) ?: error("No type reference found for type '$it'. Supported types are: $typeReferencesMap")
-        }
+        } ?: emptyList()
         return Function(
             data["function"] as String,
             params,
             typeReferences
         )
+    }
+
+    private fun waitForTransactionIfRequired(web3: Web3j, wait: Any?, response: Any?): Any? {
+        if (wait != null) {
+            if ((wait is String && wait.toBoolean()) || (wait is Boolean && wait)) {
+                return getTransactionReceipt(web3, (response as Response<String>).result, WAIT_TX_DELAY, WAIT_TX_ATTEMPTS)
+            } else if (wait is Map<*, *>) {
+                val delay = wait["delay"].toString().toInt()
+                val attempts = wait["attempts"].toString().toInt()
+                return getTransactionReceipt(web3, (response as Response<String>).result, delay, attempts)
+            }
+        }
+        return response
     }
 
     private fun convertParam(data: Any?): Type<out Any> =
@@ -233,11 +261,31 @@ class Web3MethodExecutor {
     private fun toBigInteger(value: Any?): BigInteger? =
         if (value is BigInteger) value else value?.toString()?.toBigInteger()
 
+    private fun getChainId(web3: Web3j): Long =
+        web3.ethChainId().send().chainId.toLong()
+
     private fun getNonce(address: String?, web3: Web3j): BigInteger {
         val ethGetTransactionCount: EthGetTransactionCount = web3.ethGetTransactionCount(address, DefaultBlockParameterName.LATEST)
             .sendAsync()
             .get()
         return ethGetTransactionCount.transactionCount
+    }
+
+    private fun getTransactionReceipt(web3: Web3j, transactionHash: String, delay: Int, attempts: Int): EthGetTransactionReceipt? {
+        var receipt = sendTransactionReceiptRequest(web3, transactionHash)
+        for (i in 0 until attempts) {
+            if (receipt?.transactionReceipt?.isPresent == false) {
+                sleep(delay.toLong())
+                receipt = sendTransactionReceiptRequest(web3, transactionHash)
+            } else {
+                break
+            }
+        }
+        return receipt
+    }
+
+    private fun sendTransactionReceiptRequest(web3: Web3j, transactionHash: String): EthGetTransactionReceipt? {
+        return web3.ethGetTransactionReceipt(transactionHash).sendAsync().get()
     }
 
     private fun getBlockParameter(blockParam: Any?): DefaultBlockParameter {

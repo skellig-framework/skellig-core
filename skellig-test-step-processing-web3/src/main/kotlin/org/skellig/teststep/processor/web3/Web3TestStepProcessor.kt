@@ -44,12 +44,17 @@ class Web3TestStepProcessor(
                 }
             }
             .toMap()
-        val results = runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
-        return if (isResultForSingleService(results, testStep)) results.values.first() else results
+
+        val results = runTasksAsyncAndWait(tasks,{ isValid(testStep, refineAndGetResult(it, testStep)) },
+            testStep.delay, testStep.attempts, testStep.timeout)
+        return refineAndGetResult(results, testStep)
     }
 
     private fun getNode(node: String): Web3j =
         web3Nodes[node] ?: error("Node '$node' was not registered in Web3 Processor. Registered nodes are: ${web3Nodes.keys}")
+
+    private fun refineAndGetResult(results: Map<*, Any?>, testStep: Web3TestStep) =
+        if (isResultForSingleService(results, testStep)) results.values.first() else results
 
     private fun isResultForSingleService(results: Map<*, Any?>, testStep: Web3TestStep) =
         // when only one node is registered and test step doesn't have node name then return non-grouped result
