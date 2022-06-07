@@ -52,7 +52,15 @@ class ObjectTestStepValueExtractorTest {
         val testObject = TestObject("test")
 
         Assertions.assertEquals(testObject.name, valueExtractor!!.extract(testObject, "name"))
-        Assertions.assertEquals(testObject.name.length, valueExtractor!!.extract(testObject, "name.length"))
+        Assertions.assertEquals(testObject.name!!.length, valueExtractor!!.extract(testObject, "name.length"))
+    }
+
+    @Test
+    @DisplayName("Extract from object of a class When property is null")
+    fun testExtractFromCustomObjectWhenPropertyIsNull() {
+        val testObject = TestObject(null)
+
+        Assertions.assertNull(valueExtractor!!.extract(testObject, "name"))
     }
 
     @Test
@@ -83,6 +91,6 @@ class ObjectTestStepValueExtractorTest {
         return mutableMapOf(Pair("f1", mutableMapOf(Pair("f2", mutableMapOf(Pair("f3", "v3"))))))
     }
 
-    private class TestObject(val name: String)
+    private class TestObject(val name: String?)
 
 }

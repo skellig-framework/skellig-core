@@ -40,7 +40,7 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor {
     }
 
     private fun extractValueFromObject(propertyName: String, actualResult: Any?): Any {
-        var result: Any? = null
+        val result: Any?
         val propertyGetter = getPropertyGetter(propertyName, actualResult!!.javaClass)
         if (propertyGetter != null) {
             result = try {
@@ -54,8 +54,8 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor {
             }
         } else {
             val method = getMethod(propertyName, actualResult.javaClass)
-            if (method != null) {
-                result = try {
+            result = if (method != null) {
+                try {
                     method.invoke(actualResult)
                 } catch (e: IllegalAccessException) {
                     throw ValueExtractionException(String.format("Failed to call method '%s' of '%s'",
@@ -64,10 +64,10 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor {
                     throw ValueExtractionException(String.format("Failed to call method '%s' of '%s'",
                             propertyName, actualResult), e)
                 }
-            }
-        }
-        return result ?: throw ValueExtractionException(String.format("Failed to find property or method '%s' of '%s'",
+            } else throw ValueExtractionException(String.format("Failed to find property or method '%s' of '%s'",
                 propertyName, actualResult.javaClass))
+        }
+        return result
     }
 
     private fun getMethod(propertyName: String, resultClass: Class<*>): Method? {
