@@ -9,6 +9,10 @@ import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.web3.model.Web3TestStep
+import org.web3j.abi.TypeReference
+import org.web3j.abi.datatypes.Type
+import org.web3j.abi.datatypes.Utf8String
+import org.web3j.abi.datatypes.generated.Uint208
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.http.HttpService
 
@@ -16,11 +20,12 @@ class Web3TestStepProcessor(
     private val web3Nodes: Map<String, Web3j>,
     testScenarioState: TestScenarioState,
     validator: TestStepResultValidator,
-    testStepResultConverter: TestStepResultConverter?
+    testStepResultConverter: TestStepResultConverter?,
+    typeRefs: Map<String, TypeReference<out Type<out Any>>>
 ) : BaseTestStepProcessor<Web3TestStep>(testScenarioState, validator, testStepResultConverter) {
 
-    private val functionExecutor = Web3MethodExecutor()
-    private val eventTaskExecutor = EventTaskExecutor()
+    private val functionExecutor = Web3MethodExecutor(typeRefs)
+    private val eventTaskExecutor = EventTaskExecutor(typeRefs)
 
     override fun processTestStep(testStep: Web3TestStep): Any? {
         var nodes: Collection<String>? = testStep.nodes
@@ -77,6 +82,7 @@ class Web3TestStepProcessor(
         }
 
         private val web3Nodes = mutableMapOf<String, Web3j>()
+        private val typeRefs = mutableMapOf<String, TypeReference<out Type<out Any>>>()
 
         fun withWeb3Node(serviceName: String?, url: String?) = apply {
             serviceName?.let { url?.let { web3Nodes[serviceName] = Web3j.build(HttpService(url)); } }
@@ -89,11 +95,15 @@ class Web3TestStepProcessor(
             }
         }
 
+        fun withTypeRef(typeName: String, typeRef: TypeReference<out Type<out Any>>) = apply {
+            typeRefs[typeName] = typeRef
+        }
+
         override fun build(): TestStepProcessor<Web3TestStep> {
             if (web3Nodes.isEmpty()) {
                 throw TestDataProcessingInitException("No Web3 nodes were registered for the processor")
             }
-            return Web3TestStepProcessor(web3Nodes, testScenarioState!!, validator!!, testStepResultConverter)
+            return Web3TestStepProcessor(web3Nodes, testScenarioState!!, validator!!, testStepResultConverter, typeRefs)
         }
 
     }

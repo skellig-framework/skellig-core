@@ -3,10 +3,9 @@ package org.skellig.teststep.processor.web3
 import org.skellig.teststep.processor.web3.model.Web3TestStep
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.FunctionReturnDecoder
+import org.web3j.abi.TypeReference
+import org.web3j.abi.datatypes.*
 import org.web3j.abi.datatypes.Function
-import org.web3j.abi.datatypes.StaticStruct
-import org.web3j.abi.datatypes.Type
-import org.web3j.abi.datatypes.Utf8String
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
@@ -19,20 +18,19 @@ import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.core.methods.response.EthCall
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt
-import org.web3j.protocol.core.methods.response.EthSendRawTransaction
 import org.web3j.utils.Numeric
 import java.lang.Thread.sleep
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 
-class Web3MethodExecutor {
+class Web3MethodExecutor(additionalTypeRefs: Map<String, TypeReference<out Type<out Any>>>) {
 
     companion object {
         private const val WAIT_TX_DELAY = 500
         private const val WAIT_TX_ATTEMPTS = 20
     }
 
-    private val typeReferencesMap = TypeReferencesMap()
+    private val typeReferencesMap = TypeReferencesMap(additionalTypeRefs)
 
     private val functions = mapOf(
         Pair("web3_sha3") { web3: Web3j, params: List<Any> -> runAsync(web3.web3Sha3(params[0] as String)) },
@@ -149,8 +147,14 @@ class Web3MethodExecutor {
             ) as EthCall
 
             function?.let {
-                if (!response.hasError() && function.outputParameters.isNotEmpty())
-                    FunctionReturnDecoder.decode(response.value, function.outputParameters)
+                if (!response.hasError() && function.outputParameters.isNotEmpty()) {
+                    val decodedResponse = FunctionReturnDecoder.decode(response.value, function.outputParameters)
+                    decodedResponse.map {
+                        if (it is DynamicArray<out Type<out Any>>) {
+                            it.value
+                        } else it
+                    }
+                }
                 else response
             } ?: response
         },
@@ -217,10 +221,11 @@ class Web3MethodExecutor {
         Pair("txpool_status") { web3: Web3j, params: List<Any> -> runAsync(web3.txPoolStatus()) }
     )
 
-    fun execute(testStep: Web3TestStep, web3Node: Web3j): Any {
-        return functions[testStep.method]?.let {
-            it(web3Node, testStep.getParams())
-        } ?: error("Function ${testStep.method} is not supported")
+    fun execute(testStep: Web3TestStep, web3Node: Web3j): Any? {
+        val function = functions[testStep.method]
+        return if (function != null) {
+            function(web3Node, testStep.getParams())
+        } else throw IllegalArgumentException("Function ${testStep.method} is not supported")
     }
 
     private fun runAsync(function: Request<*, out Response<out Any>>): Any? = function.sendAsync().get(5, TimeUnit.MINUTES)
@@ -238,7 +243,7 @@ class Web3MethodExecutor {
     }
 
     private fun waitForTransactionIfRequired(web3: Web3j, wait: Any?, response: Any?): Any? {
-        if (wait != null) {
+        if (wait != null && response != null) {
             if ((wait is String && wait.toBoolean()) || (wait is Boolean && wait)) {
                 return getTransactionReceipt(web3, (response as Response<String>).result, WAIT_TX_DELAY, WAIT_TX_ATTEMPTS)
             } else if (wait is Map<*, *>) {
@@ -271,17 +276,19 @@ class Web3MethodExecutor {
         return ethGetTransactionCount.transactionCount
     }
 
-    private fun getTransactionReceipt(web3: Web3j, transactionHash: String, delay: Int, attempts: Int): EthGetTransactionReceipt? {
-        var receipt = sendTransactionReceiptRequest(web3, transactionHash)
-        for (i in 0 until attempts) {
-            if (receipt?.transactionReceipt?.isPresent == false) {
-                sleep(delay.toLong())
-                receipt = sendTransactionReceiptRequest(web3, transactionHash)
-            } else {
-                break
+    private fun getTransactionReceipt(web3: Web3j, transactionHash: String?, delay: Int, attempts: Int): EthGetTransactionReceipt? {
+        return transactionHash?.let {
+            var receipt = sendTransactionReceiptRequest(web3, transactionHash)
+            for (i in 0 until attempts) {
+                if (receipt?.transactionReceipt?.isPresent == false) {
+                    sleep(delay.toLong())
+                    receipt = sendTransactionReceiptRequest(web3, transactionHash)
+                } else {
+                    break
+                }
             }
+            receipt
         }
-        return receipt
     }
 
     private fun sendTransactionReceiptRequest(web3: Web3j, transactionHash: String): EthGetTransactionReceipt? {

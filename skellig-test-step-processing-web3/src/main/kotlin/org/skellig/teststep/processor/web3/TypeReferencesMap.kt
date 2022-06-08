@@ -6,9 +6,9 @@ import org.web3j.abi.datatypes.Int
 import org.web3j.abi.datatypes.generated.*
 import org.web3j.abi.datatypes.primitive.Byte
 
-internal class TypeReferencesMap {
+internal class TypeReferencesMap(additionalTypeRefs: Map<String, TypeReference<out Type<out Any>>>) {
     companion object {
-        val typeReferences = mapOf(
+        val typeReferences = mutableMapOf(
             Pair("address", object : TypeReference<Address>() {}),
             Pair("web3Byte", object : TypeReference<Byte>() {}),
             Pair("dynamicBytes", object : TypeReference<DynamicBytes>() {}),
@@ -159,7 +159,12 @@ internal class TypeReferencesMap {
             Pair("web3String indexed", object : TypeReference<Utf8String>(true) {}),
             Pair("web3Array indexed", object : TypeReference<DynamicStruct>(true) {})
         )
+    }
 
+    init {
+        additionalTypeRefs.forEach {
+            typeReferences[it.key] = it.value
+        }
     }
 
     fun get(typeName: String): TypeReference<out Type<out Any>>? = typeReferences[typeName]

@@ -3,16 +3,18 @@ package org.skellig.teststep.processor.web3
 import org.skellig.teststep.processor.web3.model.Web3TestStep
 import org.web3j.abi.EventEncoder
 import org.web3j.abi.FunctionReturnDecoder
+import org.web3j.abi.TypeReference
 import org.web3j.abi.datatypes.Event
+import org.web3j.abi.datatypes.Type
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.core.methods.request.EthFilter
 import org.web3j.protocol.core.methods.response.EthLog
 import java.util.concurrent.TimeUnit
 
-class EventTaskExecutor {
+class EventTaskExecutor(additionalTypeRefs: Map<String, TypeReference<out Type<out Any>>>) {
 
-    private val typeReferencesMap = TypeReferencesMap()
+    private val typeReferencesMap = TypeReferencesMap(additionalTypeRefs)
 
     fun execute(testStep: Web3TestStep, web3Node: Web3j): Any? {
         val typeReferences = testStep.returns?.map {
