@@ -33,10 +33,11 @@ class DefaultFeatureParserTest {
                 { Assertions.assertNull(firstTestScenario.tags) },
                 { Assertions.assertEquals("Simple scenario", firstTestScenario.name) },
                 { Assertions.assertNull(firstTestScenario.steps!![0].parameters) },
-                { Assertions.assertEquals(3, firstTestScenario.steps!!.size) },
-                { Assertions.assertEquals("Given something", firstTestScenario.steps!![0].name) },
+                { Assertions.assertEquals(4, firstTestScenario.steps!!.size) },
+                { Assertions.assertEquals("something", firstTestScenario.steps!![0].name) },
                 { Assertions.assertEquals("Run it", firstTestScenario.steps!![1].name) },
-                { Assertions.assertEquals("Check result", firstTestScenario.steps!![2].name) }
+                { Assertions.assertEquals("Check result", firstTestScenario.steps!![2].name) },
+                { Assertions.assertEquals("Run cleanup", firstTestScenario.steps!![3].name) }
         )
     }
 

@@ -10,10 +10,14 @@ internal class FeatureBuilder {
     companion object {
         private const val TAG_PREFIX = "@"
         private const val COMMENT_PREFIX = "//"
-        private const val TEST_SCENARIO_DATA_PREFIX = "Data:"
-        private const val TEST_SCENARIO_PREFIX = "Test:"
-        private const val FEATURE_NAME_PREFIX = "Name:"
-        private const val STEPS_PREFIX = "Steps:"
+        private const val EXAMPLES_PREFIX = "Examples:"
+        private const val SCENARIO_PREFIX = "Scenario:"
+        private const val FEATURE_NAME_PREFIX = "Feature:"
+        private const val STAR = "*"
+        private const val GIVEN = "Given"
+        private const val WHEN = "When"
+        private const val THEN = "Then"
+        private const val AND = "And"
         private val PARAMETER_SEPARATOR_PATTERN = Pattern.compile("\\s*\\|\\s*")
     }
 
@@ -32,8 +36,8 @@ internal class FeatureBuilder {
         val newLine = line.trim { it <= ' ' }
         when {
             newLine.startsWith(FEATURE_NAME_PREFIX) -> handleFeatureLine(newLine)
-            newLine.startsWith(TEST_SCENARIO_PREFIX) -> handleTestScenarioLine(newLine)
-            newLine.startsWith(TEST_SCENARIO_DATA_PREFIX) -> handleTestScenarioDataLine()
+            newLine.startsWith(SCENARIO_PREFIX) -> handleTestScenarioLine(newLine)
+            newLine.startsWith(EXAMPLES_PREFIX) -> handleScenarioExamplesLine()
             newLine.isNotEmpty() && !newLine.startsWith(COMMENT_PREFIX) -> handleNonCommentLine(newLine)
         }
     }
@@ -64,7 +68,8 @@ internal class FeatureBuilder {
         // add previous test scenario if it was created
         addLatestTestScenarioIfExist()
         testScenarioBuilder = TestScenario.Builder()
-        testScenarioBuilder!!.withName(line.substring(TEST_SCENARIO_PREFIX.length))
+        // append scenario name
+        testScenarioBuilder!!.withName(line.substring(SCENARIO_PREFIX.length))
                 .withTags(testPreRequisitesExtractor.extractTags(buffer.toString()))
         resetBuffer()
     }
@@ -74,7 +79,7 @@ internal class FeatureBuilder {
      */
     private fun handleNonCommentLine(line: String) {
         // if we already read the line with test scenario then this one should be its test step
-        if (testScenarioBuilder != null && !line.startsWith(TAG_PREFIX) && line != STEPS_PREFIX) {
+        if (testScenarioBuilder != null && !line.startsWith(TAG_PREFIX)) {
             handleTestScenarioStepsLine(line)
         } else {
             // read tags and their relevant data. Append space to avoid unnecessary merging of values
@@ -93,7 +98,16 @@ internal class FeatureBuilder {
             addLatestTestStepIfExist()
             if (testStepBuilder == null) {
                 testStepBuilder = TestStep.Builder()
-                testStepBuilder!!.withName(line)
+                val newLine = when {
+                    line.startsWith(STAR) -> line.substring(STAR.length)
+                    line.startsWith(GIVEN) -> line.substring(GIVEN.length)
+                    line.startsWith(WHEN) -> line.substring(WHEN.length)
+                    line.startsWith(THEN) -> line.substring(THEN.length)
+                    line.startsWith(AND) -> line.substring(AND.length)
+                    else -> line
+                }
+
+                testStepBuilder!!.withName(newLine)
             }
         }
     }
@@ -103,7 +117,7 @@ internal class FeatureBuilder {
      */
     private fun handleParametersLine(line: String) {
         if (isReadingTestScenarioData) {
-            handleTestScenarioDataLine(line)
+            handleScenarioExamplesLine(line)
         } else {
             val rawParameters = PARAMETER_SEPARATOR_PATTERN.split(line).toList()
                     .filter { it.isNotEmpty() }
@@ -115,7 +129,7 @@ internal class FeatureBuilder {
     /**
      * Enable reading of test data section of a test scenario
      */
-    private fun handleTestScenarioDataLine() {
+    private fun handleScenarioExamplesLine() {
         if (testScenarioBuilder != null) {
             // Before reading test data section we need to add the last test step of the test scenario
             addLatestTestStepIfExist()
@@ -128,7 +142,7 @@ internal class FeatureBuilder {
     /**
      * Read test data of a test scenario
      */
-    private fun handleTestScenarioDataLine(line: String) {
+    private fun handleScenarioExamplesLine(line: String) {
         if (testScenarioDataColumns == null) {
             // columns of the test data (table) must go first
             testScenarioDataColumns = PARAMETER_SEPARATOR_PATTERN.split(line)

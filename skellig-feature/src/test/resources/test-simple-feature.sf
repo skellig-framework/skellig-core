@@ -1,8 +1,8 @@
-Name: Simple feature
+Feature: Simple feature
 
-    Test: Simple scenario
-    Steps:
+    Scenario: Simple scenario
     Given something
     // run something
-    Run it
-    Check result
+    * Run it
+    * Check result
+    Run cleanup

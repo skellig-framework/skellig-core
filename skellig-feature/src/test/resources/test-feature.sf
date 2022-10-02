@@ -1,27 +1,25 @@
 @E2E @SmokeTest
 @User
-Name: Sign in user
+Feature: Sign in user
 
    //@E2E-light
-   Test: Sign in user <user> with valid credentials
-   Steps:
-   User <user> exist in system
-   User <user> requests to sign in with <password> password
-   User <user> successfully signed in
-   Data:
+   Scenario: Sign in user <user> with valid credentials
+   * User <user> exist in system
+   * User <user> requests to sign in with <password> password
+   * User <user> successfully signed in
+   Examples:
      | user | password |
      | usr_1| 12345    |
      | usr_2| pswd1    |
 
    //@Init(id = default)
    //@Data
-   Test: Sign in user with invalid credentials
-   Steps:
-   User <user> exist in system
-     | p1 | v1                 |
-     | p2 | pass: <password> |
-   User <user> requests to sign in with <password> password
-   User <user> received error <error>
-   Data:
+   Scenario: Sign in user with invalid credentials
+   * User <user> exist in system
+       | p1 | v1                 |
+       | p2 | pass: <password> |
+   * User <user> requests to sign in with <password> password
+   * User <user> received error <error>
+   Examples:
      | user | password | error          |
      | usr_2| 54321    | "can't log in" |
