@@ -12,6 +12,9 @@ class TestScenario protected constructor(val name: String, val steps: List<TestS
 
         fun withStep(stepBuilder: TestStep.Builder) = apply { stepBuilders.add(stepBuilder) }
 
+        /**
+         * NOTE: tags are not supported yet.
+         */
         fun withTags(tags: Set<String>?) = apply { this.tags = tags }
 
         fun withDataRow(dataRow: Map<String, String>) = apply {
