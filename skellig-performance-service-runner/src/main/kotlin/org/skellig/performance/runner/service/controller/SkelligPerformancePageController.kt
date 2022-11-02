@@ -1,6 +1,5 @@
 package org.skellig.performance.runner.service.controller
 
-import org.skellig.teststep.processor.performance.model.factory.PerformanceTestStepFactory
 import org.skellig.teststep.runner.context.SkelligTestContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -99,23 +98,20 @@ class SkelligPerformancePageController {
     }
 
     private fun findAllParameters(rawTestStep: Map<String, Any?>?): Collection<Parameter> {
-        val variables = rawTestStep?.get("variables") as Map<String, Any?>?
         return rawTestStep?.flatMap {
             val parameterNames = mutableSetOf<Parameter>()
-            val matcher = PARAMETER_REGEX.matcher(it.key)
-            while (matcher.find()) {
-                val paramName = matcher.group(1)
-                if (variables?.containsKey(paramName) == false)
-                    parameterNames.add(Parameter(paramName))
-            }
-            val valueMatcher = PARAMETER_REGEX.matcher(it.value?.toString() ?: "")
-            while (valueMatcher.find()) {
-                val paramName = valueMatcher.group(1)
-                if (variables?.containsKey(paramName) == false)
-                    parameterNames.add(Parameter(paramName))
-            }
+            extractAndAddParameters(it.key, parameterNames)
+            extractAndAddParameters(it.value?.toString() ?: "", parameterNames)
             parameterNames
         }?.toSet() ?: emptyList()
+    }
+
+    private fun extractAndAddParameters(value: String, parameterNames: MutableSet<Parameter>) {
+        val matcher = PARAMETER_REGEX.matcher(value)
+        while (matcher.find()) {
+            val paramName = matcher.group(1)
+            parameterNames.add(Parameter(paramName))
+        }
     }
 
     private fun tryExtractParameterWithDefaultValue(value: String): Pair<String?, String?>? {
