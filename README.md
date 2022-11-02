@@ -125,3 +125,5 @@ public class SkelligDemoTestRunner {
 For more information please refer [this guide](https://github.com/skellig-framework/skellig-core/wiki/Skellig-Quickstart-Guide)
 
 Or for complete source code of the [demo project](https://github.com/skellig-framework/skellig-demo)
+
+IntelliJ plugin [page](https://plugins.jetbrains.com/plugin/20299-skellig-framework)
