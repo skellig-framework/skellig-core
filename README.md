@@ -22,46 +22,45 @@ A simple and quick test which demonstrates how to write a test using Skellig Fra
 sending a POST request to a web service with relevant information and verifies the response. It also checks if 
 the database has a valid record and before running the test, it adds an event to book by placing it into the RMQ channel.
 
-File bookings.sf
-```feature
-Name: Booking events
+File bookings.skellig
+```yml
+Feature: Booking events
 
-   Test: Book seats of the event
-   Steps:
-   Add event with available seats <available_seats>
-     |newEventCode |<eventCode> |
-   Book seats <seats> of the event
-   Seats <seats> have been booked successfully for the event
+   Scenario: Book seats of the event
+   * Add event with available seats <available_seats>
+       |newEventCode |<eventCode> |
+   * Book seats <seats> of the event
+   * Seats <seats> have been booked successfully for the event
   
-   Data:
-     |eventCode|available_seats |seats
-     |e0001    |s1=10,s2=20     |s2   
+   Examples:
+     |eventCode|available_seats |seats |
+     |e0001    |s1=10,s2=20     |s2    |
 ```
 
 File bookings.sts
-```
+```java
 name('Add event with available seats (.+)') {
     id = addEventTest
     protocol = rmq
-    sendTo ['event.changed']
+    sendTo ['\'event.changed\'']
     properties { content_type = application/json }
 
     variables {
-        # if parameter 'newEventCode' not provided, 
-        # then use the standard function inc(event,5) to increment 5 digits every run for key 'event' 
-        # and attach it to 'evt1_'
+        // if parameter 'newEventCode' not provided, 
+        // then use the standard function inc(event,5) to increment 5 digits every run for key 'event' 
+        // and attach it to 'evt1_'
         eventCode = ${newEventCode:evt1_inc(event,5)}
     }
 
     message {
-        # convert data to json
+        // convert data to json
         json {
             code = ${eventCode}
             name = 'event 1'
-                # use standard function toDateTime(...) which returns LocalDateTime object
+            // use standard function toDateTime(...) which returns LocalDateTime object
             date = toDateTime(01-01-2020 10:30:00) 
             location = somewhere
-            pricePerSeats [ ${1} ]  # set data from captured first parameter taken from test name
+            pricePerSeats [ ${1} ]  // set data from captured first parameter taken from test name
             takenSeats [${takenSeats:}]
        }
     }
@@ -73,22 +72,22 @@ name('Book seats (.+) of the event\s*(.*)') {
     http_headers { Content-type = 'application/json'}
 
     variables {
-        # set second parameter captured from the test name to 'eventCode' var
-        # otherwise get 'eventCode' from test with id 'addEventTest'
+        // set second parameter captured from the test name to 'eventCode' var
+        // otherwise get 'eventCode' from test with id 'addEventTest'
         eventCode = '${2:${get(addEventTest).variables.eventCode}}'
      }
 
     payload {
         json {
-            eventCode = ${eventCode}  # get 'eventCode' from the variables
-            seats = listOf(${1})  # just another way of setting list, instead of [...]
+            eventCode = ${eventCode}  // get 'eventCode' from the variables
+            seats = listOf(${1})  // just another way of setting list, instead of [...]
         }
     }
 
     validate {
-        statusCode = int(200)  # convert to int as by default all values are String
-        # extract body from the response and convert to string, then validate some fields.
-        # Because it's json, we extract these fields by jsonPath'
+        statusCode = int(200)  // convert to int as by default all values are String
+        // extract body from the response and convert to string, then validate some fields.
+        // Because it's json, we extract these fields by jsonPath'
         'body.toString()' {
                jsonPath(eventCode) = ${eventCode}
                jsonPath(success) = true
@@ -106,7 +105,7 @@ name('Seats (.+) have been booked successfully for the event') {
      }
 
     validate {
-         # as the result is a list of rows, we take the first row and validate just one column from it 
+         // as the result is a list of rows, we take the first row and validate just one column from it 
          skellig-db.fromIndex(0).taken_seats = contains(${1})
     }
 }
