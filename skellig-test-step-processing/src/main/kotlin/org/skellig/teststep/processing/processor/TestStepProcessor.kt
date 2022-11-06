@@ -6,18 +6,48 @@ import java.io.Closeable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
+/**
+ * Responsible for processing a test step (ex. a .sts-file or java/kotlin-class)
+ * and returning result.
+ *
+ * Each processor is bound to a specific `TestStep` which has essential properties
+ * required for processing and getting a result from it.
+ *
+ * Some processors can have resources which need to close thus it implements `Closeable`
+ * without any actions by default. Usually this method is used
+ * when all tests are finished or one of them failed.
+ *
+ * @see TestStep
+ * @see process
+ */
 interface TestStepProcessor<T : TestStep> : Closeable {
 
     companion object {
         const val RESULT_SAVE_SUFFIX = "_result"
     }
 
+    /**
+     * Takes a test step, processes it and returns a result
+     * @see TestStepRunResult
+     */
     fun process(testStep: T): TestStepRunResult
 
+    /**
+     * A class of the test step. This is required for a registry
+     * in order to identify which processor to assign for a provided test step.
+     */
     fun getTestStepClass(): Class<*>
 
+    /**
+     * Close resources if needed for the processor.
+     * By default, this method does nothing.
+     */
     override fun close() {}
 
+    /**
+     * The async or sync result of a processed test step.
+     *
+     */
     open class TestStepRunResult(private val testStep: TestStep?) {
 
         private var consumer: ((TestStep?, Any?, RuntimeException?) -> Unit)? = null
@@ -25,6 +55,13 @@ interface TestStepProcessor<T : TestStep> : Closeable {
         private var error: RuntimeException? = null
         private val countDownLatch: CountDownLatch = CountDownLatch(1)
 
+        /**
+         * Subscribe for a result of a processed test step,
+         * whether it's a successful result or an exception.
+         *
+         * If it's an async or sync-test step, then it notifies about the result
+         * when it's ready after the processing is finished.
+         */
         fun subscribe(consumer: (TestStep?, Any?, RuntimeException?) -> Unit) {
             this.consumer = consumer
             if (isFinished()) {
@@ -32,6 +69,9 @@ interface TestStepProcessor<T : TestStep> : Closeable {
             }
         }
 
+        /**
+         * Notify the test step about the result of processing.
+         */
         fun notify(response: Any?, error: RuntimeException?) {
             this.response = response
             this.error = error
@@ -41,6 +81,10 @@ interface TestStepProcessor<T : TestStep> : Closeable {
             }
         }
 
+        /**
+         * Wait for result of the processed test step.
+         * Notifies the test step immediately if an error is thrown.
+         */
         @Throws(TestStepProcessingException::class)
         fun awaitResult() {
             if (testStep != null && !isFinished()) {
@@ -64,6 +108,9 @@ interface TestStepProcessor<T : TestStep> : Closeable {
 
         private fun isFinished() = countDownLatch.count == 0L
 
+        /**
+         * Get timeout in milliseconds for waiting a response.
+         */
         protected open fun getTimeout(): Long = 0
 
     }

@@ -7,6 +7,11 @@ import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunRe
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 
+/**
+ * Processes any test step by assigning an appropriate test step processor from its registry.
+ *
+ * If no processor found for the provided test step, then it throws `TestStepProcessingException`
+ */
 class CompositeTestStepProcessor private constructor(
     testScenarioState: TestScenarioState,
     testStepResultConverter: TestStepResultConverter,
@@ -36,6 +41,9 @@ class CompositeTestStepProcessor private constructor(
         } ?: throw TestStepProcessingException("No processor was found for test step '${testStep.name}'")
     }
 
+    /**
+     * Register test step processor.
+     */
     fun registerTestStepProcessor(testStepProcessor: TestStepProcessor<out TestStep>) {
         testStepProcessors.add(testStepProcessor as TestStepProcessor<TestStep>)
     }
