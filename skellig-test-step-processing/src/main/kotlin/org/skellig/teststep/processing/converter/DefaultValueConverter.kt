@@ -179,6 +179,7 @@ class DefaultValueConverter private constructor(
         private var testStepValueExtractor: TestStepValueExtractor? = null
         private var getPropertyFunction: ((String) -> Any?)? = null
         private var classLoader: ClassLoader? = null
+        private var classPaths: Collection<String>? = null
 
         fun withTestScenarioState(testScenarioState: TestScenarioState?) =
             apply { this.testScenarioState = testScenarioState }
@@ -187,6 +188,8 @@ class DefaultValueConverter private constructor(
             apply { this.getPropertyFunction = getPropertyFunction }
 
         fun withClassLoader(classLoader: ClassLoader?) = apply { this.classLoader = classLoader }
+
+        fun withClassPaths(classPaths: Collection<String>) = apply { this.classPaths = classPaths }
 
         fun withTestStepValueExtractor(testStepValueExtractor: TestStepValueExtractor?) =
             apply { this.testStepValueExtractor = testStepValueExtractor }
@@ -222,6 +225,7 @@ class DefaultValueConverter private constructor(
                 allValueConverters.add(testDataFromCsvConverter)
                 allValueConverters.add(TestDataFromCsvConverter(it))
                 allValueConverters.add(TestDataFromFTLConverter(it, testDataFromCsvConverter))
+                allValueConverters.add(CustomFunctionValueConverter(classPaths, it))
             }
 
             allValueConverters.addAll(valueConverters)

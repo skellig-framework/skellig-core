@@ -59,16 +59,17 @@ abstract class SkelligTestContext : Closeable {
         )
 
         config = createConfig(classLoader, configPath)
+        val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepReader = createTestStepReader()
         testScenarioState = createTestScenarioState()
         val valueExtractor = createTestStepValueExtractor()
         testStepResultConverter = createTestDataResultConverter()
         testStepResultValidator = createTestStepValidator(valueExtractor)
-        testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader)
+        testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths)
 
         testStepFactoryValueConverter =
             TestStepFactoryValueConverter.Builder()
-                .withValueConverter(createTestStepValueConverter(classLoader, valueExtractor, testScenarioState))
+                .withValueConverter(createTestStepValueConverter(classLoader, valueExtractor, testScenarioState, testStepClassPaths))
                 .withTestStepValueExtractor(valueExtractor)
                 .withGetPropertyFunction(propertyExtractorFunction)
                 .build()
@@ -99,10 +100,10 @@ abstract class SkelligTestContext : Closeable {
     private fun createTestStepsRegistry(
         testStepPaths: List<String>,
         classLoader: ClassLoader,
-        testStepReader: TestStepReader
+        testStepReader: TestStepReader,
+        testStepClassPaths: Collection<String>
     ): CachedTestStepsRegistry {
         val paths = extractTestStepPaths(testStepPaths, classLoader)
-        val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader)
         testStepsRegistry.registerFoundTestStepsInPath(paths)
 
@@ -194,7 +195,8 @@ abstract class SkelligTestContext : Closeable {
     private fun createTestStepValueConverter(
         classLoader: ClassLoader,
         valueExtractor: TestStepValueExtractor,
-        testScenarioState: TestScenarioState?
+        testScenarioState: TestScenarioState?,
+        testStepClassPaths: Collection<String>
     ): TestStepValueConverter {
         val valueConverterBuilder = DefaultValueConverter.Builder()
         additionalTestStepValueConverters.forEach {
@@ -204,6 +206,7 @@ abstract class SkelligTestContext : Closeable {
 
         return valueConverterBuilder
             .withClassLoader(classLoader)
+            .withClassPaths(testStepClassPaths)
             .withGetPropertyFunction(propertyExtractorFunction)
             .withTestScenarioState(testScenarioState)
             .withTestStepValueExtractor(valueExtractor)
