@@ -14,10 +14,6 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
         protected val validator: TestStepResultValidator,
         protected val testStepResultConverter: TestStepResultConverter?) : TestStepProcessor<T> {
 
-    companion object {
-        const val RESULT_SAVE_SUFFIX = "_result"
-    }
-
     protected fun validate(testStep: DefaultTestStep) {
         validate(testStep, null)
     }
@@ -51,7 +47,6 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
             validationDetails.convertTo?.let {
                 newActualResult = testStepResultConverter?.convert(it, newActualResult)
                         ?: throw TestDataConversionException("No converter were declared for processor " + javaClass.name)
-
             }
             validator.validate(validationDetails.expectedResult, newActualResult)
         } catch (ex: ValidationException) {
@@ -61,7 +56,7 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
 
     private fun getLatestResultOfTestStep(testStepId: String, delay: Int, timeout: Int): Any? {
         return runTask(
-                { testScenarioState.get(testStepId + RESULT_SAVE_SUFFIX) },
+                { testScenarioState.get(testStepId + TestStepProcessor.RESULT_SAVE_SUFFIX) },
                 { it != null },
                 delay, timeout)
     }

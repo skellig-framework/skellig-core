@@ -129,7 +129,7 @@ class DefaultTestStepReportDetails(name: String,
     }
 
     private fun getValidationType(expectedResult: ExpectedResult): String? {
-        return expectedResult.matchingType?.name?.toLowerCase()
+        return expectedResult.matchingType?.name?.lowercase()
     }
 }
 

@@ -20,40 +20,42 @@ class IncrementValueConverter : TestStepValueConverter {
     }
 
     override fun convert(value: Any?): Any? =
-            when (value) {
-                is String -> {
-                    val matcher = NAMED_INCREMENT_REGEX.matcher(value.toString())
-                    var result = value
-                    if (matcher.find()) {
-                        var maxLength = 1
-                        var key: String? = null
-                        val params = SPLIT_COMMA_REGEX.split(matcher.group(1))
-                        if (params.size == 2) {
-                            key = params[0].trim { it <= ' ' }
-                            maxLength = params[1].trim { it <= ' ' }.toInt()
-                        } else if (params.size == 1) {
-                            val firstParameter = params[0].trim { it <= ' ' }
-                            when {
-                                isNumber(firstParameter) -> {
-                                    maxLength = firstParameter.toInt()
-                                }
-                                firstParameter.isNotEmpty() -> {
-                                    key = firstParameter
-                                }
-                                else -> {
-                                    key = DEFAULT_INC_NAME
-                                }
+        when (value) {
+            is String -> {
+                val matcher = NAMED_INCREMENT_REGEX.matcher(value.toString())
+                var result = value
+                if (matcher.find()) {
+                    var maxLength = 1
+                    var key: String? = null
+                    val params = SPLIT_COMMA_REGEX.split(matcher.group(1))
+                    if (params.size == 2) {
+                        key = params[0].trim { it <= ' ' }
+                        maxLength = params[1].trim { it <= ' ' }.toInt()
+                    } else if (params.size == 1) {
+                        val firstParameter = params[0].trim { it <= ' ' }
+                        when {
+                            isNumber(firstParameter) -> {
+                                maxLength = firstParameter.toInt()
+                            }
+                            firstParameter.isNotEmpty() -> {
+                                key = firstParameter
+                            }
+                            else -> {
+                                key = DEFAULT_INC_NAME
                             }
                         }
-                        val currentValue = getCurrentValue(key, maxLength)
-                        result = incrementAndGet(currentValue ?: getDefaultValue(maxLength),
-                                if (maxLength == 1 && currentValue != null) currentValue.length else maxLength)
-                        replaceOldValueInFile(key, result, currentValue != null)
                     }
-                    result
+                    val currentValue = getCurrentValue(key, maxLength)
+                    result = incrementAndGet(
+                        currentValue ?: getDefaultValue(maxLength),
+                        if (maxLength == 1 && currentValue != null) currentValue.length else maxLength
+                    )
+                    replaceOldValueInFile(key, result, currentValue != null)
                 }
-                else -> value
+                result
             }
+            else -> value
+        }
 
     private fun incrementAndGet(valueToIncrement: String, maxLength: Int): String {
         val incrementedValue = valueToIncrement.toInt() + 1
@@ -72,9 +74,9 @@ class IncrementValueConverter : TestStepValueConverter {
                 Files.createFile(pathToFile)
             }
             File(pathToFile.toString()).readLines()
-                    .filter { line: String -> isMatchLine(key, maxLength, line) }
-                    .map { line: String -> if (key != null && line.startsWith(key)) SPLIT_SPACE_REGEX.split(line)[1] else line }
-                    .first()
+                .filter { line: String -> isMatchLine(key, maxLength, line) }
+                .map { line: String -> if (key != null && line.startsWith(key)) SPLIT_SPACE_REGEX.split(line)[1] else line }
+                .first()
         } catch (e: Exception) {
             null
         }
