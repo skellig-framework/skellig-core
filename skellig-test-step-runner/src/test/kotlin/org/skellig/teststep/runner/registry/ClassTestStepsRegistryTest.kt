@@ -22,7 +22,8 @@ class ClassTestStepsRegistryTest {
         val testSteps = registry.getTestSteps()
         assertAll(
             { assertEquals(1, testSteps.size) },
-            { assertEquals(3, testSteps.first().size) },
+            { assertEquals(4, testSteps.first().size) },
+            { assertEquals("step1", testSteps.first()["id"].toString()) },
             { assertEquals("test A", testSteps.first()["testStepNamePattern"].toString()) },
             { assertEquals(Steps::class.java, testSteps.first()["testStepDefInstance"]?.javaClass) },
             { assertEquals(Steps::class.java.methods[0], testSteps.first()["testStepMethod"]) }
@@ -33,7 +34,7 @@ class ClassTestStepsRegistryTest {
 
 class Steps {
 
-    @TestStep("test A")
+    @TestStep(id = "step1", name = "test A")
     fun step() {
 
     }

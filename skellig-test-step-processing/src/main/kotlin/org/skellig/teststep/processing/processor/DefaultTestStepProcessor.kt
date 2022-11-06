@@ -7,6 +7,9 @@ import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunRe
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 
+/**
+ * Processes a default test step by running validation of a result from another test step.
+ */
 internal class DefaultTestStepProcessor private constructor(
         testScenarioState: TestScenarioState,
         validator: TestStepResultValidator,

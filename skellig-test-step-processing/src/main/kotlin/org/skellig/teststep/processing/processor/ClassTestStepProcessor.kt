@@ -6,6 +6,11 @@ import org.skellig.teststep.processing.state.TestScenarioState
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
+/**
+ * Invokes methods annotated with `@TestStep`.
+ *
+ * @see org.skellig.teststep.runner.annotation.TestStep
+ */
 internal class ClassTestStepProcessor(val testScenarioState: TestScenarioState) : TestStepProcessor<ClassTestStep> {
 
     override fun process(testStep: ClassTestStep): TestStepProcessor.TestStepRunResult {

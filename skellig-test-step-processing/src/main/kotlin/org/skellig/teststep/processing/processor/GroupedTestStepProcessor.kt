@@ -2,6 +2,12 @@ package org.skellig.teststep.processing.processor
 
 import org.skellig.teststep.processing.model.GroupedTestStep
 
+/**
+ * The processor for `GroupedTestStep`.
+ * It recursively runs tests in the group, depending on a result from a previous test step
+ * (ex. pass or fail).
+ * @see GroupedTestStep
+ */
 internal class GroupedTestStepProcessor(private val testStepProcessor: CompositeTestStepProcessor)
     : TestStepProcessor<GroupedTestStep> {
 

@@ -9,29 +9,56 @@ import org.skellig.teststep.processing.model.ValidationDetails
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 
+/**
+ * This is a basic processor for tests steps whose result can be validated.
+ */
 abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
-        protected val testScenarioState: TestScenarioState,
-        protected val validator: TestStepResultValidator,
-        protected val testStepResultConverter: TestStepResultConverter?) : TestStepProcessor<T> {
+    protected val testScenarioState: TestScenarioState,
+    protected val validator: TestStepResultValidator,
+    protected val testStepResultConverter: TestStepResultConverter?
+) : TestStepProcessor<T> {
 
+    /**
+     * Validated test step from another test.
+     * Usually the result from another test step is taken by its `id` property,
+     * and indicated in `fromTest` property inside `validation` section of the test step.
+     *
+     * If no result from another test is found, then it throws `ValidationException`
+     */
+    @Throws(ValidationException::class)
     protected fun validate(testStep: DefaultTestStep) {
-        validate(testStep, null)
-    }
-
-    protected fun validate(testStep: DefaultTestStep, actualResult: Any?) {
         testStep.validationDetails?.let { validationDetails ->
             validationDetails.testStepId?.let { testStepId ->
                 getLatestResultOfTestStep(testStepId, testStep.delay, testStep.timeout)?.let {
                     validate(testStep.getId, validationDetails, it)
                 } ?: run {
-                    throw ValidationException(String.format("Result from test step with id '%s' was not found " +
-                            "in Test Scenario State", testStepId))
+                    throw ValidationException("Result from test step with id '$testStepId' was not found in Test Scenario State")
                 }
-            } ?: validate(testStep.getId, validationDetails, actualResult)
+            }
         }
     }
 
-    protected fun isValid(testStep: DefaultTestStep, actualResult: Any?) : Boolean =
+    /**
+     * Validate test step actual result with expected one.
+     * The expected result is part of `validation` section of the test step.
+     *
+     * If no validation details provided then it does nothing.
+     *
+     * If validation fails, then it throws `ValidationException`
+     * @see ValidationException
+     */
+    @Throws(ValidationException::class)
+    protected fun validate(testStep: DefaultTestStep, actualResult: Any?) {
+        testStep.validationDetails?.let { validationDetails ->
+            validate(testStep.getId, validationDetails, actualResult)
+        }
+    }
+
+    /**
+     * Checks whether the result of processing of the test step matches with the expected
+     * result, provided in its validation details.
+     */
+    protected fun isValid(testStep: DefaultTestStep, actualResult: Any?): Boolean =
         try {
             if (testStep.validationDetails != null) {
                 validate(testStep.getId, testStep.validationDetails, actualResult)
@@ -46,7 +73,7 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
         try {
             validationDetails.convertTo?.let {
                 newActualResult = testStepResultConverter?.convert(it, newActualResult)
-                        ?: throw TestDataConversionException("No converter were declared for processor " + javaClass.name)
+                    ?: throw TestDataConversionException("No converter were declared for processor " + javaClass.name)
             }
             validator.validate(validationDetails.expectedResult, newActualResult)
         } catch (ex: ValidationException) {
@@ -54,10 +81,16 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
         }
     }
 
+    /**
+     * Gets the result from a test step by its id.
+     * Delay and timeout is needed in case if the state hasn't yet received the result
+     * at the time this method is called.
+     */
     private fun getLatestResultOfTestStep(testStepId: String, delay: Int, timeout: Int): Any? {
         return runTask(
-                { testScenarioState.get(testStepId + TestStepProcessor.RESULT_SAVE_SUFFIX) },
-                { it != null },
-                delay, timeout)
+            { testScenarioState.get(testStepId + TestStepProcessor.RESULT_SAVE_SUFFIX) },
+            { it != null },
+            delay, timeout
+        )
     }
 }
