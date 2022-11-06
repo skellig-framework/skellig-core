@@ -8,14 +8,14 @@ import java.io.IOException
 class DefaultFeatureParser : FeatureParser {
 
     companion object {
-        private const val FEATURE_FILE_EXTENSION = "sf"
+        private val FEATURE_FILE_EXTENSION = setOf("sf", "skellig", "sfeature")
     }
 
     override fun parse(path: String?): List<Feature>? {
         return path?.let {
             File(path).walk()
                     .filter { it.isFile }
-                    .filter { it.extension.equals(FEATURE_FILE_EXTENSION, true) }
+                    .filter { FEATURE_FILE_EXTENSION.contains(it.extension) }
                     .map { extractFeature(it) }
                     .toList()
         }

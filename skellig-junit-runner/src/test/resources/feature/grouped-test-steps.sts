@@ -16,7 +16,7 @@ name('Get user name (.*)'){
 
     captureData = ${usr}
 }
-# check all types of parameters passed in the name and as a Map
+// check all types of parameters passed in the name and as a Map
 name('User (.+) exist') {
     test = 'Check user exist'
     failed {

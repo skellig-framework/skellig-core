@@ -8,6 +8,10 @@ import java.util.concurrent.TimeUnit
 
 interface TestStepProcessor<T : TestStep> : Closeable {
 
+    companion object {
+        const val RESULT_SAVE_SUFFIX = "_result"
+    }
+
     fun process(testStep: T): TestStepRunResult
 
     fun getTestStepClass(): Class<*>

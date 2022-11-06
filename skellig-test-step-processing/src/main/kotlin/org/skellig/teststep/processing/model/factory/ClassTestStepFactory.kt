@@ -8,6 +8,7 @@ internal class ClassTestStepFactory : TestStepFactory<ClassTestStep> {
 
     override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): ClassTestStep {
         return ClassTestStep(
+                rawTestStep["id"] as String,
                 rawTestStep["testStepNamePattern"] as Pattern,
                 rawTestStep["testStepDefInstance"] ?: error("TestStepDefInstance must not be null"),
                 rawTestStep["testStepMethod"] as Method,

@@ -13,7 +13,7 @@ class SimpleMessageTestStepProcessor private constructor(testScenarioState: Test
 
     private var latestReceivedMessage: MutableMap<Any, Any?>? = null
 
-    protected override fun processTestStep(testStep: SimpleMessageTestStep): Any? {
+    override fun processTestStep(testStep: SimpleMessageTestStep): Any? {
         return if (testStep.receiveFrom != null) {
             val response = runTask({ latestReceivedMessage }, { Objects.nonNull(it) }, 500, 3000)
             response!!["receivedFrom"] = testStep.receiveFrom

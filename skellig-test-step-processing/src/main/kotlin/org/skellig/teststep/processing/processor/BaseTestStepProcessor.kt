@@ -36,7 +36,7 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(
         var error: RuntimeException? = null
         try {
             result = processTestStep(testStep)
-            testScenarioState.set(testStep.getId + RESULT_SAVE_SUFFIX, result)
+            testScenarioState.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, result)
             validate(testStep, result)
         } catch (ex: Throwable) {
             error = when (ex) {

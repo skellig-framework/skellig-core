@@ -17,6 +17,7 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
         private val LOGGER: Logger = LoggerFactory.getLogger(ClassTestStepsRegistry.javaClass)
 
         private const val CLASS_EXTENSION = ".class"
+        private const val ID = "id"
         private const val TEST_STEP_NAME_PATTERN = "testStepNamePattern"
         private const val TEST_STEP_DEF_INSTANCE = "testStepDefInstance"
         private const val TEST_STEP_METHOD = "testStepMethod"
@@ -94,6 +95,7 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
                     LOGGER.debug("Extract test step from method in '${it.name}' of '$className'")
 
                     val testStepAnnotation = it.getAnnotation(TestStep::class.java)
+                    val testStepNameId = testStepAnnotation.id
                     val testStepNamePattern = Pattern.compile(testStepAnnotation.name)
                     foundClassInstance.let {
                         try {
@@ -104,6 +106,7 @@ internal class ClassTestStepsRegistry(packages: Collection<String>, classLoader:
                     }
                     testStepsPerClass.add(
                         mapOf(
+                            Pair(ID, testStepNameId),
                             Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
                             Pair(TEST_STEP_DEF_INSTANCE, foundClassInstance!!),
                             Pair(TEST_STEP_METHOD, it)

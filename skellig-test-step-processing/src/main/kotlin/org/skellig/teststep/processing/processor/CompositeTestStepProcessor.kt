@@ -24,7 +24,7 @@ class CompositeTestStepProcessor private constructor(
                 .build()
         )
         registerTestStepProcessor(GroupedTestStepProcessor(this))
-        registerTestStepProcessor(ClassTestStepProcessor())
+        registerTestStepProcessor(ClassTestStepProcessor(testScenarioState))
     }
 
     override fun process(testStep: TestStep): TestStepRunResult {
