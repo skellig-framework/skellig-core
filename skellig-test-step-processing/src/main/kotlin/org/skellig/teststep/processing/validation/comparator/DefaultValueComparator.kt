@@ -6,24 +6,18 @@ class DefaultValueComparator(private val comparators: MutableMap<String, ValueCo
         return comparators[comparator]?.compare(comparator, args, actualValue) ?: false
     }
 
-    override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
-        return false
-    }
-
-    override fun isApplicable(expectedValue: Any?): Boolean {
-        return true
-    }
-
     override fun getName(): String = ""
 
     class Builder {
-        private val valueComparators: MutableMap<String, ValueComparator>
+        private val valueComparators: MutableMap<String, ValueComparator> = mutableMapOf()
 
         init {
-            valueComparators = mutableMapOf()
             withValueComparator(ContainsValueComparator())
             withValueComparator(MatchValueComparator())
-            withValueComparator(NumericValueComparator())
+            withValueComparator(LessThanValueComparator())
+            withValueComparator(LessOrEqualsValueComparator())
+            withValueComparator(MoreThanValueComparator())
+            withValueComparator(MoreOrEqualsThanComparator())
             withValueComparator(DateTimeValueComparator())
         }
 
