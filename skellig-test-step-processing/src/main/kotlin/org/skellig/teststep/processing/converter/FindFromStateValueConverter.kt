@@ -1,34 +1,59 @@
 package org.skellig.teststep.processing.converter
 
 import org.skellig.teststep.processing.exception.TestValueConversionException
+import org.skellig.teststep.processing.experiment.FunctionValueProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
 import java.util.regex.Pattern
 
-class FindFromStateValueConverter(val testScenarioState: TestScenarioState,
-                                  val valueExtractor: TestStepValueExtractor?) : TestStepValueConverter {
+class FindFromStateValueConverter(
+    val testScenarioState: TestScenarioState,
+    val valueExtractor: TestStepValueExtractor?
+) : TestStepValueConverter, FunctionValueProcessor {
 
     companion object {
         private val FIND_PATTERN = Pattern.compile("find\\(([\\w_\$./)(]+)\\)")
     }
 
-    override fun convert(value: Any?): Any? =
-            when (value) {
-                is String -> {
-                    val matcher = FIND_PATTERN.matcher(value.toString())
-                    var result: Any? = value
-                    if (matcher.find()) {
-                        val extractPath = matcher.group(1)
-                        result = testScenarioState.reversed()
-                                .mapNotNull { e -> tryExtract(e, extractPath) }
-                                .firstOrNull()
-                                ?: throw(TestValueConversionException("Could not find data in the current state for '$extractPath' path"))
-                        if (result is String) convert(value.toString().replace("find($extractPath)", result.toString()))
-                        else result
-                    } else result
-                }
-                else -> value
+    override fun execute(name: String, args: Array<Any?>): Any? {
+        val value = args[0]
+        return when (value) {
+            is String -> {
+                val matcher = FIND_PATTERN.matcher(value.toString())
+                var result: Any? = value
+                if (matcher.find()) {
+                    val extractPath = matcher.group(1)
+                    result = testScenarioState.reversed()
+                        .mapNotNull { e -> tryExtract(e, extractPath) }
+                        .firstOrNull()
+                        ?: throw(TestValueConversionException("Could not find data in the current state for '$extractPath' path"))
+                    if (result is String) convert(value.toString().replace("find($extractPath)", result.toString()))
+                    else result
+                } else result
             }
+            else -> value
+        }
+    }
+
+    override fun getFunctionName(): String = "find"
+
+    override fun convert(value: Any?): Any? =
+        when (value) {
+            is String -> {
+                val matcher = FIND_PATTERN.matcher(value.toString())
+                var result: Any? = value
+                if (matcher.find()) {
+                    val extractPath = matcher.group(1)
+                    result = testScenarioState.reversed()
+                        .mapNotNull { e -> tryExtract(e, extractPath) }
+                        .firstOrNull()
+                        ?: throw(TestValueConversionException("Could not find data in the current state for '$extractPath' path"))
+                    if (result is String) convert(value.toString().replace("find($extractPath)", result.toString()))
+                    else result
+                } else result
+            }
+            else -> value
+        }
 
     private fun tryExtract(e: Pair<String, Any?>, extractPath: String?): Any? {
         return try {

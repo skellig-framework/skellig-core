@@ -1,39 +1,28 @@
 package org.skellig.teststep.processing.converter
 
 import org.apache.commons.lang3.math.NumberUtils
+import org.skellig.teststep.processing.experiment.FunctionValueProcessor
 import java.util.*
 import javax.script.ScriptEngineManager
 
-class TestDataFromIfStatementConverter : TestStepValueConverter {
-
-    companion object {
-        private const val IF_KEYWORD = "if"
-        private const val CONDITION_KEYWORD = "condition"
-        private const val THEN_KEYWORD = "then"
-        private const val ELSE_KEYWORD = "else"
-    }
+class TestDataFromIfStatementConverter : FunctionValueProcessor {
 
     private val engine = ScriptEngineManager().getEngineByName("graal.js")
 
-    override fun convert(value: Any?): Any? =
-            when (value) {
-                is Map<*, *> ->
-                    if (value.containsKey(IF_KEYWORD)) {
-                        val ifDetails = value[IF_KEYWORD] as Map<String, Any>
-                        val condition = ifDetails[CONDITION_KEYWORD] as String?
-                        val thenContent = ifDetails[THEN_KEYWORD]
-                        val elseContent = ifDetails[ELSE_KEYWORD] ?: ""
+    override fun execute(name: String, args: Array<Any?>): Any? {
 
-                        Objects.requireNonNull(condition, "'condition' is mandatory in 'if' statement")
-                        Objects.requireNonNull(thenContent, "'then' is mandatory in 'if' statement")
+        val condition = args[0] as String?
+        val thenValue = args[1]
+        val elseValue = if (args.size == 3) args[2] else null
 
-                        if (isConditionSatisfied(condition)) convert(thenContent)
-                        else convert(elseContent)
-                    } else value.entries.map { it.key to convert(it.value) }.toMap()
+        Objects.requireNonNull(condition, "'condition' is mandatory in 'if' statement")
+        Objects.requireNonNull(thenValue, "'then' is mandatory in 'if' statement")
 
-                is Collection<*> -> value.map { convert(it) }.toList()
-                else -> value
-            }
+        return if (isConditionSatisfied(condition)) thenValue else elseValue
+    }
+
+    override fun getFunctionName(): String = "if"
+
 
     private fun isConditionSatisfied(condition: String?): Boolean {
         val newCondition = encloseStringWithQuotes(condition)

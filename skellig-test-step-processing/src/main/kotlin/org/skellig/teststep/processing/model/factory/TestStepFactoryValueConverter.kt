@@ -1,61 +1,43 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.converter.TestStepValueConverter
-import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
+import org.skellig.teststep.processing.experiment.ConvertedValueChunkBuilder
+import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
 
-open class TestStepFactoryValueConverter private constructor(
-    private val testStepValueConverter: TestStepValueConverter,
-    valueExtractor: TestStepValueExtractor,
-    getPropertyFunction: ((String) -> Any?)?
-) {
+open class TestStepFactoryValueConverter private constructor(private val valueProcessingVisitor: ValueProcessingVisitor) {
 
     companion object {
         private val notToParseValues = mutableSetOf<String>()
     }
 
-    private val propertyParser = PropertyParser(getPropertyFunction, valueExtractor);
+    private val converter = ConvertedValueChunkBuilder()
 
-    open fun <T> convertValue(value: Any?, parameters: Map<String, Any?>): T? {
-        var result: Any? = value
-        result = processParametersAndProperties<T>(result, parameters)
-        return testStepValueConverter.convert(result) as T?
-    }
-
-    private fun <T> processParametersAndProperties(result: Any?, parameters: Map<String, Any?>): Any? =
+    open fun <T> convertValue(result: Any?, parameters: Map<String, Any?>): T? =
         when (result) {
-            is Map<*, *> -> result.entries.map {
-                val newKey = propertyParser.parse(it.key.toString(), parameters)
-                newKey to processParametersAndProperties<T>(it.value, parameters)
-            }.toMap()
-            is Collection<*> -> result.map { processParametersAndProperties<T>(it, parameters) }.toList()
+            is Map<*, *> -> result.entries.associate {
+                val newKey = valueProcessingVisitor.process(converter.buildFrom(it.key.toString(), parameters))
+                newKey to convertValue<T>(it.value, parameters)
+            }
+            is Collection<*> -> result.map { convertValue<T>(it, parameters) }.toList()
             is String -> {
                 if (!notToParseValues.contains(result)) {
-                    val newResult = propertyParser.parse(result, parameters)
+                    val newResult = valueProcessingVisitor.process(converter.buildFrom(result, parameters)) ?: result
                     if (newResult == result) notToParseValues.add(result)
                     newResult
                 } else result
             }
             else -> result
-        }
+        } as T?
 
     class Builder {
-        private var testStepValueConverter: TestStepValueConverter? = null
-        private var testStepValueExtractor: TestStepValueExtractor? = null
-        private var getPropertyFunction: ((String) -> Any?)? = null
+        private var valueProcessingVisitor: ValueProcessingVisitor? = null
 
-        fun withGetPropertyFunction(getPropertyFunction: ((String) -> Any?)?) =
-            apply { this.getPropertyFunction = getPropertyFunction }
-
-        fun withTestStepValueExtractor(testStepValueExtractor: TestStepValueExtractor?) =
-            apply { this.testStepValueExtractor = testStepValueExtractor }
-
-        fun withValueConverter(testStepValueConverter: TestStepValueConverter) = apply { this.testStepValueConverter = testStepValueConverter }
+        fun withValueProcessingVisitor(valueProcessingVisitor: ValueProcessingVisitor?) =
+            apply { this.valueProcessingVisitor = valueProcessingVisitor }
 
         fun build(): TestStepFactoryValueConverter {
             return TestStepFactoryValueConverter(
-                testStepValueConverter?: error("TestStepValueConverter is mandatory"),
-                testStepValueExtractor?: error("TestStepValueExtractor is mandatory"),
-                getPropertyFunction)
+                valueProcessingVisitor ?: error("ValueProcessingVisitor is mandatory"),
+            )
         }
 
     }

@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.converter
 
+import org.junit.Ignore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -9,6 +10,7 @@ import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.utils.UnitTestUtils
 import java.util.regex.Pattern
 
+@Ignore
 @DisplayName("Convert test data from ftl")
 class TestDataFromFTLConverterTest {
 

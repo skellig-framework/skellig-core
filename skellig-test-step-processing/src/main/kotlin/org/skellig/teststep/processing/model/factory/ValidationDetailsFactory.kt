@@ -1,14 +1,16 @@
 package org.skellig.teststep.processing.model.factory
 
+import org.skellig.teststep.processing.experiment.ConvertedValueChunkBuilder
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.MatchingType
 import org.skellig.teststep.processing.model.ValidationDetails
 import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.HashMap
 
-class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
-                               private val testStepFactoryValueConverter: TestStepFactoryValueConverter) {
+class ValidationDetailsFactory(
+    val keywordsProperties: Properties? = null,
+    private val testStepFactoryValueConverter: TestStepFactoryValueConverter
+) {
 
     companion object {
         private val GROUPED_PROPERTIES_PATTERN = Pattern.compile("\\[([\\w,\\s]+)\\]")
@@ -18,20 +20,22 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
 
     private var validationKeywords: Set<String>
     private var validationTypeKeywords: Map<String?, MatchingType>
+    private val convertedValueChunkBuilder = ConvertedValueChunkBuilder()
 
     init {
         validationKeywords = setOf(
-                getKeywordName("test.step.keyword.validate", "validate"),
-                getKeywordName("test.step.keyword.expected_result", "expected result"),
-                getKeywordName("test.step.keyword.expected_response", "expected response"),
-                getKeywordName("test.step.keyword.expected_message", "expected message"),
-                getKeywordName("test.step.keyword.assert", "assert"))
+            getKeywordName("test.step.keyword.validate", "validate"),
+            getKeywordName("test.step.keyword.expected_result", "expected result"),
+            getKeywordName("test.step.keyword.expected_response", "expected response"),
+            getKeywordName("test.step.keyword.expected_message", "expected message"),
+            getKeywordName("test.step.keyword.assert", "assert")
+        )
 
         validationTypeKeywords = mapOf(
-                Pair(getKeywordName("test.step.keyword.all_match", "all_match"), MatchingType.ALL_MATCH),
-                Pair(getKeywordName("test.step.keyword.any_match", "any_match"), MatchingType.ANY_MATCH),
-                Pair(getKeywordName("test.step.keyword.none_match", "none_match"), MatchingType.NONE_MATCH),
-                Pair(getKeywordName("test.step.keyword.any_none_match", "any_none_match"), MatchingType.ANY_NONE_MATCH),
+            Pair(getKeywordName("test.step.keyword.all_match", "all_match"), MatchingType.ALL_MATCH),
+            Pair(getKeywordName("test.step.keyword.any_match", "any_match"), MatchingType.ANY_MATCH),
+            Pair(getKeywordName("test.step.keyword.none_match", "none_match"), MatchingType.NONE_MATCH),
+            Pair(getKeywordName("test.step.keyword.any_none_match", "any_none_match"), MatchingType.ANY_NONE_MATCH),
         )
     }
 
@@ -48,19 +52,23 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
                 if (fromTestId != null || convertTo != null) {
                     builder.withTestStepId(fromTestId as String?)
                     val rawExpectedResult =
-                            rawValidationDetails
-                                    .filter { it.key != getFromTestKeyword() && it.key != getConvertToKeyword() }
-                                    .map { it.key to it.value }
-                                    .toMap()
-                    val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawExpectedResult, parameters)
-                    builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
+                        rawValidationDetails
+                            .filter { it.key != getFromTestKeyword() && it.key != getConvertToKeyword() }
+                            .map { it.key to it.value }
+                            .toMap()
+
+//                    val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawExpectedResult, parameters)
+//                    builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
+                    builder.withExpectedResult(createExpectedResult("", rawExpectedResult, parameters))
                 } else {
-                    val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawValidationDetails, parameters)
-                    builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
+//                    val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawValidationDetails, parameters)
+//                    builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
+                    builder.withExpectedResult(createExpectedResult("", it, parameters))
                 }
             } else {
-                val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawValidationDetails, parameters)
-                builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
+//                val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawValidationDetails, parameters)
+//                builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
+                builder.withExpectedResult(createExpectedResult("", it, parameters))
             }
             builder.build()
         }
@@ -68,11 +76,11 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
 
     private fun getValidationDetails(rawTestStep: Map<String, Any?>): Any? {
         return validationKeywords
-                .map { rawTestStep[it] }
-                .firstOrNull { it != null }
+            .map { rawTestStep[it] }
+            .firstOrNull { it != null }
     }
 
-    private fun createExpectedResult(propertyName: String?, expectedResult: Any?, parameters: Map<String, Any?>): ExpectedResult? {
+    private fun createExpectedResult(propertyName: String?, expectedResult: Any?, parameters: Map<String, Any?>): ExpectedResult {
         var newPropertyName = propertyName
         var newExpectedResult = expectedResult
 
@@ -100,22 +108,28 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
             }
         } else if (newExpectedResult is List<*>) {
             newExpectedResult = createExpectedResults(newExpectedResult as List<Any>, parameters)
+        } else if (newExpectedResult is String) {
+            newExpectedResult = convertedValueChunkBuilder.buildFrom(newExpectedResult, parameters)
+            validationType = null
         } else {
             validationType = null
         }
-        return ExpectedResult(newPropertyName, newExpectedResult, validationType)
+        return ExpectedResult(
+            if (newPropertyName != null) convertedValueChunkBuilder.buildFrom(newPropertyName, parameters) else null,
+            newExpectedResult, validationType
+        )
     }
 
     private fun createExpectedResults(expectedResult: Map<String, Any?>, parameters: Map<String, Any?>): Any {
         return expectedResult
-                .map { createExpectedResult(it.key, it.value, parameters) }
-                .toList()
+            .map { createExpectedResult(it.key, it.value, parameters) }
+            .toList()
     }
 
     private fun createExpectedResults(expectedResult: List<Any>, parameters: Map<String, Any?>): Any {
         return expectedResult
-                .map { createExpectedResult(null, it, parameters) }
-                .toList()
+            .map { createExpectedResult(null, it, parameters) }
+            .toList()
     }
 
     /**
@@ -143,7 +157,7 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null,
 
     private fun hasSplitProperties(expectedResultAsMap: Map<String, Any?>): Boolean {
         return expectedResultAsMap.keys
-                .any { it.startsWith("[") && !INDEX_PROPERTY_PATTERN.matcher(it).matches() }
+            .any { it.startsWith("[") && !INDEX_PROPERTY_PATTERN.matcher(it).matches() }
     }
 
     private fun getFromTestKeyword(): String {

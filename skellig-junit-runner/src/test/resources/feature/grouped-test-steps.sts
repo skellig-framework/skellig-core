@@ -1,13 +1,13 @@
-name('Create user .*') {
+name("Create user .*") {
     assert {
         fromTest = t1
         all_match [
-                 'dude'
+                 "dude"
                  ]
     }
 }
 
-name('Get user name (.*)'){
+name("Get user name (.*)"){
     id = t1
 
     variables {
@@ -17,16 +17,16 @@ name('Get user name (.*)'){
     captureData = ${usr}
 }
 // check all types of parameters passed in the name and as a Map
-name('User (.+) exist') {
-    test = 'Check user exist'
+name("User (.+) exist") {
+    test = "Check user exist"
     failed {
-               test = 'Get user name ${1}'
+               test = "Get user name ${1}"
                passed {
-                          test = 'Create user ${usr}'
+                          test = "Create user ${usr}"
                       }
            }
 }
 
-name('User (.+) is signed in') {
-    test = 'User ${1} exist'
+name("User (.+) is signed in") {
+    test = "User ${1} exist"
 }

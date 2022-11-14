@@ -9,6 +9,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.skellig.teststep.processing.converter.TestStepResultConverter
+import org.skellig.teststep.processing.experiment.ValueExtractor
+import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator
@@ -39,7 +41,8 @@ class DatabaseTestStepProcessorTest {
                 dbServers, mock(TestScenarioState::class.java),
                 DefaultTestStepResultValidator.Builder()
                         .withValueComparator(mock(ValueComparator::class.java))
-                        .withValueExtractor(mock(TestStepValueExtractor::class.java))
+                        .withValueExtractor(mock(ValueExtractor::class.java))
+                        .withValueProcessingVisitor(mock(ValueProcessingVisitor::class.java))
                         .build(),
                 testStepResultConverter
         ) {

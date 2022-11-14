@@ -6,6 +6,10 @@ import org.skellig.teststep.processing.converter.DefaultTestStepResultConverter
 import org.skellig.teststep.processing.converter.DefaultValueConverter
 import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.experiment.DefaultPropertyExtractor
+import org.skellig.teststep.processing.experiment.FunctionValueProcessor
+import org.skellig.teststep.processing.experiment.ValueExtractor
+import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.CompositeTestStepFactory
@@ -64,14 +68,22 @@ abstract class SkelligTestContext : Closeable {
         testScenarioState = createTestScenarioState()
         val valueExtractor = createTestStepValueExtractor()
         testStepResultConverter = createTestDataResultConverter()
-        testStepResultValidator = createTestStepValidator(valueExtractor)
+        val valueComparator = createValueComparator()
+
+        val valueProcessingVisitor = ValueProcessingVisitor(
+            createTestStepValueConverter(classLoader, testScenarioState, testStepClassPaths),
+            valueExtractor,
+            valueComparator,
+            DefaultPropertyExtractor(propertyExtractorFunction)
+        )
+
+        testStepResultValidator = createTestStepValidator(valueProcessingVisitor, valueComparator)
         testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths)
+
 
         testStepFactoryValueConverter =
             TestStepFactoryValueConverter.Builder()
-                .withValueConverter(createTestStepValueConverter(classLoader, valueExtractor, testScenarioState, testStepClassPaths))
-                .withTestStepValueExtractor(valueExtractor)
-                .withGetPropertyFunction(propertyExtractorFunction)
+                .withValueProcessingVisitor(valueProcessingVisitor)
                 .build()
 
         rootTestStepProcessor = CompositeTestStepProcessor.Builder()
@@ -179,25 +191,30 @@ abstract class SkelligTestContext : Closeable {
         return rootTestStepProcessor!!
     }
 
-    private fun createTestStepValidator(valueExtractor: TestStepValueExtractor): TestStepResultValidator {
+    private fun createValueComparator(): ValueComparator {
         val valueComparatorBuilder = DefaultValueComparator.Builder()
         additionalValueComparators.forEach {
             valueComparatorBuilder.withValueComparator(it)
             injectTestContextIfRequired(it)
         }
+        return valueComparatorBuilder.build()
+    }
 
+    private fun createTestStepValidator(
+        valueProcessingVisitor: ValueProcessingVisitor,
+        valueComparator: ValueComparator
+    ): TestStepResultValidator {
         return DefaultTestStepResultValidator.Builder()
-            .withValueExtractor(valueExtractor)
-            .withValueComparator(valueComparatorBuilder.build())
+            .withValueProcessingVisitor(valueProcessingVisitor)
+            .withValueComparator(valueComparator)
             .build()
     }
 
     private fun createTestStepValueConverter(
         classLoader: ClassLoader,
-        valueExtractor: TestStepValueExtractor,
         testScenarioState: TestScenarioState?,
         testStepClassPaths: Collection<String>
-    ): TestStepValueConverter {
+    ): FunctionValueProcessor {
         val valueConverterBuilder = DefaultValueConverter.Builder()
         additionalTestStepValueConverters.forEach {
             valueConverterBuilder.withValueConverter(it)
@@ -209,7 +226,6 @@ abstract class SkelligTestContext : Closeable {
             .withClassPaths(testStepClassPaths)
             .withGetPropertyFunction(propertyExtractorFunction)
             .withTestScenarioState(testScenarioState)
-            .withTestStepValueExtractor(valueExtractor)
             .build()
     }
 
@@ -223,10 +239,9 @@ abstract class SkelligTestContext : Closeable {
         return builder.build()
     }
 
-    private fun createTestStepValueExtractor(): TestStepValueExtractor {
+    private fun createTestStepValueExtractor(): ValueExtractor {
         val valueExtractorBuilder = DefaultValueExtractor.Builder()
         additionalTestStepValueExtractors.forEach {
-            valueExtractorBuilder.valueExtractor(it)
             injectTestContextIfRequired(it)
         }
 

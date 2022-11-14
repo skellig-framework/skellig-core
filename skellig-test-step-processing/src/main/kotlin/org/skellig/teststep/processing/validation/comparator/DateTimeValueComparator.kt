@@ -52,6 +52,33 @@ class DateTimeValueComparator : ValueComparator {
         )
     }
 
+    override fun compare(comparator: String, args: Array<Any?>, actualValue: Any?): Boolean {
+        val format = if (args.size > 4) args[4]?.toString() else null
+        val timezone = if (args.size == 6) args[5]?.toString() else null
+        val min = getDateFromString(args[0].toString(), format, timezone)
+        val max = getDateFromString(args[1].toString(), format, timezone)
+        return when (actualValue) {
+            is LocalDate -> isDateBetween(actualValue, min.toLocalDate(), max.toLocalDate())
+            is LocalDateTime -> isBetween(actualValue, min, max)
+            is Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(actualValue.time), UTC), min, max)
+            is java.sql.Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(actualValue.time), UTC), min, max)
+            is Instant -> isBetween(LocalDateTime.ofInstant(actualValue, UTC), min, max)
+            is ZonedDateTime -> isBetween(LocalDateTime.ofInstant(actualValue.toInstant(), UTC), min, max)
+            is Timestamp -> isBetween(LocalDateTime.ofInstant(actualValue.toInstant(), UTC), min, max)
+            else -> {
+                if (actualValue is String && format != null) {
+                    isBetween(convertToLocalDateTime(actualValue, format, timezone), min, max)
+                } else {
+                    throw ValidationException(
+                        "Cannot compare value '$actualValue' as it is not Date or DateTime type.\n" +
+                                "Did you forget to convert the response value toDate() or toDateTime()? " +
+                                "Or use date/time format as a 3rd parameter if the response value is a String type"
+                    )
+                }
+            }
+        }
+    }
+
     override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
         val matcher = BETWEEN_PATTERN.matcher(expectedValue?.toString() ?: "")
         return if (matcher.find()) {
@@ -151,4 +178,6 @@ class DateTimeValueComparator : ValueComparator {
 
     override fun isApplicable(expectedValue: Any?): Boolean =
         if (expectedValue is String) expectedValue.startsWith(BETWEEN) else false
+
+    override fun getName(): String = "between"
 }

@@ -9,22 +9,22 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalQuery
 import java.util.regex.Pattern
 
-class ToDateTimeValueConverter : FunctionValueProcessor {
+class ToDateValueConverter : FunctionValueProcessor {
 
     companion object {
-        private val DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+        private val DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy")
     }
 
     override fun execute(name: String, args: Array<Any?>): Any? {
         return if (args.size == 1) {
             val value = args[0]?.toString()
-            parseDate(value, DATE_TIME_FORMATTER) { LocalDateTime.from(it) }
+            parseDate(value, DATE_FORMATTER) { LocalDate.from(it) }
         } else {
             throw TestDataConversionException("Function `$name` can only accept 1 argument. Found ${args.size}")
         }
     }
 
-    override fun getFunctionName(): String = "toDateTime"
+    override fun getFunctionName(): String = "toDate"
 
     private fun parseDate(value: String?, formatter: DateTimeFormatter, query: TemporalQuery<*>) =
         try {

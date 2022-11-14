@@ -5,6 +5,8 @@ package org.skellig.teststep.processing.validation.comparator
  */
 interface ValueComparator {
 
+    fun compare(comparator: String, args: Array<Any?>, actualValue: Any?): Boolean
+
     /**
      * Compare the actual value with the value extracted from `expectedValue`.
      *
@@ -18,4 +20,6 @@ interface ValueComparator {
      * if `expectedValue` is a correct function for this comparator.
      */
     fun isApplicable(expectedValue: Any?): Boolean
+
+    fun getName(): String
 }

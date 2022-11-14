@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.converter
 
 import org.skellig.teststep.processing.exception.TestValueConversionException
+import org.skellig.teststep.processing.experiment.FunctionValueProcessor
 import java.io.File
 import java.lang.reflect.Method
 import java.net.URI
@@ -10,7 +11,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.regex.Pattern
 
-class CustomFunctionValueConverter(packages: Collection<String>?, classLoader: ClassLoader?) : TestStepValueConverter {
+class CustomFunctionValueConverter(packages: Collection<String>?, classLoader: ClassLoader?) : TestStepValueConverter, FunctionValueProcessor {
 
     companion object {
         private val FUNC_NAME_PATTERN = Pattern.compile("(\\w+)\\((.*)\\)")
@@ -32,6 +33,18 @@ class CustomFunctionValueConverter(packages: Collection<String>?, classLoader: C
             }
         }
     }
+
+    override fun execute(name: String, args: Array<Any?>): Any? {
+        return functions[name]?.let {
+            return if (args.isNotEmpty()) {
+                it.method.invoke(it.instance, *args)
+            } else {
+                it.method.invoke(it.instance)
+            }
+        }
+    }
+
+    override fun getFunctionName(): String = ""
 
     override fun convert(value: Any?): Any? {
         if (value is String) {

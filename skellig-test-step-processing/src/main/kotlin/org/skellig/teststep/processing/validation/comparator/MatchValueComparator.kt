@@ -9,6 +9,15 @@ class MatchValueComparator : ValueComparator {
         private const val REGEX_PREFIX = "match("
     }
 
+    override fun compare(comparator: String, args: Array<Any?>, actualValue: Any?): Boolean {
+       return if (args.size == 1 && args[0] != null && actualValue != null) {
+            val regex = args[0].toString()
+           isMatchRegex(regex, actualValue.toString())
+        } else {
+            false
+        }
+    }
+
     override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
         return actualValue?.let {
             val matcher = PATTERN.matcher(expectedValue.toString())
@@ -34,4 +43,6 @@ class MatchValueComparator : ValueComparator {
     override fun isApplicable(expectedValue: Any?): Boolean {
         return (expectedValue?.toString() ?: "").contains(REGEX_PREFIX)
     }
+
+    override fun getName(): String = "match"
 }

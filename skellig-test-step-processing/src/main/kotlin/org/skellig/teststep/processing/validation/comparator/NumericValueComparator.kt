@@ -14,6 +14,20 @@ class NumericValueComparator : ValueComparator {
         private val PATTERN = Pattern.compile("($LESS|$MORE|$LESS_OR_EQUAL|$MORE_OR_EQUAL)\\((.+)\\)")
     }
 
+    override fun compare(comparator: String, args: Array<Any?>, actualValue: Any?): Boolean {
+        return if (actualValue is Number && actualValue is Comparable<*>) {
+            val expectedExtracted = args[0].toString()
+            try {
+                when (actualValue) {
+                    is BigDecimal -> compare(comparator, BigDecimal(actualValue.toBigInteger()), BigDecimal(expectedExtracted))
+                    else -> compare(comparator, actualValue.toDouble(), expectedExtracted.toDouble())
+                }
+            } catch (ex: NumberFormatException) {
+                throw ValidationException("Invalid number format in function '$comparator': '$expectedExtracted'")
+            }
+        } else false
+    }
+
     override fun compare(expectedValue: Any?, actualValue: Any?): Boolean =
         if (actualValue is Number && actualValue is Comparable<*>) {
             val matcher = PATTERN.matcher(expectedValue?.toString() ?: "")
@@ -47,4 +61,6 @@ class NumericValueComparator : ValueComparator {
             expectedValue.startsWith(LESS) || expectedValue.startsWith(MORE) ||
                     expectedValue.startsWith(LESS_OR_EQUAL) || expectedValue.startsWith(MORE_OR_EQUAL)
         } else false
+
+    override fun getName(): String = "less"
 }

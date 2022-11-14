@@ -1,5 +1,8 @@
 package org.skellig.teststep.processing.model
 
+import org.skellig.teststep.processing.experiment.ConvertedValueChunk
+import org.skellig.teststep.processing.experiment.SimpleValue
+
 /**
  * Defines a property and its expected value from the actual result of a processed test step.
  * The property will be extracted from the actual result, and depending on the `matchingType`
@@ -13,10 +16,14 @@ package org.skellig.teststep.processing.model
  * @see MatchingType
  */
 class ExpectedResult(
-    var property: String? = null,
+    var property: ConvertedValueChunk? = null,
     var expectedResult: Any? = null,
     var matchingType: MatchingType? = null
 ) {
+
+    constructor(property: String,
+                expectedResult: Any?,
+                matchingType: MatchingType?) : this(SimpleValue(property), expectedResult, matchingType)
 
     var parent: ExpectedResult? = null
 

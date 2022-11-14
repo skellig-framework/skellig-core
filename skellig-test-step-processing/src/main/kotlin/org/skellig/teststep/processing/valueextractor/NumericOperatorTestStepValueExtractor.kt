@@ -1,11 +1,12 @@
 package org.skellig.teststep.processing.valueextractor
 
 import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.experiment.ValueExtractor
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.pow
 
-abstract class NumericOperatorTestStepValueExtractor : TestStepValueExtractor {
+abstract class NumericOperatorTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
 
     protected fun toBigDecimal(extractionParameter: String?) =
         BigDecimal(extractionParameter ?: throw getParseException(extractionParameter))
@@ -34,6 +35,23 @@ abstract class NumericOperatorTestStepValueExtractor : TestStepValueExtractor {
 
 class PlusOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor() {
 
+    override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
+        return value?.let {
+            val extractionParameter = args[0]?.toString()
+            when (it) {
+                is String -> (it.toIntOrNull() ?: throw getParseException(it)).plus(toInt(extractionParameter))
+                is Byte -> it.plus(toByte(extractionParameter)).toByte()
+                is Short -> it.plus(toShort(extractionParameter)).toShort()
+                is Int -> it.plus(toInt(extractionParameter))
+                is Float -> it.plus(toFloat(extractionParameter))
+                is Double -> it.plus(toDouble(extractionParameter))
+                is Long -> it.plus(toLong(extractionParameter))
+                is BigDecimal -> it.plus(toBigDecimal(extractionParameter))
+                else -> throw ValueExtractionException("Cannot apply 'plus' operator to type '${value.javaClass}'")
+            }
+        }
+    }
+
     override fun extract(value: Any?, extractionParameter: String?): Any? {
         return value?.let {
             when (it) {
@@ -58,6 +76,23 @@ class PlusOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor
 }
 
 class MinusOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor() {
+
+    override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
+        return value?.let {
+            val extractionParameter = args[0]?.toString()
+            when (it) {
+                is String -> (it.toIntOrNull() ?: throw getParseException(it)).minus(toInt(extractionParameter))
+                is Byte -> it.minus(toByte(extractionParameter)).toByte()
+                is Short -> it.minus(toShort(extractionParameter)).toShort()
+                is Int -> it.minus(toInt(extractionParameter))
+                is Float -> it.minus(toFloat(extractionParameter))
+                is Double -> it.minus(toDouble(extractionParameter))
+                is Long -> it.minus(toLong(extractionParameter))
+                is BigDecimal -> it.minus(toBigDecimal(extractionParameter))
+                else -> throw ValueExtractionException("Cannot apply 'plus' operator to type '${value.javaClass}'")
+            }
+        }
+    }
 
     override fun extract(value: Any?, extractionParameter: String?): Any? {
         return value?.let {
@@ -84,6 +119,23 @@ class MinusOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtracto
 
 class TimesOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor() {
 
+    override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
+        return value?.let {
+            val extractionParameter = args[0]?.toString()
+            when (it) {
+                is String -> (it.toIntOrNull() ?: throw getParseException(it)).times(toInt(extractionParameter))
+                is Byte -> it.times(toByte(extractionParameter)).toByte()
+                is Short -> it.times(toShort(extractionParameter)).toShort()
+                is Int -> it.times(toInt(extractionParameter))
+                is Float -> it.times(toFloat(extractionParameter))
+                is Double -> it.times(toDouble(extractionParameter))
+                is Long -> it.times(toLong(extractionParameter))
+                is BigDecimal -> it.times(toBigDecimal(extractionParameter))
+                else -> throw ValueExtractionException("Cannot apply 'plus' operator to type '${value.javaClass}'")
+            }
+        }
+    }
+
     override fun extract(value: Any?, extractionParameter: String?): Any? {
         return value?.let {
             when (it) {
@@ -109,6 +161,23 @@ class TimesOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtracto
 
 class DivOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor() {
 
+    override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
+        return value?.let {
+            val extractionParameter = args[0]?.toString()
+            when (it) {
+                is String -> (it.toIntOrNull() ?: throw getParseException(it)).div(toInt(extractionParameter))
+                is Byte -> it.div(toByte(extractionParameter)).toByte()
+                is Short -> it.div(toShort(extractionParameter)).toShort()
+                is Int -> it.div(toInt(extractionParameter))
+                is Float -> it.div(toFloat(extractionParameter))
+                is Double -> it.div(toDouble(extractionParameter))
+                is Long -> it.div(toLong(extractionParameter))
+                is BigDecimal -> it.div(toBigDecimal(extractionParameter))
+                else -> throw ValueExtractionException("Cannot apply 'plus' operator to type '${value.javaClass}'")
+            }
+        }
+    }
+
     override fun extract(value: Any?, extractionParameter: String?): Any? {
         return value?.let {
             when (it) {
@@ -133,6 +202,20 @@ class DivOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor(
 }
 
 class PowOperatorTestStepValueExtractor : NumericOperatorTestStepValueExtractor() {
+
+    override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
+        return value?.let {
+            val extractionParameter = args[0]?.toString()
+            when (it) {
+                is String ->
+                    (it.toDoubleOrNull() ?: throw getParseException(it)).pow(toDouble(extractionParameter))
+                is Number -> {
+                    it.toDouble().pow(toDouble(extractionParameter))
+                }
+                else -> throw ValueExtractionException("Cannot apply 'plus' operator to type '${value.javaClass}'")
+            }
+        }
+    }
 
     override fun extract(value: Any?, extractionParameter: String?): Any? {
         return value?.let {

@@ -1,27 +1,38 @@
 package org.skellig.teststep.processing.converter
 
+import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.exception.TestValueConversionException
+import org.skellig.teststep.processing.experiment.FunctionValueProcessor
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.regex.Pattern
 
-class FileValueConverter(val classLoader: ClassLoader) : TestStepValueConverter {
+class FileValueConverter(val classLoader: ClassLoader) : TestStepValueConverter, FunctionValueProcessor {
 
     companion object {
         private val FILE_PATTERN = Pattern.compile("fromFile\\((.+)\\)")
     }
 
+    override fun execute(name: String, args: Array<Any?>): Any =
+        if (args.size == 1) {
+            readFileContentFromFilePath(args[0]?.toString() ?: "")
+        } else {
+            throw TestDataConversionException("Function `fromFile` can only accept 1 String argument. Found ${args.size}")
+        }
+
+    override fun getFunctionName(): String = "fromFile"
+
     override fun convert(value: Any?): Any? =
-            when (value) {
-                is String -> {
-                    val matcher = FILE_PATTERN.matcher(value.toString())
-                    if (matcher.find()) {
-                        readFileContentFromFilePath(matcher.group(1))
-                    } else value
-                }
-                else -> value
+        when (value) {
+            is String -> {
+                val matcher = FILE_PATTERN.matcher(value.toString())
+                if (matcher.find()) {
+                    readFileContentFromFilePath(matcher.group(1))
+                } else value
             }
+            else -> value
+        }
 
     private fun readFileContentFromFilePath(pathToFile: String): String {
         val resource = classLoader.getResource(pathToFile)

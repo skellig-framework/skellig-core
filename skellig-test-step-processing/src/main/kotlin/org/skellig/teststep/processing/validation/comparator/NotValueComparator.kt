@@ -8,6 +8,13 @@ class NotValueComparator(private val valueComparator: ValueComparator) : ValueCo
         private val NOT_PATTERN = Pattern.compile("not\\((.+)\\)")
     }
 
+    override fun compare(comparator: String, args: Array<Any?>, actualValue: Any?): Boolean {
+        if (actualValue != null && args.size == 1) {
+           return !valueComparator.compare(args[0]?.toString() ?: "", actualValue)
+        }
+        return false
+    }
+
     override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
         if (actualValue != null) {
             val matcher = NOT_PATTERN.matcher(expectedValue?.toString() ?: "")
@@ -22,4 +29,6 @@ class NotValueComparator(private val valueComparator: ValueComparator) : ValueCo
     override fun isApplicable(expectedValue: Any?): Boolean {
         return NOT_PATTERN.matcher(expectedValue?.toString() ?: "").matches()
     }
+
+    override fun getName(): String = "not"
 }

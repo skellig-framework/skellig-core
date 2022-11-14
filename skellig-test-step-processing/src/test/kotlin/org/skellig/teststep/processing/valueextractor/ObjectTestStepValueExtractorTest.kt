@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.exception.ValueExtractionException
-import java.util.*
 
 class ObjectTestStepValueExtractorTest {
 
@@ -14,6 +13,12 @@ class ObjectTestStepValueExtractorTest {
     @BeforeEach
     fun setUp() {
         valueExtractor = ObjectTestStepValueExtractor()
+    }
+
+    @Test
+    @DisplayName("Extract from Map with null value")
+    fun testExtractFromMapNullValue() {
+        Assertions.assertNull(valueExtractor!!.extractFrom("", mapOf(Pair("f1", null)), arrayOf("f1")))
     }
 
     @Test
@@ -33,17 +38,13 @@ class ObjectTestStepValueExtractorTest {
     @Test
     @DisplayName("Extract size of List")
     fun testExtractSizeOfList() {
-        val objects = ArrayList<Any>()
-        objects.add("v1")
-        objects.add("v2")
-
-        Assertions.assertEquals(2, valueExtractor!!.extract(objects, "size"))
+        Assertions.assertEquals(2, valueExtractor!!.extractFrom("size", mutableListOf("v1", "v2"), emptyArray()))
     }
 
     @Test
     @DisplayName("Extract size of Map")
     fun testExtractLengthOfArray() {
-        Assertions.assertEquals(1, valueExtractor!!.extract(getTestMap(), "f1.size"))
+        Assertions.assertEquals(1, valueExtractor!!.extractFrom("size", valueExtractor!!.extractFrom("", getTestMap(), arrayOf("f1")), emptyArray()))
     }
 
     @Test
@@ -51,8 +52,9 @@ class ObjectTestStepValueExtractorTest {
     fun testExtractFromCustomObject() {
         val testObject = TestObject("test")
 
-        Assertions.assertEquals(testObject.name, valueExtractor!!.extract(testObject, "name"))
-        Assertions.assertEquals(testObject.name.length, valueExtractor!!.extract(testObject, "name.length"))
+        val name = valueExtractor!!.extractFrom("", testObject, arrayOf("name"))
+        Assertions.assertEquals(testObject.name, name)
+        Assertions.assertEquals(testObject.name.length, valueExtractor!!.extractFrom("length", name, emptyArray()))
     }
 
     @Test

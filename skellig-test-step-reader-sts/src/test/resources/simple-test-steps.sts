@@ -1,7 +1,7 @@
 // simple test step
 
-name ('Simple test step'){
- url = '${baseUrl}/a/b/c'
+name ("Simple test step"){
+ url = "${baseUrl}/a/b/c"
  method = POST
  payload {
       type = json
@@ -14,7 +14,7 @@ name ('Simple test step'){
  }
 }
 
-name(' Send \d{1} message (.*) from csv \(test\)') {
+name(" Send \d{1} message (.*) from csv \(test\)") {
  url = /'a/'b/'c'
  method = POST
  auth {
@@ -23,12 +23,12 @@ name(' Send \d{1} message (.*) from csv \(test\)') {
  }
  body {
     template {
-        file = '//resources/\"templates\"/msg_get(id).ftl'
+        file = "//resources/\"templates\"/msg_get(id).ftl"
         csv
         {
-          file = '/resources/data/test1.csv'
+          file = "/resources/data/test1.csv"
           row {
-              name = '\\\ttest da\'ta wi\'th \'valid\' values'
+              name = "\\\ttest da'ta wi'th 'valid' values"
               group = 1
           }
           convert = TABLE

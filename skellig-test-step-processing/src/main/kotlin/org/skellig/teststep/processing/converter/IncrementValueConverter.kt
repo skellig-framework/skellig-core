@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.converter
 
 import org.apache.commons.lang3.StringUtils
+import org.skellig.teststep.processing.experiment.FunctionValueProcessor
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -9,7 +10,7 @@ import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.regex.Pattern
 
-class IncrementValueConverter : TestStepValueConverter {
+class IncrementValueConverter : TestStepValueConverter, FunctionValueProcessor {
 
     companion object {
         private val NAMED_INCREMENT_REGEX = Pattern.compile("inc\\((.*)\\)")
@@ -18,6 +19,37 @@ class IncrementValueConverter : TestStepValueConverter {
         const val DEFAULT_INC_NAME = "skellig_default"
         const val FILE_NAME = "skellig-inc.tmp"
     }
+
+    override fun execute(name: String, args: Array<Any?>): Any {
+        var maxLength = 1
+        var key: String? = null
+        if (args.size == 2) {
+            key = args[0]?.toString()?.trim { it <= ' ' }
+            maxLength = args[1]?.toString()?.trim { it <= ' ' }?.toInt() ?: maxLength
+        } else if (args.size == 1) {
+            val firstParameter = args[0]?.toString()?.trim { it <= ' ' } ?: ""
+            when {
+                isNumber(firstParameter) -> {
+                    maxLength = firstParameter.toInt()
+                }
+                firstParameter.isNotEmpty() -> {
+                    key = firstParameter
+                }
+                else -> {
+                    key = DEFAULT_INC_NAME
+                }
+            }
+        }
+        val currentValue = getCurrentValue(key, maxLength)
+        val result = incrementAndGet(
+            currentValue ?: getDefaultValue(maxLength),
+            if (maxLength == 1 && currentValue != null) currentValue.length else maxLength
+        )
+        replaceOldValueInFile(key, result, currentValue != null)
+        return result
+    }
+
+    override fun getFunctionName(): String = "inc"
 
     override fun convert(value: Any?): Any? =
         when (value) {
