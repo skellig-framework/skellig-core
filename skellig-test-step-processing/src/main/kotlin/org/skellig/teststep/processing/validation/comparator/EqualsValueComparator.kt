@@ -13,14 +13,5 @@ class EqualsValueComparator : ValueComparator {
         } else false
     }
 
-    override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
-        return if (NULL == expectedValue) actualValue == null
-        else expectedValue == actualValue
-    }
-
-    override fun isApplicable(expectedValue: Any?): Boolean {
-        return true
-    }
-
     override fun getName(): String = ""
 }

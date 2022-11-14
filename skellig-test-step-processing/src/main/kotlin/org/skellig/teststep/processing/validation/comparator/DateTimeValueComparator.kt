@@ -16,7 +16,6 @@ class DateTimeValueComparator : ValueComparator {
         private const val NOW = "now"
         private const val YESTERDAY = "yesterday"
         private const val TOMORROW = "tomorrow"
-        private const val BETWEEN = "between"
         private const val MILLISECOND = "millisecond"
         private const val SECOND = "second"
         private const val MINUTE = "minute"
@@ -26,7 +25,6 @@ class DateTimeValueComparator : ValueComparator {
         private const val YEAR = "year"
         private const val AGO = "ago"
         private const val AFTER = "after"
-        private val BETWEEN_PATTERN = Pattern.compile("^$BETWEEN\\(([^,)(]+),([^,)(]+)\\)(.format\\(([^,)(]+)\\))?(.timezone\\(([\\w+-/]+)\\))?$")
         private val TIME_DIFF_PATTERN =
             Pattern.compile("\\s*(\\d+)\\s+(${MILLISECOND}s?|${SECOND}s?|${MINUTE}s?|${HOUR}s?|${DAY}s?|${MONTH}s?|${YEAR}s?)\\s+($AFTER|$AGO)\\s*")
 
@@ -53,8 +51,8 @@ class DateTimeValueComparator : ValueComparator {
     }
 
     override fun compare(comparator: String, args: Array<Any?>, actualValue: Any?): Boolean {
-        val format = if (args.size > 4) args[4]?.toString() else null
-        val timezone = if (args.size == 6) args[5]?.toString() else null
+        val format = if (args.size >= 3) args[2]?.toString() else null
+        val timezone = if (args.size == 4) args[3]?.toString() else null
         val min = getDateFromString(args[0].toString(), format, timezone)
         val max = getDateFromString(args[1].toString(), format, timezone)
         return when (actualValue) {
@@ -77,36 +75,6 @@ class DateTimeValueComparator : ValueComparator {
                 }
             }
         }
-    }
-
-    override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
-        val matcher = BETWEEN_PATTERN.matcher(expectedValue?.toString() ?: "")
-        return if (matcher.find()) {
-            val format = if (matcher.groupCount() > 4) matcher.group(4) else null
-            val timezone = if (matcher.groupCount() == 6) matcher.group(6) else null
-            val min = getDateFromString(matcher.group(1), format, timezone)
-            val max = getDateFromString(matcher.group(2), format, timezone)
-            when (actualValue) {
-                is LocalDate -> isDateBetween(actualValue, min.toLocalDate(), max.toLocalDate())
-                is LocalDateTime -> isBetween(actualValue, min, max)
-                is Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(actualValue.time), UTC), min, max)
-                is java.sql.Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(actualValue.time), UTC), min, max)
-                is Instant -> isBetween(LocalDateTime.ofInstant(actualValue, UTC), min, max)
-                is ZonedDateTime -> isBetween(LocalDateTime.ofInstant(actualValue.toInstant(), UTC), min, max)
-                is Timestamp -> isBetween(LocalDateTime.ofInstant(actualValue.toInstant(), UTC), min, max)
-                else -> {
-                    if (actualValue is String && format != null) {
-                        isBetween(convertToLocalDateTime(actualValue, format, timezone), min, max)
-                    } else {
-                        throw ValidationException(
-                            "Cannot compare value '$actualValue' as it is not Date or DateTime type.\n" +
-                                    "Did you forget to convert the response value toDate() or toDateTime()? " +
-                                    "Or use date/time format as a 3rd parameter if the response value is a String type"
-                        )
-                    }
-                }
-            }
-        } else false
     }
 
     private fun toDateTime(value: String?, format: String?, timezone: String?): LocalDateTime {
@@ -175,9 +143,6 @@ class DateTimeValueComparator : ValueComparator {
             val date = toDate(value, format, timezone)
             LocalDateTime.of(date.year, date.month, date.dayOfMonth, 0, 0, 0, 0)
         }
-
-    override fun isApplicable(expectedValue: Any?): Boolean =
-        if (expectedValue is String) expectedValue.startsWith(BETWEEN) else false
 
     override fun getName(): String = "between"
 }

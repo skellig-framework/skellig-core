@@ -8,62 +8,62 @@ import java.math.BigDecimal
 
 class NumericValueComparatorTest {
 
-    private val comparator = NumericValueComparator()
-
     @Test
     fun testLessThanOrEqual() {
-        assertTrue(comparator.compare("lessThan(15)", 10))
-        assertTrue(comparator.compare("lessThan( 0.1 )", -1.01))
-        assertTrue(comparator.compare("lessThan(0.05)", 0.0001))
-        assertFalse(comparator.compare("lessThan(5)", 10))
-        assertFalse(comparator.compare("lessThan(10)", 10))
-        assertFalse(comparator.compare("lessThan(5)", BigDecimal(10)))
+        val comparator = LessThanValueComparator()
 
-        assertTrue(comparator.compare("lessOrEqual(10)", 10))
-        assertTrue(comparator.compare("lessOrEqual(5)", BigDecimal(5)))
+        assertTrue(comparator.compare ("lessThan", arrayOf("15"), 10))
+        assertTrue(comparator.compare ("lessThan", arrayOf(" 0.1 "), -1.01))
+        assertTrue(comparator.compare ("lessThan", arrayOf("0.05"), 0.0001))
+        assertFalse(comparator.compare("lessThan", arrayOf("5"), 10))
+        assertFalse(comparator.compare("lessThan", arrayOf("10"), 10))
+        assertFalse(comparator.compare("lessThan", arrayOf("5"), BigDecimal(10)))
+
+        val lessOrEqualComparator = LessOrEqualsValueComparator()
+        assertTrue(lessOrEqualComparator.compare("lessOrEqual", arrayOf(10), 10))
+        assertTrue(lessOrEqualComparator.compare("lessOrEqual", arrayOf(5), BigDecimal(5)))
     }
 
     @Test
     fun testMoreThanOrEqual() {
-        assertFalse(comparator.compare("moreThan(15)", 10))
-        assertTrue(comparator.compare("moreThan(5 )", 10))
-        assertTrue(comparator.compare("moreThan( -155 )", 3))
-        assertTrue(comparator.compare("moreThan(10.788888)", 10.788889))
-        assertFalse(comparator.compare("moreThan(10)", 10))
-        assertTrue(comparator.compare("moreThan(5)", BigDecimal(10)))
+        val comparator = MoreThanValueComparator()
 
-        assertTrue(comparator.compare("moreOrEqual(0)", 0))
-        assertTrue(comparator.compare("moreOrEqual(10)", 10))
-        assertTrue(comparator.compare("moreOrEqual(5)", BigDecimal(5)))
+        assertFalse(comparator.compare("moreThan", arrayOf("15"), 10))
+        assertTrue(comparator.compare ("moreThan", arrayOf("5 "), 10))
+        assertTrue(comparator.compare ("moreThan", arrayOf(" -155 "), 3))
+        assertTrue(comparator.compare ("moreThan", arrayOf("10.788888"), 10.788889))
+        assertFalse(comparator.compare("moreThan", arrayOf("10"), 10))
+        assertTrue(comparator.compare ("moreThan", arrayOf("5"), BigDecimal(10)))
+
+        val moreOrEqualComparator = MoreOrEqualsThanComparator()
+        assertTrue(moreOrEqualComparator.compare("moreOrEqual", arrayOf(0), 0))
+        assertTrue(moreOrEqualComparator.compare("moreOrEqual", arrayOf(10), 10))
+        assertTrue(moreOrEqualComparator.compare("moreOrEqual", arrayOf(5), BigDecimal(5)))
     }
 
     @Test
     fun testLessThanWhenActualIsString() {
+        val comparator = MoreThanValueComparator()
         // string value must be ignored
-        assertFalse(comparator.compare("lessThan(10)", "5"))
+        assertFalse(comparator.compare("lessThan", arrayOf(10), "5"))
     }
 
     @Test
     fun testLessThanWhenNullOrEmptyActualValue() {
-        assertFalse(comparator.compare("lessThan(10)", ""))
-        assertFalse(comparator.compare("lessThan(10)", null))
+        val comparator = LessThanValueComparator()
+
+        assertFalse(comparator.compare("lessThan", arrayOf(10), ""))
+        assertFalse(comparator.compare("lessThan", arrayOf(10), null))
     }
 
     @Test
     fun testLessThanWithInvalidFormat() {
-        val ex = assertThrows<ValidationException> { comparator.compare("lessThan(abc)", 10) }
+        val comparator = LessThanValueComparator()
+
+        val ex = assertThrows<ValidationException> { comparator.compare("lessThan", arrayOf("abc"), 10) }
 
         assertEquals("Invalid number format in function 'lessThan': 'abc'", ex.message)
 
-        assertThrows<ValidationException> { comparator.compare("moreThan(10_)", BigDecimal(1)) }
-    }
-
-    @Test
-    fun testIsApplicable() {
-        assertTrue(comparator.isApplicable("lessThan(10)"))
-        assertTrue(comparator.isApplicable("moreThan(-9.21)"))
-        assertTrue(comparator.isApplicable("lessOrEqual(invalid)"))
-        assertTrue(comparator.isApplicable("moreOrEqual(0)"))
-        assertFalse(comparator.isApplicable("_moreOrEqual(-9.21)"))
+        assertThrows<ValidationException> { comparator.compare("moreThan", arrayOf("10_"), BigDecimal(1)) }
     }
 }
