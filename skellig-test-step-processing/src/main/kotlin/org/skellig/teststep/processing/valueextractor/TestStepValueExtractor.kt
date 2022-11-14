@@ -7,5 +7,5 @@ interface TestStepValueExtractor {
     @Throws(ValueExtractionException::class)
     fun extract(value: Any?, extractionParameter: String?): Any?
 
-    fun getExtractFunctionName(): String?
+    fun getExtractFunctionName(): String
 }

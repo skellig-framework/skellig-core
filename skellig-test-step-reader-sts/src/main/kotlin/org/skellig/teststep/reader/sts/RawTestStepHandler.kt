@@ -14,7 +14,7 @@ class RawTestStepHandler : Closeable {
         private const val FUNCTION_CHAR = '#'
     }
 
-    private var isSpecialCharacter: Boolean = false     // ",',\,\n,\r,\t,
+    private var isSpecialCharacter: Boolean = false     // ",\,\n,\r,\t,
     private var openedBrackets = 0
     private var bracketsNumber = 0
     private var parameterBrackets = 0
@@ -267,7 +267,6 @@ class RawTestStepHandler : Closeable {
                 't' -> rawTestStepBuilder.append("\t")
                 'r' -> rawTestStepBuilder.append("\r")
                 '"' -> rawTestStepBuilder.append("\"")
-                '\'' -> rawTestStepBuilder.append("'")
                 '\\' -> rawTestStepBuilder.append("\\")
                 else -> rawTestStepBuilder.append("\\").append(character)
             }
@@ -291,7 +290,7 @@ class RawTestStepHandler : Closeable {
         }
     }
 
-    private fun isEnclosedStringCharacter(character: Char) = character == '\'' || character == '\"'
+    private fun isEnclosedStringCharacter(character: Char) = character == '\"'
 
     private fun isValueOfPropertyUnderConstruction(): Boolean {
         return propertyName != null && rawTestStepBuilder.isNotEmpty()

@@ -10,9 +10,9 @@ name (Validate response)
        contains(go go go)
        match('.*get(\"id\").*')
     ]
-    'has_\'fields\'' {
+    "has_\'fields\'" {
       f1 = v1
-      json_path(f1.f2) = get(id) and more
+      json_path('f1.f2') = get(id) and more
     }
  }
  }

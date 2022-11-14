@@ -5,9 +5,12 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.converter.TestStepValueConverter
+import org.skellig.teststep.processing.converter.DefaultValueConverter
+import org.skellig.teststep.processing.experiment.FunctionValueProcessor
+import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.MatchingType
+import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
 
 @DisplayName("Create validation details")
@@ -17,17 +20,14 @@ class ValidationDetailsFactoryTest {
 
     @BeforeEach
     fun setUp() {
-
         validationDetailsFactory = DefaultTestStepFactory.Builder()
             .withTestStepValueConverter(
                 TestStepFactoryValueConverter.Builder()
-                    .withValueConverter(
-                        object : TestStepValueConverter {
-                            override fun convert(value: Any?): Any? {
-                                return value
-                            }
-                        })
-                    .withTestStepValueExtractor(mock())
+                    .withValueProcessingVisitor(
+                        ValueProcessingVisitor(DefaultValueConverter.Builder()
+                            .withTestScenarioState(DefaultTestScenarioState()).build(),
+                        mock(), mock(), mock())
+                    )
                     .build()
             )
             .withTestStepRegistry(mock())
@@ -64,8 +64,8 @@ class ValidationDetailsFactoryTest {
         val testStep = createTestStepWithoutParameters(expectedResult)
         val validationDetails = testStep.validationDetails
 
-        Assertions.assertEquals("", validationDetails!!.expectedResult.property)
-        Assertions.assertEquals(expectedResult, validationDetails.expectedResult.expectedResult)
+        Assertions.assertEquals("", validationDetails!!.expectedResult.property.toString())
+        Assertions.assertEquals(expectedResult, validationDetails.expectedResult.expectedResult.toString())
     }
 
     @Test
@@ -76,10 +76,10 @@ class ValidationDetailsFactoryTest {
         val validationDetails = testStep.validationDetails!!
 
         Assertions.assertAll(
-            { Assertions.assertEquals("s1", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).property) },
-            { Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).expectedResult) },
-            { Assertions.assertEquals("s2", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 1).property) },
-            { Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 1).expectedResult) }
+            { Assertions.assertEquals("s1", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("s2", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 1).property.toString()) },
+            { Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 1).expectedResult.toString()) }
         )
     }
 
@@ -94,9 +94,10 @@ class ValidationDetailsFactoryTest {
         )
         val validationDetails = testStep.validationDetails!!
 
+        // validation details are processed when actual validation happens
         Assertions.assertAll(
-            { Assertions.assertEquals("key-1", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).property) },
-            { Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).expectedResult) }
+            { Assertions.assertEquals("key-\${key1}", UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals(expectedResult, UnitTestUtils.extractExpectedValue(validationDetails.expectedResult, 0).expectedResult.toString()) }
         )
     }
 
@@ -110,10 +111,10 @@ class ValidationDetailsFactoryTest {
 
         Assertions.assertAll(
             { Assertions.assertEquals(MatchingType.ALL_MATCH, validationDetails!!.expectedResult.matchingType) },
-            { Assertions.assertEquals("log", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
-            { Assertions.assertEquals("", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult) },
-            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property) },
-            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult) }
+            { Assertions.assertEquals("log", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals("", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
+            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult.toString()) }
         )
     }
 
@@ -125,10 +126,11 @@ class ValidationDetailsFactoryTest {
         val testStep = validationDetailsFactory!!.create("step1", UnitTestUtils.createMap("validate", rawValidationDetails), mapOf(Pair("f1", "")))
         val validationDetails = testStep.validationDetails
 
+        // validation details are processed when actual validation happens
         Assertions.assertAll(
             { Assertions.assertEquals(MatchingType.ALL_MATCH, validationDetails!!.expectedResult.matchingType) },
-            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
-            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult) }
+            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals("\${f1:v1}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) }
         )
     }
 
@@ -138,10 +140,10 @@ class ValidationDetailsFactoryTest {
         val rawValidationDetails = UnitTestUtils.createMap(
             "records",
             UnitTestUtils.createMap(
-                "[0]", "v1",
-                "[1]", UnitTestUtils.createMap("a2", "v2")
+                "'[0]'", "v1",
+                "'[1]'", UnitTestUtils.createMap("a2", "v2")
             ),
-            "records[2]", "v3"
+            "'records[2]'", "v3"
         )
 
         val testStep = createTestStepWithoutParameters(rawValidationDetails)
@@ -149,14 +151,14 @@ class ValidationDetailsFactoryTest {
 
         Assertions.assertAll(
             { Assertions.assertEquals(MatchingType.ALL_MATCH, validationDetails!!.expectedResult.matchingType) },
-            { Assertions.assertEquals("records", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
-            { Assertions.assertEquals("[1]", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).property) },
-            { Assertions.assertEquals("a2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0, 0).property) },
-            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0, 0).expectedResult) },
-            { Assertions.assertEquals("[0]", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).property) },
-            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).expectedResult) },
-            { Assertions.assertEquals("records[2]", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property) },
-            { Assertions.assertEquals("v3", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult) }
+            { Assertions.assertEquals("records", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals("[1]", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).property.toString()) },
+            { Assertions.assertEquals("a2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0, 0).property.toString()) },
+            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("[0]", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).property.toString()) },
+            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).expectedResult.toString()) },
+            { Assertions.assertEquals("records[2]", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
+            { Assertions.assertEquals("v3", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult.toString()) }
         )
     }
 
@@ -177,23 +179,23 @@ class ValidationDetailsFactoryTest {
 
         Assertions.assertAll(
             { Assertions.assertEquals(MatchingType.ALL_MATCH, validationDetails!!.expectedResult.matchingType) },
-            { Assertions.assertEquals("", validationDetails!!.expectedResult.property) },
-            { Assertions.assertEquals("size", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
-            { Assertions.assertEquals("2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult) },
+            { Assertions.assertEquals("", validationDetails!!.expectedResult.property.toString()) },
+            { Assertions.assertEquals("size", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals("2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
             { Assertions.assertEquals(MatchingType.ANY_MATCH, UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).matchingType) },
             { Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property) },
 
             { Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).property) },
-            { Assertions.assertEquals("a1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 0).property) },
-            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 0).expectedResult) },
-            { Assertions.assertEquals("a2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 1).property) },
-            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 1).expectedResult) },
+            { Assertions.assertEquals("a1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 0).property.toString()) },
+            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("a2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 1).property.toString()) },
+            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 1).expectedResult.toString()) },
 
             { Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1).property) },
-            { Assertions.assertEquals("b2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 0).property) },
-            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 0).expectedResult) },
-            { Assertions.assertEquals("b1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 1).property) },
-            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 1).expectedResult) }
+            { Assertions.assertEquals("b2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 0).property.toString()) },
+            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("b1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 1).property.toString()) },
+            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 1).expectedResult.toString()) }
         )
     }
 
@@ -210,15 +212,47 @@ class ValidationDetailsFactoryTest {
 
         Assertions.assertAll(
             { Assertions.assertEquals(MatchingType.ALL_MATCH, validationDetails!!.expectedResult.matchingType) },
-            { Assertions.assertEquals("", validationDetails!!.expectedResult.property) },
-            { Assertions.assertEquals("size", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
-            { Assertions.assertEquals("2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult) },
+            { Assertions.assertEquals("", validationDetails!!.expectedResult.property.toString()) },
+            { Assertions.assertEquals("size", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals("2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
             { Assertions.assertEquals(MatchingType.ANY_MATCH, UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).matchingType) },
             { Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property) },
-            { Assertions.assertEquals("a1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).property) },
-            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).expectedResult) },
-            { Assertions.assertEquals("a2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1).property) },
-            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1).expectedResult) }
+            { Assertions.assertEquals("a1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).property.toString()) },
+            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("a2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1).property.toString()) },
+            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1).expectedResult.toString()) }
+        )
+    }
+
+    /*
+     validate {
+        originalRequest [
+            match('.*score='${score}'.*')
+            contains(${2})
+        ]
+    }
+     */
+    @Test
+    @DisplayName("When has array of expected values in list And ALL_MATCH type by default")
+    fun testWithArrayOfMatchAllByDefault() {
+        val rawValidationDetails = mapOf(
+            Pair("originalRequest", listOf(
+                "match('.*score='\${score}'.*')",
+                "contains(\${2})",
+            )),
+        )
+
+        val testStep = createTestStepWithoutParameters(rawValidationDetails)
+        val validationDetails = testStep.validationDetails
+
+        Assertions.assertAll(
+            { Assertions.assertEquals(MatchingType.ALL_MATCH, validationDetails!!.expectedResult.matchingType) },
+            { Assertions.assertEquals("", validationDetails!!.expectedResult.property.toString()) },
+            { Assertions.assertEquals("originalRequest", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals("match(.*score=\${score}.*)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("contains(\${2})", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).expectedResult.toString()) },
+            { Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).matchingType) },
+            { Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).matchingType) },
         )
     }
 
@@ -302,9 +336,9 @@ class ValidationDetailsFactoryTest {
                 "status", "200",
                 "body",
                 UnitTestUtils.createMap(
-                    "json_path(f1.f2)", "v1",
-                    "json_path(f1.f3)", "v2",
-                    "regex(.*f3=(\\\\w+).*)", "v3"
+                    "json_path('f1.f2')", "v1",
+                    "json_path('f1.f3')", "v2",
+                    "regex('.*f3=(\\\\w+).*')", "v3"
                 ),
                 "headers",
                 UnitTestUtils.createMap("content-type", "application/json"),
@@ -315,7 +349,7 @@ class ValidationDetailsFactoryTest {
             UnitTestUtils.createMap(
                 "status", "200",
                 "body",
-                UnitTestUtils.createMap("json_path(f1.f2)", "v1"),
+                UnitTestUtils.createMap("json_path('f1.f2')", "v1"),
                 "headers",
                 UnitTestUtils.createMap("content-type", "application/json"),
                 "log", listOf("contains(success)")
@@ -327,41 +361,41 @@ class ValidationDetailsFactoryTest {
 
         Assertions.assertAll(
             { Assertions.assertEquals(MatchingType.ANY_MATCH, validationDetails!!.expectedResult.matchingType) },
-            { Assertions.assertEquals("srv1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
+            { Assertions.assertEquals("srv1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
             { Assertions.assertEquals(MatchingType.ALL_MATCH, UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).matchingType) },
-            { Assertions.assertEquals("headers", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).property) },
+            { Assertions.assertEquals("headers", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).property.toString()) },
             { Assertions.assertEquals(MatchingType.ALL_MATCH, UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).matchingType) },
-            { Assertions.assertEquals("content-type", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0, 0).property) },
-            { Assertions.assertEquals("application/json", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0, 0).expectedResult) },
-            { Assertions.assertEquals("log", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).property) },
+            { Assertions.assertEquals("content-type", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0, 0).property.toString()) },
+            { Assertions.assertEquals("application/json", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("log", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).property.toString()) },
             { Assertions.assertEquals(MatchingType.NONE_MATCH, UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).matchingType) },
             { Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1, 0).property) },
-            { Assertions.assertEquals("contains(fail)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1, 0).expectedResult) },
+            { Assertions.assertEquals("contains(fail)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1, 0).expectedResult.toString()) },
             { Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1, 1).property) },
-            { Assertions.assertEquals("contains(error)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1, 1).expectedResult) },
-            { Assertions.assertEquals("body", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2).property) },
-            { Assertions.assertEquals("regex(.*f3=(\\\\w+).*)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 0).property) },
-            { Assertions.assertEquals("v3", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 0).expectedResult) },
-            { Assertions.assertEquals("json_path(f1.f3)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 1).property) },
-            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 1).expectedResult) },
-            { Assertions.assertEquals("json_path(f1.f2)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 2).property) },
-            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 2).expectedResult) },
-            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 3).property) },
-            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 3).expectedResult) },
-            { Assertions.assertEquals("srv2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property) },
+            { Assertions.assertEquals("contains(error)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1, 1).expectedResult.toString()) },
+            { Assertions.assertEquals("body", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2).property.toString()) },
+            { Assertions.assertEquals("json_path(f1.f3)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 1).property.toString()) },
+            { Assertions.assertEquals("v2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 1).expectedResult.toString()) },
+            { Assertions.assertEquals("json_path(f1.f2)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 0).property.toString()) },
+            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("regex(.*f3=(\\w+).*)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 2).property.toString()) },
+            { Assertions.assertEquals("v3", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 2, 2).expectedResult.toString()) },
+            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 3).property.toString()) },
+            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 3).expectedResult.toString()) },
+            { Assertions.assertEquals("srv2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
             { Assertions.assertEquals(MatchingType.ALL_MATCH, UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).matchingType) },
-            { Assertions.assertEquals("headers", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).property) },
+            { Assertions.assertEquals("headers", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).property.toString()) },
             { Assertions.assertEquals(MatchingType.ALL_MATCH, UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).matchingType) },
-            { Assertions.assertEquals("content-type", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 0).property) },
-            { Assertions.assertEquals("application/json", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 0).expectedResult) },
-            { Assertions.assertEquals("log", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1).property) },
+            { Assertions.assertEquals("content-type", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 0).property.toString()) },
+            { Assertions.assertEquals("application/json", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("log", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1).property.toString()) },
             { Assertions.assertNull(UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 0).property) },
-            { Assertions.assertEquals("contains(success)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 0).expectedResult) },
-            { Assertions.assertEquals("body", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 2).property) },
+            { Assertions.assertEquals("contains(success)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 1, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("body", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 2).property.toString()) },
             { Assertions.assertEquals(MatchingType.ALL_MATCH, UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 2).matchingType) },
-            { Assertions.assertEquals("json_path(f1.f2)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 2, 0).property) },
-            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 2, 0).expectedResult) },
-            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 3).expectedResult) }
+            { Assertions.assertEquals("json_path(f1.f2)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 2, 0).property.toString()) },
+            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 2, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 3).expectedResult.toString()) }
         )
     }
     /*
@@ -401,17 +435,17 @@ class ValidationDetailsFactoryTest {
 
         Assertions.assertAll(
             { Assertions.assertEquals(MatchingType.ANY_MATCH, validationDetails!!.expectedResult.matchingType) },
-            { Assertions.assertEquals("log", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
-            { Assertions.assertEquals("contains(success)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult) },
-            { Assertions.assertEquals("srv3", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property) },
-            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).property) },
-            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).expectedResult) },
-            { Assertions.assertEquals("srv1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 2).property) },
-            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 2, 0).property) },
-            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 2, 0).expectedResult) },
-            { Assertions.assertEquals("srv2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 3).property) },
-            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 3, 0).property) },
-            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 3, 0).expectedResult) }
+            { Assertions.assertEquals("log", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals("contains(success)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("srv3", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
+            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).property.toString()) },
+            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("srv1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 2).property.toString()) },
+            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 2, 0).property.toString()) },
+            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 2, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("srv2", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 3).property.toString()) },
+            { Assertions.assertEquals("status", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 3, 0).property.toString()) },
+            { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 3, 0).expectedResult.toString()) }
         )
     }
 

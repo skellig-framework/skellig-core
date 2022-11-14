@@ -4,7 +4,66 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class ConvertedValueChunkBuilder {
 
-    fun parseProperty(value: String, index: AtomicInteger, parameters: Map<String, Any?>): ConvertedValueChunk {
+    companion object {
+        val SPECIAL_OPENING_BRACKETS = setOf('(', '{', '[')
+        val SPECIAL_CLOSING_BRACKETS = setOf(']', '}')
+    }
+
+    fun buildFrom(value: String, parameters: Map<String, Any?>): ConvertedValueChunk = buildFrom(value, AtomicInteger(0), parameters)
+
+    private fun buildFrom(value: String, index: AtomicInteger, parameters: Map<String, Any?>): ConvertedValueChunk {
+        var chunk = ""
+        var isExtraction = false
+        var isInQuotes = false
+        val compositeChunk = CompositeConvertedValue()
+        while (index.get() < value.length) {
+            val c = value[index.get()]
+            if (c == '\'' && (isInQuotes || index.get() == 0 || value[index.get() - 1] != '\\')) {
+                isInQuotes = !isInQuotes
+            } else if (!isInQuotes) {
+                if (c == '$' && value[index.get() + 1] == '{') {
+                    index.set(index.get() + 2)
+                    chunk = appendNotEmptyChunkTo(chunk, compositeChunk)
+                    compositeChunk.append(parseProperty(value, index, parameters))
+                } else if (c == '(' && chunk.trim().isNotEmpty()) {
+                    index.incrementAndGet()
+                    if (isExtraction) {
+                        compositeChunk.appendExtraction(parseFunction(chunk, value, index, parameters))
+                    } else {
+                        compositeChunk.append(parseFunction(chunk, value, index, parameters))
+                    }
+                    chunk = ""
+                } else if (c == '#' && value[index.get() + 1] == '[') {
+                    chunk = appendNotEmptyChunkTo(chunk, compositeChunk)
+                    index.set(index.get() + 2)
+
+                    if (isExtraction) {
+                        compositeChunk.appendExtraction(buildFrom(value, index, parameters))
+                    } else {
+                        compositeChunk.append(buildFrom(value, index, parameters))
+                    }
+                } else if (SPECIAL_CLOSING_BRACKETS.contains(c) || c == ')') {
+                    break
+                } else if (c == '.') {
+                    chunk = appendNotEmptyChunkTo(chunk, isExtraction, compositeChunk)
+                    isExtraction = true
+                } else {
+                    chunk += if (c == '\\' && index.get() + 1 < value.length) {
+                        value[index.incrementAndGet()]
+                    } else c
+                }
+            } else {
+                chunk += if (c == '\\' && index.get() + 1 < value.length) {
+                    value[index.incrementAndGet()]
+                } else c
+            }
+            index.incrementAndGet()
+        }
+        appendNotEmptyChunkTo(chunk, isExtraction, compositeChunk)
+        return compositeChunk
+    }
+
+    private fun parseProperty(value: String, index: AtomicInteger, parameters: Map<String, Any?>): ConvertedValueChunk {
         var key = ""
         var default: ConvertedValueChunk? = null
         while (index.get() < value.length) {
@@ -12,11 +71,10 @@ class ConvertedValueChunkBuilder {
                 // default value of property declaration
                 ':' -> {
                     index.incrementAndGet()
-                    default = parse(value, index, parameters)
+                    default = buildFrom(value, index, parameters)
                     break
                 }
                 // end of property declaration
-//                '}', ']', ')' -> {
                 '}' -> {
                     break
                 }
@@ -26,10 +84,10 @@ class ConvertedValueChunkBuilder {
             }
             index.incrementAndGet()
         }
-        return PropertyValue(key, default, parameters)
+        return PropertyValue(key.trim(), default, parameters)
     }
 
-    fun parseFunction(name: String, value: String, index: AtomicInteger, parameters: Map<String, Any?>): FunctionValue {
+    private fun parseFunction(name: String, value: String, index: AtomicInteger, parameters: Map<String, Any?>): FunctionValue {
         val args = mutableListOf<ConvertedValueChunk>()
         var arg = ""
         var bracketsCount = 1
@@ -46,15 +104,15 @@ class ConvertedValueChunkBuilder {
                 }
                 ',' -> {
                     if (bracketsCount == 1) {
-                        args.add(parse(arg, AtomicInteger(0), parameters))
+                        args.add(buildFrom(arg, AtomicInteger(0), parameters))
                         arg = ""
                     } else {
                         arg += c
                     }
                 }
                 else -> {
-                    if (c == '(' || c == '{' || c == '[') bracketsCount++
-                    else if (c == '}' || c == ']') bracketsCount--
+                    if (SPECIAL_OPENING_BRACKETS.contains(c)) bracketsCount++
+                    else if (SPECIAL_CLOSING_BRACKETS.contains(c)) bracketsCount--
                     arg += c
                 }
             }
@@ -62,71 +120,28 @@ class ConvertedValueChunkBuilder {
         }
 
         if (arg.trim().isNotEmpty()) {
-            args.add(parse(arg, AtomicInteger(0), parameters))
+            args.add(buildFrom(arg, AtomicInteger(0), parameters))
         }
 
         return FunctionValue(name, args.toTypedArray())
     }
 
-    fun parse(value: String, index: AtomicInteger, parameters: Map<String, Any?>): ConvertedValueChunk {
-        val trimValue = value.trim()
-        var chunk = ""
-        var isExtraction = false
-        val compositeChunk = CompositeConvertedValue()
-        while (index.get() < trimValue.length) {
-            val c = trimValue[index.get()]
-            if (c == '$' && trimValue[index.get() + 1] == '{') {
-                index.set(index.get() + 2)
-                if (chunk.trim().isNotEmpty()) {
-                    compositeChunk.append(SimpleValue(chunk.trim()))
-                    chunk = ""
-                }
-                compositeChunk.append(parseProperty(trimValue, index, parameters))
-            } else if (c == '(' && chunk.trim().isNotEmpty()) {
-                index.incrementAndGet()
-                if (isExtraction) {
-                    compositeChunk.appendExtraction(parseFunction(chunk, trimValue, index, parameters))
-                } else {
-                    compositeChunk.append(parseFunction(chunk, trimValue, index, parameters))
-                }
-                chunk = ""
-            } else if (c == '#' && trimValue[index.get() + 1] == '[') {
-                if (chunk.trim().isNotEmpty()) {
-                    compositeChunk.append(SimpleValue(chunk.trim()))
-                    chunk = ""
-                }
-                index.set(index.get() + 2)
-
-                if (isExtraction) {
-                    compositeChunk.appendExtraction(parse(trimValue, index, parameters))
-                } else {
-                    compositeChunk.append(parse(trimValue, index, parameters))
-                }
-            } else if (c == ']' || c == '}' || c == ')') {
-                break
-            } else if (c == '.') {
-                if (chunk.trim().isNotEmpty()) {
-                    if (isExtraction) {
-                        compositeChunk.appendExtraction(SimpleValue(chunk.trim()))
-                    } else {
-                        compositeChunk.append(SimpleValue(chunk.trim()))
-                    }
-                    chunk = ""
-                }
-                isExtraction = true
-            } else {
-                chunk += c
-            }
-            index.incrementAndGet()
-        }
+    private fun appendNotEmptyChunkTo(
+        chunk: String,
+        isExtraction: Boolean,
+        compositeChunk: CompositeConvertedValue
+    ): String {
         if (chunk.trim().isNotEmpty()) {
             if (isExtraction) {
-                compositeChunk.appendExtraction(SimpleValue(chunk.trim()))
+                compositeChunk.appendExtraction(SimpleValue(chunk))
             } else {
-                compositeChunk.append(SimpleValue(chunk.trim()))
+                compositeChunk.append(SimpleValue(chunk))
             }
         }
-        return compositeChunk
+        return ""
     }
+
+    private fun appendNotEmptyChunkTo(chunk: String, compositeChunk: CompositeConvertedValue): String =
+        appendNotEmptyChunkTo(chunk, false, compositeChunk)
 
 }

@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.valueextractor
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.experiment.ValueExtractor
 
 class JsonToMapTestStepValueExtractor : JsonToTestStepValueExtractor() {
 
@@ -22,9 +23,25 @@ class JsonToListTestStepValueExtractor : JsonToTestStepValueExtractor() {
 
 }
 
-abstract class JsonToTestStepValueExtractor : TestStepValueExtractor {
+abstract class JsonToTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
 
     private val objectMapper = ObjectMapper()
+
+    override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
+        val valueAsString = value?.toString() ?: ""
+        return if (value == null || valueAsString.isEmpty()) {
+            getDefaultValueForNull()
+        } else {
+            try {
+                objectMapper.readValue(value.toString(), getToClassConversion())
+            } catch (ex: Exception) {
+                throw ValueExtractionException(
+                    "Failed to convert JSON to ${getToClassConversion().simpleName}: '$value'",
+                    ex
+                )
+            }
+        }
+    }
 
     override fun extract(value: Any?, extractionParameter: String?): Any {
         val valueAsString = value.toString()

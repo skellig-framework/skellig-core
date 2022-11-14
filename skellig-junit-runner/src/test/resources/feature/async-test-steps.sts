@@ -1,5 +1,5 @@
 // Custom test step which is processed by `SimpleMessageTestStepProcessor`
-name('User (\w+) is waiting for request from (\w+)') {
+name("User (\w+) is waiting for request from (\w+)") {
    id = step2
    execution = async
    receiveFrom = ${2}
@@ -8,24 +8,24 @@ name('User (\w+) is waiting for request from (\w+)') {
    }
 }
 
-name('User .* sends the message to (\w+)') {
+name("User .* sends the message to (\w+)") {
     id = step3
     receiver = ${1}
     message {
        toCustomFormat {
-          ids = get(step1).(variables.id)
-          userName = get(step1).(variables.name)
-          score = get(step1).(variables.score)
+          ids = get(step1).variables.id
+          userName = get(step1).variables.name
+          score = get(step1).variables.score
        }
     }
 }
 
-name('User (\w+) received a valid response from (\w+)') {
+name("User (\w+) received a valid response from (\w+)") {
    // make few attempts until a response from `step2` appears in the state
    delay = 100
    timeout = 5000
    variables {
-      score = get(step1).(variables.score)
+      score = get(step1).variables.score
    }
    validate {
       fromTest = step2

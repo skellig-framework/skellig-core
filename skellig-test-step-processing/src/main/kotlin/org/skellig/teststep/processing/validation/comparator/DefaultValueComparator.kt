@@ -1,24 +1,26 @@
 package org.skellig.teststep.processing.validation.comparator
 
-import java.util.*
+class DefaultValueComparator(private val comparators: MutableMap<String, ValueComparator>) : ValueComparator {
 
-class DefaultValueComparator(private val comparators: Collection<ValueComparator>) : ValueComparator {
+    override fun compare(comparator: String, args: Array<Any?>, actualValue: Any?): Boolean {
+        return comparators[comparator]?.compare(comparator, args, actualValue) ?: false
+    }
 
     override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
-        return comparators
-                .filter { it.isApplicable(expectedValue) }
-                .any { it.compare(expectedValue, actualValue) }
+        return false
     }
 
     override fun isApplicable(expectedValue: Any?): Boolean {
         return true
     }
 
+    override fun getName(): String = ""
+
     class Builder {
-        private val valueComparators: MutableCollection<ValueComparator>
+        private val valueComparators: MutableMap<String, ValueComparator>
 
         init {
-            valueComparators = ArrayList()
+            valueComparators = mutableMapOf()
             withValueComparator(ContainsValueComparator())
             withValueComparator(MatchValueComparator())
             withValueComparator(NumericValueComparator())
@@ -26,7 +28,7 @@ class DefaultValueComparator(private val comparators: Collection<ValueComparator
         }
 
         fun withValueComparator(valueComparator: ValueComparator) = apply {
-            valueComparators.add(valueComparator)
+            valueComparators[valueComparator.getName()] = valueComparator
         }
 
         fun build(): ValueComparator {

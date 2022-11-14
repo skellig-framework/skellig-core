@@ -1,23 +1,23 @@
-name('Given something') {
+name("Given something") {
 
 }
 
-name('Run something') {
+name("Run something") {
 
 }
 
-name('Validate something') {
+name("Validate something") {
 
 }
 
-name('Given value is .*') {
+name("Given value is .*") {
 
 }
 
-name('Run function with .*') {
+name("Run function with .*") {
 
 }
 
-name('Validate result is .*') {
+name("Validate result is .*") {
 
 }

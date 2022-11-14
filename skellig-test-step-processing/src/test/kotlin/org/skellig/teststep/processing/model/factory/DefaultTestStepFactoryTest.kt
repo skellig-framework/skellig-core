@@ -6,6 +6,8 @@ import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
 import org.skellig.teststep.processing.converter.DefaultValueConverter
+import org.skellig.teststep.processing.experiment.DefaultPropertyExtractor
+import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -26,13 +28,17 @@ class DefaultTestStepFactoryTest {
         testStepFactory = DefaultTestStepFactory.Builder()
             .withTestStepValueConverter(
                 TestStepFactoryValueConverter.Builder()
-                    .withValueConverter(
-                        DefaultValueConverter.Builder()
-                            .withTestScenarioState(testScenarioState)
-                            .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
-                            .build()
+                    .withValueProcessingVisitor(
+                        ValueProcessingVisitor(
+                            DefaultValueConverter.Builder()
+                                .withTestScenarioState(testScenarioState)
+                                .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
+                                .build(),
+                            DefaultValueExtractor.Builder().build(),
+                            mock(),
+                            DefaultPropertyExtractor(null)
+                        )
                     )
-                    .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
                     .build()
             )
             .withTestStepRegistry(testStepRegistry)
@@ -122,12 +128,12 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
         val validationDetails = testStep.validationDetails
 
+        // check that refs are not applied because they are processed when actual validation happens
         Assertions.assertAll(
-            { Assertions.assertEquals("result", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
-            { Assertions.assertEquals("c1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).property) },
-            { Assertions.assertEquals("v1", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).expectedResult) },
-            { Assertions.assertEquals("id", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property) },
-            { Assertions.assertEquals(generatedId, UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult) }
+            { Assertions.assertEquals("result", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals("\${row}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
+            { Assertions.assertEquals("id", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
+            { Assertions.assertEquals("\${id}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult.toString()) }
         )
     }
 
@@ -136,18 +142,6 @@ class DefaultTestStepFactoryTest {
         val rawTestStep = UnitTestUtils.createMap("payload", "\${key_1 : \${key_2 : v3}}")
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("key_2", "v2")))
-
-        Assertions.assertEquals("v2", testStep.testData)
-    }
-
-    @Test
-    fun testWithNestedParametersWithReferenceToParameters() {
-        val rawTestStep = UnitTestUtils.createMap("payload", "\${key_1}")
-
-        val testStep = testStepFactory!!.create(
-            "test 1", rawTestStep,
-            mapOf(Pair("key_1", "\${key_2}"), Pair("key_2", "v2"))
-        )
 
         Assertions.assertEquals("v2", testStep.testData)
     }
@@ -182,7 +176,7 @@ class DefaultTestStepFactoryTest {
                 "assert",
                 mapOf(
                     Pair("'f.1'.toString()", "'2.0'"),
-                    Pair("a.b.\"'c.d'\".'#[e]'", "'a.b'.toString().regex('([\\w.]{3})')")
+                    Pair("a.b.'c.d'.'#[e]'", "'a.b'.toString().regex('([\\\\w.]{3})')")
                 )
             )
         )
@@ -192,10 +186,15 @@ class DefaultTestStepFactoryTest {
         val validationDetails = testStep.validationDetails
 
         assertAll(
-            { assertEquals("'f.1'.toString()", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property) },
-            { assertEquals("2.0", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult) },
-            { assertEquals("a.b.\"'c.d'\".'#[e]'", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property) },
-            { assertEquals("a.b", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult) },
+            { assertEquals("f.1.toString()", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { assertEquals("2.0", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
+            { assertEquals("a.b.c.d.#[e]", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
+            {
+                assertEquals(
+                    "a.b.toString().regex(([\\w.]{3}))",
+                    UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult.toString()
+                )
+            },
         )
     }
 
@@ -203,10 +202,7 @@ class DefaultTestStepFactoryTest {
     @DisplayName("With test data as a content conversion function")
     fun testCreateTestStepWithTestDataAsContentConversionFunction() {
         val data = "something"
-        val rawTestStep = UnitTestUtils.createMap(
-            "data",
-            mapOf(Pair("toBytes", mapOf(Pair("value", data))))
-        )
+        val rawTestStep = mapOf(Pair("data", "$data.toBytes()"))
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf())
 
@@ -223,7 +219,8 @@ class DefaultTestStepFactoryTest {
             "variables",
             UnitTestUtils.createMap(
                 "f1", "v1",
-                "f2", "\${f1}"
+                "f2", "\${f1}",
+                "f3", "\${f2}",
             )
         )
 
@@ -233,6 +230,7 @@ class DefaultTestStepFactoryTest {
         Assertions.assertAll(
             { Assertions.assertEquals("v1", variables["f2"]) },
             { Assertions.assertEquals(variables["f1"], variables["f2"]) },
+            { Assertions.assertEquals(variables["f1"], variables["f3"]) },
         )
     }
 
@@ -291,7 +289,32 @@ class DefaultTestStepFactoryTest {
             { Assertions.assertEquals("v1", (testStep.testData as Map<*, *>?)!!["new_f1"]) },
             { Assertions.assertEquals("v2", (testStep.testData as Map<*, *>?)!!["f2"]) },
             { Assertions.assertEquals("something", (testStep.testData as Map<*, *>?)!!["f3"]) },
-            { Assertions.assertEquals("v4", ((testStep.validationDetails?.expectedResult?.expectedResult as List<*>)[0] as ExpectedResult).expectedResult) }
+            {
+                Assertions.assertEquals(
+                    "v4",
+                    ((testStep.validationDetails?.expectedResult?.expectedResult as List<*>)[0] as ExpectedResult).expectedResult.toString()
+                )
+            }
         )
+    }
+
+    @Test
+    @DisplayName("When value has if statement Then check it assigns value correctly")
+    fun testCreateTestStepWithIfStatement() {
+        val expectedValue = mapOf(Pair("a", 1), Pair("b", 2))
+        val rawTestStep = mapOf(
+            Pair(
+                "variables",
+                mapOf(
+                    Pair("f1", "v1"),
+                    Pair("f2", expectedValue),
+                )
+            ),
+            Pair("payload", mapOf(Pair("c", "if(1==1,\${f2}, \${f1}")))
+        )
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap())
+
+        Assertions.assertEquals(expectedValue, (testStep.testData as Map<*, *>?)!!["c"])
     }
 }

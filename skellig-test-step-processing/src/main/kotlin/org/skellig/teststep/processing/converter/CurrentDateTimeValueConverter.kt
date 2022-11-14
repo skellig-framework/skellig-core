@@ -2,31 +2,41 @@ package org.skellig.teststep.processing.converter
 
 import org.apache.commons.lang3.StringUtils
 import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.experiment.FunctionValueProcessor
 import java.time.DateTimeException
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.regex.Pattern
 
-class CurrentDateTimeValueConverter : TestStepValueConverter {
+class CurrentDateTimeValueConverter : TestStepValueConverter, FunctionValueProcessor {
 
     companion object {
         private val NOW_PATTERN = Pattern.compile("now\\(([\\w]*)\\)(.format\\(([\\w-'/:.]*)\\))?")
     }
 
+    override fun execute(name: String, args: Array<Any?>): Any {
+        val timezone = args[0]?.toString() ?: ""
+        val format = args[1]
+        return if (format == null) getLocalDateTime(timezone)
+        else getLocalDateTime(format.toString(), timezone)
+    }
+
+    override fun getFunctionName(): String = "now"
+
     override fun convert(value: Any?): Any? =
-            when (value) {
-                is String -> {
-                    val matcher = NOW_PATTERN.matcher(value.toString())
-                    if (matcher.find()) {
-                        val timezone = matcher.group(1)
-                        val format = matcher.group(3)
-                        if (format == null) getLocalDateTime(timezone)
-                        else value.toString().replace(matcher.group(0), getLocalDateTime(format, timezone))
-                    } else value
-                }
-                else -> value
+        when (value) {
+            is String -> {
+                val matcher = NOW_PATTERN.matcher(value.toString())
+                if (matcher.find()) {
+                    val timezone = matcher.group(1)
+                    val format = matcher.group(3)
+                    if (format == null) getLocalDateTime(timezone)
+                    else value.toString().replace(matcher.group(0), getLocalDateTime(format, timezone))
+                } else value
             }
+            else -> value
+        }
 
     private fun getLocalDateTime(timezone: String): LocalDateTime {
         return if (StringUtils.isEmpty(timezone)) {

@@ -116,7 +116,7 @@ class DefaultTestStepReportDetails(name: String,
     }
 
     private fun constructValidationDetails(expectedResult: ExpectedResult, stringBuilder: StringBuilder) {
-        if (StringUtils.isNotEmpty(expectedResult.property)) {
+        if (StringUtils.isNotEmpty(expectedResult.property?.toString())) {
             stringBuilder.append(expectedResult.property).append(": ")
         }
         if (expectedResult.expectedResult is List<*>) {

@@ -7,10 +7,10 @@ import java.util.*
 import java.util.regex.Pattern
 
 abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
-        private val testStepRegistry: TestStepRegistry,
-        keywordsProperties: Properties?,
-        testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseTestStepFactory<T>(keywordsProperties, testStepFactoryValueConverter) {
+    private val testStepRegistry: TestStepRegistry,
+    keywordsProperties: Properties?,
+    testStepFactoryValueConverter: TestStepFactoryValueConverter
+) : BaseTestStepFactory<T>(keywordsProperties, testStepFactoryValueConverter) {
 
     companion object {
         private val COMMA_SPLIT_PATTERN = Pattern.compile(",")
@@ -30,12 +30,13 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 
     init {
         testDataKeywords = setOf(
-                getKeywordName("test.step.keyword.data", "data"),
-                getKeywordName("test.step.keyword.payload", "payload"),
-                getKeywordName("test.step.keyword.body", "body"),
-                getKeywordName("test.step.keyword.request", "request"),
-                getKeywordName("test.step.keyword.response", "response"),
-                getKeywordName("test.step.keyword.message", "message"))
+            getKeywordName("test.step.keyword.data", "data"),
+            getKeywordName("test.step.keyword.payload", "payload"),
+            getKeywordName("test.step.keyword.body", "body"),
+            getKeywordName("test.step.keyword.request", "request"),
+            getKeywordName("test.step.keyword.response", "response"),
+            getKeywordName("test.step.keyword.message", "message")
+        )
     }
 
     override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): T {
@@ -43,9 +44,9 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         return if (parentTestSteps != null) {
             val newRawTestStep = mutableMapOf<String, Any?>()
             // if parent exists, then merge its data with rawTestStep
-            when(parentTestSteps) {
+            when (parentTestSteps) {
                 is String -> testStepRegistry.getById(parentTestSteps)?.let { newRawTestStep.putAll(it) }
-                is Collection<*> -> parentTestSteps.forEach{ parentTestStep ->
+                is Collection<*> -> parentTestSteps.forEach { parentTestStep ->
                     testStepRegistry.getById(parentTestStep as String)?.let { newRawTestStep.putAll(it) }
                 }
             }
@@ -56,7 +57,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     }
 
     fun createTestStep(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): T {
-        val additionalParameters: MutableMap<String, Any?> = HashMap(parameters)
+        val additionalParameters = HashMap<String, Any?>(parameters)
         val parametersFromTestName = extractParametersFromTestStepName(testStepName, rawTestStep)
         parametersFromTestName?.let {
             additionalParameters.putAll(parametersFromTestName)
@@ -79,15 +80,15 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 
     protected abstract fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<T>
 
-    protected open fun getStringArrayDataFromRawTestStep(propertyName: String?, rawTestStep: Map<String, Any?>,
-                                                         parameters: Map<String, Any?>): Collection<String>? {
+    protected open fun getStringArrayDataFromRawTestStep(
+        propertyName: String?, rawTestStep: Map<String, Any?>,
+        parameters: Map<String, Any?>
+    ): Collection<String>? {
         return rawTestStep[propertyName]?.let {
-            when {
-                it is String -> {
-                    return COMMA_SPLIT_PATTERN.split(convertValue(it, parameters)).toList()
-                }
-                it is Collection<*> -> return it as Collection<String>
-                it.javaClass.isArray -> return (it as Array<String>).toList()
+            return when {
+                it is String -> COMMA_SPLIT_PATTERN.split(convertValue(it, parameters)).toList()
+                it is Collection<*> -> it as Collection<String>
+                it.javaClass.isArray -> (it as Array<String>).toList()
                 else -> null
             }
         }
@@ -109,15 +110,15 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
                     parameters[it.key.toString()] = convertedVar
                     it.key.toString() to convertedVar
                 }.toMap()
-            } else throw TestStepCreationException("variables of the test step must have key-value pair (ex. type: Map<*, *>)")
+            } else throw TestStepCreationException("Variables of the test step must have key-value pair (ex. type: Map<*, *>)")
         }
     }
 
     private fun extractTestData(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Any? {
         return getTestDataKeywords()!!
-                .filter { rawTestStep.containsKey(it) }
-                .map { keyword: String -> convertValue<Any>(rawTestStep[keyword], parameters) }
-                .firstOrNull()
+            .filter { rawTestStep.containsKey(it) }
+            .map { keyword: String -> convertValue<Any>(rawTestStep[keyword], parameters) }
+            .firstOrNull()
     }
 
     protected open fun getId(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): String? {
@@ -143,8 +144,10 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         return getInteger(rawTestStep, parameters, getKeywordName(ATTEMPTS_KEYWORD, "attempts"), 0)
     }
 
-    private fun getInteger(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>,
-                           keywordName: String, defaultValue: Int): Int {
+    private fun getInteger(
+        rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>,
+        keywordName: String, defaultValue: Int
+    ): Int {
         var value = defaultValue
         if (rawTestStep.containsKey(keywordName)) {
             val rawTimeout = convertValue<Any>(rawTestStep[keywordName], parameters)

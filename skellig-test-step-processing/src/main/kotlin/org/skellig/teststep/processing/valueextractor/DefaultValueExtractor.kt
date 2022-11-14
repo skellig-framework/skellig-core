@@ -1,123 +1,56 @@
 package org.skellig.teststep.processing.valueextractor
 
-import java.util.regex.Matcher
-import java.util.regex.Pattern
+import org.skellig.teststep.processing.experiment.ValueExtractor
 
 class DefaultValueExtractor
-private constructor(private val valueExtractors: Collection<TestStepValueExtractor>) : TestStepValueExtractor {
+private constructor(private val extractors: Map<String, ValueExtractor>) : ValueExtractor {
 
-    companion object {
-        private val EXTRACTION_PARAMETER_PATTERN = Pattern.compile("([\\w_-]+)\\((.*)\\)|\\((.+)\\)")
+    override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
+        return if (extractors.containsKey(name)) extractors[name]?.extractFrom(name, value, args)
+        else extractors[""]?.extractFrom(name, value, args)
     }
 
-    override fun extract(value: Any?, extractionParameter: String?): Any? {
-        return extractionParameter?.let {
-            var newValue: Any? = value
-            splitExtractionParameter(extractionParameter)
-                .forEach { p ->
-                    val matcher = EXTRACTION_PARAMETER_PATTERN.matcher(p)
-                    newValue = if (matcher.find()) {
-                        val functionName = matcher.group(1)
-                        extract(functionName ?: "", newValue, getExtractionParameter(matcher))
-                    } else {
-                        extract("", newValue, p)
-                    }
-                }
-            return newValue
-        } ?: value
-    }
-
-    private fun splitExtractionParameter(extractionParameter: String): List<String> {
-        val functions = mutableListOf<String>()
-        val accumulator = StringBuilder()
-        var bracketsOpened = false
-        var quoteOpened = false
-        extractionParameter.chars()
-            .forEach {
-                when (val character = it.toChar()) {
-                    '.' -> {
-                        if (accumulator.isNotEmpty()) {
-                            if (!bracketsOpened && !quoteOpened) {
-                                functions.add(accumulator.toString())
-                                accumulator.setLength(0)
-                            } else accumulator.append(character)
-                        }
-                    }
-                    '\'', '"' -> {
-                        if (accumulator.isEmpty() || accumulator[accumulator.length - 1] != '\\') {
-                            quoteOpened = !quoteOpened
-                        } else if (accumulator[accumulator.length - 1] == '\\') {
-                            accumulator.deleteCharAt(accumulator.length - 1)
-                        }
-                        accumulator.append(character)
-                    }
-                    '(' -> {
-                        bracketsOpened = true
-                        accumulator.append(character)
-                    }
-                    ')' -> {
-                        bracketsOpened = false
-                        accumulator.append(character)
-                    }
-                    else -> accumulator.append(character)
-                }
-            }
-        if (accumulator.isNotEmpty()) functions.add(accumulator.toString())
-        return functions
-    }
-
-    private fun extract(extractFunctionName: String, value: Any?, parameter: String): Any? {
-        val extractor = valueExtractors
-            .firstOrNull { it.getExtractFunctionName() == extractFunctionName }
-            ?: throw IllegalArgumentException("No extraction function found for name '$extractFunctionName'")
-        return extractor.extract(value, parameter)
-    }
-
-    override fun getExtractFunctionName(): String? {
-        return null
-    }
-
-    private fun getExtractionParameter(matcher: Matcher): String {
-        return if (matcher.group(3) != null) matcher.group(3) else matcher.group(2)
+    override fun getExtractFunctionName(): String {
+        return ""
     }
 
     class Builder {
-        private val valueExtractors =
-            mutableListOf(
-                ConcatTestStepValueExtractor(),
-                JsonPathTestStepValueExtractor(),
-                JsonToMapTestStepValueExtractor(),
-                JsonToListTestStepValueExtractor(),
-                XPathTestStepValueExtractor(),
-                ObjectTestStepValueExtractor(),
-                FromIndexTestStepValueExtractor(),
-                ToStringTestStepValueExtractor(),
-                SubStringTestStepValueExtractor(),
-                SubStringLastTestStepValueExtractor(),
-                PlusOperatorTestStepValueExtractor(),
-                MinusOperatorTestStepValueExtractor(),
-                TimesOperatorTestStepValueExtractor(),
-                DivOperatorTestStepValueExtractor(),
-                PowOperatorTestStepValueExtractor(),
-                ToIntTestStepValueExtractor(),
-                ToLongTestStepValueExtractor(),
-                RegexTestStepValueExtractor(),
-                ToByteTestStepValueExtractor(),
-                ToShortTestStepValueExtractor(),
-                ToFloatTestStepValueExtractor(),
-                ToDoubleTestStepValueExtractor(),
-                ToBigDecimalTestStepValueExtractor(),
-                ToDateTimeValueExtractor(),
-                ToDateValueExtractor()
-            )
+        private val extractors = mutableMapOf<String, ValueExtractor>()
 
-
-        fun valueExtractor(valueExtractor: TestStepValueExtractor) = apply {
-            valueExtractors.add(valueExtractor)
+        fun withValueExtractor(valueExtractor: ValueExtractor) = apply {
+            extractors[valueExtractor.getExtractFunctionName()] = valueExtractor
         }
 
-        fun build(): TestStepValueExtractor {
-            return DefaultValueExtractor(valueExtractors)
+        fun build(): ValueExtractor {
+            withValueExtractor(ConcatTestStepValueExtractor())
+            withValueExtractor(JsonPathTestStepValueExtractor())
+            withValueExtractor(JsonToMapTestStepValueExtractor())
+            withValueExtractor(JsonToListTestStepValueExtractor())
+            withValueExtractor(XPathTestStepValueExtractor())
+            withValueExtractor(ObjectTestStepValueExtractor())
+            withValueExtractor(FromIndexTestStepValueExtractor())
+            withValueExtractor(ToStringTestStepValueExtractor())
+            withValueExtractor(SubStringTestStepValueExtractor())
+            withValueExtractor(SubStringLastTestStepValueExtractor())
+            withValueExtractor(PlusOperatorTestStepValueExtractor())
+            withValueExtractor(MinusOperatorTestStepValueExtractor())
+            withValueExtractor(TimesOperatorTestStepValueExtractor())
+            withValueExtractor(DivOperatorTestStepValueExtractor())
+            withValueExtractor(PowOperatorTestStepValueExtractor())
+            withValueExtractor(ToIntTestStepValueExtractor())
+            withValueExtractor(ToLongTestStepValueExtractor())
+            withValueExtractor(RegexTestStepValueExtractor())
+            withValueExtractor(ToByteTestStepValueExtractor())
+            withValueExtractor(ToShortTestStepValueExtractor())
+            withValueExtractor(ToFloatTestStepValueExtractor())
+            withValueExtractor(ToDoubleTestStepValueExtractor())
+            withValueExtractor(ToBooleanTestStepValueExtractor())
+            withValueExtractor(ToBigDecimalTestStepValueExtractor())
+            withValueExtractor(ToDateTimeValueExtractor())
+            withValueExtractor(ToDateValueExtractor())
+            withValueExtractor(ToBytesValueExtractor())
+
+            return DefaultValueExtractor(extractors)
         }
     }
 }

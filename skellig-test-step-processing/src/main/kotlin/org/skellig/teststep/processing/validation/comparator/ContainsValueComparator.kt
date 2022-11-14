@@ -8,6 +8,20 @@ class ContainsValueComparator : ValueComparator {
         private val CONTAINS_PATTERN = Pattern.compile("contains\\((.+)\\)")
     }
 
+    override fun compare(comparator: String, args: Array<Any?>, actualValue: Any?): Boolean {
+        if (args.isNotEmpty() && actualValue != null) {
+           return args.filterNotNull().map { it.toString() }.all {
+                when {
+                    actualValue::class == String::class -> (actualValue as String).contains(it)
+                    actualValue.javaClass.isArray -> compareArray(actualValue, it)
+                    actualValue is Collection<*> -> compareCollection(actualValue, it)
+                    else -> actualValue.toString().contains(it)
+                }
+            }
+        }
+        return false
+    }
+
     override fun compare(expectedValue: Any?, actualValue: Any?): Boolean {
         if (actualValue != null) {
             val matcher = CONTAINS_PATTERN.matcher(expectedValue?.toString() ?: "")
@@ -34,21 +48,23 @@ class ContainsValueComparator : ValueComparator {
     }
 
     private fun compareCollection(actualValue: Collection<*>, expectedValueAsString: String?) = actualValue
-            .map { it.toString() }
-            .any { it == expectedValueAsString }
+        .map { it.toString() }
+        .any { it == expectedValueAsString }
 
     private fun compareArray(actualValue: Any?, expectedValueAsString: String?) =
-            if (actualValue is ByteArray) {
-                actualValue
-                        .map { it.toString() }
-                        .any { it == expectedValueAsString }
-            } else {
-                (actualValue as Array<*>)
-                        .map { it.toString() }
-                        .any { it == expectedValueAsString }
-            }
+        if (actualValue is ByteArray) {
+            actualValue
+                .map { it.toString() }
+                .any { it == expectedValueAsString }
+        } else {
+            (actualValue as Array<*>)
+                .map { it.toString() }
+                .any { it == expectedValueAsString }
+        }
 
     override fun isApplicable(expectedValue: Any?): Boolean {
         return CONTAINS_PATTERN.matcher(expectedValue?.toString() ?: "").matches()
     }
+
+    override fun getName(): String = "contains"
 }
