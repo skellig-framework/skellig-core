@@ -10,11 +10,10 @@ class CustomFunctionValueConverterTest {
 
     @Test
     fun testConvertFromCustomFunction() {
-        assertTrue(converter.convert("lessThan(1, 2)") as Boolean)
-        assertFalse(converter.convert("lessThan( 2, 1 )") as Boolean)
-        assertFalse(converter.convert("isEmpty(gggg, )") as Boolean)
-        assertNull(converter.convert("runSomething()")) // no return means null
-        assertEquals("runNotExisting()", converter.convert("runNotExisting()"))
+        assertTrue(converter.execute("lessThan", arrayOf("1", "2")) as Boolean)
+        assertFalse(converter.execute("isEmpty", arrayOf("gggg", "")) as Boolean)
+        assertNull(converter.execute("runSomething", emptyArray())) // no return means null
+        assertNull(converter.execute("runNotExisting", emptyArray()))
     }
 }
 
