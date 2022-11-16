@@ -11,10 +11,9 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.regex.Pattern
 
-class CustomFunctionValueConverter(packages: Collection<String>?, classLoader: ClassLoader?) : TestStepValueConverter, FunctionValueProcessor {
+class CustomFunctionValueConverter(packages: Collection<String>?, classLoader: ClassLoader?) : FunctionValueProcessor {
 
     companion object {
-        private val FUNC_NAME_PATTERN = Pattern.compile("(\\w+)\\((.*)\\)")
         private const val CLASS_EXTENSION = ".class"
     }
 
@@ -36,34 +35,12 @@ class CustomFunctionValueConverter(packages: Collection<String>?, classLoader: C
 
     override fun execute(name: String, args: Array<Any?>): Any? {
         return functions[name]?.let {
-            return if (args.isNotEmpty()) {
-                it.method.invoke(it.instance, *args)
-            } else {
-                it.method.invoke(it.instance)
-            }
+            return if (args.isNotEmpty()) it.method.invoke(it.instance, *args)
+            else it.method.invoke(it.instance)
         }
     }
 
     override fun getFunctionName(): String = ""
-
-    override fun convert(value: Any?): Any? {
-        if (value is String) {
-            val matcher = FUNC_NAME_PATTERN.matcher(value.toString())
-            if (matcher.find()) {
-                val functionName = matcher.group(1)
-                functions[functionName]?.let {
-                    val argsLine = matcher.group(2)
-                    return if (argsLine.isNotEmpty()) {
-                        val args = argsLine.split(",").map { it.trim() }.toTypedArray()
-                        it.method.invoke(it.instance, *args)
-                    } else {
-                        it.method.invoke(it.instance)
-                    }
-                }
-            }
-        }
-        return value
-    }
 
     private inner class ClassTestStepsReaderStrategy(packageName: String) {
         private val fileReader = mapOf(
