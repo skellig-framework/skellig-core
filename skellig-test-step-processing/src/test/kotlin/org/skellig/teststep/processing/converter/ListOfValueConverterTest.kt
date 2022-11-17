@@ -16,22 +16,23 @@ internal class ListOfValueConverterTest {
 
     @Test
     fun testEmptyList() {
-        assertTrue((valueConverter!!.convert("listOf()") as List<*>).isEmpty())
+        assertTrue((valueConverter!!.execute("listOf", emptyArray()) as List<*>).isEmpty())
     }
 
     @Test
     fun testListWithOneElement() {
-        assertTrue((valueConverter!!.convert("listOf(abc)") as List<*>).contains("abc"))
+        val elements = "abc"
+        assertTrue((valueConverter!!.execute("listOf", arrayOf(elements)) as List<*>).contains(elements))
     }
 
     @Test
     fun testListWithFewElements() {
-        val list = valueConverter!!.convert("listOf( a,b, c)") as List<*>
+        val list = valueConverter!!.execute("listOf", arrayOf("a", "b", "c")) as List<*>
 
         assertAll(
-                { assertTrue(list.contains("a")) },
-                { assertTrue(list.contains("b")) },
-                { assertTrue(list.contains("c")) }
+            { assertTrue(list.contains("a")) },
+            { assertTrue(list.contains("b")) },
+            { assertTrue(list.contains("c")) }
         )
     }
 }
