@@ -8,30 +8,13 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.regex.Pattern
 
-class FileValueConverter(val classLoader: ClassLoader) : TestStepValueConverter, FunctionValueProcessor {
-
-    companion object {
-        private val FILE_PATTERN = Pattern.compile("fromFile\\((.+)\\)")
-    }
+class FileValueConverter(val classLoader: ClassLoader) : FunctionValueProcessor {
 
     override fun execute(name: String, args: Array<Any?>): Any =
         if (args.size == 1) {
             readFileContentFromFilePath(args[0]?.toString() ?: "")
         } else {
             throw TestDataConversionException("Function `fromFile` can only accept 1 String argument. Found ${args.size}")
-        }
-
-    override fun getFunctionName(): String = "fromFile"
-
-    override fun convert(value: Any?): Any? =
-        when (value) {
-            is String -> {
-                val matcher = FILE_PATTERN.matcher(value.toString())
-                if (matcher.find()) {
-                    readFileContentFromFilePath(matcher.group(1))
-                } else value
-            }
-            else -> value
         }
 
     private fun readFileContentFromFilePath(pathToFile: String): String {
@@ -46,4 +29,6 @@ class FileValueConverter(val classLoader: ClassLoader) : TestStepValueConverter,
             throw TestValueConversionException(String.format("File '%s' doesn't exist", pathToFile))
         }
     }
+
+    override fun getFunctionName(): String = "fromFile"
 }
