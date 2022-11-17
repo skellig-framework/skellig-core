@@ -20,7 +20,7 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
         return if (value != null) {
             if (name.isNotEmpty()) {
                 executeMethod(name, value, args)
-            } else if (args.size == 1) {
+            } else if (args.isNotEmpty()) {
                 var newValue: Any? = value
                 args.mapNotNull { key -> processKey(key?.toString()) }
                     .forEach { key ->
