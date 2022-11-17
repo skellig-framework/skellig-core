@@ -14,56 +14,22 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.stream.Collectors
 
-class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestStepValueConverter, FunctionValueProcessor {
-
-    companion object {
-        private const val ROW_KEYWORD = "row"
-        private const val CSV_KEYWORD = "csv"
-        private const val FILE_KEYWORD = "file"
-    }
+class TestDataFromCsvConverter(val classLoader: ClassLoader) : FunctionValueProcessor {
 
     override fun execute(name: String, args: Array<Any?>): Any? {
-        if (args.size == 1) {
-            var newTestData = args[0]
-            if (newTestData is Map<*, *>) {
-                if (newTestData.containsKey(CSV_KEYWORD)) {
-                    val csv = newTestData[CSV_KEYWORD] as Map<String, Any?>
-                    val csvFile = csv[FILE_KEYWORD] as String?
-                    newTestData = readCsvFile(csvFile, getRowFilter(csv))
-                }
-            } else if (newTestData is String) {
-                val csvFile = newTestData
-                newTestData = readCsvFile(csvFile, getRowFilter(null))
-            }
-            return newTestData
-        } else {
-            throw TestDataConversionException("Function `csv` can only accept 1 argument. Found ${args.size}")
-        }
+        return if (args.isNotEmpty()) {
+            val csvFile = args[0] as String
+            val filter = if (args.size == 2 && args[1] is Map<*, *>) args[1] as Map<String, Any?> else null
+            readCsvFile(csvFile, getRowFilter(filter))
+        } else throw TestDataConversionException("Function `csv` can only accept 1 or 2 arguments. Found ${args.size}")
     }
 
-    override fun getFunctionName(): String = "fromCsv"
-
-    override fun convert(value: Any?): Any? {
-        var newTestData = value
-        if (newTestData is Map<*, *>) {
-            if (newTestData.containsKey(CSV_KEYWORD)) {
-                val csv = newTestData[CSV_KEYWORD] as Map<String, Any?>
-                val csvFile = csv[FILE_KEYWORD] as String?
-                newTestData = readCsvFile(csvFile, getRowFilter(csv))
-            }
-        }
-        return newTestData
-    }
-
-    private fun getRowFilter(csvDetails: Map<String, Any?>?): Predicate<Map<String, String>> {
-        return if (csvDetails?.containsKey(ROW_KEYWORD) == true) {
-            val row = csvDetails[ROW_KEYWORD] as Map<String, Any?>
+    private fun getRowFilter(rowFilter: Map<String, Any?>?): Predicate<Map<String, String>> {
+        return if (rowFilter != null) {
             Predicate { item: Map<String, String> ->
-                row.entries.all { item.containsKey(it.key) && item[it.key] == it.value }
+                rowFilter.entries.all { item.containsKey(it.key) && item[it.key] == it.value }
             }
-        } else {
-            Predicate { true }
-        }
+        } else Predicate { true }
     }
 
     private fun readCsvFile(fileName: String?, rowFilter: Predicate<Map<String, String>>): List<Map<String, String>> {
@@ -71,17 +37,19 @@ class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestStepValueConv
         val pathToFile = getPathToFile(fileName)
         if (Files.exists(pathToFile)) {
             readCsvContainer(pathToFile)
-                    .let { csvContainer ->
-                        csvContainer?.rows?.forEach(Consumer { csvRow: CsvRow ->
-                            val row = csvRow.fieldMap.entries.stream()
-                                    .collect(Collectors.toMap<Map.Entry<String, String>, String, String>(
-                                            { entry: Map.Entry<String, String> -> entry.key.trim { it <= ' ' } },
-                                            { entry: Map.Entry<String, String> -> entry.value.trim { it <= ' ' } }))
-                            if (rowFilter.test(row)) {
-                                result.add(row)
-                            }
-                        })
-                    }
+                .let { csvContainer ->
+                    csvContainer?.rows?.forEach(Consumer { csvRow: CsvRow ->
+                        val row = csvRow.fieldMap.entries.stream()
+                            .collect(
+                                Collectors.toMap<Map.Entry<String, String>, String, String>(
+                                    { entry: Map.Entry<String, String> -> entry.key.trim { it <= ' ' } },
+                                    { entry: Map.Entry<String, String> -> entry.value.trim { it <= ' ' } })
+                            )
+                        if (rowFilter.test(row)) {
+                            result.add(row)
+                        }
+                    })
+                }
         } else {
             throw TestDataConversionException(String.format("File %s does not exist", fileName))
         }
@@ -110,4 +78,6 @@ class TestDataFromCsvConverter(val classLoader: ClassLoader) : TestStepValueConv
             null
         }
     }
+
+    override fun getFunctionName(): String = "fromCsv"
 }
