@@ -65,7 +65,7 @@ class TestDataFromFTLConverter(
     }
 
     private fun getDataModel(templateDetails: Map<String, Any?>): Map<String, *> {
-        val dataModel = testDataFromCsvConverter.convert(templateDetails)
+        val dataModel = testDataFromCsvConverter.execute("", arrayOf(templateDetails))
         return if (dataModel is List<*>) {
             (dataModel as List<Map<String, String?>>).firstOrNull() ?: mapOf<String, Any>()
         } else {
