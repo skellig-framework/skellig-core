@@ -10,11 +10,9 @@ import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.regex.Pattern
 
-class IncrementValueConverter : TestStepValueConverter, FunctionValueProcessor {
+class IncrementValueConverter : FunctionValueProcessor {
 
     companion object {
-        private val NAMED_INCREMENT_REGEX = Pattern.compile("inc\\((.*)\\)")
-        private val SPLIT_COMMA_REGEX = Pattern.compile(",")
         private val SPLIT_SPACE_REGEX = Pattern.compile(" ")
         const val DEFAULT_INC_NAME = "skellig_default"
         const val FILE_NAME = "skellig-inc.tmp"
@@ -25,19 +23,13 @@ class IncrementValueConverter : TestStepValueConverter, FunctionValueProcessor {
         var key: String? = null
         if (args.size == 2) {
             key = args[0]?.toString()?.trim { it <= ' ' }
-            maxLength = args[1]?.toString()?.trim { it <= ' ' }?.toInt() ?: maxLength
+            maxLength = args[1]?.toString()?.toInt() ?: maxLength
         } else if (args.size == 1) {
-            val firstParameter = args[0]?.toString()?.trim { it <= ' ' } ?: ""
+            val firstParameter = args[0]?.toString() ?: ""
             when {
-                isNumber(firstParameter) -> {
-                    maxLength = firstParameter.toInt()
-                }
-                firstParameter.isNotEmpty() -> {
-                    key = firstParameter
-                }
-                else -> {
-                    key = DEFAULT_INC_NAME
-                }
+                isNumber(firstParameter) -> maxLength = firstParameter.toInt()
+                firstParameter.isNotEmpty() -> key = firstParameter
+                else -> key = DEFAULT_INC_NAME
             }
         }
         val currentValue = getCurrentValue(key, maxLength)
@@ -48,46 +40,6 @@ class IncrementValueConverter : TestStepValueConverter, FunctionValueProcessor {
         replaceOldValueInFile(key, result, currentValue != null)
         return result
     }
-
-    override fun getFunctionName(): String = "inc"
-
-    override fun convert(value: Any?): Any? =
-        when (value) {
-            is String -> {
-                val matcher = NAMED_INCREMENT_REGEX.matcher(value.toString())
-                var result = value
-                if (matcher.find()) {
-                    var maxLength = 1
-                    var key: String? = null
-                    val params = SPLIT_COMMA_REGEX.split(matcher.group(1))
-                    if (params.size == 2) {
-                        key = params[0].trim { it <= ' ' }
-                        maxLength = params[1].trim { it <= ' ' }.toInt()
-                    } else if (params.size == 1) {
-                        val firstParameter = params[0].trim { it <= ' ' }
-                        when {
-                            isNumber(firstParameter) -> {
-                                maxLength = firstParameter.toInt()
-                            }
-                            firstParameter.isNotEmpty() -> {
-                                key = firstParameter
-                            }
-                            else -> {
-                                key = DEFAULT_INC_NAME
-                            }
-                        }
-                    }
-                    val currentValue = getCurrentValue(key, maxLength)
-                    result = incrementAndGet(
-                        currentValue ?: getDefaultValue(maxLength),
-                        if (maxLength == 1 && currentValue != null) currentValue.length else maxLength
-                    )
-                    replaceOldValueInFile(key, result, currentValue != null)
-                }
-                result
-            }
-            else -> value
-        }
 
     private fun incrementAndGet(valueToIncrement: String, maxLength: Int): String {
         val incrementedValue = valueToIncrement.toInt() + 1
@@ -153,4 +105,6 @@ class IncrementValueConverter : TestStepValueConverter, FunctionValueProcessor {
         Files.write(pathToFile, newLines)
 
     }
+
+    override fun getFunctionName(): String = "inc"
 }
