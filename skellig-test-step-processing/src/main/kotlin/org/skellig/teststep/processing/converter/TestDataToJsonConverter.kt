@@ -6,12 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.experiment.FunctionValueProcessor
 
-
-class TestDataToJsonConverter : TestStepValueConverter, FunctionValueProcessor {
-
-    companion object {
-        private const val JSON_KEYWORD = "json"
-    }
+class TestDataToJsonConverter : FunctionValueProcessor {
 
     private val jsonSerializer = ObjectMapper()
 
@@ -33,15 +28,4 @@ class TestDataToJsonConverter : TestStepValueConverter, FunctionValueProcessor {
     }
 
     override fun getFunctionName(): String = "toJson"
-
-    override fun convert(value: Any?): Any? {
-        if (value is Map<*, *>) {
-            val valueAsMap = value as Map<String, Any?>
-            if (valueAsMap.containsKey(JSON_KEYWORD)) {
-                val jsonContent = valueAsMap[JSON_KEYWORD]
-                return jsonSerializer.writeValueAsString(jsonContent)
-            }
-        }
-        return value
-    }
 }
