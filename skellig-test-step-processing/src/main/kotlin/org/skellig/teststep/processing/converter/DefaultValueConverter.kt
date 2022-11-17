@@ -48,7 +48,7 @@ class DefaultValueConverter private constructor(private val functions: Map<Strin
             withFunctionProcessor(TestStepStateValueConverter(testScenarioState!!))
 //            withFunctionProcessor(FindFromStateValueConverter(testScenarioState!!, testStepValueExtractor))
             classLoader?.let {
-                withValueConverter(FileValueConverter(it))
+                withFunctionProcessor(FileValueConverter(it))
             }
 
             withFunctionProcessor(RandomValueConverter())
