@@ -8,52 +8,20 @@ import org.skellig.teststep.processing.experiment.FunctionValueProcessor
 import java.io.StringWriter
 import java.net.URL
 
-class TestDataFromFTLConverter(
-    val classLoader: ClassLoader,
-    val testDataFromCsvConverter: TestDataFromCsvConverter
-) : TestStepValueConverter, FunctionValueProcessor {
-
-    companion object {
-        private const val TEMPLATE_KEYWORD = "template"
-        private const val FILE_KEYWORD = "file"
-    }
+class TestDataFromFTLConverter(val classLoader: ClassLoader) : FunctionValueProcessor {
 
     private var templateProvider: TemplateProvider = TemplateProvider(classLoader)
 
     override fun execute(name: String, args: Array<Any?>): Any? {
-        return if (args.size == 1) {
-            var newTestData = args[0]
-            if (newTestData is Map<*, *>) {
-                if (newTestData.containsKey(TEMPLATE_KEYWORD)) {
-                    val templateDetails = newTestData[TEMPLATE_KEYWORD] as Map<String, Any?>
-                    val file = templateDetails[FILE_KEYWORD] as String?
-                    newTestData = constructFromTemplate(templateProvider.getTemplate(file), getDataModel(templateDetails))
-                }
-            }
-            return newTestData
-        } else if (args.size == 2 && args[1] is Map<*, *>) {
-            constructFromTemplate(templateProvider.getTemplate(args[0]?.toString()), getDataModel(args[1] as Map<String, Any?>))
-        } else {
-            throw TestDataConversionException("Function `template` can only accept 1 or 2 arguments. Found ${args.size}")
-        }
+        return if (args.size == 2) {
+            val file = args[0]?.toString()
+            val templateDetails = args[1]
+            constructFromTemplate(templateProvider.getTemplate(file), templateDetails)
+        } else throw TestDataConversionException("Function `template` can only accept 2 arguments. Found ${args.size}")
+
     }
 
-    override fun getFunctionName(): String = "fromTemplate"
-
-    override fun convert(value: Any?): Any? {
-        var newTestData = value
-        if (newTestData is Map<*, *>) {
-            val valueAsMap = newTestData as Map<String, Any?>
-            if (valueAsMap.containsKey(TEMPLATE_KEYWORD)) {
-                val templateDetails = valueAsMap[TEMPLATE_KEYWORD] as Map<String, Any?>
-                val file = templateDetails[FILE_KEYWORD] as String?
-                newTestData = constructFromTemplate(templateProvider.getTemplate(file), getDataModel(templateDetails))
-            }
-        }
-        return newTestData
-    }
-
-    private fun constructFromTemplate(template: Template, dataModel: Map<String, *>?): Any {
+    private fun constructFromTemplate(template: Template, dataModel: Any?): Any {
         try {
             StringWriter().use { outMessage ->
                 template.process(dataModel, outMessage)
@@ -64,14 +32,7 @@ class TestDataFromFTLConverter(
         }
     }
 
-    private fun getDataModel(templateDetails: Map<String, Any?>): Map<String, *> {
-        val dataModel = testDataFromCsvConverter.execute("", arrayOf(templateDetails))
-        return if (dataModel is List<*>) {
-            (dataModel as List<Map<String, String?>>).firstOrNull() ?: mapOf<String, Any>()
-        } else {
-            templateDetails
-        }
-    }
+    override fun getFunctionName(): String = "fromTemplate"
 
     private class TemplateProvider(private val classLoader: ClassLoader) {
 

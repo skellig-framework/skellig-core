@@ -61,7 +61,7 @@ class DefaultValueConverter private constructor(private val functions: Map<Strin
                 val testDataFromCsvConverter = TestDataFromCsvConverter(it)
                withFunctionProcessor(testDataFromCsvConverter)
                withFunctionProcessor(TestDataFromCsvConverter(it))
-               withFunctionProcessor(TestDataFromFTLConverter(it, testDataFromCsvConverter))
+               withFunctionProcessor(TestDataFromFTLConverter(it))
                withFunctionProcessor(CustomFunctionValueConverter(classPaths, it))
             }
 
