@@ -18,18 +18,18 @@ class ToDateValueConverter : FunctionValueProcessor {
     override fun execute(name: String, args: Array<Any?>): Any? {
         return if (args.size == 1) {
             val value = args[0]?.toString()
-            parseDate(value, DATE_FORMATTER) { LocalDate.from(it) }
+            parseDate(value) { LocalDate.from(it) }
         } else {
             throw TestDataConversionException("Function `$name` can only accept 1 argument. Found ${args.size}")
         }
     }
 
-    override fun getFunctionName(): String = "toDate"
-
-    private fun parseDate(value: String?, formatter: DateTimeFormatter, query: TemporalQuery<*>) =
+    private fun parseDate(value: String?, query: TemporalQuery<*>) =
         try {
-            formatter.parse(value, query)
+            DATE_FORMATTER.parse(value, query)
         } catch (ex: Exception) {
-            throw TestValueConversionException("Failed to convert date $value by pattern $formatter");
+            throw TestValueConversionException("Failed to convert date $value by pattern $DATE_FORMATTER");
         }
+
+    override fun getFunctionName(): String = "toDate"
 }
