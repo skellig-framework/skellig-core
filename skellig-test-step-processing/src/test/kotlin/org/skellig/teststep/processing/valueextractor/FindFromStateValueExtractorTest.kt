@@ -16,6 +16,7 @@ class FindFromStateValueExtractorTest {
         val value = listOf(stateValue1, stateValue2, mock())
 
         assertEquals("v1", findFromStateValueExtractor.extractFrom("find", value, arrayOf("a", "b", "c")))
+        assertEquals(mapOf(Pair("c", "v1")), findFromStateValueExtractor.extractFrom("find", value, arrayOf("a", "b")))
     }
 
     @Test
