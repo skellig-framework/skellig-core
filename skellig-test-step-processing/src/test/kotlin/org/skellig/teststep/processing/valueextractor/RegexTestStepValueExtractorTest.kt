@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.valueextractor
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.skellig.teststep.processing.exception.ValueExtractionException
 
 class RegexTestStepValueExtractorTest {
 
@@ -14,11 +15,18 @@ class RegexTestStepValueExtractorTest {
     }
 
     @Test
+    fun testExtractByRegexFromNull() {
+        Assertions.assertThrows( ValueExtractionException::class.java) {
+            regexValueExtractor!!.extractFrom("fromRegex", null, arrayOf("(\\w+)"))
+        }
+    }
+
+    @Test
     fun testExtractByRegex() {
         val regexFilter = ".*id\\s*=\\s*([A-Z]{2}\\d{4}).*"
 
         Assertions.assertEquals("NM1100",
-                regexValueExtractor!!.extract("log data: id = NM1100, name = event", regexFilter))
+                regexValueExtractor!!.extractFrom("fromRegex", "log data: id = NM1100, name = event", arrayOf(regexFilter)))
     }
 
     @Test
@@ -26,7 +34,7 @@ class RegexTestStepValueExtractorTest {
         val regexFilter = "f1=\\w+"
 
         Assertions.assertEquals("f1=v1",
-                regexValueExtractor!!.extract("some data f1=v1 some data", regexFilter))
+                regexValueExtractor!!.extractFrom("fromRegex","some data f1=v1 some data", arrayOf(regexFilter)))
     }
 
     @Test
@@ -34,7 +42,7 @@ class RegexTestStepValueExtractorTest {
         val regexFilter = "f1=(\\w+),.*f2=(\\w+)"
 
         Assertions.assertEquals(listOf("v1", "v2"),
-                regexValueExtractor!!.extract("some data f1=v1, some data f2=v2", regexFilter))
+                regexValueExtractor!!.extractFrom("fromRegex","some data f1=v1, some data f2=v2", arrayOf(regexFilter)))
     }
 
     @Test
@@ -42,6 +50,6 @@ class RegexTestStepValueExtractorTest {
         val regexFilter = "data: ([a-z]+)"
         val value = "data: 1000"
 
-        Assertions.assertEquals(value, regexValueExtractor!!.extract(value, regexFilter))
+        Assertions.assertEquals(value, regexValueExtractor!!.extractFrom("fromRegex",value, arrayOf(regexFilter)))
     }
 }
