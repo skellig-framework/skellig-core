@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.valueextractor
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class JsonToTestStepValueExtractorTest {
@@ -10,17 +10,19 @@ class JsonToTestStepValueExtractorTest {
 
     @Test
     fun testFromEmptyJsonToMap() {
-        assertEquals(mapOf<Any, Any>(), jsonToMap.extract("{}", null))
+        assertEquals(mapOf<Any, Any>(), jsonToMap.extractFrom("jsonToMap", "{}", arrayOf(null)))
     }
 
     @Test
     fun testFromSimpleJsonToMap() {
-        assertEquals(mapOf<Any, Any>(
-            Pair("f1", "v1"),
-            Pair("f2", listOf("a", "b")),
-            Pair("f3", mapOf(Pair("f4", 10))),
-        ),
-            jsonToMap.extract(
+        assertEquals(
+            mapOf<Any, Any>(
+                Pair("f1", "v1"),
+                Pair("f2", listOf("a", "b")),
+                Pair("f3", mapOf(Pair("f4", 10))),
+            ),
+            jsonToMap.extractFrom(
+                "jsonToMap",
                 """
                 {
                    "f1": "v1",
@@ -29,17 +31,20 @@ class JsonToTestStepValueExtractorTest {
                       "f4": 10
                    }
                 }
-                """.trimIndent(), null))
+                """.trimIndent(), arrayOf(null)
+            )
+        )
     }
 
     @Test
     fun testFromSimpleJsonToList() {
         assertEquals(
             listOf(
-               mapOf(Pair("f1", "v1"), Pair("f2", "v2")),
-               mapOf(Pair("f1", "v3"), Pair("f2", "v4"))
+                mapOf(Pair("f1", "v1"), Pair("f2", "v2")),
+                mapOf(Pair("f1", "v3"), Pair("f2", "v4"))
             ),
-            jsonToList.extract(
+            jsonToList.extractFrom(
+                "jsonToList",
                 """
                 [
                     {
@@ -51,16 +56,18 @@ class JsonToTestStepValueExtractorTest {
                       "f2": "v4"
                     }
                 ]
-                """.trimIndent(), null))
+                """.trimIndent(), arrayOf(null)
+            )
+        )
     }
 
     @Test
     fun testFromNullOrEmptyStringJson() {
-        assertEquals(emptyMap<Any, Any>(), jsonToMap.extract(null, null))
-        assertEquals(emptyList<Any>(), jsonToList.extract(null, null))
+        assertEquals(emptyMap<Any, Any>(), jsonToMap.extractFrom("jsonToMap", null, arrayOf(null)))
+        assertEquals(emptyList<Any>(), jsonToList.extractFrom("jsonToList", null, arrayOf(null)))
 
-        assertEquals(emptyMap<Any, Any>(), jsonToMap.extract("", null))
-        assertEquals(emptyList<Any>(), jsonToList.extract("", null))
+        assertEquals(emptyMap<Any, Any>(), jsonToMap.extractFrom("jsonToMap", "", arrayOf(null)))
+        assertEquals(emptyList<Any>(), jsonToList.extractFrom("jsonToList", "", arrayOf(null)))
     }
 
 }
