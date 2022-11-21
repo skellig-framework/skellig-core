@@ -22,7 +22,6 @@ private constructor(private val extractors: Map<String, ValueExtractor>) : Value
         }
 
         fun build(): ValueExtractor {
-            withValueExtractor(ConcatTestStepValueExtractor())
             withValueExtractor(JsonPathTestStepValueExtractor())
             withValueExtractor(JsonToMapTestStepValueExtractor())
             withValueExtractor(JsonToListTestStepValueExtractor())
