@@ -14,7 +14,7 @@ class XPathTestStepValueExtractorTest {
             </Root>
         """.trimIndent()
 
-        assertEquals("data", extractor.extract(xml, "/Root/Sample"))
+        assertEquals("data", extractor.extractFrom("xpath", xml, arrayOf("/Root/Sample")))
     }
 
     @Test
@@ -29,7 +29,7 @@ class XPathTestStepValueExtractorTest {
             </Root>
         """.trimIndent()
 
-        assertEquals("data 2", extractor.extract(xml, "/Root/Samples/Item[2]"))
+        assertEquals("data 2", extractor.extractFrom("xpath", xml, arrayOf("/Root/Samples/Item[2]")))
     }
 
     @Test
@@ -54,7 +54,7 @@ class XPathTestStepValueExtractorTest {
             </Root>
         """.trimIndent()
 
-        assertEquals("data 2", extractor.extract(xml, "/Root/Samples//*[text() = '2']/ancestor::Item/Name"))
+        assertEquals("data 2", extractor.extractFrom("xpath", xml, arrayOf("/Root/Samples//*[text() = '2']/ancestor::Item/Name")))
     }
 
     @Test
@@ -69,6 +69,6 @@ class XPathTestStepValueExtractorTest {
             </Root>
         """.trimIndent()
 
-        assertEquals("data 1", extractor.extract(xml, "/Root/Samples/Item[@id='id1']"))
+        assertEquals("data 1", extractor.extractFrom("xpath", xml, arrayOf("/Root/Samples/Item[@id='id1']")))
     }
 }

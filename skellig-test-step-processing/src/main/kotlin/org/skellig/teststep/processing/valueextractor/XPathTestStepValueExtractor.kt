@@ -11,7 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-class XPathTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
+class XPathTestStepValueExtractor : ValueExtractor {
 
     override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
         if (args.size == 1) {
@@ -29,20 +29,6 @@ class XPathTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
         } else throw TestDataConversionException("Function `xpath` can only accept 1 String argument. Found ${args.size}")
     }
 
-    override fun extract(value: Any?, extractionParameter: String?): Any? {
-        value?.let {
-            try {
-                StringReader(it as String).use { xmlReader ->
-                    val xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(xmlReader))
-                    return extractDataFromXpath(xml, extractionParameter!!)
-                }
-            } catch (ex: Exception) {
-                return null
-            }
-        } ?: throw ValueExtractionException(format("Cannot extract xPath '%s' from null value", extractionParameter))
-    }
-
-    @Throws(Exception::class)
     private fun extractDataFromXpath(document: Document, xpath: String): String {
         val xPathExpression = XPathFactory.newInstance().newXPath().compile(xpath)
         return xPathExpression.evaluate(document, XPathConstants.STRING).toString().trim { it <= ' ' }
