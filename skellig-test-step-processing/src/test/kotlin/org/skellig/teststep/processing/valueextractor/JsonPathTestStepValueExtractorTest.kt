@@ -10,23 +10,23 @@ internal class JsonPathTestStepValueExtractorTest {
 
     @Test
     fun testExtractFromJson() {
-        assertEquals("1", extractor.extract(createJson(), "a"))
+        assertEquals("1", extractor.extractFrom("jsonPath", createJson(), arrayOf("a")))
     }
 
     @Test
     fun testExtractFromJsonValueWhichDoesNotExist() {
-        assertNull(extractor.extract(createJson(), "ggg"))
+        assertNull(extractor.extractFrom("jsonPath", createJson(), arrayOf("ggg")))
     }
 
     @Test
     fun testExtractComplexValueFromJson() {
-        assertEquals("[d:v2, g:[1, 2, 3]]", extractor.extract(createJson(), "c"))
+        assertEquals("[d:v2, g:[1, 2, 3]]", extractor.extractFrom("jsonPath", createJson(), arrayOf("c")))
     }
 
     @Test
     fun testExtractFromInvalidJson() {
         val ex = assertThrows(ValueExtractionException::class.java) {
-            extractor.extract("invalid", "b")
+            extractor.extractFrom("jsonPath", "invalid", arrayOf("b"))
         }
 
         assertEquals("Failed to extract jsonPath 'b' from value 'invalid'. Reason Failed to parse the JSON document", ex.message)
@@ -34,17 +34,17 @@ internal class JsonPathTestStepValueExtractorTest {
 
     @Test
     fun testExtractFromInvalidJsonWithSkipFailure() {
-        assertNull(extractor.extract("invalid json", "c, true"))
+        assertNull(extractor.extractFrom("jsonPath", "invalid json", arrayOf("c", "true")))
     }
 
     @Test
     fun testExtractFromNullJson() {
-        assertNull(extractor.extract(null, "c"))
+        assertNull(extractor.extractFrom("jsonPath", null, arrayOf("c")))
     }
 
     @Test
     fun testExtractByEmptyJsonPath() {
-        assertEquals("[a:1, b:v1, c:[d:v2, g:[1, 2, 3]]]", extractor.extract(createJson(), ""))
+        assertEquals("[a:1, b:v1, c:[d:v2, g:[1, 2, 3]]]", extractor.extractFrom("jsonPath", createJson(), arrayOf("")))
     }
 
     private fun createJson() = """
