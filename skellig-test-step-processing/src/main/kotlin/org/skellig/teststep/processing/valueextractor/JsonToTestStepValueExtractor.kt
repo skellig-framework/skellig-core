@@ -23,28 +23,12 @@ class JsonToListTestStepValueExtractor : JsonToTestStepValueExtractor() {
 
 }
 
-abstract class JsonToTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
+abstract class JsonToTestStepValueExtractor : ValueExtractor {
 
     private val objectMapper = ObjectMapper()
 
     override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
         val valueAsString = value?.toString() ?: ""
-        return if (value == null || valueAsString.isEmpty()) {
-            getDefaultValueForNull()
-        } else {
-            try {
-                objectMapper.readValue(value.toString(), getToClassConversion())
-            } catch (ex: Exception) {
-                throw ValueExtractionException(
-                    "Failed to convert JSON to ${getToClassConversion().simpleName}: '$value'",
-                    ex
-                )
-            }
-        }
-    }
-
-    override fun extract(value: Any?, extractionParameter: String?): Any {
-        val valueAsString = value.toString()
         return if (value == null || valueAsString.isEmpty()) {
             getDefaultValueForNull()
         } else {
