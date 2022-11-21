@@ -9,6 +9,6 @@ internal class SubStringLastTestStepValueExtractorTest {
 
     @Test
     fun testSubstringLast() {
-        assertEquals("c", valueExtractor.extract("a/b/c", "/"))
+        assertEquals("c", valueExtractor.extractFrom("subString", "a/b/c", arrayOf("/")))
     }
 }

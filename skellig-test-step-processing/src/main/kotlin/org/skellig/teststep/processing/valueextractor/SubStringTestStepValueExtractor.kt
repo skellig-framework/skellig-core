@@ -5,7 +5,7 @@ import org.skellig.teststep.processing.exception.ValueExtractionException
 import org.skellig.teststep.processing.experiment.ValueExtractor
 import java.lang.String.format
 
-open class SubStringTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
+open class SubStringTestStepValueExtractor : ValueExtractor {
 
     override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
         if (args.size == 1) {
@@ -20,16 +20,6 @@ open class SubStringTestStepValueExtractor : TestStepValueExtractor, ValueExtrac
         } else {
             throw TestDataConversionException("Function `subString` can only accept 1 String argument. Found ${args.size}")
         }
-    }
-
-    override fun extract(value: Any?, extractionParameter: String?): Any {
-        return value?.let {
-            var newValue: String = value as String
-            extractionParameter?.let {
-                newValue = subStringAfter(newValue, it)
-            }
-            return newValue
-        } ?: throw ValueExtractionException(format("Cannot extract sub string '%s' from null value", extractionParameter))
     }
 
     protected open fun subStringAfter(value: String, after: String): String {
