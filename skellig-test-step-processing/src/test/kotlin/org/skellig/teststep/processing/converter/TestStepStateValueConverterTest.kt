@@ -21,6 +21,14 @@ class TestStepStateValueConverterTest {
     }
 
     @Test
+    fun testGetSimpleValueFromStateWhenKeyNull() {
+        val ex = Assertions.assertThrows(TestDataConversionException::class.java) {
+            testStepStateValueConverter!!.execute("get", arrayOf(null))
+        }
+        Assertions.assertEquals("No data found in Test Scenario State with key `null`", ex.message)
+    }
+
+    @Test
     fun testGetSimpleValueFromState() {
         val expectedResult = "v1"
         whenever(testScenarioState!!.get("key")).thenReturn(expectedResult)
