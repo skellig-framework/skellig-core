@@ -6,20 +6,20 @@ import java.nio.charset.Charset
 
 class ToStringTestStepValueExtractorTest {
 
-    val extractor = ToStringTestStepValueExtractor()
+    private val extractor = ToStringTestStepValueExtractor()
 
     @Test
     fun testToStringByteArray() {
         val expectedValue = "hello"
 
-        assertEquals(expectedValue, extractor.extract(expectedValue.toByteArray(), ""))
+        assertEquals(expectedValue, extractor.extractFrom("toString", expectedValue.toByteArray(), emptyArray()))
     }
 
     @Test
     fun testToStringObject() {
         val expectedValue = Any()
 
-        assertEquals(expectedValue.toString(), extractor.extract(expectedValue, ""))
+        assertEquals(expectedValue.toString(), extractor.extractFrom("toString", expectedValue, emptyArray()))
     }
 
     @Test
@@ -27,6 +27,6 @@ class ToStringTestStepValueExtractorTest {
         val charset = Charset.forName("utf16")
         val expectedValue = "hello".toByteArray(charset)
 
-        assertEquals(expectedValue.toString(charset), extractor.extract(expectedValue, "utf16"))
+        assertEquals(expectedValue.toString(charset), extractor.extractFrom("toString", expectedValue, arrayOf("utf16")))
     }
 }
