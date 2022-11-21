@@ -10,23 +10,23 @@ class ToNumberTestStepValueExtractorTest {
 
     @Test
     fun testToNumber() {
-        assertEquals(BigDecimal("100"), ToBigDecimalTestStepValueExtractor().extract("100", null));
+        assertEquals(BigDecimal("100"), ToBigDecimalTestStepValueExtractor().extractFrom("toBigDecimal", "100", arrayOf(null)))
     }
 
     @Test
     fun testToDoubleFromInteger() {
-        assertEquals(100.0, ToDoubleTestStepValueExtractor().extract(100, null));
+        assertEquals(100.0, ToDoubleTestStepValueExtractor().extractFrom("toBigDecimal", 100, arrayOf(null)))
     }
 
     @Test
     fun testToNumberWhenNotString() {
         assertThrows<ValueExtractionException>("Failed to extract numeric value from type class kotlin.collections.EmptyList")
-        { ToBigDecimalTestStepValueExtractor().extract(listOf<String>(), null) }
+        { ToBigDecimalTestStepValueExtractor().extractFrom("toBigDecimal", listOf<String>(), arrayOf(null)) }
     }
 
     @Test
     fun testToNumberWhenNull() {
         assertThrows<ValueExtractionException>("Failed to extract numeric value from type null")
-        { ToBigDecimalTestStepValueExtractor().extract(null, null) }
+        { ToBigDecimalTestStepValueExtractor().extractFrom("toBigDecimal", null, arrayOf(null)) }
     }
 }
