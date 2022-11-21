@@ -9,21 +9,21 @@ internal class SubStringTestStepValueExtractorTest {
 
     @Test
     fun testSubstringWithNullParams() {
-        assertEquals("a/b/c", valueExtractor.extract("a/b/c", null))
+        assertEquals("a/b/c", valueExtractor.extractFrom("subString","a/b/c", arrayOf(null)))
     }
 
     @Test
     fun testSubstringWithoutParams() {
-        assertEquals("a/b/c", valueExtractor.extract("a/b/c", ""))
+        assertEquals("a/b/c", valueExtractor.extractFrom("subString","a/b/c", arrayOf("")))
     }
 
     @Test
     fun testSubstringWithNonExistentDelimiter() {
-        assertEquals("a/b/c", valueExtractor.extract("a/b/c", ","))
+        assertEquals("a/b/c", valueExtractor.extractFrom("subString","a/b/c", arrayOf(",")))
     }
 
     @Test
     fun testSubstringFirst() {
-        assertEquals("b/c", valueExtractor.extract("a/b/c", "/"))
+        assertEquals("b/c", valueExtractor.extractFrom("subString", "a/b/c", arrayOf("/")))
     }
 }
