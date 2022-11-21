@@ -7,7 +7,7 @@ import java.lang.String.format
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class RegexTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
+class RegexTestStepValueExtractor : ValueExtractor {
 
     override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any {
         if (args.size == 1) {
@@ -26,18 +26,6 @@ class RegexTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
         }
     }
 
-    override fun extract(value: Any?, extractionParameter: String?): Any? {
-        return value?.let {
-            val matcher = Pattern.compile(extractionParameter?: "").matcher(it as String)
-            val result = extractGroups(matcher)
-            return when {
-                result.size == 1 -> result.first()
-                result.size > 1 -> result
-                else -> value
-            }
-        } ?: throw ValueExtractionException(format("Cannot extract '%s' from null value", extractionParameter))
-    }
-
     private fun extractGroups(matcher: Matcher): MutableList<String> {
         val result = mutableListOf<String>()
         while (matcher.find()) {
@@ -49,6 +37,6 @@ class RegexTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
     }
 
     override fun getExtractFunctionName(): String {
-        return "regex"
+        return "fromRegex"
     }
 }
