@@ -24,13 +24,13 @@ class ObjectTestStepValueExtractorTest {
     @Test
     @DisplayName("Extract from Map last String value")
     fun testExtractFromMapStringValue() {
-        Assertions.assertEquals("v3", valueExtractor!!.extract(getTestMap(), "f1.f2.f3"))
+        Assertions.assertEquals("v3", valueExtractor!!.extractFrom("", getTestMap(), arrayOf("f1","f2", "f3")))
     }
 
     @Test
     @DisplayName("Extract from Map internal Map")
     fun testExtractFromMap() {
-        val response = valueExtractor!!.extract(getTestMap(), "f1.f2")
+        val response = valueExtractor!!.extractFrom("", getTestMap(), arrayOf("f1", "f2"))
 
         Assertions.assertTrue((response as Map<*, *>?)!!.containsKey("f3"))
     }
@@ -60,25 +60,24 @@ class ObjectTestStepValueExtractorTest {
     @Test
     @DisplayName("Extract from object where method not found")
     fun testExtractFromObjectWhenMethodNotFound() {
-        Assertions.assertThrows(ValueExtractionException::class.java) { valueExtractor!!.extract(Any(), "param") }
+        Assertions.assertThrows(ValueExtractionException::class.java) { valueExtractor!!.extractFrom("", Any(), arrayOf("param")) }
     }
 
     @Test
     @DisplayName("Extract by key with spaces and dots")
     fun testExtractByKeyWithSpacesAndDots() {
         val map = mapOf(
-                Pair("a.b.c", 1),
-                Pair("a b.c", 2),
-                Pair("a.b ", mapOf(Pair("d", 3))),
+            Pair("a.b.c", 1),
+            Pair("a b.c", 2),
+            Pair("a.b ", mapOf(Pair("d", 3))),
         )
 
         Assertions.assertAll(
-                { Assertions.assertEquals(1, valueExtractor!!.extract(map, "\"a.b.c\"")) },
-                { Assertions.assertEquals(1, valueExtractor!!.extract(map, "'a.b.c'")) },
-                { Assertions.assertEquals(2, valueExtractor!!.extract(map, "'a b.c'")) },
-                { Assertions.assertEquals(3, valueExtractor!!.extract(map, "'a.b '.d")) },
+            { Assertions.assertEquals(1, valueExtractor!!.extractFrom("", map, arrayOf("a.b.c"))) },
+            { Assertions.assertEquals(1, valueExtractor!!.extractFrom("", map, arrayOf("a.b.c"))) },
+            { Assertions.assertEquals(2, valueExtractor!!.extractFrom("", map, arrayOf("a b.c"))) },
+            { Assertions.assertEquals(3, valueExtractor!!.extractFrom("", map, arrayOf("a.b ","d"))) },
         )
-
     }
 
     private fun getTestMap(): MutableMap<Any, Any> {

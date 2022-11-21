@@ -4,17 +4,11 @@ import org.skellig.teststep.processing.exception.ValueExtractionException
 import org.skellig.teststep.processing.experiment.ValueExtractor
 import java.beans.IntrospectionException
 import java.beans.Introspector
-import java.lang.String.format
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
-import java.util.regex.Pattern
 
 
-class ObjectTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
-
-    companion object {
-        private val PATH_SEPARATOR = Pattern.compile("\\.(?=(?:[^\"']*['\"][^'\"]*['\"])*[^'\"]*\$)")
-    }
+class ObjectTestStepValueExtractor : ValueExtractor {
 
     override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
         return if (value != null) {
@@ -33,22 +27,6 @@ class ObjectTestStepValueExtractor : TestStepValueExtractor, ValueExtractor {
                 newValue
             } else throw ValueExtractionException("Invalid number of argument provided for extraction of value. Expected 1, found: ${args.size}")
         } else throw ValueExtractionException("Cannot extract '${args.firstOrNull() ?: ""}' from null value")
-    }
-
-    override fun extract(value: Any?, extractionParameter: String?): Any? {
-        value?.let {
-            var newValue: Any? = it
-            PATH_SEPARATOR.split(extractionParameter)
-                .mapNotNull { key -> processKey(key) }
-                .forEach { key ->
-                    if (newValue is Map<*, *>) {
-                        newValue = extractValueFromMap(newValue as Map<*, *>, key)
-                    } else if (newValue != null) {
-                        newValue = extractValueFromObject(key, newValue)
-                    }
-                }
-            return newValue
-        } ?: throw ValueExtractionException(format("Cannot extract '%s' from null value", extractionParameter))
     }
 
     private fun extractValueFromMap(value: Any, key: String): Any? {
