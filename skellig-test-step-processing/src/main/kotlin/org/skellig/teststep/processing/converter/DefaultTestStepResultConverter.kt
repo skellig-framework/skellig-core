@@ -1,13 +1,14 @@
 package org.skellig.teststep.processing.converter
 
-import org.skellig.teststep.processing.experiment.FunctionValueProcessor
+import org.skellig.teststep.processing.value.function.FunctionValueExecutor
+
 
 class DefaultTestStepResultConverter private constructor(val testStepResultConverters: Map<String, TestStepResultConverter>) :
     TestStepResultConverter,
-    FunctionValueProcessor {
+    FunctionValueExecutor {
 
     override fun execute(name: String, args: Array<Any?>): Any? {
-        return (testStepResultConverters[name] as FunctionValueProcessor?)?.execute(name, args)
+        return (testStepResultConverters[name] as FunctionValueExecutor?)?.execute(name, args)
     }
 
     override fun getFunctionName(): String = ""

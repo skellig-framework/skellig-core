@@ -5,14 +5,14 @@ import com.nhaarman.mockitokotlin2.whenever
 import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
-import org.skellig.teststep.processing.converter.DefaultValueConverter
-import org.skellig.teststep.processing.experiment.DefaultPropertyExtractor
-import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
+import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
+import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
-import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
+import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import java.util.*
 
 @DisplayName("Create Test Step")
@@ -29,8 +29,8 @@ class DefaultTestStepFactoryTest {
             .withTestStepValueConverter(
                 TestStepFactoryValueConverter.Builder()
                     .withValueProcessingVisitor(
-                        ValueProcessingVisitor(
-                            DefaultValueConverter.Builder()
+                        RawValueProcessingVisitor(
+                            DefaultFunctionValueExecutor.Builder()
                                 .withTestScenarioState(testScenarioState)
                                 .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
                                 .build(),

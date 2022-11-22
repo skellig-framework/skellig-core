@@ -5,9 +5,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.converter.DefaultValueConverter
-import org.skellig.teststep.processing.experiment.FunctionValueProcessor
-import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
+import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.MatchingType
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
@@ -24,7 +23,8 @@ class ValidationDetailsFactoryTest {
             .withTestStepValueConverter(
                 TestStepFactoryValueConverter.Builder()
                     .withValueProcessingVisitor(
-                        ValueProcessingVisitor(DefaultValueConverter.Builder()
+                        RawValueProcessingVisitor(
+                            DefaultFunctionValueExecutor.Builder()
                             .withTestScenarioState(DefaultTestScenarioState()).build(),
                         mock(), mock(), mock())
                     )
