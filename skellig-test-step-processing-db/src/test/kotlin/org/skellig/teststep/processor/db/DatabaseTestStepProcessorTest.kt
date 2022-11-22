@@ -9,13 +9,12 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.skellig.teststep.processing.converter.TestStepResultConverter
-import org.skellig.teststep.processing.experiment.ValueExtractor
-import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator
 import org.skellig.teststep.processing.validation.comparator.ValueComparator
-import org.skellig.teststep.processing.valueextractor.TestStepValueExtractor
+import org.skellig.teststep.processing.value.extractor.ValueExtractor
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 
 @DisplayName("Process database test step")
@@ -40,9 +39,7 @@ class DatabaseTestStepProcessorTest {
         databaseTestStepProcessor = object : DatabaseTestStepProcessor<DatabaseRequestExecutor, TestDatabaseTestStep>(
                 dbServers, mock(TestScenarioState::class.java),
                 DefaultTestStepResultValidator.Builder()
-                        .withValueComparator(mock(ValueComparator::class.java))
-                        .withValueExtractor(mock(ValueExtractor::class.java))
-                        .withValueProcessingVisitor(mock(ValueProcessingVisitor::class.java))
+                        .withValueProcessingVisitor(mock(RawValueProcessingVisitor::class.java))
                         .build(),
                 testStepResultConverter
         ) {

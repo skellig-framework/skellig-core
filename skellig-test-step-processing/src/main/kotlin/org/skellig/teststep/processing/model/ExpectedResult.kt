@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.model
 
-import org.skellig.teststep.processing.experiment.ConvertedValueChunk
-import org.skellig.teststep.processing.experiment.SimpleValue
+import org.skellig.teststep.processing.value.chunk.RawValueChunk
+import org.skellig.teststep.processing.value.chunk.SimpleValue
 
 /**
  * Defines a property and its expected value from the actual result of a processed test step.
@@ -16,7 +16,7 @@ import org.skellig.teststep.processing.experiment.SimpleValue
  * @see MatchingType
  */
 class ExpectedResult(
-    var property: ConvertedValueChunk? = null,
+    var property: RawValueChunk? = null,
     var expectedResult: Any? = null,
     var matchingType: MatchingType? = null
 ) {

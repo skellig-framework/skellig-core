@@ -1,26 +1,26 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.experiment.ConvertedValueChunkBuilder
-import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
+import org.skellig.teststep.processing.value.chunk.RawValueChunkParser
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 
-open class TestStepFactoryValueConverter private constructor(private val valueProcessingVisitor: ValueProcessingVisitor) {
+open class TestStepFactoryValueConverter private constructor(private val rawValueProcessingVisitor: RawValueProcessingVisitor) {
 
     companion object {
         private val notToParseValues = mutableSetOf<String>()
     }
 
-    private val converter = ConvertedValueChunkBuilder()
+    private val rawValueChunkParser = RawValueChunkParser()
 
     open fun <T> convertValue(result: Any?, parameters: Map<String, Any?>): T? =
         when (result) {
             is Map<*, *> -> result.entries.associate {
-                val newKey = valueProcessingVisitor.process(converter.buildFrom(it.key.toString(), parameters))
+                val newKey = rawValueProcessingVisitor.process(rawValueChunkParser.buildFrom(it.key.toString(), parameters))
                 newKey to convertValue<T>(it.value, parameters)
             }
             is Collection<*> -> result.map { convertValue<T>(it, parameters) }.toList()
             is String -> {
                 if (!notToParseValues.contains(result)) {
-                    val newResult = valueProcessingVisitor.process(converter.buildFrom(result, parameters)) ?: result
+                    val newResult = rawValueProcessingVisitor.process(rawValueChunkParser.buildFrom(result, parameters)) ?: result
                     if (newResult == result) notToParseValues.add(result)
                     newResult
                 } else result
@@ -29,14 +29,14 @@ open class TestStepFactoryValueConverter private constructor(private val valuePr
         } as T?
 
     class Builder {
-        private var valueProcessingVisitor: ValueProcessingVisitor? = null
+        private var rawValueProcessingVisitor: RawValueProcessingVisitor? = null
 
-        fun withValueProcessingVisitor(valueProcessingVisitor: ValueProcessingVisitor?) =
-            apply { this.valueProcessingVisitor = valueProcessingVisitor }
+        fun withValueProcessingVisitor(rawValueProcessingVisitor: RawValueProcessingVisitor?) =
+            apply { this.rawValueProcessingVisitor = rawValueProcessingVisitor }
 
         fun build(): TestStepFactoryValueConverter {
             return TestStepFactoryValueConverter(
-                valueProcessingVisitor ?: error("ValueProcessingVisitor is mandatory"),
+                rawValueProcessingVisitor ?: error("ValueProcessingVisitor is mandatory"),
             )
         }
 

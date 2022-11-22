@@ -26,7 +26,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         private var testDataKeywords: Set<String>? = null
     }
 
-    private var validationDetailsFactory = ValidationDetailsFactory(keywordsProperties, testStepFactoryValueConverter)
+    private var validationDetailsFactory = ValidationDetailsFactory(keywordsProperties)
 
     init {
         testDataKeywords = setOf(

@@ -1,20 +1,14 @@
 package org.skellig.teststep.processing.validation
 
 import org.skellig.teststep.processing.exception.ValidationException
-import org.skellig.teststep.processing.experiment.ConvertedValueChunk
-import org.skellig.teststep.processing.experiment.ConvertedValueChunkBuilder
-import org.skellig.teststep.processing.experiment.ValueExtractor
-import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.MatchingType
-import org.skellig.teststep.processing.validation.comparator.ValueComparator
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
+import org.skellig.teststep.processing.value.chunk.RawValueChunk
 
 class DefaultTestStepResultValidator(
-    private val valueComparator: ValueComparator,
-    private val valueProcessingVisitor: ValueProcessingVisitor
+    private val rawValueProcessingVisitor: RawValueProcessingVisitor
 ) : TestStepResultValidator {
-
-    private val converter = ConvertedValueChunkBuilder()
 
     override fun validate(expectedResult: ExpectedResult, actualResult: Any?) {
         val errorBuilder = StringBuilder()
@@ -42,7 +36,7 @@ class DefaultTestStepResultValidator(
                     .all { item: ExpectedResult -> validateFurther(item, actualResult, errorBuilder) }
             }
             else -> {
-                val isValid = valueProcessingVisitor.process(expectedResult.expectedResult as ConvertedValueChunk?, actualResult)
+                val isValid = rawValueProcessingVisitor.process(expectedResult.expectedResult as RawValueChunk?, actualResult)
 
                 if (expectedResult.getMatchingTypeOfParent() === MatchingType.NONE_MATCH && isValid ||
                     expectedResult.getMatchingTypeOfParent() !== MatchingType.NONE_MATCH && !isValid
@@ -75,7 +69,7 @@ class DefaultTestStepResultValidator(
 
     private fun extractActualValueFromExpectedResult(actualResult: Any?, expectedResult: Any): Any? {
         return if (ExpectedResult::class.java == expectedResult.javaClass && (expectedResult as ExpectedResult).property != null) {
-            valueProcessingVisitor.process(actualResult, expectedResult.property)
+            rawValueProcessingVisitor.process(actualResult, expectedResult.property)
         } else {
             actualResult
         }
@@ -92,24 +86,14 @@ class DefaultTestStepResultValidator(
     }
 
     class Builder {
-        private var valueComparator: ValueComparator? = null
-        private var valueExtractor: ValueExtractor? = null
-        private var valueProcessingVisitor: ValueProcessingVisitor? = null
+        private var rawValueProcessingVisitor: RawValueProcessingVisitor? = null
 
-        fun withValueComparator(valueComparator: ValueComparator?) = apply {
-            this.valueComparator = valueComparator
-        }
-
-        fun withValueExtractor(valueExtractor: ValueExtractor?) = apply {
-            this.valueExtractor = valueExtractor
-        }
-
-        fun withValueProcessingVisitor(valueProcessingVisitor: ValueProcessingVisitor?) = apply {
-            this.valueProcessingVisitor = valueProcessingVisitor
+        fun withValueProcessingVisitor(rawValueProcessingVisitor: RawValueProcessingVisitor?) = apply {
+            this.rawValueProcessingVisitor = rawValueProcessingVisitor
         }
 
         fun build(): TestStepResultValidator {
-            return DefaultTestStepResultValidator(valueComparator!!, valueProcessingVisitor!!)
+            return DefaultTestStepResultValidator(rawValueProcessingVisitor!!)
         }
     }
 }

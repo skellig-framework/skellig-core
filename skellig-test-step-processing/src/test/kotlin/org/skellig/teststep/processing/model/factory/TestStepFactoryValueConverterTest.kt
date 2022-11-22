@@ -6,13 +6,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.converter.DefaultValueConverter
+import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.exception.ValueExtractionException
-import org.skellig.teststep.processing.experiment.DefaultPropertyExtractor
-import org.skellig.teststep.processing.experiment.ValueProcessingVisitor
+import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
-import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
+import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import java.util.*
 
 internal class TestStepFactoryValueConverterTest {
@@ -22,8 +22,8 @@ internal class TestStepFactoryValueConverterTest {
     private val converter =
         TestStepFactoryValueConverter.Builder()
             .withValueProcessingVisitor(
-                ValueProcessingVisitor(
-                    DefaultValueConverter.Builder()
+                RawValueProcessingVisitor(
+                    DefaultFunctionValueExecutor.Builder()
                         .withTestScenarioState(testScenarioState)
                         .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
                         .build(),
@@ -119,21 +119,21 @@ internal class TestStepFactoryValueConverterTest {
     fun testWhenSpecialCharsInFunction() {
         testScenarioState.set("a", EXPECTED_RESULT)
 
-        assertEquals("thing", converter.convertValue<String>("#[get(a).regex('some([\\\\w\\\\\\'.\\\\\"]+)')]", emptyMap()))
+        assertEquals("thing", converter.convertValue<String>("#[get(a).fromRegex('some([\\\\w\\\\\\'.\\\\\"]+)')]", emptyMap()))
     }
 
     @Test
     fun testWhenQuotesInRegexForExtraction() {
         testScenarioState.set("a", "__'${EXPECTED_RESULT}'__")
 
-        assertEquals(EXPECTED_RESULT, converter.convertValue<String>("#[get(a).regex('__\\\\\\'(\\\\w+)\\\\\\'__')]", emptyMap()))
+        assertEquals(EXPECTED_RESULT, converter.convertValue<String>("#[get(a).fromRegex('__\\\\\\'(\\\\w+)\\\\\\'__')]", emptyMap()))
     }
 
     @Test
     fun testWhenFixedCharsInRegexForExtraction() {
         testScenarioState.set("a", "__'${EXPECTED_RESULT}'__")
 
-        assertEquals(listOf("some", "thin"), converter.convertValue<String>("#[get(a).regex('[\\\\w]{4}')]", emptyMap()))
+        assertEquals(listOf("some", "thin"), converter.convertValue<String>("#[get(a).fromRegex('[\\\\w]{4}')]", emptyMap()))
     }
 
     @Test
@@ -194,8 +194,8 @@ internal class TestStepFactoryValueConverterTest {
         val testStepFactoryConverter =
             TestStepFactoryValueConverter.Builder()
                 .withValueProcessingVisitor(
-                    ValueProcessingVisitor(
-                        DefaultValueConverter.Builder()
+                    RawValueProcessingVisitor(
+                        DefaultFunctionValueExecutor.Builder()
                             .withTestScenarioState(testScenarioState)
                             .build(),
                         DefaultValueExtractor.Builder().build(),
@@ -224,10 +224,10 @@ internal class TestStepFactoryValueConverterTest {
         }
 
         @Test
-        fun testExtractFromRegex() {
+        fun testExtractFromfromRegex() {
             val value = "{ params = { k1 = v1 }}"
 
-            assertEquals("v1", converter.convertValue("\${data}.regex('k1 = (\\\\w+)')", mapOf(Pair("data", value))))
+            assertEquals("v1", converter.convertValue("\${data}.fromRegex('k1 = (\\\\w+)')", mapOf(Pair("data", value))))
         }
 
         @Test
@@ -318,7 +318,7 @@ internal class TestStepFactoryValueConverterTest {
 
             assertEquals(
                 listOf("(v1)", "'v3'"), converter.convertValue(
-                    "\${data}.params.data.regex('.*f1=(\\\\(\\\\w+\\\\)).*f3 = (\\\\\\'\\\\w+\\\\\\')')",
+                    "\${data}.params.data.fromRegex('.*f1=(\\\\(\\\\w+\\\\)).*f3 = (\\\\\\'\\\\w+\\\\\\')')",
                     mapOf(Pair("data", value))
                 )
             )

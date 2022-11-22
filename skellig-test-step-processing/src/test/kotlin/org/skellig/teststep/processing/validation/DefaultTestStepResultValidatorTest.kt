@@ -5,16 +5,21 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.converter.DefaultValueConverter
 import org.skellig.teststep.processing.exception.ValidationException
-import org.skellig.teststep.processing.experiment.*
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.MatchingType
 import org.skellig.teststep.processing.model.ValidationDetails
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
 import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator
-import org.skellig.teststep.processing.valueextractor.DefaultValueExtractor
+import org.skellig.teststep.processing.value.*
+import org.skellig.teststep.processing.value.chunk.CompositeRawValue
+import org.skellig.teststep.processing.value.chunk.FunctionValue
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
+import org.skellig.teststep.processing.value.chunk.SimpleValue
+import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
+import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
+import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 
 @DisplayName("Validate result")
 class DefaultTestStepResultValidatorTest {
@@ -24,11 +29,9 @@ class DefaultTestStepResultValidatorTest {
     @BeforeEach
     fun setUp() {
         validator = DefaultTestStepResultValidator.Builder()
-            .withValueComparator(DefaultValueComparator.Builder().build())
-            .withValueExtractor(DefaultValueExtractor.Builder().build())
             .withValueProcessingVisitor(
-                ValueProcessingVisitor(
-                    DefaultValueConverter.Builder().withTestScenarioState(DefaultTestScenarioState()).build(),
+                RawValueProcessingVisitor(
+                    DefaultFunctionValueExecutor.Builder().withTestScenarioState(DefaultTestScenarioState()).build(),
                     DefaultValueExtractor.Builder().build(),
                     DefaultValueComparator.Builder().build(),
                     DefaultPropertyExtractor(null)
@@ -155,9 +158,9 @@ class DefaultTestStepResultValidatorTest {
             listOf(
                 ExpectedResult("passed", SimpleValue(true), null),
                 ExpectedResult(
-                    CompositeConvertedValue().append(SimpleValue("body"))
+                    CompositeRawValue().append(SimpleValue("body"))
                         .appendExtraction(FunctionValue("jsonPath", arrayOf(SimpleValue("c.d"))))
-                        .appendExtraction(FunctionValue("regex", arrayOf(SimpleValue("f2=(\\w+)")))),
+                        .appendExtraction(FunctionValue("fromRegex", arrayOf(SimpleValue("f2=(\\w+)")))),
                     SimpleValue("300"), null
                 ),
                 ExpectedResult(

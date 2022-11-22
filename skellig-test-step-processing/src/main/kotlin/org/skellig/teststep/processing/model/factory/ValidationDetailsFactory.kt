@@ -1,16 +1,13 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.experiment.ConvertedValueChunkBuilder
+import org.skellig.teststep.processing.value.chunk.RawValueChunkParser
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.MatchingType
 import org.skellig.teststep.processing.model.ValidationDetails
 import java.util.*
 import java.util.regex.Pattern
 
-class ValidationDetailsFactory(
-    val keywordsProperties: Properties? = null,
-    private val testStepFactoryValueConverter: TestStepFactoryValueConverter
-) {
+class ValidationDetailsFactory(val keywordsProperties: Properties? = null, ) {
 
     companion object {
         private val GROUPED_PROPERTIES_PATTERN = Pattern.compile("\\[([\\w,\\s]+)\\]")
@@ -20,7 +17,7 @@ class ValidationDetailsFactory(
 
     private var validationKeywords: Set<String>
     private var validationTypeKeywords: Map<String?, MatchingType>
-    private val convertedValueChunkBuilder = ConvertedValueChunkBuilder()
+    private val rawValueChunkParser = RawValueChunkParser()
 
     init {
         validationKeywords = setOf(
@@ -57,17 +54,11 @@ class ValidationDetailsFactory(
                             .map { it.key to it.value }
                             .toMap()
 
-//                    val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawExpectedResult, parameters)
-//                    builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
                     builder.withExpectedResult(createExpectedResult("", rawExpectedResult, parameters))
                 } else {
-//                    val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawValidationDetails, parameters)
-//                    builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
                     builder.withExpectedResult(createExpectedResult("", it, parameters))
                 }
             } else {
-//                val expectedResult = testStepFactoryValueConverter.convertValue<Any?>(rawValidationDetails, parameters)
-//                builder.withExpectedResult(createExpectedResult("", expectedResult, parameters))
                 builder.withExpectedResult(createExpectedResult("", it, parameters))
             }
             builder.build()
@@ -109,13 +100,13 @@ class ValidationDetailsFactory(
         } else if (newExpectedResult is List<*>) {
             newExpectedResult = createExpectedResults(newExpectedResult as List<Any>, parameters)
         } else if (newExpectedResult is String) {
-            newExpectedResult = convertedValueChunkBuilder.buildFrom(newExpectedResult, parameters)
+            newExpectedResult = rawValueChunkParser.buildFrom(newExpectedResult, parameters)
             validationType = null
         } else {
             validationType = null
         }
         return ExpectedResult(
-            if (newPropertyName != null) convertedValueChunkBuilder.buildFrom(newPropertyName, parameters) else null,
+            if (newPropertyName != null) rawValueChunkParser.buildFrom(newPropertyName, parameters) else null,
             newExpectedResult, validationType
         )
     }
