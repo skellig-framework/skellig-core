@@ -7,7 +7,7 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator
 
 class SimpleTestStepProcessor private constructor(testScenarioState: TestScenarioState?,
                                                   validator: TestStepResultValidator?)
-    : BaseTestStepProcessor<SimpleTestStepFactory.SimpleTestStep>(testScenarioState!!, validator!!, null) {
+    : BaseTestStepProcessor<SimpleTestStepFactory.SimpleTestStep>(testScenarioState!!, validator!!) {
 
     override fun processTestStep(testStep: SimpleTestStepFactory.SimpleTestStep): Any {
         return testStep.captureData

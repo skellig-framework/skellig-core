@@ -3,7 +3,6 @@ package org.skellig.teststep.processor.ibmmq
 import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.*
 import org.mockito.ArgumentMatchers.anyInt
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.MatchingType
@@ -20,9 +19,8 @@ internal class IbmMqTestStepProcessorTest {
     class IbmMqTestStepProcessorUnderTest(
         testScenarioState: TestScenarioState?,
         validator: TestStepResultValidator?,
-        testStepResultConverter: TestStepResultConverter?,
         ibmMqChannels: Map<String, IbmMqChannel>
-    ) : IbmMqTestStepProcessor(testScenarioState, validator, testStepResultConverter, ibmMqChannels)
+    ) : IbmMqTestStepProcessor(testScenarioState, validator, ibmMqChannels)
 
 
     companion object {
@@ -46,7 +44,7 @@ internal class IbmMqTestStepProcessorTest {
         validator = mock()
         testScenarioState = mock()
 
-        processor = IbmMqTestStepProcessorUnderTest(testScenarioState, validator, mock(), ibmMqChannels)
+        processor = IbmMqTestStepProcessorUnderTest(testScenarioState, validator, ibmMqChannels)
     }
 
     @Test
@@ -67,7 +65,7 @@ internal class IbmMqTestStepProcessorTest {
     @Nested
     internal inner class SendAndReceiveTest {
         @Test
-        @DisplayName("Send data Then verify rmq channel is called")
+        @DisplayName("Send data Then verify ibmmq channel is called")
         fun testSendData() {
             val testStep = IbmMqTestStep.Builder()
                 .sendTo(setOf(CHANNEL_ID))
@@ -82,7 +80,7 @@ internal class IbmMqTestStepProcessorTest {
         }
 
         @Test
-        @DisplayName("Send and receive data Then verify rmq channel is called and returned response")
+        @DisplayName("Send and receive data Then verify ibmmq channel is called and returned response")
         fun testSendAndReceive() {
             val response = "yo"
             val testStep = IbmMqTestStep.Builder()
@@ -110,7 +108,7 @@ internal class IbmMqTestStepProcessorTest {
         }
 
         @Test
-        @DisplayName("Receive and respond to different channel Then verify rmq channel is called to respond")
+        @DisplayName("Receive and respond to different channel Then verify ibmmq channel is called to respond")
         fun testReceiveAndRespondToDifferentChannel() {
             val testStep: IbmMqTestStep = IbmMqTestStep.Builder()
                 .respondTo(setOf(CHANNEL_ID_2))
@@ -126,7 +124,7 @@ internal class IbmMqTestStepProcessorTest {
         }
 
         @Test
-        @DisplayName("Receive invalid response And try to respond Then verify rmq channel did not respond")
+        @DisplayName("Receive invalid response And try to respond Then verify ibmmq channel did not respond")
         fun testReceiveInvalidAndTryRespond() {
             val response = "yo".toByteArray()
             val expectedResult = ExpectedResult(null, "yo yo", MatchingType.ALL_MATCH)

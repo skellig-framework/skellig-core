@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.rmq
 
 import com.rabbitmq.client.AMQP
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -13,9 +12,8 @@ import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
 open class RmqConsumableTestStepProcessor(
     protected val rmqChannels: Map<String, RmqChannel>,
     testScenarioState: TestScenarioState?,
-    validator: TestStepResultValidator?,
-    testStepResultConverter: TestStepResultConverter?
-) : ValidatableTestStepProcessor<RmqConsumableTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
+    validator: TestStepResultValidator?
+) : ValidatableTestStepProcessor<RmqConsumableTestStep>(testScenarioState!!, validator!!) {
 
 
     override fun process(testStep: RmqConsumableTestStep): TestStepProcessor.TestStepRunResult {
@@ -73,7 +71,7 @@ open class RmqConsumableTestStepProcessor(
 
     class Builder : BaseRmqProcessorBuilder<RmqConsumableTestStep>() {
         override fun build(): TestStepProcessor<RmqConsumableTestStep> {
-            return RmqConsumableTestStepProcessor(rmqChannels, testScenarioState, validator, testStepResultConverter)
+            return RmqConsumableTestStepProcessor(rmqChannels, testScenarioState, validator)
         }
     }
 }

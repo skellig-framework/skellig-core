@@ -5,7 +5,6 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.MatchingType
@@ -39,7 +38,7 @@ internal class TcpTestStepProcessorTest {
 
         validator = Mockito.mock(TestStepResultValidator::class.java)
         testScenarioState = Mockito.mock(TestScenarioState::class.java)
-        processor = TcpTestStepProcessor(tcpChannels, testScenarioState, validator, Mockito.mock(TestStepResultConverter::class.java))
+        processor = TcpTestStepProcessor(tcpChannels, testScenarioState, validator)
     }
 
     @Test

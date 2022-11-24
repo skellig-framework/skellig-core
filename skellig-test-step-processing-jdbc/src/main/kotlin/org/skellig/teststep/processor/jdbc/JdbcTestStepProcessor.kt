@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.jdbc
 
 import com.typesafe.config.Config
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
@@ -11,9 +10,8 @@ import org.skellig.teststep.processor.jdbc.model.JdbcTestStep
 
 open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, JdbcRequestExecutor>,
                                                        testScenarioState: TestScenarioState,
-                                                       validator: TestStepResultValidator,
-                                                       testStepResultConverter: TestStepResultConverter?)
-    : DatabaseTestStepProcessor<JdbcRequestExecutor, JdbcTestStep>(dbServers, testScenarioState, validator, testStepResultConverter) {
+                                                       validator: TestStepResultValidator)
+    : DatabaseTestStepProcessor<JdbcRequestExecutor, JdbcTestStep>(dbServers, testScenarioState, validator) {
 
     override fun getTestStepClass(): Class<*> = JdbcTestStep::class.java
 
@@ -30,7 +28,7 @@ open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, Jd
         }
 
         override fun build(): TestStepProcessor<JdbcTestStep> {
-            return JdbcTestStepProcessor(dbServers, testScenarioState!!, validator!!, testStepResultConverter)
+            return JdbcTestStepProcessor(dbServers, testScenarioState!!, validator!!)
         }
     }
 }

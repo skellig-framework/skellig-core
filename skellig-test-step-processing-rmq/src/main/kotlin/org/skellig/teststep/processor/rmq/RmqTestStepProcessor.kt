@@ -1,23 +1,19 @@
 package org.skellig.teststep.processor.rmq
 
 import com.rabbitmq.client.AMQP
-import com.typesafe.config.Config
 import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
-import org.skellig.teststep.processor.rmq.model.RmqDetails
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
 import java.util.*
 
 open class RmqTestStepProcessor(
         protected val rmqChannels: Map<String, RmqChannel>,
         testScenarioState: TestScenarioState?,
-        validator: TestStepResultValidator?,
-        testStepResultConverter: TestStepResultConverter?
-) : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
+        validator: TestStepResultValidator?
+) : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!, validator!!) {
 
     override fun processTestStep(testStep: RmqTestStep): Any? {
         var response: Map<*, Any?>? = null
@@ -81,7 +77,7 @@ open class RmqTestStepProcessor(
 
     class Builder : BaseRmqProcessorBuilder<RmqTestStep>() {
         override fun build(): TestStepProcessor<RmqTestStep> {
-            return RmqTestStepProcessor(rmqChannels, testScenarioState, validator, testStepResultConverter)
+            return RmqTestStepProcessor(rmqChannels, testScenarioState, validator)
         }
     }
 }

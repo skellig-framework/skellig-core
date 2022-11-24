@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.MatchingType
@@ -39,10 +38,7 @@ class RmqTestStepProcessorTest {
             Pair(CHANNEL_NAME_2, rmqChannel2)
         )
 
-        processor = RmqTestStepProcessor(
-            rmqChannels, testScenarioState,
-            validator, Mockito.mock(TestStepResultConverter::class.java)
-        )
+        processor = RmqTestStepProcessor(rmqChannels, testScenarioState,validator)
     }
 
     @Test

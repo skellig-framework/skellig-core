@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.cassandra
 
 import com.typesafe.config.Config
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
@@ -11,9 +10,8 @@ import org.skellig.teststep.processor.db.DatabaseTestStepProcessor
 
 open class CassandraTestStepProcessor protected constructor(dbServers: Map<String, CassandraRequestExecutor>,
                                                             testScenarioState: TestScenarioState,
-                                                            validator: TestStepResultValidator,
-                                                            testStepResultConverter: TestStepResultConverter?)
-    : DatabaseTestStepProcessor<CassandraRequestExecutor, CassandraTestStep>(dbServers, testScenarioState, validator, testStepResultConverter) {
+                                                            validator: TestStepResultValidator)
+    : DatabaseTestStepProcessor<CassandraRequestExecutor, CassandraTestStep>(dbServers, testScenarioState, validator) {
 
     override fun getTestStepClass(): Class<CassandraTestStep> = CassandraTestStep::class.java
 
@@ -30,7 +28,7 @@ open class CassandraTestStepProcessor protected constructor(dbServers: Map<Strin
         }
 
         override fun build(): TestStepProcessor<CassandraTestStep> {
-            return CassandraTestStepProcessor(dbServers, testScenarioState!!, validator!!, testStepResultConverter)
+            return CassandraTestStepProcessor(dbServers, testScenarioState!!, validator!!)
         }
     }
 }

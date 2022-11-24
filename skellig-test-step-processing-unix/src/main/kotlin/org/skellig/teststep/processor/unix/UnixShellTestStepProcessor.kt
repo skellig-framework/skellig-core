@@ -2,7 +2,6 @@ package org.skellig.teststep.processor.unix
 
 import com.typesafe.config.Config
 import org.skellig.task.async.AsyncTaskUtils
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -10,20 +9,21 @@ import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.unix.model.UnixShellHostDetails
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
-import java.util.stream.Collectors
 
-open class UnixShellTestStepProcessor(testScenarioState: TestScenarioState,
-                                      validator: TestStepResultValidator,
-                                      testStepResultConverter: TestStepResultConverter?,
-                                      private val hosts: Map<String, DefaultSshClient>)
-    : BaseTestStepProcessor<UnixShellTestStep>(testScenarioState, validator, testStepResultConverter) {
+open class UnixShellTestStepProcessor(
+    testScenarioState: TestScenarioState,
+    validator: TestStepResultValidator,
+    private val hosts: Map<String, DefaultSshClient>
+) : BaseTestStepProcessor<UnixShellTestStep>(testScenarioState, validator) {
 
     override fun processTestStep(testStep: UnixShellTestStep): Any? {
         var hostsToUse: Collection<String>? = testStep.hosts
         if (hostsToUse.isNullOrEmpty()) {
             if (hosts.size > 1) {
-                throw TestStepProcessingException("No hosts were provided to run a command." +
-                                                          " Registered hosts are: ${hosts.keys}")
+                throw TestStepProcessingException(
+                    "No hosts were provided to run a command." +
+                            " Registered hosts are: ${hosts.keys}"
+                )
             } else {
                 hostsToUse = hosts.keys
             }
@@ -50,8 +50,10 @@ open class UnixShellTestStepProcessor(testScenarioState: TestScenarioState,
 
     private fun getSshClient(host: String): DefaultSshClient {
         return hosts[host]
-            ?: throw TestStepProcessingException("No hosts was registered for host name '$host'." +
-                                                         " Registered hosts are: ${hosts.keys}")
+            ?: throw TestStepProcessingException(
+                "No hosts was registered for host name '$host'." +
+                        " Registered hosts are: ${hosts.keys}"
+            )
     }
 
     private fun isResultForSingleService(results: Map<*, *>, testStep: UnixShellTestStep) =
@@ -82,7 +84,7 @@ open class UnixShellTestStepProcessor(testScenarioState: TestScenarioState,
         }
 
         override fun build(): TestStepProcessor<UnixShellTestStep> {
-            return UnixShellTestStepProcessor(testScenarioState!!, validator!!, testStepResultConverter, hosts)
+            return UnixShellTestStepProcessor(testScenarioState!!, validator!!, hosts)
         }
     }
 }

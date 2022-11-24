@@ -2,7 +2,6 @@ package org.skellig.teststep.processor.http
 
 import com.typesafe.config.Config
 import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestDataProcessingInitException
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
@@ -16,9 +15,8 @@ import org.skellig.teststep.processor.http.model.HttpTestStep
 
 class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
                             testScenarioState: TestScenarioState,
-                            validator: TestStepResultValidator,
-                            testStepResultConverter: TestStepResultConverter?)
-    : BaseTestStepProcessor<HttpTestStep>(testScenarioState, validator, testStepResultConverter) {
+                            validator: TestStepResultValidator)
+    : BaseTestStepProcessor<HttpTestStep>(testScenarioState, validator) {
 
     override fun processTestStep(testStep: HttpTestStep): Any? {
         var services: Collection<String>? = testStep.services
@@ -93,7 +91,7 @@ class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
             if (httpChannelPerService.isEmpty()) {
                 throw TestDataProcessingInitException("No HTTP services were registered for the processor")
             }
-            return HttpTestStepProcessor(httpChannelPerService, testScenarioState!!, validator!!, testStepResultConverter)
+            return HttpTestStepProcessor(httpChannelPerService, testScenarioState!!, validator!!)
         }
 
     }
