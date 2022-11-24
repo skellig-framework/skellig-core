@@ -1,9 +1,9 @@
 package org.skellig.teststep.processing.value.chunk
 
-import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 import org.skellig.teststep.processing.validation.comparator.ValueComparator
-import org.skellig.teststep.processing.value.property.PropertyExtractor
 import org.skellig.teststep.processing.value.extractor.ValueExtractor
+import org.skellig.teststep.processing.value.function.FunctionValueExecutor
+import org.skellig.teststep.processing.value.property.PropertyExtractor
 
 open class RawValueProcessingVisitor(
     private val functionalValueProcessor: FunctionValueExecutor,
@@ -14,7 +14,10 @@ open class RawValueProcessingVisitor(
 
     fun process(functionValue: FunctionValue): Any? {
         val finalArgs = functionValue.args.map { process(it) }.toTypedArray()
-        return functionalValueProcessor.execute(functionValue.name, finalArgs)
+        // if function is a comparator, then don't process it and return its string + args value
+        return if (valueComparator.isApplicable(functionValue.name) && functionValue.name.isNotEmpty())
+            "${functionValue.name}(${finalArgs.joinToString(",")})"
+        else functionalValueProcessor.execute(functionValue.name, finalArgs)
     }
 
     fun process(propertyValue: PropertyValue): Any? {
@@ -58,14 +61,33 @@ open class RawValueProcessingVisitor(
     fun process(chunkValue: RawValueChunk?, valueToCompare: Any?): Boolean {
         return when (chunkValue) {
             is FunctionValue -> {
-                valueComparator.compare(
-                    chunkValue.name,
-                    chunkValue.args.map { process(it) }.toTypedArray(), valueToCompare
-                )
+                // if it's a value comparator then call it,
+                // otherwise, use a default comparison (ex. equals) on the processed value chunk.
+                return if (valueComparator.isApplicable(chunkValue.name)) {
+                    valueComparator.compare(
+                        chunkValue.name,
+                        chunkValue.args.map { process(it) }.toTypedArray(),
+                        valueToCompare
+                    )
+                } else {
+                    valueComparator.compare(
+                        "",
+                        arrayOf(process(chunkValue)),
+                        valueToCompare
+                    )
+                }
             }
             is PropertyValue, is SimpleValue ->
                 valueComparator.compare("", arrayOf(process(chunkValue)), valueToCompare)
-            is CompositeRawValue -> process(getChunksFromCompositeChunk(chunkValue), valueToCompare)
+            is CompositeRawValue -> {
+                // if no extractions then it's safe to process the internal chunks of the composite one.
+                // Otherwise, we extract the value and compare it with actual one.
+                if (chunkValue.extractions.isEmpty()) {
+                    process(getChunksFromCompositeChunk(chunkValue), valueToCompare)
+                } else {
+                    process(chunkValue) == valueToCompare
+                }
+            }
             else -> chunkValue == valueToCompare
         }
     }

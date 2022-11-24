@@ -20,7 +20,7 @@ open class TestStepFactoryValueConverter private constructor(private val rawValu
             is Collection<*> -> result.map { convertValue<T>(it, parameters) }.toList()
             is String -> {
                 if (!notToParseValues.contains(result)) {
-                    val newResult = rawValueProcessingVisitor.process(rawValueChunkParser.buildFrom(result, parameters)) ?: result
+                    val newResult = rawValueProcessingVisitor.process(rawValueChunkParser.buildFrom(result, parameters))
                     if (newResult == result) notToParseValues.add(result)
                     newResult
                 } else result

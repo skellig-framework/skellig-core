@@ -26,6 +26,12 @@ internal class ListOfFunctionExecutorTest {
     }
 
     @Test
+    fun testListWithOneElementCommaSeparated() {
+        val elements = "a,b,c"
+        assertTrue((valueConverter!!.execute("listOf", arrayOf(elements)) as List<*>).containsAll(elements.split(",").toList()))
+    }
+
+    @Test
     fun testListWithFewElements() {
         val list = valueConverter!!.execute("listOf", arrayOf("a", "b", "c")) as List<*>
 

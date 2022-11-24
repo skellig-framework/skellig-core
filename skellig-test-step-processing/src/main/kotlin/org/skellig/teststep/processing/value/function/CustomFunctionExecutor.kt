@@ -35,7 +35,7 @@ class CustomFunctionExecutor(packages: Collection<String>?, classLoader: ClassLo
         return functions[name]?.let {
             return if (args.isNotEmpty()) it.method.invoke(it.instance, *args)
             else it.method.invoke(it.instance)
-        }
+        } ?: throw TestValueConversionException("Function '$name' was not found")
     }
 
     override fun getFunctionName(): String = ""

@@ -8,6 +8,8 @@ class DefaultValueComparator(private val comparators: MutableMap<String, ValueCo
 
     override fun getName(): String = ""
 
+    override fun isApplicable(comparatorName: String): Boolean = comparators.contains(comparatorName)
+
     class Builder {
         private val valueComparators: MutableMap<String, ValueComparator> = mutableMapOf()
 

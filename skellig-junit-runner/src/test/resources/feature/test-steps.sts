@@ -53,7 +53,7 @@ name ("Send a message with if statement") {
 
     message {
         f1 = 0
-        f2 = "if(${num} == 1, ${part1}, ${part2})"
+        f2 = "if(${num}' == 1', ${part1}, ${part2})"
     }
 }
 
