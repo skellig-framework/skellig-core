@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.ibmmq
 
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -8,14 +7,12 @@ import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
-import org.slf4j.LoggerFactory
 
 open class IbmMqConsumableTestStepProcessor(
     protected val ibmMqChannels: Map<String, IbmMqChannel>,
     testScenarioState: TestScenarioState?,
-    validator: TestStepResultValidator?,
-    testStepResultConverter: TestStepResultConverter?
-) : ValidatableTestStepProcessor<IbmMqConsumableTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
+    validator: TestStepResultValidator?
+) : ValidatableTestStepProcessor<IbmMqConsumableTestStep>(testScenarioState!!, validator!!) {
 
     override fun process(testStep: IbmMqConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
@@ -26,9 +23,11 @@ open class IbmMqConsumableTestStepProcessor(
         return testStepRunResult
     }
 
-    private fun consume(testStep: IbmMqConsumableTestStep,
-                        channels: List<String>,
-                        result: TestStepProcessor.TestStepRunResult) {
+    private fun consume(
+        testStep: IbmMqConsumableTestStep,
+        channels: List<String>,
+        result: TestStepProcessor.TestStepRunResult
+    ) {
         val respondTo = testStep.respondTo
         val response = testStep.testData
         channels.forEachIndexed { index, channelName ->
@@ -39,7 +38,7 @@ open class IbmMqConsumableTestStepProcessor(
                 try {
                     validate(testStep, receivedMessage)
                     respondTo?.let {
-                        response?.let{
+                        response?.let {
                             if (isValid(testStep, receivedMessage))
                                 send(response, respondTo[index])
                         }
@@ -74,7 +73,7 @@ open class IbmMqConsumableTestStepProcessor(
 
     class Builder : BaseIbmMqTestStepProcessorBuilder<IbmMqConsumableTestStep>() {
         override fun build(): TestStepProcessor<IbmMqConsumableTestStep> {
-            return IbmMqConsumableTestStepProcessor(ibmMqChannels, testScenarioState, validator, testStepResultConverter)
+            return IbmMqConsumableTestStepProcessor(ibmMqChannels, testScenarioState, validator)
         }
     }
 }

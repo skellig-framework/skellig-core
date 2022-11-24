@@ -1,22 +1,17 @@
 package org.skellig.teststep.processor.ibmmq
 
-import com.typesafe.config.Config
 import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
-import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
-import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 
 open class IbmMqTestStepProcessor protected constructor(
     testScenarioState: TestScenarioState?,
     validator: TestStepResultValidator?,
-    testStepResultConverter: TestStepResultConverter?,
     private val ibmMqChannels: Map<String, IbmMqChannel>
-) : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
+) : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState!!, validator!!) {
 
     override fun processTestStep(testStep: IbmMqTestStep): Any? {
         var response: Map<*, Any?>? = null
@@ -77,7 +72,7 @@ open class IbmMqTestStepProcessor protected constructor(
 
     class Builder : BaseIbmMqTestStepProcessorBuilder<IbmMqTestStep>() {
         override fun build(): TestStepProcessor<IbmMqTestStep> {
-            return IbmMqTestStepProcessor(testScenarioState, validator, testStepResultConverter, ibmMqChannels)
+            return IbmMqTestStepProcessor(testScenarioState, validator, ibmMqChannels)
         }
     }
 }

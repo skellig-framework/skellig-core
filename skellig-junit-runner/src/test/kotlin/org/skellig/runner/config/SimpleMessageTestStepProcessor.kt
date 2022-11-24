@@ -9,7 +9,7 @@ import java.util.*
 
 class SimpleMessageTestStepProcessor private constructor(testScenarioState: TestScenarioState?,
                                                          validator: TestStepResultValidator?)
-    : BaseTestStepProcessor<SimpleMessageTestStep>(testScenarioState!!, validator!!, null) {
+    : BaseTestStepProcessor<SimpleMessageTestStep>(testScenarioState!!, validator!!) {
 
     private var latestReceivedMessage: MutableMap<Any, Any?>? = null
 

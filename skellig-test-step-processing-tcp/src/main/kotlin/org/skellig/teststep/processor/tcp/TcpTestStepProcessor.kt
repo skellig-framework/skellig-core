@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.tcp
 
 import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -10,9 +9,8 @@ import org.skellig.teststep.processor.tcp.model.TcpTestStep
 
 open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>,
                                 testScenarioState: TestScenarioState?,
-                                validator: TestStepResultValidator?,
-                                testStepResultConverter: TestStepResultConverter?)
-    : BaseTestStepProcessor<TcpTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
+                                validator: TestStepResultValidator?)
+    : BaseTestStepProcessor<TcpTestStep>(testScenarioState!!, validator!!) {
 
     override fun processTestStep(testStep: TcpTestStep): Any? {
         var response: Any? = null
@@ -76,7 +74,7 @@ open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>
 
     class Builder : BaseTcpProcessorBuilder<TcpTestStep>() {
         override fun build(): TestStepProcessor<TcpTestStep> {
-            return TcpTestStepProcessor(tcpChannels, testScenarioState, validator, testStepResultConverter)
+            return TcpTestStepProcessor(tcpChannels, testScenarioState, validator)
         }
     }
 }

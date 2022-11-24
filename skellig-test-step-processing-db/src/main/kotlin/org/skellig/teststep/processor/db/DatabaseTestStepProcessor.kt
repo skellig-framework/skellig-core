@@ -2,7 +2,6 @@ package org.skellig.teststep.processor.db
 
 import com.typesafe.config.Config
 import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -14,9 +13,8 @@ import org.skellig.teststep.processor.db.model.DatabaseTestStep
 abstract class DatabaseTestStepProcessor<T : DatabaseRequestExecutor, TS : DatabaseTestStep>
 (private val dbServers: Map<String, T>,
  testScenarioState: TestScenarioState,
- validator: TestStepResultValidator,
- testStepResultConverter: TestStepResultConverter?)
-    : BaseTestStepProcessor<TS>(testScenarioState, validator, testStepResultConverter) {
+ validator: TestStepResultValidator)
+    : BaseTestStepProcessor<TS>(testScenarioState, validator) {
 
     override fun processTestStep(testStep: TS): Any? {
         var services: Collection<String>? = testStep.servers

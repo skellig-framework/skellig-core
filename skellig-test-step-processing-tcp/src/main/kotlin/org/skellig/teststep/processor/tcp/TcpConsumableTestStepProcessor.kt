@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.tcp
 
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -12,9 +11,8 @@ import org.skellig.teststep.processor.tcp.model.TcpConsumableTestStep
 open class TcpConsumableTestStepProcessor(
     protected val tcpChannels: Map<String, TcpChannel>,
     testScenarioState: TestScenarioState?,
-    validator: TestStepResultValidator?,
-    testStepResultConverter: TestStepResultConverter?
-) : ValidatableTestStepProcessor<TcpConsumableTestStep>(testScenarioState!!, validator!!, testStepResultConverter) {
+    validator: TestStepResultValidator?
+) : ValidatableTestStepProcessor<TcpConsumableTestStep>(testScenarioState!!, validator!!) {
 
 
     override fun process(testStep: TcpConsumableTestStep): TestStepProcessor.TestStepRunResult {
@@ -26,15 +24,19 @@ open class TcpConsumableTestStepProcessor(
         return testStepRunResult
     }
 
-    private fun consume(testStep: TcpConsumableTestStep,
-                        channels: List<String>,
-                        result: TestStepProcessor.TestStepRunResult) {
+    private fun consume(
+        testStep: TcpConsumableTestStep,
+        channels: List<String>,
+        result: TestStepProcessor.TestStepRunResult
+    ) {
         val respondTo = testStep.respondTo
         val response = testStep.testData
         channels.forEachIndexed { index, id ->
             val channel = tcpChannels[id] ?: error(getChannelNotExistErrorMessage(id))
-            channel.consume(if (respondTo != null) null else response,
-                            testStep.timeout, testStep.readBufferSize) { receivedMessage ->
+            channel.consume(
+                if (respondTo != null) null else response,
+                testStep.timeout, testStep.readBufferSize
+            ) { receivedMessage ->
                 var error: RuntimeException? = null
                 try {
                     validate(testStep, receivedMessage)
@@ -73,7 +75,7 @@ open class TcpConsumableTestStepProcessor(
 
     class Builder : BaseTcpProcessorBuilder<TcpConsumableTestStep>() {
         override fun build(): TestStepProcessor<TcpConsumableTestStep> {
-            return TcpConsumableTestStepProcessor(tcpChannels, testScenarioState, validator, testStepResultConverter)
+            return TcpConsumableTestStepProcessor(tcpChannels, testScenarioState, validator)
         }
     }
 }

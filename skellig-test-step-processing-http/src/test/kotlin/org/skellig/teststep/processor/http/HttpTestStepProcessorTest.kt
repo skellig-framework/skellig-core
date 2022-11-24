@@ -27,7 +27,7 @@ class HttpTestStepProcessorTest {
         @BeforeEach
         fun setUp() {
             val channels = mapOf( Pair("srv1", httpChannel))
-            processor = HttpTestStepProcessor(channels, mock(), mock(), mock())
+            processor = HttpTestStepProcessor(channels, mock(), mock())
         }
 
         @Test
@@ -83,7 +83,7 @@ class HttpTestStepProcessorTest {
             val channels = mapOf(
                     Pair("srv1", httpChannel),
                     Pair("srv2", httpChannel2))
-            processor = HttpTestStepProcessor(channels, mock(), mock(), mock())
+            processor = HttpTestStepProcessor(channels, mock(), mock())
         }
 
         @Test
