@@ -1,8 +1,6 @@
 package org.skellig.teststep.processing.processor
 
 import org.skellig.task.TaskUtils.Companion.runTask
-import org.skellig.teststep.processing.converter.TestStepResultConverter
-import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ValidationDetails
@@ -15,7 +13,6 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator
 abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
     protected val testScenarioState: TestScenarioState,
     protected val validator: TestStepResultValidator,
-    protected val testStepResultConverter: TestStepResultConverter?
 ) : TestStepProcessor<T> {
 
     /**
@@ -69,13 +66,8 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
         }
 
     protected fun validate(testStepId: String?, validationDetails: ValidationDetails, actualResult: Any?) {
-        var newActualResult = actualResult
         try {
-            validationDetails.convertTo?.let {
-                newActualResult = testStepResultConverter?.convert(it, newActualResult)
-                    ?: throw TestDataConversionException("No converter were declared for processor " + javaClass.name)
-            }
-            validator.validate(validationDetails.expectedResult, newActualResult)
+            validator.validate(validationDetails.expectedResult, actualResult)
         } catch (ex: ValidationException) {
             throw ValidationException(ex.message, testStepId)
         }

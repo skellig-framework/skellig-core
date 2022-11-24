@@ -1,6 +1,5 @@
 package org.skellig.teststep.processing.processor
 
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
@@ -14,7 +13,6 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator
  */
 class CompositeTestStepProcessor private constructor(
     testScenarioState: TestScenarioState,
-    testStepResultConverter: TestStepResultConverter,
     testStepResultValidator: TestStepResultValidator
 ) : TestStepProcessor<TestStep> {
 
@@ -24,7 +22,6 @@ class CompositeTestStepProcessor private constructor(
         registerTestStepProcessor(
             DefaultTestStepProcessor.Builder()
                 .withTestScenarioState(testScenarioState)
-                .withTestStepResultConverter(testStepResultConverter)
                 .withValidator(testStepResultValidator)
                 .build()
         )
@@ -59,7 +56,7 @@ class CompositeTestStepProcessor private constructor(
     class Builder : BaseTestStepProcessor.Builder<TestStep>() {
 
         override fun build(): CompositeTestStepProcessor {
-            return CompositeTestStepProcessor(testScenarioState!!, testStepResultConverter!!, validator!!)
+            return CompositeTestStepProcessor(testScenarioState!!, validator!!)
         }
     }
 }

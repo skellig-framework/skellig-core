@@ -1,7 +1,6 @@
 package org.skellig.teststep.processing.processor
 
 import org.skellig.task.async.AsyncTaskUtils.Companion.runTaskAsync
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
@@ -20,8 +19,7 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator
 abstract class BaseTestStepProcessor<T : DefaultTestStep>(
     testScenarioState: TestScenarioState,
     validator: TestStepResultValidator,
-    testStepResultConverter: TestStepResultConverter?
-) : ValidatableTestStepProcessor<T>(testScenarioState, validator, testStepResultConverter) {
+) : ValidatableTestStepProcessor<T>(testScenarioState, validator) {
 
     override fun process(testStep: T): TestStepRunResult {
         val testStepRunResult = DefaultTestStepRunResult(testStep)
@@ -70,7 +68,6 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(
     abstract class Builder<T : TestStep> {
         protected var testScenarioState: TestScenarioState? = null
         protected var validator: TestStepResultValidator? = null
-        protected var testStepResultConverter: TestStepResultConverter? = null
 
         /**
          * The scenario state is needed to store the data of test step,
@@ -85,13 +82,6 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(
          */
         fun withValidator(validator: TestStepResultValidator?) =
             apply { this.validator = validator }
-
-        /**
-         * The result converter is needed for converting an actual result from processing
-         * of a test step before validation.
-         */
-        fun withTestStepResultConverter(testStepResultConverter: TestStepResultConverter?) =
-            apply { this.testStepResultConverter = testStepResultConverter }
 
         abstract fun build(): TestStepProcessor<T>
     }

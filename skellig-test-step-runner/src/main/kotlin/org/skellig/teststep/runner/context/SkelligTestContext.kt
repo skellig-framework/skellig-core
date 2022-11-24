@@ -2,9 +2,6 @@ package org.skellig.teststep.runner.context
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import org.skellig.teststep.processing.converter.*
-import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
-import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.CompositeTestStepFactory
@@ -19,10 +16,12 @@ import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator
 import org.skellig.teststep.processing.validation.comparator.ValueComparator
-import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
-import org.skellig.teststep.processing.value.function.FunctionValueExecutor
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.extractor.ValueExtractor
+import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
+import org.skellig.teststep.processing.value.function.FunctionValueExecutor
+import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.reader.sts.StsTestStepReader
 import org.skellig.teststep.runner.DefaultTestStepRunner
@@ -46,7 +45,6 @@ abstract class SkelligTestContext : Closeable {
     }
 
     private var testStepFactoryValueConverter: TestStepFactoryValueConverter? = null
-    private var testStepResultConverter: TestStepResultConverter? = null
     private var testScenarioState: TestScenarioState? = null
     private var testStepResultValidator: TestStepResultValidator? = null
     private var rootTestStepProcessor: CompositeTestStepProcessor? = null
@@ -64,7 +62,6 @@ abstract class SkelligTestContext : Closeable {
         val testStepReader = createTestStepReader()
         testScenarioState = createTestScenarioState()
         val valueExtractor = createTestStepValueExtractor()
-        testStepResultConverter = createTestDataResultConverter()
         val valueComparator = createValueComparator()
 
         val rawValueProcessingVisitor = RawValueProcessingVisitor(
@@ -86,7 +83,6 @@ abstract class SkelligTestContext : Closeable {
         rootTestStepProcessor = CompositeTestStepProcessor.Builder()
             .withTestScenarioState(testScenarioState)
             .withValidator(getTestStepResultValidator())
-            .withTestStepResultConverter(getTestStepResultConverter())
             .build() as CompositeTestStepProcessor
 
         rootTestStepFactory = CompositeTestStepFactory.Builder()
@@ -169,10 +165,6 @@ abstract class SkelligTestContext : Closeable {
         testStepResultValidator
             ?: error("TestStepResultValidator must be initialized first. Did you forget to call 'initialize'?")
 
-    fun getTestStepResultConverter(): TestStepResultConverter =
-        testStepResultConverter
-            ?: error("TestStepResultConverter must be initialized first. Did you forget to call 'initialize'?")
-
     fun getTestStepRegistry(): TestStepRegistry =
         testStepsRegistry
             ?: error("TestStepRegistry must be initialized first. Did you forget to call 'initialize'?")
@@ -224,16 +216,6 @@ abstract class SkelligTestContext : Closeable {
             .build()
     }
 
-    private fun createTestDataResultConverter(): TestStepResultConverter {
-        val builder = DefaultTestStepResultConverter.Builder()
-        additionalTestStepResultConverters.forEach {
-            builder.withTestStepResultConverter(it)
-            injectTestContextIfRequired(it)
-        }
-
-        return builder.build()
-    }
-
     private fun createTestStepValueExtractor(): ValueExtractor {
         val valueExtractorBuilder = DefaultValueExtractor.Builder()
         additionalValueExtractors.forEach {
@@ -258,9 +240,6 @@ abstract class SkelligTestContext : Closeable {
         get() = emptyList()
 
     protected open val additionalFunctionExecutors: List<FunctionValueExecutor>
-        get() = emptyList()
-
-    protected open val additionalTestStepResultConverters: List<TestStepResultConverter>
         get() = emptyList()
 
     protected open val testStepProcessors: List<TestStepProcessorDetails>

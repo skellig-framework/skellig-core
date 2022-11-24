@@ -1,13 +1,13 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.value.chunk.RawValueChunkParser
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.MatchingType
 import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.value.chunk.RawValueChunkParser
 import java.util.*
 import java.util.regex.Pattern
 
-class ValidationDetailsFactory(val keywordsProperties: Properties? = null, ) {
+class ValidationDetailsFactory(val keywordsProperties: Properties? = null) {
 
     companion object {
         private val GROUPED_PROPERTIES_PATTERN = Pattern.compile("\\[([\\w,\\s]+)\\]")
@@ -43,15 +43,13 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null, ) {
         return rawValidationDetails?.let {
             if (rawValidationDetails is Map<*, *>) {
                 val fromTestId = rawValidationDetails[getFromTestKeyword()]
-                val convertTo = rawValidationDetails[getConvertToKeyword()]
-                builder.withConvertTo(convertTo as String?)
 
-                if (fromTestId != null || convertTo != null) {
+                if (fromTestId != null) {
                     builder.withTestStepId(fromTestId as String?)
                     val rawExpectedResult =
                         rawValidationDetails
-                            .filter { it.key != getFromTestKeyword() && it.key != getConvertToKeyword() }
-                            .map { it.key to it.value }
+                            .filter { item -> item.key != getFromTestKeyword() }
+                            .map { item -> item.key to item.value }
                             .toMap()
 
                     builder.withExpectedResult(createExpectedResult("", rawExpectedResult, parameters))
@@ -153,10 +151,6 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null, ) {
 
     private fun getFromTestKeyword(): String {
         return getKeywordName("test.step.keyword.from_test", "fromTest")
-    }
-
-    private fun getConvertToKeyword(): String {
-        return getKeywordName("test.step.keyword.convert_to", "convert_to")
     }
 
     private fun getKeywordName(keywordName: String?, defaultValue: String): String {

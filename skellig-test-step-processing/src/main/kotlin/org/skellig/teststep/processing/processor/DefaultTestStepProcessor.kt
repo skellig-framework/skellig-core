@@ -1,6 +1,5 @@
 package org.skellig.teststep.processing.processor
 
-import org.skellig.teststep.processing.converter.TestStepResultConverter
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
@@ -11,10 +10,9 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator
  * Processes a default test step by running validation of a result from another test step.
  */
 internal class DefaultTestStepProcessor private constructor(
-        testScenarioState: TestScenarioState,
-        validator: TestStepResultValidator,
-        testStepResultConverter: TestStepResultConverter?)
-    : ValidatableTestStepProcessor<DefaultTestStep>(testScenarioState, validator, testStepResultConverter) {
+    testScenarioState: TestScenarioState,
+    validator: TestStepResultValidator
+) : ValidatableTestStepProcessor<DefaultTestStep>(testScenarioState, validator) {
 
     override fun process(testStep: DefaultTestStep): TestStepRunResult {
         val testStepRunResult = TestStepRunResult(testStep)
@@ -41,9 +39,10 @@ internal class DefaultTestStepProcessor private constructor(
 
     class Builder : BaseTestStepProcessor.Builder<DefaultTestStep>() {
         override fun build(): TestStepProcessor<DefaultTestStep> {
-            return DefaultTestStepProcessor(testScenarioState ?: error("TestScenarioState must be provided"),
-                    validator ?: error("Validator must be provided"),
-                    testStepResultConverter)
+            return DefaultTestStepProcessor(
+                testScenarioState ?: error("TestScenarioState must be provided"),
+                validator ?: error("Validator must be provided")
+            )
         }
     }
 
