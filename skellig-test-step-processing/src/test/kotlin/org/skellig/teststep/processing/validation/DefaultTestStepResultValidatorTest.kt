@@ -12,11 +12,7 @@ import org.skellig.teststep.processing.model.ValidationDetails
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
 import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator
-import org.skellig.teststep.processing.value.*
-import org.skellig.teststep.processing.value.chunk.CompositeRawValue
-import org.skellig.teststep.processing.value.chunk.FunctionValue
-import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
-import org.skellig.teststep.processing.value.chunk.SimpleValue
+import org.skellig.teststep.processing.value.chunk.*
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
@@ -77,6 +73,24 @@ class DefaultTestStepResultValidatorTest {
         assertEquals(
             "Validation failed!\n" +
                     "f1 is not valid. Expected: null Actual: v1\n", ex.message
+        )
+    }
+
+    @Test
+    @DisplayName("When expected field does not contain value Then check that error message has processed expected value")
+    fun testValidateWhenNotContains() {
+        val expectedResult = ExpectedResult(
+            "",
+            listOf(ExpectedResult("f1", FunctionValue("contains", arrayOf(PropertyValue("k1", null, mapOf(Pair("k1", "v2"))))), null)),
+            MatchingType.ALL_MATCH
+        )
+
+        val ex = Assertions.assertThrows(ValidationException::class.java)
+        { validator!!.validate(expectedResult, mapOf(Pair("f1", "v1"))) }
+
+        assertEquals(
+            "Validation failed!\n" +
+                    "f1 is not valid. Expected: contains(v2) Actual: v1\n", ex.message
         )
     }
 
@@ -385,7 +399,10 @@ class DefaultTestStepResultValidatorTest {
         val expectedResult = ExpectedResult(
             "",
             listOf(
-                ExpectedResult(FunctionValue("size", emptyArray()), SimpleValue(2), null),
+                ExpectedResult(
+                    FunctionValue("size", emptyArray()),
+                    CompositeRawValue().append(SimpleValue("2")).appendExtraction(FunctionValue("toInt", emptyArray())), null
+                ),
                 ExpectedResult(
                     null,
                     listOf(

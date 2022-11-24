@@ -6,13 +6,15 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
+import org.skellig.teststep.processing.exception.TestValueConversionException
 import org.skellig.teststep.processing.exception.ValueExtractionException
-import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
-import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
+import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
+import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
+import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import java.util.*
 
 internal class TestStepFactoryValueConverterTest {
@@ -26,9 +28,11 @@ internal class TestStepFactoryValueConverterTest {
                     DefaultFunctionValueExecutor.Builder()
                         .withTestScenarioState(testScenarioState)
                         .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
+                        .withClassPaths(listOf("org.skellig.teststep.processing.model.factory"))
+                        .withClassLoader(TestStepFactoryValueConverterTest::class.java.classLoader)
                         .build(),
                     DefaultValueExtractor.Builder().build(),
-                    mock(),
+                    DefaultValueComparator.Builder().build(),
                     DefaultPropertyExtractor(null)
                 )
             )
@@ -81,8 +85,13 @@ internal class TestStepFactoryValueConverterTest {
     @Test
     fun testWhenNotDefinedFunction() {
         val func = "f()"
-        assertEquals("#[$func]", converter.convertValue("#[$func]", emptyMap()))
-        assertEquals(func, converter.convertValue(func, emptyMap()))
+        Assertions.assertThrows(TestValueConversionException::class.java) { converter.convertValue<String>("#[$func]", emptyMap()) }
+        Assertions.assertThrows(TestValueConversionException::class.java) { converter.convertValue<String>(func, emptyMap()) }
+    }
+
+    @Test
+    fun testWhenRunCustomFunction() {
+        assertEquals("run successfully", converter.convertValue("#[customFunc()]", emptyMap()))
     }
 
     @Test
@@ -137,8 +146,8 @@ internal class TestStepFactoryValueConverterTest {
     }
 
     @Test
-    fun testWhenSpecialCharsInRegexNotInQuotes() {
-        assertEquals("match('[\\\\w]{44}')", converter.convertValue("match('[\\\\w]{44}')", emptyMap()))
+    fun testWhenComparatorDefined() {
+        assertEquals("match([\\w]{44})", converter.convertValue("match('[\\\\w]{44}')", emptyMap()))
     }
 
     @Test
@@ -369,4 +378,11 @@ class SampleData(var id: Int, val name: String) {
     fun convertToMap(includeSelf: Boolean): Map<String, Any> =
         if (includeSelf) mapOf(Pair(name, id), Pair("self", this))
         else mapOf(Pair(name, id))
+}
+
+class CustomFunctions {
+
+    @org.skellig.teststep.processing.value.function.Function
+    fun customFunc(): String = "run successfully"
+
 }

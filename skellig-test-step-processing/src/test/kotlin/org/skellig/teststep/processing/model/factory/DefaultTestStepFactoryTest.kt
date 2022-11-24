@@ -5,14 +5,14 @@ import com.nhaarman.mockitokotlin2.whenever
 import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
-import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
-import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
-import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
+import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
+import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import java.util.*
 
 @DisplayName("Create Test Step")
@@ -68,6 +68,27 @@ class DefaultTestStepFactoryTest {
             { Assertions.assertEquals(generatedId, testStep.variables!!["id"]) },
             { Assertions.assertTrue((testStep.variables!!["names"] as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
             { Assertions.assertEquals("100", testStep.variables!!["amount"]) }
+        )
+    }
+
+    @Test
+    @DisplayName("With parameters in name Then check they are collected corectly")
+    fun testCreateTestStepWithParamsInName() {
+        val rawTestStep = mapOf(
+            Pair("name", "Book seats (.+) of the event\\s*(.*)"),
+            Pair(
+                "variables",
+                mapOf(
+                    Pair("seats", "\${1}"),
+                    Pair("event", "\${2}")
+                )
+            )
+        )
+        val testStep = testStepFactory!!.create("Book seats s1 of the event", rawTestStep, emptyMap())
+
+        Assertions.assertAll(
+            { Assertions.assertEquals("s1", testStep.variables!!["seats"]) },
+            { Assertions.assertNull(testStep.variables!!["event"]) },
         )
     }
 
@@ -134,6 +155,28 @@ class DefaultTestStepFactoryTest {
             { Assertions.assertEquals("\${row}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
             { Assertions.assertEquals("id", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
             { Assertions.assertEquals("\${id}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult.toString()) }
+        )
+    }
+
+    @Test
+    @DisplayName("With validation details having many xpaths Then check each is preserved")
+    fun testCreateTestStepWithValidationDetailsOfManyXpaths() {
+        val rawTestStep =  mapOf(
+            Pair("validate",
+            mapOf(
+                Pair("local.toString()", mapOf(
+                    Pair("xpath(/a/b)", "1"),
+                    Pair("xpath(/c/d)", "2")
+                ))
+        )))
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
+        val validationDetails = testStep.validationDetails
+
+        Assertions.assertAll(
+            { Assertions.assertEquals("local.toString()", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { Assertions.assertEquals("xpath(/a/b)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).property.toString()) },
+            { Assertions.assertEquals("xpath(/c/d)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).property.toString()) },
         )
     }
 

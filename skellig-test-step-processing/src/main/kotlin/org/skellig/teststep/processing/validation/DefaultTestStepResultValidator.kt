@@ -3,8 +3,8 @@ package org.skellig.teststep.processing.validation
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.MatchingType
-import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.value.chunk.RawValueChunk
+import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 
 class DefaultTestStepResultValidator(
     private val rawValueProcessingVisitor: RawValueProcessingVisitor
@@ -79,7 +79,10 @@ class DefaultTestStepResultValidator(
         errorBuilder.append(expectedResult.getFullPropertyPath())
             .append(" is not valid. ")
             .append(if (expectedResult.getMatchingTypeOfParent() !== MatchingType.NONE_MATCH) "Expected: " else "Did not expect: ")
-            .append(expectedResult.expectedResult)
+            .append(
+                if (expectedResult.expectedResult is RawValueChunk) rawValueProcessingVisitor.process(expectedResult.expectedResult as RawValueChunk)
+                else expectedResult.expectedResult
+            )
             .append(" Actual: ")
             .append(actualValue)
             .append('\n')

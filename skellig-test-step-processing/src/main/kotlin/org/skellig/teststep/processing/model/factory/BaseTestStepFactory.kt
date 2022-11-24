@@ -16,13 +16,16 @@ abstract class BaseTestStepFactory<T : TestStep>(
         return testStepFactoryValueConverter.convertValue(value, parameters)
     }
 
-    protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<String, Any?>): Map<String, String>? {
-        var parameters: MutableMap<String, String>? = null
+    protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<String, Any?>): Map<String, String?>? {
+        var parameters: MutableMap<String, String?>? = null
         val matcher = CachedPattern.compile(getName(rawTestStep)).matcher(testStepName)
         if (matcher.find()) {
             parameters = HashMap()
             for (i in 1..matcher.groupCount()) {
-                parameters[i.toString()] = matcher.group(i)
+                val value = matcher.group(i)
+                if(value.isNotEmpty()) {
+                    parameters[i.toString()] = value
+                }
             }
         }
         return parameters

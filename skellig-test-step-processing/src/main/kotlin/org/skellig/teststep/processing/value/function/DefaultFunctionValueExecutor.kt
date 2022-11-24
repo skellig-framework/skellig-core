@@ -6,7 +6,10 @@ import java.util.*
 
 class DefaultFunctionValueExecutor private constructor(private val functions: Map<String, FunctionValueExecutor>) : FunctionValueExecutor {
 
-    override fun execute(name: String, args: Array<Any?>): Any? = functions[name]?.execute(name, args)
+    override fun execute(name: String, args: Array<Any?>): Any? {
+        return if (functions.containsKey(name)) functions[name]?.execute(name, args)
+        else functions[""]?.execute(name, args) // if no function found, then try the custom one if registered.
+    }
 
     override fun getFunctionName(): String = ""
 
@@ -56,10 +59,10 @@ class DefaultFunctionValueExecutor private constructor(private val functions: Ma
             withFunctionProcessor(ToJsonFunctionExecutor())
             classLoader?.let {
                 val fromCsvFunctionExecutor = FromCsvFunctionExecutor(it)
-               withFunctionProcessor(fromCsvFunctionExecutor)
-               withFunctionProcessor(FromCsvFunctionExecutor(it))
-               withFunctionProcessor(FromTemplateFunctionExecutor(it))
-               withFunctionProcessor(CustomFunctionExecutor(classPaths, it))
+                withFunctionProcessor(fromCsvFunctionExecutor)
+                withFunctionProcessor(FromCsvFunctionExecutor(it))
+                withFunctionProcessor(FromTemplateFunctionExecutor(it))
+                withFunctionProcessor(CustomFunctionExecutor(classPaths, it))
             }
 
             return defaultFunctionValueExecutor
