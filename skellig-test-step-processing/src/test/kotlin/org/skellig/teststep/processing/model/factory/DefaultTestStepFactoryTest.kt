@@ -72,7 +72,7 @@ class DefaultTestStepFactoryTest {
     }
 
     @Test
-    @DisplayName("With parameters in name Then check they are collected corectly")
+    @DisplayName("With parameters in name Then check they are collected correctly")
     fun testCreateTestStepWithParamsInName() {
         val rawTestStep = mapOf(
             Pair("name", "Book seats (.+) of the event\\s*(.*)"),
