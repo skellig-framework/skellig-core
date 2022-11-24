@@ -15,7 +15,6 @@ class DefaultFunctionValueExecutor private constructor(private val functions: Ma
 
     class Builder {
 
-        private val functionValueExecutors = mutableListOf<FunctionValueExecutor>()
         private val functions = mutableMapOf<String, FunctionValueExecutor>()
         private var testScenarioState: TestScenarioState? = null
         private var valueExtractor: ValueExtractor? = null
@@ -36,33 +35,32 @@ class DefaultFunctionValueExecutor private constructor(private val functions: Ma
         fun withTestStepValueExtractor(valueExtractor: ValueExtractor?) =
             apply { this.valueExtractor = valueExtractor }
 
-        fun withFunctionValueExecutor(functionValueExecutor: FunctionValueExecutor) = apply { functionValueExecutors.add(functionValueExecutor) }
-
-        fun withFunctionProcessor(functionProcessor: FunctionValueExecutor) = apply { functions[functionProcessor.getFunctionName()] = functionProcessor }
+        fun withFunctionValueExecutor(functionValueExecutor: FunctionValueExecutor) =
+            apply { functions[functionValueExecutor.getFunctionName()] = functionValueExecutor }
 
         fun build(): FunctionValueExecutor {
             Objects.requireNonNull(testScenarioState, "Test Scenario State must be provided")
 
             val defaultFunctionValueExecutor = DefaultFunctionValueExecutor(functions)
 
-            withFunctionProcessor(IfFunctionExecutor())
-            withFunctionProcessor(GetFromStateFunctionExecutor(testScenarioState!!))
+            this.withFunctionValueExecutor(IfFunctionExecutor())
+            this.withFunctionValueExecutor(GetFromStateFunctionExecutor(testScenarioState!!))
             classLoader?.let {
-                withFunctionProcessor(FileFunctionExecutor(it))
+                this.withFunctionValueExecutor(FileFunctionExecutor(it))
             }
 
-            withFunctionProcessor(RandomFunctionExecutor())
-            withFunctionProcessor(IncrementFunctionExecutor())
-            withFunctionProcessor(CurrentDateTimeFunctionExecutor())
-            withFunctionProcessor(ToDateTimeFunctionExecutor())
-            withFunctionProcessor(ListOfFunctionExecutor())
-            withFunctionProcessor(ToJsonFunctionExecutor())
+            this.withFunctionValueExecutor(RandomFunctionExecutor())
+            this.withFunctionValueExecutor(IncrementFunctionExecutor())
+            this.withFunctionValueExecutor(CurrentDateTimeFunctionExecutor())
+            this.withFunctionValueExecutor(ToDateTimeFunctionExecutor())
+            this.withFunctionValueExecutor(ListOfFunctionExecutor())
+            this.withFunctionValueExecutor(ToJsonFunctionExecutor())
             classLoader?.let {
                 val fromCsvFunctionExecutor = FromCsvFunctionExecutor(it)
-                withFunctionProcessor(fromCsvFunctionExecutor)
-                withFunctionProcessor(FromCsvFunctionExecutor(it))
-                withFunctionProcessor(FromTemplateFunctionExecutor(it))
-                withFunctionProcessor(CustomFunctionExecutor(classPaths, it))
+                this.withFunctionValueExecutor(fromCsvFunctionExecutor)
+                this.withFunctionValueExecutor(FromCsvFunctionExecutor(it))
+                this.withFunctionValueExecutor(FromTemplateFunctionExecutor(it))
+                this.withFunctionValueExecutor(CustomFunctionExecutor(classPaths, it))
             }
 
             return defaultFunctionValueExecutor
