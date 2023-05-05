@@ -1,5 +1,8 @@
 package org.skellig.runner.config
 
+import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
+import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
+import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -30,5 +33,18 @@ class SimpleTestStepProcessor private constructor(testScenarioState: TestScenari
         fun build(): TestStepProcessor<SimpleTestStepFactory.SimpleTestStep> {
             return SimpleTestStepProcessor(testScenarioState, validator)
         }
+    }
+}
+
+class SimpleTestStepProcessorConfig : TestStepProcessorConfig<SimpleTestStepFactory.SimpleTestStep> {
+    override fun config(details: TestStepProcessorConfigDetails): TestStepProcessor<SimpleTestStepFactory.SimpleTestStep> {
+        return  SimpleTestStepProcessor.Builder()
+            .withTestScenarioState(details.state)
+            .withValidator(details.validator)
+            .build()
+    }
+
+    override fun createTestStepFactory(details: TestStepProcessorConfigDetails): TestStepFactory<SimpleTestStepFactory.SimpleTestStep> {
+        return SimpleTestStepFactory(details.testStepRegistry, details.keywordProperties, details.testStepFactoryValueConverter)
     }
 }

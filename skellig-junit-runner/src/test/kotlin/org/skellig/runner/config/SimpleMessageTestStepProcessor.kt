@@ -1,15 +1,19 @@
 package org.skellig.runner.config
 
 import org.skellig.task.TaskUtils.Companion.runTask
+import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
+import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
+import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import java.util.*
 
-class SimpleMessageTestStepProcessor private constructor(testScenarioState: TestScenarioState?,
-                                                         validator: TestStepResultValidator?)
-    : BaseTestStepProcessor<SimpleMessageTestStep>(testScenarioState!!, validator!!) {
+class SimpleMessageTestStepProcessor private constructor(
+    testScenarioState: TestScenarioState?,
+    validator: TestStepResultValidator?
+) : BaseTestStepProcessor<SimpleMessageTestStep>(testScenarioState!!, validator!!) {
 
     private var latestReceivedMessage: MutableMap<Any, Any?>? = null
 
@@ -26,9 +30,10 @@ class SimpleMessageTestStepProcessor private constructor(testScenarioState: Test
 
     private fun createResponse(testStep: SimpleMessageTestStep): MutableMap<Any, Any?> {
         return hashMapOf(
-                Pair("originalRequest", testStep.testData),
-                Pair("receivedBy", testStep.receiver),
-                Pair("status", "success"))
+            Pair("originalRequest", testStep.testData),
+            Pair("receivedBy", testStep.receiver),
+            Pair("status", "success")
+        )
     }
 
     override fun getTestStepClass(): Class<SimpleMessageTestStep> {
@@ -50,5 +55,18 @@ class SimpleMessageTestStepProcessor private constructor(testScenarioState: Test
         fun build(): TestStepProcessor<SimpleMessageTestStep> {
             return SimpleMessageTestStepProcessor(testScenarioState, validator)
         }
+    }
+}
+
+class SimpleMessageTestStepProcessorConfig : TestStepProcessorConfig<SimpleMessageTestStep> {
+    override fun config(details: TestStepProcessorConfigDetails): TestStepProcessor<SimpleMessageTestStep> {
+        return SimpleMessageTestStepProcessor.Builder()
+            .withTestScenarioState(details.state)
+            .withValidator(details.validator)
+            .build()
+    }
+
+    override fun createTestStepFactory(details: TestStepProcessorConfigDetails): TestStepFactory<SimpleMessageTestStep> {
+        return SimpleMessageTestStepFactory(details.testStepRegistry, details.keywordProperties, details.testStepFactoryValueConverter)
     }
 }

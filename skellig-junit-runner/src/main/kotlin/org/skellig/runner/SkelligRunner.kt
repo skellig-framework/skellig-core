@@ -33,20 +33,26 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         val featureParser = DefaultFeatureParser()
 
         skelligOptions.features
-                .forEach { featureResourcePath: String ->
-                    try {
-                        val featuresResource = clazz.classLoader.getResource(featureResourcePath)
-                        featuresResource?.let {
-                            val pathToFeatures = Paths.get(featuresResource.toURI())
-                            featureParser.parse(pathToFeatures.toString())
-                                    ?.map { feature: Feature -> FeatureRunner.create(feature, testStepRunner, testScenarioState) }
-                                    ?.toCollection(children)
-                                    ?: error("Failed to parse features from $featureResourcePath")
-                        }
-                    } catch (e: Exception) {
-                        throw FeatureRunnerException("Failed to read features from path: $featureResourcePath", e)
+            .forEach { featureResourcePath: String ->
+                try {
+                    val featuresResource = clazz.classLoader.getResource(featureResourcePath)
+                    featuresResource?.let {
+                        val pathToFeatures = Paths.get(featuresResource.toURI())
+                        featureParser.parse(pathToFeatures.toString())
+                            ?.map { feature: Feature ->
+                                FeatureRunner.create(
+                                    feature,
+                                    testStepRunner,
+                                    testScenarioState
+                                )
+                            }
+                            ?.toCollection(children)
+                            ?: error("Failed to parse features from $featureResourcePath")
                     }
+                } catch (e: Exception) {
+                    throw FeatureRunnerException("Failed to read features from path: $featureResourcePath", e)
                 }
+            }
     }
 
     override fun run(notifier: RunNotifier?) {
@@ -77,11 +83,11 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
 
     private fun getConfig(config: String): String {
         val key = config.substringAfter("\${").substringBefore("}")
-        if (key.isNotEmpty()) {
+        return if (key.isNotEmpty()) {
             val property = System.getProperty(key, "")
-            return config.replace("\${$key}", property)
+            config.replace("\${$key}", property)
         } else {
-            return config
+            config
         }
     }
 
