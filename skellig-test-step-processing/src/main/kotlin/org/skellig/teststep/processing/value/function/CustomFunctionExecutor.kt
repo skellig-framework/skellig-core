@@ -40,6 +40,7 @@ class CustomFunctionExecutor(packages: Collection<String>?, classLoader: ClassLo
 
     override fun getFunctionName(): String = ""
 
+    //TODO: refactor using ClassGraph
     private inner class ClassTestStepsReaderStrategy(packageName: String) {
         private val fileReader = mapOf(
             Pair("file", ClassFunctionsFromFileReader(packageName)),

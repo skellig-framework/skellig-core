@@ -10,14 +10,14 @@ class ClassTestStepsRegistryTest {
 
     @Test
     fun testExtractTestStepsNonExistingPath() {
-        val registry = ClassTestStepsRegistry(listOf("invalid.package"), javaClass.classLoader)
+        val registry = ClassTestStepsRegistry(listOf("invalid.package"))
 
         assertEquals(0, registry.getTestSteps().size)
     }
 
     @Test
     fun testExtractTestStepsFromClasses() {
-        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.registry"), javaClass.classLoader)
+        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.registry"))
 
         val testSteps = registry.getTestSteps()
         assertAll(

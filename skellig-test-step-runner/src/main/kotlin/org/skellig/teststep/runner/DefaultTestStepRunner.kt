@@ -13,7 +13,7 @@ internal class DefaultTestStepRunner private constructor(private val testStepPro
                                                          private val testStepFactory: TestStepFactory<TestStep>) : TestStepRunner {
 
     companion object {
-        private val LOGGER : Logger = LoggerFactory.getLogger(DefaultTestStepRunner.javaClass)
+        private val LOGGER : Logger = LoggerFactory.getLogger(DefaultTestStepRunner::class.java)
     }
 
     override fun run(testStepName: String): TestStepRunResult {

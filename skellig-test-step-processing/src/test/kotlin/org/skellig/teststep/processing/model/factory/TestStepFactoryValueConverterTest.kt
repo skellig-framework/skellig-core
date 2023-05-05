@@ -27,7 +27,6 @@ internal class TestStepFactoryValueConverterTest {
                 RawValueProcessingVisitor(
                     DefaultFunctionValueExecutor.Builder()
                         .withTestScenarioState(testScenarioState)
-                        .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
                         .withClassPaths(listOf("org.skellig.teststep.processing.model.factory"))
                         .withClassLoader(TestStepFactoryValueConverterTest::class.java.classLoader)
                         .build(),

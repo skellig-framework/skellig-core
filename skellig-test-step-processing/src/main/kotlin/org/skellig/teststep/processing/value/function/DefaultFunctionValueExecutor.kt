@@ -17,7 +17,6 @@ class DefaultFunctionValueExecutor private constructor(private val functions: Ma
 
         private val functions = mutableMapOf<String, FunctionValueExecutor>()
         private var testScenarioState: TestScenarioState? = null
-        private var valueExtractor: ValueExtractor? = null
         private var getPropertyFunction: ((String) -> Any?)? = null
         private var classLoader: ClassLoader? = null
         private var classPaths: Collection<String>? = null
@@ -31,9 +30,6 @@ class DefaultFunctionValueExecutor private constructor(private val functions: Ma
         fun withClassLoader(classLoader: ClassLoader?) = apply { this.classLoader = classLoader }
 
         fun withClassPaths(classPaths: Collection<String>) = apply { this.classPaths = classPaths }
-
-        fun withTestStepValueExtractor(valueExtractor: ValueExtractor?) =
-            apply { this.valueExtractor = valueExtractor }
 
         fun withFunctionValueExecutor(functionValueExecutor: FunctionValueExecutor) =
             apply { functions[functionValueExecutor.getFunctionName()] = functionValueExecutor }

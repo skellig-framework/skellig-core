@@ -32,7 +32,6 @@ class DefaultTestStepFactoryTest {
                         RawValueProcessingVisitor(
                             DefaultFunctionValueExecutor.Builder()
                                 .withTestScenarioState(testScenarioState)
-                                .withTestStepValueExtractor(DefaultValueExtractor.Builder().build())
                                 .build(),
                             DefaultValueExtractor.Builder().build(),
                             mock(),
