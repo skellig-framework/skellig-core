@@ -31,7 +31,7 @@ internal class ClassTestStepsRegistry(packages: Collection<String>) : TestStepRe
             .use {
                 it.allClasses
                     .forEach { c ->
-                        loadStepDefsMethods(c, it)
+                        loadStepDefsMethods(c)
                     }
             }
     }
@@ -43,7 +43,7 @@ internal class ClassTestStepsRegistry(packages: Collection<String>) : TestStepRe
 
     override fun getTestSteps(): Collection<Map<String, Any?>> = testStepsPerClass
 
-    private fun loadStepDefsMethods(classInfo: ClassInfo, it: ScanResult?) {
+    private fun loadStepDefsMethods(classInfo: ClassInfo) {
         var foundClassInstance: Any? = null
         classInfo.methodInfo
             .filter { m -> m.hasAnnotation(TestStep::class.java) }
