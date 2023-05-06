@@ -71,9 +71,9 @@ open class SkelligTestContext : Closeable {
 
         config = createConfig(classLoader, configPath)
 
+        testScenarioState = createTestScenarioState()
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepReader = createTestStepReader()
-        testScenarioState = createTestScenarioState()
         val valueExtractor = createTestStepValueExtractor(testScenarioState)
         val valueComparator = createValueComparator()
 
@@ -87,12 +87,21 @@ open class SkelligTestContext : Closeable {
         testStepResultValidator = createTestStepValidator(rawValueProcessingVisitor)
         testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths)
 
-
         testStepFactoryValueConverter =
             TestStepFactoryValueConverter.Builder()
                 .withValueProcessingVisitor(rawValueProcessingVisitor)
                 .build()
 
+        initTestStepProcessors()
+
+        return DefaultTestStepRunner.Builder()
+            .withTestStepsRegistry(getTestStepRegistry())
+            .withTestStepProcessor(rootTestStepProcessor!!)
+            .withTestStepFactory(rootTestStepFactory!!)
+            .build()
+    }
+
+    private fun initTestStepProcessors() {
         rootTestStepProcessor = CompositeTestStepProcessor.Builder()
             .withTestScenarioState(testScenarioState)
             .withValidator(getTestStepResultValidator())
@@ -104,66 +113,31 @@ open class SkelligTestContext : Closeable {
             .withTestDataRegistry(getTestStepRegistry())
             .build()
 
-        val testStepProcessors =
-            extractFromConfig(setOf(DEFAULT_PACKAGE_TO_SCAN, getPackageToScan()), TestStepProcessorConfig::class.java)
-            { processorConfig ->
-                try {
-                    val testStepProcessorConfig = processorConfig as TestStepProcessorConfig<out TestStep>
-                    val testStepProcessorConfigDetails = TestStepProcessorConfigDetails(
-                        testStepResultValidator!!,
-                        testScenarioState!!,
-                        testStepsRegistry!!,
-                        testStepKeywordsProperties,
-                        testStepFactoryValueConverter!!
-                    )
-                    val testStepFactory = testStepProcessorConfig.createTestStepFactory(testStepProcessorConfigDetails)
-                    val processor = testStepProcessorConfig.config(testStepProcessorConfigDetails)
-                    TestStepProcessorDetails(processor, testStepFactory)
-                } catch (ex: Exception) {
-                    throw TestStepRegistryException(
-                        "Failed to instantiate class '${processorConfig.javaClass.name}'",
-                        ex
-                    )
-                }
+        // initialise additional test step processors if found
+        extractFromConfig(setOf(DEFAULT_PACKAGE_TO_SCAN, getPackageToScan()), TestStepProcessorConfig::class.java)
+        { processorConfig ->
+            try {
+                val testStepProcessorConfig = processorConfig as TestStepProcessorConfig<out TestStep>
+                val testStepProcessorConfigDetails = TestStepProcessorConfigDetails(
+                    testStepResultValidator!!,
+                    testScenarioState!!,
+                    testStepsRegistry!!,
+                    testStepKeywordsProperties,
+                    testStepFactoryValueConverter!!
+                )
+                val testStepFactory = testStepProcessorConfig.createTestStepFactory(testStepProcessorConfigDetails)
+                val processor = testStepProcessorConfig.config(testStepProcessorConfigDetails)
+                TestStepProcessorDetails(processor, testStepFactory)
+            } catch (ex: Exception) {
+                throw TestStepRegistryException("Failed to instantiate class '${processorConfig.javaClass.name}'", ex)
             }
-        val testStepProcessor = createTestStepProcessor(testStepProcessors)
-        val testStepFactory = createTestStepFactory(testStepProcessors, getTestStepRegistry())
-
-        return DefaultTestStepRunner.Builder()
-            .withTestStepsRegistry(getTestStepRegistry())
-            .withTestStepProcessor(testStepProcessor)
-            .withTestStepFactory(testStepFactory)
-            .build()
+        }.forEach {
+            rootTestStepProcessor!!.registerTestStepProcessor(it.testStepProcessor)
+            injectTestContextIfRequired(it.testStepProcessor)
+            rootTestStepFactory!!.registerTestStepFactory(it.testStepFactory)
+            injectTestContextIfRequired(it.testStepFactory)
+        }
     }
-
-    /*  private fun createTestStepProcessorsFromConfig(): Collection<TestStepProcessorDetails> {
-          ClassGraph().acceptPackages(
-              DEFAULT_PACKAGE_TO_SCAN,
-              config?.getString("packageToScan") ?: "nothing"
-          ).enableClassInfo().scan().use {
-              return it.allClasses
-                  .filter { c -> c.implementsInterface(TestStepProcessorConfig::class.java) }
-                  .map { c -> this.createTestStepProcessor(c.loadClass(TestStepProcessorConfig::class.java)) }
-                  .toList()
-          }
-      }
-
-      private fun createTestStepProcessor(testStepProcessorConfigClass: Class<*>) = try {
-          val foundClassInstance = testStepProcessorConfigClass.getDeclaredConstructor().newInstance()
-          val testStepProcessorConfig = foundClassInstance as TestStepProcessorConfig<out TestStep>
-          val testStepProcessorConfigDetails = TestStepProcessorConfigDetails(
-              testStepResultValidator!!,
-              testScenarioState!!,
-              testStepsRegistry!!,
-              testStepKeywordsProperties,
-              testStepFactoryValueConverter!!
-          )
-          val testStepFactory = testStepProcessorConfig.createTestStepFactory(testStepProcessorConfigDetails)
-          val processor = testStepProcessorConfig.config(testStepProcessorConfigDetails)
-          TestStepProcessorDetails(processor, testStepFactory)
-      } catch (ex: Exception) {
-          throw TestStepRegistryException("Failed to instantiate class '${testStepProcessorConfigClass.name}'", ex)
-      }*/
 
     private fun createTestStepsRegistry(
         testStepPaths: List<String>,
