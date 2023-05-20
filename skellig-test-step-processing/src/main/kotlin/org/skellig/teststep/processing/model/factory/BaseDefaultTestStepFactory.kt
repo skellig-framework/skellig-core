@@ -114,7 +114,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         }
     }
 
-    private fun extractTestData(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Any? {
+    protected open fun extractTestData(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Any? {
         return getTestDataKeywords()!!
             .filter { rawTestStep.containsKey(it) }
             .map { keyword: String -> convertValue<Any>(rawTestStep[keyword], parameters) }

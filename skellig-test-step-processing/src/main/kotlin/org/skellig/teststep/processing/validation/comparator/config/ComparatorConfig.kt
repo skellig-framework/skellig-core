@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.validation.comparator.config
 
+import com.typesafe.config.Config
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.comparator.ValueComparator
 
@@ -9,5 +10,5 @@ interface ComparatorConfig {
 
 data class ComparatorConfigDetails(
     val state: TestScenarioState,
-//    val config: Config,
+    val config: Config
 )

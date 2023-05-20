@@ -13,7 +13,7 @@ internal class CassandraDetailsConfigReaderTest {
 
     @Test
     fun testReadCassandraConfig() {
-        val details: List<CassandraDetails> = ArrayList(configReader.read(ConfigFactory.load("cassandra-test.conf")))
+        val details = configReader.read(ConfigFactory.load("cassandra-test.conf")).toList()
         Assertions.assertAll(
                 { Assertions.assertEquals(2, details.size) },
                 { Assertions.assertEquals("srv1", details[0].serverName) },

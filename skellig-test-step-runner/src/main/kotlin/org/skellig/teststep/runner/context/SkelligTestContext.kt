@@ -74,11 +74,11 @@ open class SkelligTestContext : Closeable {
         testScenarioState = createTestScenarioState()
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepReader = createTestStepReader()
-        val valueExtractor = createTestStepValueExtractor(testScenarioState)
+        val valueExtractor = createValueExtractor(testScenarioState)
         val valueComparator = createValueComparator()
 
         val rawValueProcessingVisitor = RawValueProcessingVisitor(
-            createTestStepValueConverter(classLoader, testScenarioState, testStepClassPaths),
+            createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths),
             valueExtractor,
             valueComparator,
             DefaultPropertyExtractor(propertyExtractorFunction)
@@ -114,24 +114,26 @@ open class SkelligTestContext : Closeable {
             .build()
 
         // initialise additional test step processors if found
-        extractFromConfig(setOf(DEFAULT_PACKAGE_TO_SCAN, getPackageToScan()), TestStepProcessorConfig::class.java)
+        extractFromConfig(getPackageToScan().union(setOf(DEFAULT_PACKAGE_TO_SCAN)), TestStepProcessorConfig::class.java)
         { processorConfig ->
             try {
                 val testStepProcessorConfig = processorConfig as TestStepProcessorConfig<out TestStep>
                 val testStepProcessorConfigDetails = TestStepProcessorConfigDetails(
                     testStepResultValidator!!,
                     testScenarioState!!,
+                    config!!,
                     testStepsRegistry!!,
                     testStepKeywordsProperties,
-                    testStepFactoryValueConverter!!
+                    testStepFactoryValueConverter!!,
+                    rootTestStepProcessor!!,
+                    rootTestStepFactory!!
                 )
-                val testStepFactory = testStepProcessorConfig.createTestStepFactory(testStepProcessorConfigDetails)
-                val processor = testStepProcessorConfig.config(testStepProcessorConfigDetails)
-                TestStepProcessorDetails(processor, testStepFactory)
+                testStepProcessorConfig.config(testStepProcessorConfigDetails)
             } catch (ex: Exception) {
                 throw TestStepRegistryException("Failed to instantiate class '${processorConfig.javaClass.name}'", ex)
             }
-        }.forEach {
+        }.filterNotNull()
+            .forEach {
             rootTestStepProcessor!!.registerTestStepProcessor(it.testStepProcessor)
             injectTestContextIfRequired(it.testStepProcessor)
             rootTestStepFactory!!.registerTestStepFactory(it.testStepFactory)
@@ -196,15 +198,6 @@ open class SkelligTestContext : Closeable {
         }
     }
 
-    private fun createTestStepFactory(
-        testStepProcessorsDetails: Collection<TestStepProcessorDetails>,
-        testStepsRegistry: TestStepRegistry
-    ): TestStepFactory<TestStep> {
-        testStepProcessorsDetails.forEach { rootTestStepFactory!!.registerTestStepFactory(it.testStepFactory) }
-
-        return rootTestStepFactory!!
-    }
-
     fun getTestScenarioState(): TestScenarioState =
         testScenarioState ?: error("TestScenarioState must be initialized first. Did you forget to call 'initialize'?")
 
@@ -217,16 +210,6 @@ open class SkelligTestContext : Closeable {
             ?: error("TestStepRegistry must be initialized first. Did you forget to call 'initialize'?")
 
 
-    private fun createTestStepProcessor(additionalTestStepProcessors: Collection<TestStepProcessorDetails>): TestStepProcessor<TestStep> {
-        additionalTestStepProcessors.forEach {
-            rootTestStepProcessor!!.registerTestStepProcessor(it.testStepProcessor)
-            injectTestContextIfRequired(it.testStepFactory)
-            injectTestContextIfRequired(it.testStepProcessor)
-        }
-
-        return rootTestStepProcessor!!
-    }
-
     private fun createTestStepValidator(
         rawValueProcessingVisitor: RawValueProcessingVisitor,
     ): TestStepResultValidator {
@@ -237,8 +220,8 @@ open class SkelligTestContext : Closeable {
 
     private fun createValueComparator(): ValueComparator {
         val valueComparatorBuilder = DefaultValueComparator.Builder()
-        extractFromConfig(setOf(getPackageToScan()), ComparatorConfig::class.java) { functionsConfig ->
-            functionsConfig.configComparators(ComparatorConfigDetails(testScenarioState!!))
+        extractFromConfig(getPackageToScan(), ComparatorConfig::class.java) { functionsConfig ->
+            functionsConfig.configComparators(ComparatorConfigDetails(testScenarioState!!, config!!))
         }.flatten()
             .forEach {
                 valueComparatorBuilder.withValueComparator(it)
@@ -248,22 +231,22 @@ open class SkelligTestContext : Closeable {
         return valueComparatorBuilder.build()
     }
 
-    private fun createTestStepValueConverter(
+    private fun createFunctionExecutor(
         classLoader: ClassLoader,
         testScenarioState: TestScenarioState?,
         testStepClassPaths: Collection<String>
     ): FunctionValueExecutor {
-        val valueConverterBuilder = DefaultFunctionValueExecutor.Builder()
+        val functionExecutorBuilder = DefaultFunctionValueExecutor.Builder()
 
-        extractFromConfig(setOf(getPackageToScan()), FunctionsConfig::class.java) { functionsConfig ->
-            functionsConfig.configFunctionExecutors(FunctionsConfigDetails(testScenarioState!!))
+        extractFromConfig(getPackageToScan(), FunctionsConfig::class.java) { functionsConfig ->
+            functionsConfig.configFunctionExecutors(FunctionsConfigDetails(testScenarioState!!, config!!))
         }.flatten()
             .forEach {
-                valueConverterBuilder.withFunctionValueExecutor(it)
+                functionExecutorBuilder.withFunctionValueExecutor(it)
                 injectTestContextIfRequired(it)
             }
 
-        return valueConverterBuilder
+        return functionExecutorBuilder
             .withClassLoader(classLoader)
             .withClassPaths(testStepClassPaths)
             .withGetPropertyFunction(propertyExtractorFunction)
@@ -271,13 +254,13 @@ open class SkelligTestContext : Closeable {
             .build()
     }
 
-    private fun createTestStepValueExtractor(
+    private fun createValueExtractor(
         testScenarioState: TestScenarioState?,
     ): ValueExtractor {
         val valueExtractorBuilder = DefaultValueExtractor.Builder()
 
-        extractFromConfig(setOf(getPackageToScan()), FunctionsConfig::class.java) { functionsConfig ->
-            functionsConfig.configValueExtractors(FunctionsConfigDetails(testScenarioState!!))
+        extractFromConfig(getPackageToScan(), FunctionsConfig::class.java) { functionsConfig ->
+            functionsConfig.configValueExtractors(FunctionsConfigDetails(testScenarioState!!, config!!))
         }.flatten()
             .forEach {
                 valueExtractorBuilder.withValueExtractor(it)
@@ -343,7 +326,7 @@ open class SkelligTestContext : Closeable {
         }
     }
 
-    private fun getPackageToScan() = config?.getString("packageToScan") ?: "nothing"
+    private fun getPackageToScan() = config?.getString("packageToScan")?.split(',')?.toSet() ?: emptySet()
 
     private class TestStepProcessorDetails(
         val testStepProcessor: TestStepProcessor<*>,

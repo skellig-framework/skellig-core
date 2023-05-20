@@ -8,7 +8,7 @@ import org.skellig.teststep.processor.tcp.model.TcpDetails
 abstract class BaseTcpProcessorBuilder<T : BaseTcpTestStep> : BaseTestStepProcessor.Builder<T>() {
 
     companion object {
-        private const val TCP_CONFIG_KEYWORD = "tcp"
+        private const val TCP_CONFIG_KEYWORD = "tcp.hosts"
         const val ID = "id"
         const val HOST = "host"
         const val PORT = "port"
