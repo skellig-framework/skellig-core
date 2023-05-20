@@ -7,7 +7,7 @@ import java.util.*
 class UnixShellConfigReader {
 
     companion object {
-        private const val UNIX_SHELL_CONFIG_KEYWORD = "unix-shell"
+        private const val UNIX_SHELL_CONFIG_KEYWORD = "unix-shell.hosts"
     }
 
     fun read(config: Config): Collection<UnixShellHostDetails> {

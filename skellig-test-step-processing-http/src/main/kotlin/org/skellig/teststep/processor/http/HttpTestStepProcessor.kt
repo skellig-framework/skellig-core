@@ -70,7 +70,7 @@ class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
         companion object {
             private const val URL_KEYWORD = "url"
             private const val SERVICE_NAME_KEYWORD = "serviceName"
-            private const val HTTP_CONFIG_KEYWORD = "http_services"
+            private const val HTTP_CONFIG_KEYWORD = "http.services"
         }
 
         private val httpChannelPerService = mutableMapOf<String, HttpChannel>()

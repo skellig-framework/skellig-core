@@ -6,6 +6,7 @@ import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigD
 import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.processor.config.ConfiguredTestStepProcessorDetails
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
 import java.util.*
@@ -59,14 +60,17 @@ class SimpleMessageTestStepProcessor private constructor(
 }
 
 class SimpleMessageTestStepProcessorConfig : TestStepProcessorConfig<SimpleMessageTestStep> {
-    override fun config(details: TestStepProcessorConfigDetails): TestStepProcessor<SimpleMessageTestStep> {
-        return SimpleMessageTestStepProcessor.Builder()
-            .withTestScenarioState(details.state)
-            .withValidator(details.validator)
-            .build()
-    }
-
-    override fun createTestStepFactory(details: TestStepProcessorConfigDetails): TestStepFactory<SimpleMessageTestStep> {
-        return SimpleMessageTestStepFactory(details.testStepRegistry, details.keywordProperties, details.testStepFactoryValueConverter)
+    override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<SimpleMessageTestStep> {
+        return ConfiguredTestStepProcessorDetails(
+            SimpleMessageTestStepProcessor.Builder()
+                .withTestScenarioState(details.state)
+                .withValidator(details.validator)
+                .build(),
+            SimpleMessageTestStepFactory(
+                details.testStepRegistry,
+                details.keywordProperties,
+                details.testStepFactoryValueConverter
+            )
+        )
     }
 }

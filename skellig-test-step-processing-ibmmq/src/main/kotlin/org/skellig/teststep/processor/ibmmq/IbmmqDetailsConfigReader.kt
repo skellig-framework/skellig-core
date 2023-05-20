@@ -8,7 +8,7 @@ import java.util.*
 internal class IbmmqDetailsConfigReader {
 
     companion object {
-        private const val IBMMQ_CONFIG_KEYWORD = "ibmmq"
+        private const val IBMMQ_CONFIG_KEYWORD = "ibmmq.hosts"
     }
 
     fun read(config: Config?): Collection<IbmMqQueueDetails> {

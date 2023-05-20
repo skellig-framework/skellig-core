@@ -15,8 +15,6 @@ abstract class SkelligPerformanceServiceRunner {
 
     protected abstract fun getConfigFileName(): String
 
-    protected abstract fun getContext(): SkelligTestContext
-
     private fun getConfigName(config: String): String {
         val key = config.substringAfter("\${").substringBefore("}")
         return if (key.isNotEmpty()) {
@@ -28,7 +26,7 @@ abstract class SkelligPerformanceServiceRunner {
     }
 
     @Bean
-    open fun context(): SkelligTestContext = getContext()
+    open fun context(): SkelligTestContext = SkelligTestContext()
 
     @Bean
     open fun testSteps(): List<String> {

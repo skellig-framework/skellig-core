@@ -7,7 +7,7 @@ import java.util.*
 internal class JdbcDetailsConfigReader {
 
     companion object {
-        private const val JDBC_CONFIG_KEYWORD = "jdbc"
+        private const val JDBC_CONFIG_KEYWORD = "jdbc.servers"
     }
 
     fun read(config: Config): Collection<JdbcDetails> {

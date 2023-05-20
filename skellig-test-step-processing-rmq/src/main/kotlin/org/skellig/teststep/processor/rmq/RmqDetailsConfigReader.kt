@@ -10,7 +10,7 @@ import java.util.*
 internal class RmqDetailsConfigReader {
 
     companion object {
-        private const val RMQ_CONFIG_KEYWORD = "rmq"
+        private const val RMQ_CONFIG_KEYWORD = "rmq.hosts"
     }
 
     fun read(config: Config?): Collection<RmqDetails> {

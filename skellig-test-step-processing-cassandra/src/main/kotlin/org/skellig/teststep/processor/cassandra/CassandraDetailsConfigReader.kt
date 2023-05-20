@@ -8,7 +8,7 @@ import java.util.*
 internal class CassandraDetailsConfigReader {
 
     companion object {
-        private const val CASSANDRA_CONFIG_KEYWORD = "cassandra"
+        private const val CASSANDRA_CONFIG_KEYWORD = "cassandra.servers"
     }
 
     fun read(config: Config): Collection<CassandraDetails> {
