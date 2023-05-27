@@ -10,8 +10,8 @@ ext.set("project_name", 'skellig-test-step-runner')
 ext.set("project_description", 'Functionality for running Skellig Test Step from name. Contains Skellig Test Context class responsible for registering and configuring the framework')
 
 dependencies {
-    implementation 'log4j:log4j:1.2.17'
-    implementation 'org.slf4j:slf4j-log4j12:1.7.25'
+    implementation 'org.apache.logging.log4j:log4j-core'
+    implementation 'org.slf4j:slf4j-reload4j'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
     implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.157'
 

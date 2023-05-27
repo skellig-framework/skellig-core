@@ -10,7 +10,7 @@ ext.set("project_name", 'skellig-test-step-processing-ibmmq')
 ext.set("project_description", 'Processing functionality for IBMMQ-based Skellig Test Step')
 
 dependencies {
-    implementation 'org.slf4j:slf4j-log4j12'
+    implementation 'org.slf4j:slf4j-reload4j'
     implementation group: 'com.typesafe', name: 'config'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
     implementation 'com.ibm.mq:com.ibm.mq.allclient:9.0.4.0'

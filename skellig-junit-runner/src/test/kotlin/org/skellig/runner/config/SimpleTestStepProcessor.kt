@@ -7,13 +7,19 @@ import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.slf4j.LoggerFactory
 
 class SimpleTestStepProcessor private constructor(
     testScenarioState: TestScenarioState?,
     validator: TestStepResultValidator?
 ) : BaseTestStepProcessor<SimpleTestStepFactory.SimpleTestStep>(testScenarioState!!, validator!!) {
 
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(SimpleTestStepProcessor::class.java)
+    }
+
     override fun processTestStep(testStep: SimpleTestStepFactory.SimpleTestStep): Any {
+        LOGGER.info("Start processing test with capture data: ${testStep.captureData}")
         return testStep.captureData
     }
 
