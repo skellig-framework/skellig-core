@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.exception
+package org.skellig.teststep.processing.value.extractor.exception
 
 class ValueExtractionException(message: String?, cause: Throwable?) : RuntimeException(message, cause) {
 

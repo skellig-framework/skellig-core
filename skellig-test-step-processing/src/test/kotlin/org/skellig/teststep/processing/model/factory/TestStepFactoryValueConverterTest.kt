@@ -8,7 +8,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.exception.TestValueConversionException
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.utils.UnitTestUtils
 import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator

@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.value.extractor
 
-import org.skellig.teststep.processing.exception.TestDataConversionException
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 import org.w3c.dom.Document
 import org.xml.sax.InputSource
 import java.io.StringReader
@@ -24,7 +24,7 @@ class XPathValueExtractor : ValueExtractor {
                     return null
                 }
             } ?: throw ValueExtractionException("Cannot extract xpath '%s' from null value")
-        } else throw TestDataConversionException("Function `xpath` can only accept 1 String argument. Found ${args.size}")
+        } else throw FunctionValueExecutionException("Function `xpath` can only accept 1 String argument. Found ${args.size}")
     }
 
     private fun extractDataFromXpath(document: Document, xpath: String): String {

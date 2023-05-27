@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 import org.skellig.teststep.processing.exception.TestValueConversionException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -17,7 +17,7 @@ class ToDateFunctionExecutor : FunctionValueExecutor {
             val value = args[0]?.toString()
             parseDate(value) { LocalDate.from(it) }
         } else {
-            throw TestDataConversionException("Function `$name` can only accept 1 argument. Found ${args.size}")
+            throw FunctionValueExecutionException("Function `$name` can only accept 1 argument. Found ${args.size}")
         }
     }
 

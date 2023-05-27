@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.value.extractor
 
-import org.skellig.teststep.processing.exception.TestDataConversionException
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 import java.lang.String.format
 
 open class SubStringValueExtractor : ValueExtractor {
@@ -17,7 +17,7 @@ open class SubStringValueExtractor : ValueExtractor {
                 return newValue
             } ?: throw ValueExtractionException(format("Cannot extract sub string '%s' from null value", extractionParameter))
         } else {
-            throw TestDataConversionException("Function `subString` can only accept 1 String argument. Found ${args.size}")
+            throw FunctionValueExecutionException("Function `subString` can only accept 1 String argument. Found ${args.size}")
         }
     }
 

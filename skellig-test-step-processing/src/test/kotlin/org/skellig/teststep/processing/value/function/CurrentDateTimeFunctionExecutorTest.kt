@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -57,7 +57,7 @@ class CurrentDateTimeFunctionExecutorTest {
         @Test
         @DisplayName("With invalid timezone Then check date with default timezone returned")
         fun testGetDateTimeWithInvalidTimezone() {
-            val ex = Assertions.assertThrows(TestDataConversionException::class.java)
+            val ex = Assertions.assertThrows(FunctionValueExecutionException::class.java)
             { valueConverter.execute("now", arrayOf("invalid")) as LocalDateTime? }
 
             assertEquals("Cannot get current date for the timezone 'invalid'", ex.message)
@@ -78,7 +78,7 @@ class CurrentDateTimeFunctionExecutorTest {
         @DisplayName("When date pattern is invalid Then throw exception")
         fun testInvalidFormat() {
             val formatPattern = "invalid"
-            val ex = Assertions.assertThrows(TestDataConversionException::class.java)
+            val ex = Assertions.assertThrows(FunctionValueExecutionException::class.java)
             { valueConverter.execute("now", arrayOf("", formatPattern)) }
 
             assertEquals("Cannot format current date with the format '$formatPattern'", ex.message)

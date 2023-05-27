@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
 import org.apache.commons.lang3.StringUtils
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 import java.time.DateTimeException
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -23,7 +23,7 @@ class CurrentDateTimeFunctionExecutor : FunctionValueExecutor {
             try {
                 LocalDateTime.now(ZoneId.of(timezone))
             } catch (ex: DateTimeException) {
-                throw TestDataConversionException("Cannot get current date for the timezone '$timezone'")
+                throw FunctionValueExecutionException("Cannot get current date for the timezone '$timezone'")
             }
         }
     }
@@ -33,7 +33,7 @@ class CurrentDateTimeFunctionExecutor : FunctionValueExecutor {
         return try {
             now.format(DateTimeFormatter.ofPattern(format))
         } catch (ex: Exception) {
-            throw TestDataConversionException("Cannot format current date with the format '$format'")
+            throw FunctionValueExecutionException("Cannot format current date with the format '$format'")
         }
     }
 

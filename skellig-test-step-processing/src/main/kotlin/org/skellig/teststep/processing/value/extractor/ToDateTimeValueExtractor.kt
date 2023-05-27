@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.value.extractor
 
-import org.skellig.teststep.processing.exception.TestDataConversionException
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -32,7 +32,7 @@ abstract class BaseToDateTimeValueExtractor : ValueExtractor {
                 }
                 else -> value
             }
-        } else throw TestDataConversionException("Function `${getExtractFunctionName()}` can only accept 1 or 2 String arguments. Found ${args.size}")
+        } else throw FunctionValueExecutionException("Function `${getExtractFunctionName()}` can only accept 1 or 2 String arguments. Found ${args.size}")
     }
 
     protected abstract fun getTemporalQuery(): TemporalQuery<*>;

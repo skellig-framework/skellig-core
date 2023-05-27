@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.value.extractor
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 
 class FromRegexValueExtractorTest {
 

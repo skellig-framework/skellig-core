@@ -4,9 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.skellig.teststep.processing.exception.ValueExtractionException
-import org.skellig.teststep.processing.value.extractor.ToDateTimeValueExtractor
-import org.skellig.teststep.processing.value.extractor.ToDateValueExtractor
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 import java.time.LocalDate
 import java.time.LocalDateTime
 

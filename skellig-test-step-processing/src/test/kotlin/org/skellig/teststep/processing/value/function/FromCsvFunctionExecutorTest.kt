@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 
 @DisplayName("Convert csv test data")
 class FromCsvFunctionExecutorTest {
@@ -54,7 +54,7 @@ class FromCsvFunctionExecutorTest {
     @Test
     @DisplayName("When file does not exist Then throw exception")
     fun testConvertWhenFileNotExist() {
-        Assertions.assertThrows(TestDataConversionException::class.java) {
+        Assertions.assertThrows(FunctionValueExecutionException::class.java) {
             fromCsvFunctionExecutor!!.execute("fromCsv", arrayOf("csv/missing.csv"))
         }
     }

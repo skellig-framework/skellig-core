@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.value.extractor
 
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 import java.beans.IntrospectionException
 import java.beans.Introspector
 import java.lang.reflect.InvocationTargetException

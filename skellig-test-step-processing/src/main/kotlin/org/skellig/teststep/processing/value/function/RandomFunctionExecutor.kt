@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.random.Random
@@ -23,7 +23,7 @@ class RandomFunctionExecutor : FunctionValueExecutor {
                 else -> random.nextLong(min.toLong(), max.toLong())
             }
         } else {
-            throw TestDataConversionException("Function `rand` can only accept between 2 and 3 String arguments. Found ${args.size}")
+            throw FunctionValueExecutionException("Function `rand` can only accept between 2 and 3 String arguments. Found ${args.size}")
         }
     }
 

@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.value.extractor
 
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 import java.lang.String.format
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -20,7 +21,7 @@ class FromRegexValueExtractor : ValueExtractor {
                 }
             } ?: throw ValueExtractionException(format("Cannot extract '%s' from null value", extractionParameter))
         } else {
-            throw ValueExtractionException("Function `regex` can only accept 1 argument. Found ${args.size}")
+            throw FunctionValueExecutionException("Function `regex` can only accept 1 argument. Found ${args.size}")
         }
     }
 

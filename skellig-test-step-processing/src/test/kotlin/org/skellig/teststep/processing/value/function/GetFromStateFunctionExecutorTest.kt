@@ -5,7 +5,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 import org.skellig.teststep.processing.state.TestScenarioState
 
 class GetFromStateFunctionExecutorTest {
@@ -21,7 +21,7 @@ class GetFromStateFunctionExecutorTest {
 
     @Test
     fun testGetSimpleValueFromStateWhenKeyNull() {
-        val ex = Assertions.assertThrows(TestDataConversionException::class.java) {
+        val ex = Assertions.assertThrows(FunctionValueExecutionException::class.java) {
             testStepStateValueConverter!!.execute("get", arrayOf(null))
         }
         Assertions.assertEquals("No data found in Test Scenario State with key `null`", ex.message)
@@ -47,6 +47,6 @@ class GetFromStateFunctionExecutorTest {
     fun testGetValueFromStateWhenNotExist() {
         whenever(testScenarioState!!.get("key")).thenReturn(null)
 
-        Assertions.assertThrows(TestDataConversionException::class.java) { testStepStateValueConverter!!.execute("get", arrayOf("key")) }
+        Assertions.assertThrows(FunctionValueExecutionException::class.java) { testStepStateValueConverter!!.execute("get", arrayOf("key")) }
     }
 }

@@ -1,8 +1,8 @@
 package org.skellig.teststep.processing.value.extractor
 
 import io.restassured.path.json.JsonPath
-import org.skellig.teststep.processing.exception.TestDataConversionException
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 
 class JsonPathValueExtractor : ValueExtractor {
 
@@ -19,7 +19,7 @@ class JsonPathValueExtractor : ValueExtractor {
                 }
             }
         } else {
-            throw TestDataConversionException("Function `jsonPath` can only accept 1 or 2 arguments. Found ${args.size}")
+            throw FunctionValueExecutionException("Function `jsonPath` can only accept 1 or 2 arguments. Found ${args.size}")
         }
     }
 

@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.value.extractor
 
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 import java.math.BigDecimal
 import kotlin.math.pow
 

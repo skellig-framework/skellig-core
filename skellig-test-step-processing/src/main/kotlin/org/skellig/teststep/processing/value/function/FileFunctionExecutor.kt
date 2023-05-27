@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 import org.skellig.teststep.processing.exception.TestValueConversionException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -12,7 +12,7 @@ class FileFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor
         if (args.size == 1) {
             readFileContentFromFilePath(args[0]?.toString() ?: "")
         } else {
-            throw TestDataConversionException("Function `fromFile` can only accept 1 String argument. Found ${args.size}")
+            throw FunctionValueExecutionException("Function `fromFile` can only accept 1 String argument. Found ${args.size}")
         }
 
     private fun readFileContentFromFilePath(pathToFile: String): String {

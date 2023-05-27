@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.value.extractor
 
 import org.apache.commons.lang3.SerializationUtils
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 import java.io.Serializable
 import java.nio.charset.StandardCharsets
 

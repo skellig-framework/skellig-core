@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.value.extractor
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 
 class JsonToMapTestStepValueExtractor : JsonToTestStepValueExtractor() {
 

@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.value.function
 import freemarker.cache.URLTemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.Template
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 import java.io.StringWriter
 import java.net.URL
 
@@ -16,7 +16,7 @@ class FromTemplateFunctionExecutor(val classLoader: ClassLoader) : FunctionValue
             val file = args[0]?.toString()
             val templateDetails = args[1]
             constructFromTemplate(templateProvider.getTemplate(file), templateDetails)
-        } else throw TestDataConversionException("Function `template` can only accept 2 arguments. Found ${args.size}")
+        } else throw FunctionValueExecutionException("Function `template` can only accept 2 arguments. Found ${args.size}")
 
     }
 
@@ -27,7 +27,7 @@ class FromTemplateFunctionExecutor(val classLoader: ClassLoader) : FunctionValue
                 return outMessage.toString()
             }
         } catch (e: Exception) {
-            throw TestDataConversionException("Can't process template file", e)
+            throw FunctionValueExecutionException("Can't process template file", e)
         }
     }
 
@@ -52,7 +52,7 @@ class FromTemplateFunctionExecutor(val classLoader: ClassLoader) : FunctionValue
                 configuration.defaultEncoding = "UTF-8"
                 configuration.getTemplate("")
             } catch (e: Exception) {
-                throw TestDataConversionException(String.format("Failed to load template file '%s'", filePath), e)
+                throw FunctionValueExecutionException(String.format("Failed to load template file '%s'", filePath), e)
             }
         }
     }
