@@ -38,6 +38,7 @@ class SkelligReportGenerator : ReportGenerator {
             dataModel["validationTitle"] = "Expected response"
             dataModel["responseTitle"] = "Response"
             dataModel["errorTitle"] = "Error log"
+            dataModel["logTitle"] = "Log"
             constructFromTemplate(loadFtlTemplate(), dataModel, htmlReport)
         } catch (e: Exception) {
             //log later

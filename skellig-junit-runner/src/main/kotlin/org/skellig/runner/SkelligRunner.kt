@@ -43,7 +43,8 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
                                 FeatureRunner.create(
                                     feature,
                                     testStepRunner,
-                                    testScenarioState
+                                    testScenarioState,
+                                    skelligTestContext?.config
                                 )
                             }
                             ?.toCollection(children)

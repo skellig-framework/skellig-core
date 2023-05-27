@@ -5,8 +5,13 @@ import org.junit.jupiter.api.fail
 import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.context.SkelligTestContext
 import org.skellig.teststep.runner.context.SkelligTestContextAware
+import org.slf4j.LoggerFactory
 
 class TestStepDefs : SkelligTestContextAware {
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(TestStepDefs::class.java)
+    }
 
     private var context: SkelligTestContext? = null
 
@@ -15,12 +20,13 @@ class TestStepDefs : SkelligTestContextAware {
         Assertions.assertNotNull(value)
         Assertions.assertEquals(1, parameters.size)
 
-        println(value)
+        LOGGER.debug("Executed logResult test step with value $value")
         return "Log record: $value"
     }
 
     @TestStep(name = "Check user exist")
     fun checkUserExist() {
+        LOGGER.error("User doesn't exist")
         fail("User doesn't exist")
     }
 

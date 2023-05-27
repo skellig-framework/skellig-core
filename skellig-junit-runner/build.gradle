@@ -11,8 +11,8 @@ ext.set("project_name", 'skellig-junit-runner')
 ext.set("project_description", 'JUnit runner for Skellig tests')
 
 dependencies {
-    implementation group: 'log4j', name: 'log4j'
-    implementation group: 'org.slf4j', name: 'slf4j-log4j12'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core'
+    implementation group: 'org.slf4j', name: 'slf4j-reload4j'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: "${kotlinVersion}"
     implementation group: 'org.freemarker', name: 'freemarker'

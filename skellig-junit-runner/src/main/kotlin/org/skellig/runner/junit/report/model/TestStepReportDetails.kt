@@ -13,7 +13,8 @@ import java.lang.reflect.Method
 open class TestStepReportDetails<T>(val name: String,
                                     val originalTestStep: T?,
                                     val result: Any?,
-                                    val errorLog: String?) {
+                                    val errorLog: String?,
+                                    val logRecords: List<String>?) {
 
     fun isPassed(): Boolean {
         return errorLog == null || errorLog == ""
@@ -72,6 +73,7 @@ open class TestStepReportDetails<T>(val name: String,
         private var originalTestStep: Any? = null
         private var result: Any? = null
         private var errorLog: String? = null
+        private var logRecords: List<String>? = null
 
         fun withName(name: String?) = apply {
             this.name = name
@@ -89,21 +91,27 @@ open class TestStepReportDetails<T>(val name: String,
             this.errorLog = errorLog
         }
 
+        fun withLogRecords(logRecords: List<String>?) = apply {
+            this.logRecords = logRecords
+        }
+
         fun build(): TestStepReportDetails<*> {
             return when (originalTestStep) {
-                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog)
-                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog)
-                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog)
+                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog, logRecords)
+                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog, logRecords)
+                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog, logRecords)
             }
         }
     }
 }
 
-class DefaultTestStepReportDetails(name: String,
-                                   originalTestStep: DefaultTestStep?,
-                                   result: Any?,
-                                   errorLog: String?)
-    : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog) {
+class DefaultTestStepReportDetails(
+    name: String,
+    originalTestStep: DefaultTestStep?,
+    result: Any?,
+    errorLog: String?,
+    logRecords: List<String>?
+) : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog, logRecords) {
 
     override fun getTestData(): String {
         return originalTestStep?.testData?.toString() ?: ""
@@ -133,10 +141,13 @@ class DefaultTestStepReportDetails(name: String,
     }
 }
 
-class GroupedTestStepReportDetails(name: String,
-                                   originalTestStep: GroupedTestStep?,
-                                   result: Any?,
-                                   errorLog: String?)
-    : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog) {
+class GroupedTestStepReportDetails(
+    name: String,
+    originalTestStep: GroupedTestStep?,
+    result: Any?,
+    errorLog: String?,
+    logRecords: List<String>?
+)
+    : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords) {
 
 }

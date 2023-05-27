@@ -1,5 +1,7 @@
 package org.skellig.runner
 
+import com.typesafe.config.Config
+import org.apache.log4j.BasicConfigurator
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
 import org.junit.runner.notification.RunNotifier
@@ -8,6 +10,9 @@ import org.junit.runners.model.InitializationError
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
 import org.skellig.runner.exception.FeatureRunnerException
+import org.skellig.runner.junit.report.CustomAppender
+import org.skellig.runner.junit.report.DefaultTestStepLogger
+import org.skellig.runner.junit.report.TestStepLogger
 import org.skellig.runner.junit.report.model.TestScenarioReportDetails
 import org.skellig.runner.junit.report.model.TestStepReportDetails
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
@@ -15,24 +20,36 @@ import org.skellig.teststep.runner.TestStepRunner
 import java.io.PrintWriter
 import java.io.StringWriter
 
-open class TestScenarioRunner protected constructor(private val testScenario: TestScenario,
-                                               private val testStepRunner: TestStepRunner?)
-    : ParentRunner<TestStep>(testScenario.javaClass) {
+
+open class TestScenarioRunner protected constructor(
+    private val testScenario: TestScenario,
+    private val testStepRunner: TestStepRunner?,
+    config: Config?
+) : ParentRunner<TestStep>(testScenario.javaClass) {
 
     companion object {
-        fun create(testScenario: TestScenario, testStepRunner: TestStepRunner?): TestScenarioRunner {
+        private const val REPORT_LOG_ENABLED = "report.log.enabled"
+        fun create(testScenario: TestScenario, testStepRunner: TestStepRunner?, config: Config?): TestScenarioRunner {
             return try {
-                TestScenarioRunner(testScenario, testStepRunner)
+                TestScenarioRunner(testScenario, testStepRunner, config)
             } catch (e: InitializationError) {
                 throw FeatureRunnerException(e.message, e)
             }
         }
     }
 
+    private val testStepLogger: TestStepLogger = DefaultTestStepLogger()
     private var stepDescriptions = hashMapOf<Any, Description>()
     private var testStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
-    private var testStepRunResults :MutableList<TestStepRunResult>? = mutableListOf()
+    private var testStepRunResults: MutableList<TestStepRunResult>? = mutableListOf()
     private var isChildFailed = false
+
+    init {
+        config?.let {
+            if (it.hasPath(REPORT_LOG_ENABLED) && it.getBoolean(REPORT_LOG_ENABLED))
+                BasicConfigurator.configure(CustomAppender(testStepLogger))
+        }
+    }
 
     override fun getChildren(): List<TestStep>? {
         return testScenario.steps
@@ -51,8 +68,7 @@ open class TestScenarioRunner protected constructor(private val testScenario: Te
     }
 
     override fun describeChild(step: TestStep): Description {
-        return stepDescriptions.getOrDefault(step,
-                Description.createTestDescription(name, step.name, step.name))
+        return stepDescriptions.getOrDefault(step, Description.createTestDescription(name, step.name, step.name))
     }
 
     override fun run(notifier: RunNotifier) {
@@ -79,6 +95,7 @@ open class TestScenarioRunner protected constructor(private val testScenario: Te
             testStepsDataReport.add(testStepReportBuilder)
         } else {
             notifier.fireTestStarted(childDescription)
+            testStepLogger.clear()
             try {
                 val parameters = child.parameters ?: emptyMap()
                 val runResult = testStepRunner!!.run(child.name, parameters)
@@ -106,7 +123,7 @@ open class TestScenarioRunner protected constructor(private val testScenario: Te
                 testStepReportBuilder.withOriginalTestStep(child.name).withErrorLog(attachStackTrace(e))
                 fireFailureEvent(notifier, childDescription, e)
             } finally {
-                testStepsDataReport.add(testStepReportBuilder)
+                testStepsDataReport.add(testStepReportBuilder.withLogRecords(testStepLogger.getLogsAndClean()))
                 notifier.fireTestFinished(childDescription)
             }
         }
@@ -114,8 +131,8 @@ open class TestScenarioRunner protected constructor(private val testScenario: Te
 
     fun getTestScenarioReportDetails(): TestScenarioReportDetails {
         val testStepReportDetails = testStepsDataReport
-                .map { it.build() }
-                .toList()
+            .map { it.build() }
+            .toList()
         return TestScenarioReportDetails(name, testStepReportDetails)
     }
 

@@ -32,7 +32,7 @@ ext {
     junitPlatformVersion = '1.2.0'
     mockitoJunitVersion = '2.18.0'
     typesafeConfigVersion = '1.4.0'
-    slf4jLogVersion = '1.7.30'
+    slf4jLogVersion = '2.0.7'
     kotlinVersion = '1.5.0'
 }
 
@@ -161,8 +161,8 @@ subprojects {
     dependencyManagement {
         dependencies {
             dependency group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jLogVersion}"
-            dependency group: 'org.slf4j', name: 'slf4j-log4j12', version: "${slf4jLogVersion}"
-            dependency group: 'log4j', name: 'log4j', version: '1.2.17'
+            dependency group: 'org.slf4j', name: 'slf4j-reload4j', version: "${slf4jLogVersion}"
+            dependency group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.20.0'
             dependency group: 'com.typesafe', name: 'config', version: "${typesafeConfigVersion}"
             dependency group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
             dependency group: 'org.freemarker', name: 'freemarker', version: "2.3.30"

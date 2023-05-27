@@ -10,8 +10,8 @@ ext.set("project_name", 'skellig-performance-junit-runner')
 ext.set("project_description", 'JUnit runner for Skellig performance tests')
 
 dependencies {
-    api 'log4j:log4j:1.2.17'
-    api 'org.slf4j:slf4j-log4j12'
+    api 'org.apache.logging.log4j:log4j-core'
+    api 'org.slf4j:slf4j-reload4j'
     api group: 'org.junit.platform', name: 'junit-platform-runner'
     api group: 'com.typesafe', name: 'config'
     implementation "org.jetbrains.kotlin:kotlin-reflect"

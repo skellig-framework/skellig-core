@@ -1,5 +1,6 @@
 package org.skellig.runner
 
+import com.typesafe.config.Config
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
 import org.junit.runner.notification.RunNotifier
@@ -13,16 +14,19 @@ import org.skellig.runner.tagextractor.TagExtractor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.runner.TestStepRunner
 
-open class FeatureRunner(protected val feature: Feature,
-                         protected val testStepRunner: TestStepRunner?,
-                         protected val testScenarioState: TestScenarioState?) : ParentRunner<TestScenarioRunner>(feature.javaClass) {
+open class FeatureRunner(
+    protected val feature: Feature,
+    protected val testStepRunner: TestStepRunner?,
+    protected val testScenarioState: TestScenarioState?,
+    config: Config?
+) : ParentRunner<TestScenarioRunner>(feature.javaClass) {
 
     private val tagExtractor: TagExtractor = RequestedTagExtractor()
     private var description: Description? = null
     private var testScenarioRunners: List<TestScenarioRunner>? = null
 
     init {
-        testScenarioRunners = feature.scenarios?.map { TestScenarioRunner.create(it, testStepRunner) }?.toList() ?: emptyList()
+        testScenarioRunners = feature.scenarios?.map { TestScenarioRunner.create(it, testStepRunner, config) }?.toList() ?: emptyList()
     }
 
     override fun getDescription(): Description? {
@@ -69,9 +73,14 @@ open class FeatureRunner(protected val feature: Feature,
     }
 
     companion object {
-        fun create(feature: Feature, testStepRunner: TestStepRunner?, testScenarioState: TestScenarioState?): FeatureRunner {
+        fun create(
+            feature: Feature,
+            testStepRunner: TestStepRunner?,
+            testScenarioState: TestScenarioState?,
+            config: Config?
+        ): FeatureRunner {
             return try {
-                FeatureRunner(feature, testStepRunner, testScenarioState)
+                FeatureRunner(feature, testStepRunner, testScenarioState, config)
             } catch (e: InitializationError) {
                 throw FeatureRunnerException(e.message, e)
             }

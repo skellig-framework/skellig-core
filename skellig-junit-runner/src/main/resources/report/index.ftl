@@ -26,7 +26,8 @@
                         <h5 class="card-category">${featureTitle}</h5>
                         <h3 class="card-title">${frd.name}</h3>
                         <div class="test-step-progress">
-                            <div class="test-step-progress-bar" role="progressbar" style="width: ${frd.totalPassedPercentage}%"
+                            <div class="test-step-progress-bar" role="progressbar"
+                                 style="width: ${frd.totalPassedPercentage}%"
                                  aria-valuenow="${frd.totalPassedPercentage}" aria-valuemin="0" aria-valuemax="100">
                                 ${frd.totalPassedTestSteps}/${frd.totalTestSteps}
                             </div>
@@ -41,7 +42,8 @@
                                 <div class="card-header" id="testScenarioHeader${i}">
                                     <a data-toggle="collapse" data-parent="#featurePanel${i}"
                                        href="#testStepsPanel${i}" aria-expanded="false"
-                                       aria-controls="testStepsPanel${i}" class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
+                                       aria-controls="testStepsPanel${i}"
+                                       class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
                                         ${tsrd.name}
                                         <i class="tim-icons icon-minimal-down"></i>
                                     </a>
@@ -104,6 +106,28 @@
                                                         </div>
                                                         <div class="small-text-panel failed-content-color">
                                                             ${step.errorLog?html?trim?replace("\n","<br>")}
+                                                        </div>
+                                                    </#if>
+                                                    <#if step.logRecords?? && step.logRecords?has_content>
+                                                        <div class="medium-text-panel">
+                                                            <a data-toggle="collapse" data-parent="#testStepPanel${si}"
+                                                               href="#logPanel${si}" aria-expanded="false"
+                                                               aria-controls="logPanel${si}"
+                                                               class="collapsed passed-color">
+                                                                ${logTitle}
+                                                                <i class="tim-icons icon-minimal-down"></i>
+                                                            </a>
+                                                        </div>
+                                                        <div class="small-text-panel">
+                                                            <div class="collapse" id="logPanel${si}">
+                                                                <div class="card card-body">
+                                                                    <#list step.logRecords as log>
+                                                                        <p>
+                                                                            ${log?html?trim?replace("\n","<br>")}
+                                                                        </p>
+                                                                    </#list>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </#if>
                                                 </div>
