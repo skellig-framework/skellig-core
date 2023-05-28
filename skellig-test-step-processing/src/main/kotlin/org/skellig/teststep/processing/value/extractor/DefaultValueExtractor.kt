@@ -48,6 +48,8 @@ private constructor(private val extractors: Map<String, ValueExtractor>) : Value
             withValueExtractor(ToDateTimeValueExtractor())
             withValueExtractor(ToDateValueExtractor())
             withValueExtractor(ToBytesValueExtractor())
+            withValueExtractor(FormatDateValueExtractor())
+            withValueExtractor(FormatDateTimeValueExtractor())
 
             return DefaultValueExtractor(extractors)
         }
