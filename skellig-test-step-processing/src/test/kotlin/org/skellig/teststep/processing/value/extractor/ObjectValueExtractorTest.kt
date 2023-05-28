@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
+import java.time.LocalDateTime
 
 class ObjectValueExtractorTest {
 
@@ -55,6 +56,16 @@ class ObjectValueExtractorTest {
         val name = valueExtractor!!.extractFrom("", testObject, arrayOf("name"))
         Assertions.assertEquals(testObject.name, name)
         Assertions.assertEquals(testObject.name.length, valueExtractor!!.extractFrom("length", name, emptyArray()))
+        Assertions.assertEquals(testObject.name.substring(1, 3), valueExtractor!!.extractFrom("substring", name, arrayOf(1, 3)))
+    }
+
+    @Test
+    @DisplayName("Extract from date time object")
+    fun testExtractFromDateTimeObject() {
+        val now = LocalDateTime.now()
+        val newDateTime = valueExtractor!!.extractFrom("plusDays", now, arrayOf(10L))
+
+        Assertions.assertEquals(now.plusDays(10), newDateTime)
     }
 
     @Test

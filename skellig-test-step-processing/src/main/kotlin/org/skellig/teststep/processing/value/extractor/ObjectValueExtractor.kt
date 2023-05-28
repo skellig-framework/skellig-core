@@ -75,7 +75,7 @@ class ObjectValueExtractor : ValueExtractor {
 
     private fun isSameOrSubclass(paramType: Class<*>, methodParam: Class<*>): Boolean {
         return paramType == methodParam ||
-                ((paramType.isPrimitive || methodParam.isPrimitive) && paramType.simpleName.equals(methodParam.simpleName, true)) ||
+                ((paramType.isPrimitive || methodParam.isPrimitive) && methodParam.kotlin.javaPrimitiveType == paramType.kotlin.javaPrimitiveType) ||
                 methodParam.isInterface && paramType.interfaces.toSet().contains(methodParam) ||
                 (paramType.superclass != null && isSameOrSubclass(paramType.superclass, methodParam))
     }
