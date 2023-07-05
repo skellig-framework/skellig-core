@@ -2,6 +2,7 @@ package org.skellig.runner.junit.report
 
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.spi.LoggingEvent
+import org.skellig.runner.junit.report.attachment.log.TestStepLogger
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

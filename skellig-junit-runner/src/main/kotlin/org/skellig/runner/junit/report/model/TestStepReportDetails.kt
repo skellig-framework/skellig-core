@@ -1,6 +1,7 @@
 package org.skellig.runner.junit.report.model
 
 import org.apache.commons.lang3.StringUtils
+import org.skellig.runner.junit.report.attachment.ReportAttachment
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.GroupedTestStep
@@ -10,11 +11,13 @@ import java.beans.PropertyDescriptor
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
-open class TestStepReportDetails<T>(val name: String,
-                                    val originalTestStep: T?,
-                                    val result: Any?,
-                                    val errorLog: String?,
-                                    val logRecords: List<String>?) {
+open class TestStepReportDetails<T>(
+    val name: String,
+    val originalTestStep: T?,
+    val result: Any?,
+    val errorLog: String?,
+    val attachments: List<ReportAttachment<*>>
+) {
 
     fun isPassed(): Boolean {
         return errorLog == null || errorLog == ""
@@ -33,9 +36,9 @@ open class TestStepReportDetails<T>(val name: String,
 
             val properties = getPropertyGettersOfTestStep(originalTestStep.javaClass)
             return properties.entries
-                    .filter { it.value != null }
-                    .map { getPropertyWithValue(it) }
-                    .joinToString("\n")
+                .filter { it.value != null }
+                .map { getPropertyWithValue(it) }
+                .joinToString("\n")
         }
         return ""
     }
@@ -47,8 +50,8 @@ open class TestStepReportDetails<T>(val name: String,
     private fun getPropertyWithValue(propertyGetterPair: Map.Entry<String, Method?>): String? {
         return try {
             propertyGetterPair.value?.invoke(originalTestStep)
-                    ?.let { propertyGetterPair.key + ": " + it }
-                    ?: ""
+                ?.let { propertyGetterPair.key + ": " + it }
+                ?: ""
         } catch (e: IllegalAccessException) {
             e.message
         } catch (e: InvocationTargetException) {
@@ -58,13 +61,13 @@ open class TestStepReportDetails<T>(val name: String,
 
     private fun getPropertyGettersOfTestStep(beanClass: Class<*>): Map<String, Method?> {
         return beanClass.declaredFields
-                .map {
-                    it.name to Introspector.getBeanInfo(beanClass).propertyDescriptors
-                            .filter { pd: PropertyDescriptor -> pd.readMethod != null && it.name == pd.name }
-                            .map { obj: PropertyDescriptor -> obj.readMethod }
-                            .firstOrNull()
-                }
-                .toMap()
+            .map {
+                it.name to Introspector.getBeanInfo(beanClass).propertyDescriptors
+                    .filter { pd: PropertyDescriptor -> pd.readMethod != null && it.name == pd.name }
+                    .map { obj: PropertyDescriptor -> obj.readMethod }
+                    .firstOrNull()
+            }
+            .toMap()
 
     }
 
@@ -73,7 +76,7 @@ open class TestStepReportDetails<T>(val name: String,
         private var originalTestStep: Any? = null
         private var result: Any? = null
         private var errorLog: String? = null
-        private var logRecords: List<String>? = null
+        private var attachments = mutableListOf<ReportAttachment<*>>()
 
         fun withName(name: String?) = apply {
             this.name = name
@@ -91,15 +94,19 @@ open class TestStepReportDetails<T>(val name: String,
             this.errorLog = errorLog
         }
 
-        fun withLogRecords(logRecords: List<String>?) = apply {
-            this.logRecords = logRecords
+        fun withAttachments(attachments: List<ReportAttachment<Any>>) = apply {
+            this.attachments.addAll(attachments)
+        }
+
+        fun withAttachment(attachment: ReportAttachment<*>) = apply {
+            this.attachments.add(attachment)
         }
 
         fun build(): TestStepReportDetails<*> {
             return when (originalTestStep) {
-                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog, logRecords)
-                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog, logRecords)
-                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog, logRecords)
+                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog, attachments)
+                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog, attachments)
+                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog, attachments)
             }
         }
     }
@@ -110,8 +117,8 @@ class DefaultTestStepReportDetails(
     originalTestStep: DefaultTestStep?,
     result: Any?,
     errorLog: String?,
-    logRecords: List<String>?
-) : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog, logRecords) {
+    attachments: List<ReportAttachment<*>>
+) : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog, attachments) {
 
     override fun getTestData(): String {
         return originalTestStep?.testData?.toString() ?: ""
@@ -146,8 +153,7 @@ class GroupedTestStepReportDetails(
     originalTestStep: GroupedTestStep?,
     result: Any?,
     errorLog: String?,
-    logRecords: List<String>?
-)
-    : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords) {
+    attachments: List<ReportAttachment<*>>
+) : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, attachments) {
 
 }

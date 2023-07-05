@@ -11,8 +11,9 @@ import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
 import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.runner.junit.report.CustomAppender
-import org.skellig.runner.junit.report.DefaultTestStepLogger
-import org.skellig.runner.junit.report.TestStepLogger
+import org.skellig.runner.junit.report.attachment.log.DefaultTestStepLogger
+import org.skellig.runner.junit.report.attachment.log.LogAttachment
+import org.skellig.runner.junit.report.attachment.log.TestStepLogger
 import org.skellig.runner.junit.report.model.TestScenarioReportDetails
 import org.skellig.runner.junit.report.model.TestStepReportDetails
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
@@ -123,7 +124,7 @@ open class TestScenarioRunner protected constructor(
                 testStepReportBuilder.withOriginalTestStep(child.name).withErrorLog(attachStackTrace(e))
                 fireFailureEvent(notifier, childDescription, e)
             } finally {
-                testStepsDataReport.add(testStepReportBuilder.withLogRecords(testStepLogger.getLogsAndClean()))
+                testStepsDataReport.add(testStepReportBuilder.withAttachment(LogAttachment(testStepLogger.getLogsAndClean())))
                 notifier.fireTestFinished(childDescription)
             }
         }

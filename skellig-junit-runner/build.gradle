@@ -17,6 +17,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: "${kotlinVersion}"
     implementation group: 'org.freemarker', name: 'freemarker'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
+    implementation group: 'com.hierynomus', name: 'sshj', version: '0.29.0'
 
     api project(':skellig-feature')
     api project(':skellig-test-step-runner')

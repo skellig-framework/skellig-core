@@ -1,4 +1,4 @@
-package org.skellig.runner.junit.report
+package org.skellig.runner.junit.report.attachment.log
 
 internal interface TestStepLogger {
 
