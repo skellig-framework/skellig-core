@@ -8,14 +8,10 @@ internal interface TestStepLogger {
     fun log(text: String)
 
     /**
-     * Get all log records in a new list and clear the current pne
+     * Get all log records in a new list and clear the current one
      */
     fun getLogsAndClean(): List<String>
 
-    /**
-     * Clear all log records
-     */
-    fun clear();
 }
 
 internal class DefaultTestStepLogger : TestStepLogger {
@@ -30,10 +26,6 @@ internal class DefaultTestStepLogger : TestStepLogger {
         val copy = logRecords.toList()
         logRecords = mutableListOf()
         return copy
-    }
-
-    override fun clear() {
-        logRecords.clear()
     }
 
 }

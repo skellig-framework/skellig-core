@@ -6,7 +6,7 @@ import java.util.*
 class LogExtractorConfigReader {
 
     companion object {
-        private const val LOGS_CONFIG_KEYWORD = "report.attachments.logs"
+        private const val LOGS_CONFIG_KEYWORD = "report.attachments.recordsFromLogFile.paths"
     }
 
     fun read(config: Config): Collection<LogExtractionDetails> {

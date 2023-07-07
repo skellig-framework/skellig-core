@@ -11,9 +11,13 @@ import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
 import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.runner.junit.report.CustomAppender
+import org.skellig.runner.junit.report.attachment.AttachmentService
 import org.skellig.runner.junit.report.attachment.log.DefaultTestStepLogger
 import org.skellig.runner.junit.report.attachment.log.LogAttachment
+import org.skellig.runner.junit.report.attachment.log.LogAttachmentService
 import org.skellig.runner.junit.report.attachment.log.TestStepLogger
+import org.skellig.runner.junit.report.attachment.log.fromfile.LogExtractorConfigReader
+import org.skellig.runner.junit.report.attachment.log.fromfile.LogRecordsFromFileAttachmentService
 import org.skellig.runner.junit.report.model.TestScenarioReportDetails
 import org.skellig.runner.junit.report.model.TestStepReportDetails
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
@@ -39,16 +43,22 @@ open class TestScenarioRunner protected constructor(
         }
     }
 
-    private val testStepLogger: TestStepLogger = DefaultTestStepLogger()
     private var stepDescriptions = hashMapOf<Any, Description>()
     private var testStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
     private var testStepRunResults: MutableList<TestStepRunResult>? = mutableListOf()
+    private var attachmentServices = mutableListOf<AttachmentService<*>>()
     private var isChildFailed = false
 
     init {
         config?.let {
-            if (it.hasPath(REPORT_LOG_ENABLED) && it.getBoolean(REPORT_LOG_ENABLED))
+            // configure some attachments for a report
+            if (it.hasPath(REPORT_LOG_ENABLED) && it.getBoolean(REPORT_LOG_ENABLED)) {
+                val testStepLogger: TestStepLogger = DefaultTestStepLogger()
                 BasicConfigurator.configure(CustomAppender(testStepLogger))
+                attachmentServices.add(LogAttachmentService(testStepLogger))
+            }
+
+            attachmentServices.addAll(LogExtractorConfigReader().read(it).map { item -> LogRecordsFromFileAttachmentService(item) }.toList())
         }
     }
 
@@ -91,12 +101,12 @@ open class TestScenarioRunner protected constructor(
     override fun runChild(child: TestStep, notifier: RunNotifier) {
         val childDescription = describeChild(child)
         val testStepReportBuilder = TestStepReportDetails.Builder().withName(child.name)
+        testStepsDataReport.add(testStepReportBuilder)
+
         if (isChildFailed) {
             notifier.fireTestIgnored(childDescription)
-            testStepsDataReport.add(testStepReportBuilder)
         } else {
             notifier.fireTestStarted(childDescription)
-            testStepLogger.clear()
             try {
                 val parameters = child.parameters ?: emptyMap()
                 val runResult = testStepRunner!!.run(child.name, parameters)
@@ -124,7 +134,7 @@ open class TestScenarioRunner protected constructor(
                 testStepReportBuilder.withOriginalTestStep(child.name).withErrorLog(attachStackTrace(e))
                 fireFailureEvent(notifier, childDescription, e)
             } finally {
-                testStepsDataReport.add(testStepReportBuilder.withAttachment(LogAttachment(testStepLogger.getLogsAndClean())))
+                attachmentServices.filter { it.isApplicable(!isChildFailed) }.forEach { testStepReportBuilder.withAttachment(it.getData()) }
                 notifier.fireTestFinished(childDescription)
             }
         }
