@@ -65,6 +65,9 @@ class ExtractRemoteLogRecordsUnixCommandRunnerTest {
     fun testConnectWithSshKey() {
         val logExtractionDetails =
             LogExtractionDetails.Builder()
+                .withHost("host")
+                .withPort(120)
+                .withUserName("password")
                 .withSshKeyPath("key path")
                 .build()
         val commandRunner = ExtractRemoteLogRecordsUnixCommandRunnerForTest(logExtractionDetails)
@@ -78,6 +81,9 @@ class ExtractRemoteLogRecordsUnixCommandRunnerTest {
     fun testConnectWithPassword() {
         val logExtractionDetails =
             LogExtractionDetails.Builder()
+                .withHost("host")
+                .withPort(120)
+                .withUserName("password")
                 .withPassword("password")
                 .build()
         val commandRunner = ExtractRemoteLogRecordsUnixCommandRunnerForTest(logExtractionDetails)
@@ -92,15 +98,21 @@ class ExtractRemoteLogRecordsUnixCommandRunnerTest {
         private var methodsCalled = mutableSetOf<String>()
 
         override fun connect(hostname: String?, port: Int) {
-            methodsCalled.add("connect")
+            if(hostname != null && port > 0) {
+                methodsCalled.add("connect")
+            }
         }
 
         override fun authPublickey(username: String?, vararg locations: String?) {
-            methodsCalled.add("authPublickey")
+            if(username != null) {
+                methodsCalled.add("authPublickey")
+            }
         }
 
         override fun authPassword(username: String?, password: String?) {
-            methodsCalled.add("authPassword")
+            if(username != null && password != null) {
+                methodsCalled.add("authPassword")
+            }
         }
 
         override fun addHostKeyVerifier(verifier: HostKeyVerifier?) {
