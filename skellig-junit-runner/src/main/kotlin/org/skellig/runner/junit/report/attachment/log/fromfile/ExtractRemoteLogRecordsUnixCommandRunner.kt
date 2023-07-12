@@ -5,10 +5,10 @@ import net.schmizz.sshj.common.IOUtils
 import net.schmizz.sshj.connection.channel.direct.Session
 import java.util.concurrent.TimeUnit
 
-internal class ExtractRemoteLogRecordsUnixCommandRunner(private val logExtractionDetails: LogExtractionDetails): SSHClient(), ExtractLogRecordsUnixCommandRunner {
+internal open class ExtractRemoteLogRecordsUnixCommandRunner(private val logExtractionDetails: LogExtractionDetails): SSHClient(), ExtractLogRecordsUnixCommandRunner {
 
     companion object {
-        private const val DEFAULT_CONNECT_TIMEOUT = 30000L
+        const val DEFAULT_CONNECT_TIMEOUT = 30000L
     }
 
     override fun getLogRecords(): String {
@@ -19,7 +19,7 @@ internal class ExtractRemoteLogRecordsUnixCommandRunner(private val logExtractio
                 val cmd = sshSession.exec("tail -n${logExtractionDetails.maxRecords} ${logExtractionDetails.path}")
                 cmd.join(DEFAULT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)
 
-                IOUtils.readFully(cmd.inputStream).use { outputStream -> response = outputStream.toString() }
+                IOUtils.readFully(cmd.inputStream).use { stream -> response = stream.toString() }
             } catch (ex: Exception) {
                 //log later
                 response = "Failed to get data from log file '${logExtractionDetails.path}': ${ex.message ?: ""}"
@@ -33,7 +33,7 @@ internal class ExtractRemoteLogRecordsUnixCommandRunner(private val logExtractio
         if (!(isConnected && isAuthenticated)) {
             createAndConnectSshClient()
         }
-        return super.startSession()
+        return startSession()
     }
 
     private fun createAndConnectSshClient() {

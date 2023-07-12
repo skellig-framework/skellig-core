@@ -22,6 +22,7 @@ import org.skellig.runner.junit.report.model.TestScenarioReportDetails
 import org.skellig.runner.junit.report.model.TestStepReportDetails
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.runner.TestStepRunner
+import org.slf4j.LoggerFactory
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -33,7 +34,8 @@ open class TestScenarioRunner protected constructor(
 ) : ParentRunner<TestStep>(testScenario.javaClass) {
 
     companion object {
-        private const val REPORT_LOG_ENABLED = "report.log.enabled"
+        private val LOGGER = LoggerFactory.getLogger(TestScenarioRunner::class.java)
+        const val REPORT_LOG_ENABLED = "report.log.enabled"
         fun create(testScenario: TestScenario, testStepRunner: TestStepRunner?, config: Config?): TestScenarioRunner {
             return try {
                 TestScenarioRunner(testScenario, testStepRunner, config)
@@ -84,12 +86,16 @@ open class TestScenarioRunner protected constructor(
 
     override fun run(notifier: RunNotifier) {
         try {
+            LOGGER.info("Start to run the test scenario '$name'")
             super.run(notifier)
+            LOGGER.info("The test scenario '$name' has been run successfully!")
         } finally {
             try {
                 // if there are any async test step running, then wait until they're finished
                 // within set timeout. Cleanup results as they are no longer needed.
+                LOGGER.info("Begin to wait for result of the test steps which has not been finished yet")
                 testStepRunResults?.forEach { it.awaitResult() }
+                LOGGER.info("Successfully waited for result of the remaining test steps")
             } catch (ex: Exception) {
                 fireFailureEvent(notifier, description, ex)
             } finally {
@@ -104,16 +110,15 @@ open class TestScenarioRunner protected constructor(
         testStepsDataReport.add(testStepReportBuilder)
 
         if (isChildFailed) {
+            LOGGER.warn("The test '${child.name}' is ignored because the previous one was failed")
             notifier.fireTestIgnored(childDescription)
         } else {
             notifier.fireTestStarted(childDescription)
             try {
+                LOGGER.info("Start to run the test '${child.name}'")
                 val parameters = child.parameters ?: emptyMap()
                 val runResult = testStepRunner!!.run(child.name, parameters)
                 testStepRunResults!!.add(runResult)
-
-                // subscribe for result from test step. Usually needed for async test step
-                // however if it's sync, then the function will be called anyway.
 
                 // subscribe for result from test step. Usually needed for async test step
                 // however if it's sync, then the function will be called anyway.
@@ -128,6 +133,8 @@ open class TestScenarioRunner protected constructor(
                         */
                         testStepReportBuilder.withErrorLog(attachStackTrace(e))
                         throw e
+                    } else {
+                        LOGGER.info("The test '${child.name}' has been run successfully!")
                     }
                 }
             } catch (e: Throwable) {
@@ -158,11 +165,12 @@ open class TestScenarioRunner protected constructor(
                 }
             }
         } catch (ioException: Exception) {
-            return ""
+            return "Failed to attach stacktrace: ${ioException.message}"
         }
     }
 
     private fun fireFailureEvent(notifier: RunNotifier, childDescription: Description, e: Throwable) {
+        LOGGER.error("Test step '${childDescription.displayName}' failed: ${e.message ?: e.cause?.message ?: "null"}")
         notifier.fireTestFailure(Failure(childDescription, e))
         isChildFailed = true
     }

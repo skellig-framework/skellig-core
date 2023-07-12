@@ -22,8 +22,10 @@ dependencies {
     api project(':skellig-feature')
     api project(':skellig-test-step-runner')
 
+    testImplementation group: 'org.junit.platform', name: 'junit-platform-runner'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
-    testImplementation group: 'org.junit.platform', name: 'junit-platform-launcher'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: "${junitApiVersion}"
 }
