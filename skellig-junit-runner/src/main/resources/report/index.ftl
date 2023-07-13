@@ -108,27 +108,40 @@
                                                             ${step.errorLog?html?trim?replace("\n","<br>")}
                                                         </div>
                                                     </#if>
-                                                    <#if step.logRecords?? && step.logRecords?has_content>
-                                                        <div class="medium-text-panel">
-                                                            <a data-toggle="collapse" data-parent="#testStepPanel${si}"
-                                                               href="#logPanel${si}" aria-expanded="false"
-                                                               aria-controls="logPanel${si}"
-                                                               class="collapsed passed-color">
-                                                                ${logTitle}
-                                                                <i class="tim-icons icon-minimal-down"></i>
-                                                            </a>
-                                                        </div>
-                                                        <div class="small-text-panel">
-                                                            <div class="collapse" id="logPanel${si}">
-                                                                <div class="card card-body">
-                                                                    <#list step.logRecords as log>
-                                                                        <p>
-                                                                            ${log?html?trim?replace("\n","<br>")}
-                                                                        </p>
-                                                                    </#list>
+                                                    <#if step.attachments?? && step.attachments?has_content>
+                                                        <#list step.attachments as attachment>
+                                                            <#assign sai = si +"_"+attachment?index />
+                                                            <div class="medium-text-panel">
+                                                                <a data-toggle="collapse"
+                                                                   data-parent="#testStepPanel${si}"
+                                                                   href="#logPanel${sai}" aria-expanded="false"
+                                                                   aria-controls="logPanel${sai}"
+                                                                   class="collapsed passed-color">
+                                                                    ${attachment.name}
+                                                                    <i class="tim-icons icon-minimal-down"></i>
+                                                                </a>
+                                                            </div>
+                                                            <div class="small-text-panel">
+                                                                <div class="collapse" id="logPanel${sai}">
+                                                                    <div class="card card-body">
+                                                                        <#if attachment.class.simpleName == "LogAttachment">
+                                                                            <#list attachment.data as log>
+                                                                                <p>
+                                                                                    ${log?html?trim?replace("\n","<br>")}
+                                                                                </p>
+                                                                            </#list>
+
+                                                                        <#elseif attachment.class.simpleName == "LogRecordsFromFileAttachment">
+                                                                            <p>
+                                                                                ${attachment.data?html?trim?replace("\n","<br>")}
+                                                                            </p>
+                                                                        <#else>
+                                                                        </#if>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
+                                                        </#list>
+
                                                     </#if>
                                                 </div>
                                             </div>
