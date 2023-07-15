@@ -9,6 +9,7 @@ class ContainsValueComparator : ValueComparator {
                     actualValue::class == String::class -> (actualValue as String).contains(it)
                     actualValue.javaClass.isArray -> compareArray(actualValue, it)
                     actualValue is Collection<*> -> compareCollection(actualValue, it)
+                    actualValue is Map<*, *> -> compareMap(actualValue, it)
                     else -> actualValue.toString().contains(it)
                 }
             }
@@ -19,6 +20,9 @@ class ContainsValueComparator : ValueComparator {
     private fun compareCollection(actualValue: Collection<*>, expectedValueAsString: String?) = actualValue
         .map { it.toString() }
         .any { it == expectedValueAsString }
+
+    private fun compareMap(actualValue: Map<*, *>, expectedValueAsString: String?) =
+        compareCollection(actualValue.values, expectedValueAsString)
 
     private fun compareArray(actualValue: Any?, expectedValueAsString: String?) =
         if (actualValue is ByteArray) {
