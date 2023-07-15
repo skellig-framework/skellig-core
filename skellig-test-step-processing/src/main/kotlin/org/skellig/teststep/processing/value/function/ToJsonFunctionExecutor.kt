@@ -16,13 +16,9 @@ class ToJsonFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, args: Array<Any?>): Any? {
         return if (args.size == 1) {
-            val jsonContent =
-                if (args[0] is Map<*, *>) args[0] as Map<String, Any?>
-                else if (args[0] is List<*>) args[0] as List<Any?>
-                else throw TestDataConversionException("Function `${getFunctionName()} can only accept list or an object. Found ${args[0]}")
-            jsonSerializer.writeValueAsString(jsonContent)
+            jsonSerializer.writeValueAsString(args[0])
         } else {
-            throw TestDataConversionException("Function `json` can only accept 1 argument. Found ${args.size}")
+            throw TestDataConversionException("Function `${getFunctionName()}` can only accept 1 argument. Found ${args.size}")
         }
     }
 

@@ -249,7 +249,6 @@ open class SkelligTestContext : Closeable {
         return functionExecutorBuilder
             .withClassLoader(classLoader)
             .withClassPaths(testStepClassPaths)
-            .withGetPropertyFunction(propertyExtractorFunction)
             .withTestScenarioState(testScenarioState)
             .build()
     }

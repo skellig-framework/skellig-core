@@ -2,6 +2,8 @@ package org.skellig.teststep.processing.value.extractor
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.skellig.teststep.processing.exception.ValueExtractionException
 
 class JsonToValueExtractorTest {
 
@@ -10,7 +12,7 @@ class JsonToValueExtractorTest {
 
     @Test
     fun testFromEmptyJsonToMap() {
-        assertEquals(mapOf<Any, Any>(), jsonToMap.extractFrom("jsonToMap", "{}", arrayOf(null)))
+        assertEquals(mapOf<Any, Any>(), jsonToMap.extractFrom("jsonToMap", "{}", emptyArray()))
     }
 
     @Test
@@ -31,7 +33,7 @@ class JsonToValueExtractorTest {
                       "f4": 10
                    }
                 }
-                """.trimIndent(), arrayOf(null)
+                """.trimIndent(), emptyArray()
             )
         )
     }
@@ -56,18 +58,25 @@ class JsonToValueExtractorTest {
                       "f2": "v4"
                     }
                 ]
-                """.trimIndent(), arrayOf(null)
+                """.trimIndent(), emptyArray()
             )
         )
     }
 
     @Test
     fun testFromNullOrEmptyStringJson() {
-        assertEquals(emptyMap<Any, Any>(), jsonToMap.extractFrom("jsonToMap", null, arrayOf(null)))
-        assertEquals(emptyList<Any>(), jsonToList.extractFrom("jsonToList", null, arrayOf(null)))
+        assertEquals(emptyMap<Any, Any>(), jsonToMap.extractFrom("jsonToMap", null, emptyArray()))
+        assertEquals(emptyList<Any>(), jsonToList.extractFrom("jsonToList", null, emptyArray()))
 
-        assertEquals(emptyMap<Any, Any>(), jsonToMap.extractFrom("jsonToMap", "", arrayOf(null)))
-        assertEquals(emptyList<Any>(), jsonToList.extractFrom("jsonToList", "", arrayOf(null)))
+        assertEquals(emptyMap<Any, Any>(), jsonToMap.extractFrom("jsonToMap", "", emptyArray()))
+        assertEquals(emptyList<Any>(), jsonToList.extractFrom("jsonToList", "", emptyArray()))
+    }
+
+    @Test
+    fun testFromInvalidJson() {
+        val ex = assertThrows<ValueExtractionException> { jsonToList.extractFrom("jsonToList", "{ a }", emptyArray()) }
+
+        assertEquals("Failed to convert JSON to List: '{ a }'", ex.message)
     }
 
 }

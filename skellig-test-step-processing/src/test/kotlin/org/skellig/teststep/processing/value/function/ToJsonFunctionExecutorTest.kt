@@ -1,8 +1,9 @@
 package org.skellig.teststep.processing.value.function
 
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.value.function.ToJsonFunctionExecutor
+import org.skellig.teststep.processing.exception.TestDataConversionException
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -44,4 +45,18 @@ internal class ToJsonFunctionExecutorTest {
 
         assertEquals("[\"a\",\"b\",\"c\"]", converter.execute("toJson", arrayOf(testData)))
     }
+
+    @Test
+    internal fun testConvertToObjectJson() {
+        assertEquals("{\"id\":100,\"name\":\"n1\"}", converter.execute("toJson", arrayOf(ConvertableDataForTest(100, "n1"))))
+    }
+
+    @Test
+    fun testConvertToJsonWithInvalidNumberOfArguments() {
+        val ex = Assertions.assertThrows(TestDataConversionException::class.java) { converter.execute("toJson", arrayOf(emptyMap<Any, Any>(), 10)) }
+
+        assertEquals("Function `toJson` can only accept 1 argument. Found 2", ex.message)
+    }
+
+    inner class ConvertableDataForTest(var id: Int, var name: String)
 }
