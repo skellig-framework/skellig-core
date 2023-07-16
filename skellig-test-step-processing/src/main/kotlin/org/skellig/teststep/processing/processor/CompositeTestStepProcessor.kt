@@ -11,7 +11,7 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator
  *
  * If no processor found for the provided test step, then it throws `TestStepProcessingException`
  */
-class CompositeTestStepProcessor private constructor(
+open class CompositeTestStepProcessor private constructor(
     testScenarioState: TestScenarioState,
     testStepResultValidator: TestStepResultValidator
 ) : TestStepProcessor<TestStep> {
