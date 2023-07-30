@@ -9,7 +9,6 @@ import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.ValidationDetails
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
-import java.lang.RuntimeException
 
 class DefaultTestStepProcessorTest {
 
@@ -110,6 +109,11 @@ class DefaultTestStepProcessorTest {
         }
 
         assertEquals("oops", ex!!.message)
+    }
+
+    @Test
+    fun testGetTesStepClass() {
+        assertEquals(DefaultTestStep::class.java, testStepProcessor.getTestStepClass())
     }
 
     private fun createTestStep(): Pair<ValidationDetails, DefaultTestStep> {

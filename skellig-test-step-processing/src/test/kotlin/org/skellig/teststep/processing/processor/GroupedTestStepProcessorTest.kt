@@ -56,6 +56,10 @@ class GroupedTestStepProcessorTest {
         assertEquals("response 3", result)
     }
 
+    @Test
+    fun testGetTesStepClass() {
+        assertEquals(GroupedTestStep::class.java, testStepProcessor.getTestStepClass())
+    }
 
     private fun createTestStep(): GroupedTestStep {
         val validationDetails = ValidationDetails.Builder()
