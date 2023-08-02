@@ -20,9 +20,11 @@ abstract class BaseTestStepFactory<T : TestStep>(
         var parameters: MutableMap<String, String?>? = null
         val matcher = CachedPattern.compile(getName(rawTestStep)).matcher(testStepName)
         if (matcher.find()) {
+            println("Found matching parameter. Groups = " + matcher.groupCount())
             parameters = HashMap()
             for (i in 1..matcher.groupCount()) {
                 val value = matcher.group(i)
+                println("Found value = " + value)
                 if(value.isNotEmpty()) {
                     parameters[i.toString()] = value
                 }
