@@ -5,8 +5,9 @@ import org.skellig.teststep.processing.util.CachedPattern
 import java.util.*
 
 abstract class BaseTestStepFactory<T : TestStep>(
-        val keywordsProperties: Properties?,
-        val testStepFactoryValueConverter: TestStepFactoryValueConverter) : TestStepFactory<T> {
+    val keywordsProperties: Properties?,
+    val testStepFactoryValueConverter: TestStepFactoryValueConverter
+) : TestStepFactory<T> {
 
     companion object {
         protected const val TEST_STEP_NAME_KEYWORD = "test.step.keyword.name"
@@ -18,6 +19,7 @@ abstract class BaseTestStepFactory<T : TestStep>(
 
     protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<String, Any?>): Map<String, String?>? {
         var parameters: MutableMap<String, String?>? = null
+        println("Getting regex ${getName(rawTestStep)} from test name: $testStepName")
         val matcher = CachedPattern.compile(getName(rawTestStep)).matcher(testStepName)
         if (matcher.find()) {
             println("Found matching parameter. Groups = " + matcher.groupCount())
@@ -25,11 +27,11 @@ abstract class BaseTestStepFactory<T : TestStep>(
             for (i in 1..matcher.groupCount()) {
                 val value = matcher.group(i)
                 println("Found value = " + value)
-                if(value.isNotEmpty()) {
+                if (value.isNotEmpty()) {
                     parameters[i.toString()] = value
                 }
             }
-        }
+        } else println("No params found in the test name: " + testStepName)
         return parameters
     }
 
