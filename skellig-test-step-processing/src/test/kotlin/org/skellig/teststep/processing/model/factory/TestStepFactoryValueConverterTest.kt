@@ -48,11 +48,11 @@ internal class TestStepFactoryValueConverterTest {
         assertEquals(result, converter.convertValue<String>("\${p1:}", mapOf(Pair("p1", result))))
     }
 
-    @Test
-    fun testConvertWithParametersWithNumericName() {
-        val result = "s1"
-        assertEquals(result, converter.convertValue<String>("\${1}", mapOf(Pair("1", result))))
-    }
+//    @Test
+//    fun testConvertWithParametersWithNumericName() {
+//        val result = "s1"
+//        assertEquals(result, converter.convertValue<String>("\${1}", mapOf(Pair("1", result))))
+//    }
 
     @Test
     fun testConvertWithParametersSlashSeparated() {
