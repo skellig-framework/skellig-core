@@ -87,10 +87,10 @@ class DefaultTestStepFactoryTest {
         )
         val testStep = testStepFactory!!.create("Book seats s1 of the event", rawTestStep, emptyMap())
 
-//        assertAll(
-//            { assertEquals("s1", testStep.variables!!["seats"]) },
-//            { assertNull(testStep.variables!!["event"]) },
-//        )
+        assertAll(
+            { assertEquals("s1", testStep.variables!!["seats"]) },
+            { assertNull(testStep.variables!!["event"]) },
+        )
     }
 
     @Test
@@ -162,14 +162,19 @@ class DefaultTestStepFactoryTest {
     @Test
     @DisplayName("With validation details having many xpaths Then check each is preserved")
     fun testCreateTestStepWithValidationDetailsOfManyXpaths() {
-        val rawTestStep =  mapOf(
-            Pair("validate",
-            mapOf(
-                Pair("local.toString()", mapOf(
-                    Pair("xpath(/a/b)", "1"),
-                    Pair("xpath(/c/d)", "2")
-                ))
-        )))
+        val rawTestStep = mapOf(
+            Pair(
+                "validate",
+                mapOf(
+                    Pair(
+                        "local.toString()", mapOf(
+                            Pair("xpath(/a/b)", "1"),
+                            Pair("xpath(/c/d)", "2")
+                        )
+                    )
+                )
+            )
+        )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
         val validationDetails = testStep.validationDetails
