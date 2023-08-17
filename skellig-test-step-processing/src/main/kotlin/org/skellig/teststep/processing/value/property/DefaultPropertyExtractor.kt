@@ -8,9 +8,9 @@ class DefaultPropertyExtractor(private val propertyExtractorFunction: ((String) 
 
     override fun extractFrom(propertyKey: String, parameters: Map<String, Any?>): Any? {
         var propertyValue: Any? = null
-        if (propertyExtractorFunction != null) {
-            propertyValue = propertyExtractorFunction.invoke(propertyKey)
-        }
+//        if (propertyExtractorFunction != null) {
+//            propertyValue = propertyExtractorFunction.invoke(propertyKey)
+//        }
         if (propertyValue == null && parameters.containsKey(propertyKey)) {
             propertyValue = parameters[propertyKey]
         }
