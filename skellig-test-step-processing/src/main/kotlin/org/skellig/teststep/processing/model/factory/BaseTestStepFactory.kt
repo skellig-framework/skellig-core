@@ -19,19 +19,16 @@ abstract class BaseTestStepFactory<T : TestStep>(
 
     protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<String, Any?>): Map<String, String?>? {
         var parameters: MutableMap<String, String?>? = null
-        println("Getting regex ${getName(rawTestStep)} from test name: $testStepName")
         val matcher = CachedPattern.compile(getName(rawTestStep)).matcher(testStepName)
         if (matcher.find()) {
-            println("Found matching parameter. Groups = " + matcher.groupCount())
             parameters = HashMap()
             for (i in 1..matcher.groupCount()) {
                 val value = matcher.group(i)
-                println("Found value = " + value)
                 if (value.isNotEmpty()) {
                     parameters[i.toString()] = value
                 }
             }
-        } else println("No params found in the test name: " + testStepName)
+        }
         return parameters
     }
 

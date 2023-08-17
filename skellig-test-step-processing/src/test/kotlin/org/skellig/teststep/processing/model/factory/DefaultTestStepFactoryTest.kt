@@ -8,12 +8,14 @@ import org.mockito.Mockito
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.CachedPattern
 import org.skellig.teststep.processing.utils.UnitTestUtils
 import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import java.util.*
+import java.util.regex.Pattern
 
 @DisplayName("Create Test Step")
 class DefaultTestStepFactoryTest {
@@ -85,7 +87,20 @@ class DefaultTestStepFactoryTest {
         )
         val testStep = testStepFactory!!.create("Book seats s1 of the event", rawTestStep, emptyMap())
 
+        var parameters: MutableMap<String, String?> = mutableMapOf()
+        val matcher = Pattern.compile(rawTestStep["name"].toString()).matcher("Book seats s1 of the event")
+        if (matcher.find()) {
+            parameters = HashMap()
+            for (i in 1..matcher.groupCount()) {
+                val value = matcher.group(i)
+                if (value.isNotEmpty()) {
+                    parameters[i.toString()] = value
+                }
+            }
+        }
+
         assertAll(
+            { assertEquals(mapOf(Pair("1", "s1")), parameters) },
             { assertEquals("s1", testStep.variables!!["seats"]) },
             { assertNull(testStep.variables!!["event"]) },
         )
