@@ -22,10 +22,12 @@ class RawValueProcessingVisitorTest {
 
     @Test
     fun testProcess() {
-        val chunkValue = (rawValueChunkParser.buildFrom("\${1}", mapOf(Pair("1", "s1"))) as CompositeRawValue).chunks[0] as PropertyValue
+        val compositeRawValue = rawValueChunkParser.buildFrom("\${1}", mapOf(Pair("1", "s1"))) as CompositeRawValue
+        val chunkValue = compositeRawValue.chunks[0] as PropertyValue
         assertEquals("1",chunkValue.key)
         assertEquals(mapOf(Pair("1", "s1")), chunkValue.parameters)
-        assertEquals("s1", visitor.process(chunkValue))
+        assertEquals(1, compositeRawValue.chunks.size)
+        assertEquals("s1", visitor.process(compositeRawValue))
         assertEquals("sample", visitor.process(rawValueChunkParser.buildFrom("#[sample]", emptyMap())))
         assertEquals(100, visitor.process(rawValueChunkParser.buildFrom("\${key1}.key2.key3", mapOf(Pair("key1", mapOf(Pair("key2", mapOf(Pair("key3", 100)))))))))
         assertEquals("a / 10 - sample /b", visitor.process(rawValueChunkParser.buildFrom("a / #[\${key1}] /b", mapOf(Pair("key1", SampleData(10, "sample"))))))
