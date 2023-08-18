@@ -8,15 +8,12 @@ internal class CalcFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, args: Array<Any?>): Any {
         return if (args.size == 1) MathExpressionParser(args[0].toString()).parseExpression()
-        else throw FunctionValueExecutionException(
-            "Failed to execute function 'calc' as it must have 1 String argument " +
-                    "but has ${args.size}"
-        )
+        else throw FunctionValueExecutionException("Failed to execute function 'calc' as it must have 1 String argument but has ${args.size}")
     }
 
     override fun getFunctionName(): String = "calc"
 
-    private class MathExpressionParser(private var input: String) {
+    private inner class MathExpressionParser(private var input: String) {
         private var index = 0
 
         init {
@@ -49,7 +46,7 @@ internal class CalcFunctionExecutor : FunctionValueExecutor {
         private fun parseNumber(): BigDecimal {
             val start = index
             while (Character.isDigit(peek()) || peek() == '.') consume()
-            return if(start < index && index <= input.length) input.substring(start, index).toBigDecimal()
+            return if (start < index && index <= input.length) input.substring(start, index).toBigDecimal()
             else throw FunctionValueExecutionException("Failed to parse math expression '$input'")
         }
 

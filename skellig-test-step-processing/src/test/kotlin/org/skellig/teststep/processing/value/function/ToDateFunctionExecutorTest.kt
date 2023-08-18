@@ -3,9 +3,8 @@ package org.skellig.teststep.processing.value.function
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.exception.TestValueConversionException
-import org.skellig.teststep.processing.value.function.ToDateFunctionExecutor
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 import java.time.LocalDate
 
 class ToDateFunctionExecutorTest {
@@ -28,7 +27,7 @@ class ToDateFunctionExecutorTest {
 
     @Test
     fun testConvertToDateWithInvalidNumberOfArguments() {
-        val ex = assertThrows(TestDataConversionException::class.java) { converter.execute("toDate", arrayOf("01-01-2001", "UTC")) }
+        val ex = assertThrows(TestValueConversionException::class.java) { converter.execute("toDate", arrayOf("01-01-2001", "UTC")) }
 
         assertEquals("Function `toDate` can only accept 1 argument. Found 2", ex.message)
     }

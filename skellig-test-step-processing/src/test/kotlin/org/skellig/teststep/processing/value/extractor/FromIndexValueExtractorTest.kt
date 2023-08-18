@@ -2,9 +2,7 @@ package org.skellig.teststep.processing.value.extractor
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestDataConversionException
-import org.skellig.teststep.processing.exception.ValueExtractionException
-import org.skellig.teststep.processing.value.extractor.FromIndexValueExtractor
+import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
 
 class FromIndexValueExtractorTest {
 

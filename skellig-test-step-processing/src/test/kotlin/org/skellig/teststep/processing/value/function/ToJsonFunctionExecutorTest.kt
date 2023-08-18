@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.value.function
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -53,7 +53,7 @@ internal class ToJsonFunctionExecutorTest {
 
     @Test
     fun testConvertToJsonWithInvalidNumberOfArguments() {
-        val ex = Assertions.assertThrows(TestDataConversionException::class.java) { converter.execute("toJson", arrayOf(emptyMap<Any, Any>(), 10)) }
+        val ex = Assertions.assertThrows(FunctionValueExecutionException::class.java) { converter.execute("toJson", arrayOf(emptyMap<Any, Any>(), 10)) }
 
         assertEquals("Function `toJson` can only accept 1 argument. Found 2", ex.message)
     }
