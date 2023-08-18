@@ -5,8 +5,9 @@ import org.skellig.teststep.processing.util.CachedPattern
 import java.util.*
 
 abstract class BaseTestStepFactory<T : TestStep>(
-        val keywordsProperties: Properties?,
-        val testStepFactoryValueConverter: TestStepFactoryValueConverter) : TestStepFactory<T> {
+    val keywordsProperties: Properties?,
+    val testStepFactoryValueConverter: TestStepFactoryValueConverter
+) : TestStepFactory<T> {
 
     companion object {
         protected const val TEST_STEP_NAME_KEYWORD = "test.step.keyword.name"
@@ -23,7 +24,7 @@ abstract class BaseTestStepFactory<T : TestStep>(
             parameters = HashMap()
             for (i in 1..matcher.groupCount()) {
                 val value = matcher.group(i)
-                if(value.isNotEmpty()) {
+                if (value.isNotEmpty()) {
                     parameters[i.toString()] = value
                 }
             }

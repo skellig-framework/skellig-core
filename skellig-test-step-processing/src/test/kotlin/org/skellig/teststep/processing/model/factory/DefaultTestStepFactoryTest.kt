@@ -2,18 +2,20 @@ package org.skellig.teststep.processing.model.factory
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.CachedPattern
 import org.skellig.teststep.processing.utils.UnitTestUtils
 import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import java.util.*
+import java.util.regex.Pattern
 
 @DisplayName("Create Test Step")
 class DefaultTestStepFactoryTest {
@@ -62,11 +64,11 @@ class DefaultTestStepFactoryTest {
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, parameters)
 
-        Assertions.assertAll(
-            { Assertions.assertTrue((testStep.testData as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
-            { Assertions.assertEquals(generatedId, testStep.variables!!["id"]) },
-            { Assertions.assertTrue((testStep.variables!!["names"] as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
-            { Assertions.assertEquals("100", testStep.variables!!["amount"]) }
+        assertAll(
+            { assertTrue((testStep.testData as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
+            { assertEquals(generatedId, testStep.variables!!["id"]) },
+            { assertTrue((testStep.variables!!["names"] as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
+            { assertEquals("100", testStep.variables!!["amount"]) }
         )
     }
 
@@ -85,9 +87,9 @@ class DefaultTestStepFactoryTest {
         )
         val testStep = testStepFactory!!.create("Book seats s1 of the event", rawTestStep, emptyMap())
 
-        Assertions.assertAll(
-            { Assertions.assertEquals("s1", testStep.variables!!["seats"]) },
-            { Assertions.assertNull(testStep.variables!!["event"]) },
+        assertAll(
+            { assertEquals("s1", testStep.variables!!["seats"]) },
+            { assertNull(testStep.variables!!["event"]) },
         )
     }
 
@@ -117,12 +119,12 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
 
         Assertions.assertAll(
-            { Assertions.assertEquals(generatedId, (testStep.testData as Map<*, *>?)!!["id"]) },
-            { Assertions.assertEquals("2", (testStep.testData as Map<*, *>?)!!["size"]) },
-            { Assertions.assertEquals("v1", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![0] as Map<*, *>)["c1"]) },
-            { Assertions.assertEquals("v2", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![0] as Map<*, *>)["c2"]) },
-            { Assertions.assertEquals("v3", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![1] as Map<*, *>)["c1"]) },
-            { Assertions.assertEquals("v4", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![1] as Map<*, *>)["c2"]) }
+            { assertEquals(generatedId, (testStep.testData as Map<*, *>?)!!["id"]) },
+            { assertEquals("2", (testStep.testData as Map<*, *>?)!!["size"]) },
+            { assertEquals("v1", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![0] as Map<*, *>)["c1"]) },
+            { assertEquals("v2", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![0] as Map<*, *>)["c2"]) },
+            { assertEquals("v3", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![1] as Map<*, *>)["c1"]) },
+            { assertEquals("v4", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![1] as Map<*, *>)["c2"]) }
         )
     }
 
@@ -150,32 +152,37 @@ class DefaultTestStepFactoryTest {
 
         // check that refs are not applied because they are processed when actual validation happens
         Assertions.assertAll(
-            { Assertions.assertEquals("result", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
-            { Assertions.assertEquals("\${row}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
-            { Assertions.assertEquals("id", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
-            { Assertions.assertEquals("\${id}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult.toString()) }
+            { assertEquals("result", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { assertEquals("\${row}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
+            { assertEquals("id", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
+            { assertEquals("\${id}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult.toString()) }
         )
     }
 
     @Test
     @DisplayName("With validation details having many xpaths Then check each is preserved")
     fun testCreateTestStepWithValidationDetailsOfManyXpaths() {
-        val rawTestStep =  mapOf(
-            Pair("validate",
-            mapOf(
-                Pair("local.toString()", mapOf(
-                    Pair("xpath(/a/b)", "1"),
-                    Pair("xpath(/c/d)", "2")
-                ))
-        )))
+        val rawTestStep = mapOf(
+            Pair(
+                "validate",
+                mapOf(
+                    Pair(
+                        "local.toString()", mapOf(
+                            Pair("xpath(/a/b)", "1"),
+                            Pair("xpath(/c/d)", "2")
+                        )
+                    )
+                )
+            )
+        )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
         val validationDetails = testStep.validationDetails
 
         Assertions.assertAll(
-            { Assertions.assertEquals("local.toString()", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
-            { Assertions.assertEquals("xpath(/a/b)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).property.toString()) },
-            { Assertions.assertEquals("xpath(/c/d)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).property.toString()) },
+            { assertEquals("local.toString()", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
+            { assertEquals("xpath(/a/b)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).property.toString()) },
+            { assertEquals("xpath(/c/d)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).property.toString()) },
         )
     }
 
@@ -185,7 +192,7 @@ class DefaultTestStepFactoryTest {
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("key_2", "v2")))
 
-        Assertions.assertEquals("v2", testStep.testData)
+        assertEquals("v2", testStep.testData)
     }
 
     @Test
@@ -195,7 +202,7 @@ class DefaultTestStepFactoryTest {
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf())
 
-        Assertions.assertEquals("", testStep.testData)
+        assertEquals("", testStep.testData)
     }
 
     @Test
@@ -207,7 +214,7 @@ class DefaultTestStepFactoryTest {
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("a", fieldName)))
 
-        Assertions.assertEquals(value, (testStep.testData as Map<*, *>?)!![fieldName])
+        assertEquals(value, (testStep.testData as Map<*, *>?)!![fieldName])
     }
 
     @Test
@@ -248,7 +255,7 @@ class DefaultTestStepFactoryTest {
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf())
 
-        Assertions.assertEquals(data, String(testStep.testData as ByteArray))
+        assertEquals(data, String(testStep.testData as ByteArray))
     }
 
     @Test
@@ -270,9 +277,9 @@ class DefaultTestStepFactoryTest {
         val variables = testStep.variables!!
 
         Assertions.assertAll(
-            { Assertions.assertEquals("v1", variables["f2"]) },
-            { Assertions.assertEquals(variables["f1"], variables["f2"]) },
-            { Assertions.assertEquals(variables["f1"], variables["f3"]) },
+            { assertEquals("v1", variables["f2"]) },
+            { assertEquals(variables["f1"], variables["f2"]) },
+            { assertEquals(variables["f1"], variables["f3"]) },
         )
     }
 
@@ -293,8 +300,8 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("1", "v2")))
 
         Assertions.assertAll(
-            { Assertions.assertEquals(testStepA["id"], testStep.id) },  // id is replaced by the latest parent
-            { Assertions.assertEquals(testStepA["payload"], testStep.testData) }
+            { assertEquals(testStepA["id"], testStep.id) },  // id is replaced by the latest parent
+            { assertEquals(testStepA["payload"], testStep.testData) }
         )
     }
 
@@ -326,13 +333,13 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("f2", "v2")))
 
         Assertions.assertAll(
-            { Assertions.assertEquals(testStepB["id"], testStep.id) },  // id is replaced by the latest parent
-            { Assertions.assertEquals(testStepA["variables"], testStep.variables) },
-            { Assertions.assertEquals("v1", (testStep.testData as Map<*, *>?)!!["new_f1"]) },
-            { Assertions.assertEquals("v2", (testStep.testData as Map<*, *>?)!!["f2"]) },
-            { Assertions.assertEquals("something", (testStep.testData as Map<*, *>?)!!["f3"]) },
+            { assertEquals(testStepB["id"], testStep.id) },  // id is replaced by the latest parent
+            { assertEquals(testStepA["variables"], testStep.variables) },
+            { assertEquals("v1", (testStep.testData as Map<*, *>?)!!["new_f1"]) },
+            { assertEquals("v2", (testStep.testData as Map<*, *>?)!!["f2"]) },
+            { assertEquals("something", (testStep.testData as Map<*, *>?)!!["f3"]) },
             {
-                Assertions.assertEquals(
+                assertEquals(
                     "v4",
                     ((testStep.validationDetails?.expectedResult?.expectedResult as List<*>)[0] as ExpectedResult).expectedResult.toString()
                 )
@@ -357,6 +364,6 @@ class DefaultTestStepFactoryTest {
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap())
 
-        Assertions.assertEquals(expectedValue, (testStep.testData as Map<*, *>?)!!["c"])
+        assertEquals(expectedValue, (testStep.testData as Map<*, *>?)!!["c"])
     }
 }

@@ -53,14 +53,6 @@ class IfFunctionExecutorTest {
 
     @Test
     fun testSimpleConditionWithNumbersWhenLess() {
-        val data = createMap(
-            "if",
-            createMap(
-                "condition", "12 < 5",
-                "then", "true", "else", "false"
-            )
-        )
-
         Assertions.assertEquals("false", converter!!.execute("if", arrayOf("12 < 5", "true", "false")))
     }
 

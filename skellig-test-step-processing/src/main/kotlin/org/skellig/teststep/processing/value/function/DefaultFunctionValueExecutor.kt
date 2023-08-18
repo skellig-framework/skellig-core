@@ -17,15 +17,11 @@ class DefaultFunctionValueExecutor private constructor(private val functions: Ma
 
         private val functions = mutableMapOf<String, FunctionValueExecutor>()
         private var testScenarioState: TestScenarioState? = null
-        private var getPropertyFunction: ((String) -> Any?)? = null
         private var classLoader: ClassLoader? = null
         private var classPaths: Collection<String>? = null
 
         fun withTestScenarioState(testScenarioState: TestScenarioState?) =
             apply { this.testScenarioState = testScenarioState }
-
-        fun withGetPropertyFunction(getPropertyFunction: ((String) -> Any?)?) =
-            apply { this.getPropertyFunction = getPropertyFunction }
 
         fun withClassLoader(classLoader: ClassLoader?) = apply { this.classLoader = classLoader }
 

@@ -28,8 +28,8 @@ name("User (\w+) received a valid response from (\w+)") {
       score = get(step1).variables.score
    }
    validate {
-      fromTest = step2
-      originalRequest [
+      "fromTest" = step2
+      originalRequest.toCustomFormat [
          match('.*score='${score}'.*')
          contains(${2})
       ]

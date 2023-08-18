@@ -27,7 +27,7 @@ name ("User (\w+) receives valid response from (\w+)") {
     }
     validate {
         "fromTest" = step2
-        originalRequest [
+        originalRequest.toCustomFormat [
             match('.*score='${score}'.*')
             contains(${2})
         ]
@@ -53,7 +53,7 @@ name ("Send a message with if statement") {
 
     message {
         f1 = 0
-        f2 = "if(${num}' == 1', ${part1}, ${part2})"
+        f2 = "if(${num} == 1, ${part1}, ${part2})"
     }
 }
 
@@ -62,7 +62,7 @@ name ("Validate test with if statement") {
       // enclose this keyword in quotes to check whether it still works
         "fromTest" = if_test_1
       // do not enclose `=` in quotes and check if it works
-        originalRequest [
+        originalRequest.toString() [
             contains('f2='${expected_f2})
             contains('f3='${expected_f3})
         ]

@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.model.factory
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -38,6 +39,11 @@ internal class TestStepFactoryValueConverterTest {
             .build()
 
     @Test
+    fun testConvertWithNoParametersAndNoDefault() {
+        assertNull(converter.convertValue<String>("\${p1}", emptyMap()))
+    }
+
+    @Test
     fun testConvertWithNoParametersAndDefaultValue() {
         assertEquals("", converter.convertValue<String>("\${p1:}", emptyMap()))
     }
@@ -46,6 +52,12 @@ internal class TestStepFactoryValueConverterTest {
     fun testConvertWithParametersAndDefaultValue() {
         val result = "v2"
         assertEquals(result, converter.convertValue<String>("\${p1:}", mapOf(Pair("p1", result))))
+    }
+
+    @Test
+    fun testConvertWithParametersWithNumericName() {
+        val result = "s1"
+        assertEquals(result, converter.convertValue<String>("\${1}", mapOf(Pair("1", result))))
     }
 
     @Test
@@ -194,31 +206,14 @@ internal class TestStepFactoryValueConverterTest {
     }
 
     @Test
-    fun testCacheValue() {
-        // this is a hack to use parametrised value and return the same from getPropertyFunction
-        // in order to check how many times it called
-        val value = "\${1}"
-        var callCounter = 0
-        val testStepFactoryConverter =
-            TestStepFactoryValueConverter.Builder()
-                .withValueProcessingVisitor(
-                    RawValueProcessingVisitor(
-                        DefaultFunctionValueExecutor.Builder()
-                            .withTestScenarioState(testScenarioState)
-                            .build(),
-                        DefaultValueExtractor.Builder().build(),
-                        mock(),
-                        DefaultPropertyExtractor {
-                            callCounter++
-                            return@DefaultPropertyExtractor value
-                        }
-                    )
-                )
-                .build()
+    fun testIdempotencyOfConvert() {
+        val key = "1"
+        val value = "v1"
+        val paramValue = "\${$key}"
 
-        assertEquals(value, testStepFactoryConverter.convertValue<String>(value, emptyMap()))
-        assertEquals(value, testStepFactoryConverter.convertValue<String>(value, emptyMap()))
-        assertEquals(1, callCounter) // GetPropertyFunction must be called once and second time `convertValue` returns cached value
+        assertNull(converter.convertValue<String>(paramValue, emptyMap()))
+        assertEquals(value, converter.convertValue<String>(paramValue, mapOf(Pair(key, value))))
+        assertEquals(value, converter.convertValue<String>(paramValue, mapOf(Pair(key, value))))
     }
 
     @Nested

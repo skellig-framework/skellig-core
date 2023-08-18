@@ -11,7 +11,7 @@ import java.lang.reflect.Method
  *
  * @see org.skellig.teststep.runner.annotation.TestStep
  */
-internal class ClassTestStepProcessor(val testScenarioState: TestScenarioState) : TestStepProcessor<ClassTestStep> {
+internal class ClassTestStepProcessor(private val testScenarioState: TestScenarioState) : TestStepProcessor<ClassTestStep> {
 
     override fun process(testStep: ClassTestStep): TestStepProcessor.TestStepRunResult {
         return invoke(testStep.name, testStep, testStep.parameters)

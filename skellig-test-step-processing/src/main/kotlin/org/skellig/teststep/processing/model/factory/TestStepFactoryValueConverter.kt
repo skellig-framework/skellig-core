@@ -5,10 +5,6 @@ import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 
 open class TestStepFactoryValueConverter private constructor(private val rawValueProcessingVisitor: RawValueProcessingVisitor) {
 
-    companion object {
-        private val notToParseValues = mutableSetOf<String>()
-    }
-
     private val rawValueChunkParser = RawValueChunkParser()
 
     open fun <T> convertValue(result: Any?, parameters: Map<String, Any?>): T? =
@@ -18,13 +14,7 @@ open class TestStepFactoryValueConverter private constructor(private val rawValu
                 newKey to convertValue<T>(it.value, parameters)
             }
             is Collection<*> -> result.map { convertValue<T>(it, parameters) }.toList()
-            is String -> {
-                if (!notToParseValues.contains(result)) {
-                    val newResult = rawValueProcessingVisitor.process(rawValueChunkParser.buildFrom(result, parameters))
-                    if (newResult == result) notToParseValues.add(result)
-                    newResult
-                } else result
-            }
+            is String -> rawValueProcessingVisitor.process(rawValueChunkParser.buildFrom(result, parameters))
             else -> result
         } as T?
 

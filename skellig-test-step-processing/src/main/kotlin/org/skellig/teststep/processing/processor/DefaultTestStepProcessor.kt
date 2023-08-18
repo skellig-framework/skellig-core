@@ -25,7 +25,7 @@ internal class DefaultTestStepProcessor private constructor(
     private fun validate(testStep: DefaultTestStep, testStepRunResult: TestStepRunResult) {
         var error: RuntimeException? = null
         try {
-            testStep.validationDetails?.let { super.validate(testStep) }
+            super.validate(testStep)
         } catch (ex: ValidationException) {
             error = ex
         } finally {

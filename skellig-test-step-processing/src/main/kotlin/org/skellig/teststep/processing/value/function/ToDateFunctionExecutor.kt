@@ -7,9 +7,9 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalQuery
 
 class ToDateFunctionExecutor : FunctionValueExecutor {
-
     companion object {
-        private val DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        private const val DATE_PATTERN = "dd-MM-yyyy"
+        private val DATE_FORMATTER = DateTimeFormatter.ofPattern(DATE_PATTERN)
     }
 
     override fun execute(name: String, args: Array<Any?>): Any? {
@@ -25,7 +25,7 @@ class ToDateFunctionExecutor : FunctionValueExecutor {
         try {
             DATE_FORMATTER.parse(value, query)
         } catch (ex: Exception) {
-            throw TestValueConversionException("Failed to convert date $value by pattern $DATE_FORMATTER");
+            throw TestValueConversionException("Failed to convert date $value by pattern $DATE_PATTERN");
         }
 
     override fun getFunctionName(): String = "toDate"
