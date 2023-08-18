@@ -25,7 +25,7 @@ class ToDateFunctionExecutor : FunctionValueExecutor {
         try {
             DATE_FORMATTER.parse(value, query)
         } catch (ex: Exception) {
-            throw TestValueConversionException("Failed to convert date $value by pattern $DATE_PATTERN");
+            throw FunctionValueExecutionException("Failed to convert date $value by pattern $DATE_PATTERN");
         }
 
     override fun getFunctionName(): String = "toDate"

@@ -1,9 +1,9 @@
 package org.skellig.teststep.processing.value.extractor
 
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.value.extractor.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.function.exception.FunctionValueExecutionException
 
 class FromRegexValueExtractorTest {
 
@@ -56,7 +56,7 @@ class FromRegexValueExtractorTest {
 
     @Test
     fun testExtractByRegexWithInvalidNumberOfArguments() {
-        val ex = Assertions.assertThrows(ValueExtractionException::class.java) { regexValueExtractor.extractFrom("fromRegex", "regex", arrayOf("v1", "v2")) }
+        val ex = Assertions.assertThrows(FunctionValueExecutionException::class.java) { regexValueExtractor.extractFrom("fromRegex", "regex", arrayOf("v1", "v2")) }
 
         Assertions.assertEquals("Function `regex` can only accept 1 argument. Found 2", ex.message)
     }

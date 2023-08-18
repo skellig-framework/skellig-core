@@ -58,11 +58,11 @@ class DateTimeValueComparator : ValueComparator {
         return when (actualValue) {
             is LocalDate -> isDateBetween(actualValue, min.toLocalDate(), max.toLocalDate())
             is LocalDateTime -> isBetween(actualValue, min, max)
-            is Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(actualValue.time), UTC), min, max)
-            is java.sql.Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(actualValue.time), UTC), min, max)
+            is java.sql.Date -> isBetween(actualValue.toLocalDate().atTime(0,0), min, max)
+            is Timestamp -> isBetween(LocalDateTime.ofInstant(actualValue.toInstant(), UTC), min, max)
+            is Date -> isBetween(LocalDateTime.ofInstant(actualValue.toInstant(), UTC), min, max)
             is Instant -> isBetween(LocalDateTime.ofInstant(actualValue, UTC), min, max)
             is ZonedDateTime -> isBetween(LocalDateTime.ofInstant(actualValue.toInstant(), UTC), min, max)
-            is Timestamp -> isBetween(LocalDateTime.ofInstant(actualValue.toInstant(), UTC), min, max)
             else -> {
                 if (actualValue is String && format != null) {
                     isBetween(convertToLocalDateTime(actualValue, format, timezone), min, max)

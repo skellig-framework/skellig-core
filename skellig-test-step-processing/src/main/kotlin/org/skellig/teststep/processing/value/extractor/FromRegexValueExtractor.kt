@@ -19,7 +19,7 @@ class FromRegexValueExtractor : ValueExtractor {
                     result.size > 1 -> result
                     else -> value
                 }
-            } ?: throw ValueExtractionException(format("Cannot extract '%s' from null value", extractionParameter))
+            } ?: throw FunctionValueExecutionException(format("Cannot extract '%s' from null value", extractionParameter))
         } else {
             throw FunctionValueExecutionException("Function `regex` can only accept 1 argument. Found ${args.size}")
         }
