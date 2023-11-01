@@ -1,328 +1,340 @@
-package org.skellig.teststep.reader.sts.parser;// Generated from NumberComparison.g4 by ANTLR 4.13.1
+package org.skellig.teststep.reader.sts.parser;// Generated from SkelligGrammar.g4 by ANTLR 4.13.1
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
- * This class provides an empty implementation of {@link NumberComparisonListener},
+ * This class provides an empty implementation of {@link SkelligGrammarListener},
  * which can be extended to create a listener which only needs to handle a subset
  * of the available methods.
  */
 @SuppressWarnings("CheckReturnValue")
-public class NumberComparisonBaseListener implements NumberComparisonListener {
+public class SkelligGrammarBaseListener implements SkelligGrammarListener {
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterStart(NumberComparisonParser.StartContext ctx) { }
+	@Override public void enterFile(SkelligGrammarParser.FileContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitStart(NumberComparisonParser.StartContext ctx) { }
+	@Override public void exitFile(SkelligGrammarParser.FileContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNotExpr(NumberComparisonParser.NotExprContext ctx) { }
+	@Override public void enterTestStepName(SkelligGrammarParser.TestStepNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitNotExpr(NumberComparisonParser.NotExprContext ctx) { }
+	@Override public void exitTestStepName(SkelligGrammarParser.TestStepNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterOrExpr(NumberComparisonParser.OrExprContext ctx) { }
+	@Override public void enterPair(SkelligGrammarParser.PairContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitOrExpr(NumberComparisonParser.OrExprContext ctx) { }
+	@Override public void exitPair(SkelligGrammarParser.PairContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterComparisonExpr(NumberComparisonParser.ComparisonExprContext ctx) { }
+	@Override public void enterKey(SkelligGrammarParser.KeyContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitComparisonExpr(NumberComparisonParser.ComparisonExprContext ctx) { }
+	@Override public void exitKey(SkelligGrammarParser.KeyContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterParenthesesLogicalExpr(NumberComparisonParser.ParenthesesLogicalExprContext ctx) { }
+	@Override public void enterValue(SkelligGrammarParser.ValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitParenthesesLogicalExpr(NumberComparisonParser.ParenthesesLogicalExprContext ctx) { }
+	@Override public void exitValue(SkelligGrammarParser.ValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAndExpr(NumberComparisonParser.AndExprContext ctx) { }
+	@Override public void enterValues(SkelligGrammarParser.ValuesContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAndExpr(NumberComparisonParser.AndExprContext ctx) { }
+	@Override public void exitValues(SkelligGrammarParser.ValuesContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterComparison(NumberComparisonParser.ComparisonContext ctx) { }
+	@Override public void enterArray(SkelligGrammarParser.ArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitComparison(NumberComparisonParser.ComparisonContext ctx) { }
+	@Override public void exitArray(SkelligGrammarParser.ArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterStringExpr(NumberComparisonParser.StringExprContext ctx) { }
+	@Override public void enterMap(SkelligGrammarParser.MapContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitStringExpr(NumberComparisonParser.StringExprContext ctx) { }
+	@Override public void exitMap(SkelligGrammarParser.MapContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAdditionExpr(NumberComparisonParser.AdditionExprContext ctx) { }
+	@Override public void enterPropertyExpr(SkelligGrammarParser.PropertyExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAdditionExpr(NumberComparisonParser.AdditionExprContext ctx) { }
+	@Override public void exitPropertyExpr(SkelligGrammarParser.PropertyExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNumberExpr(NumberComparisonParser.NumberExprContext ctx) { }
+	@Override public void enterFunctionExpr(SkelligGrammarParser.FunctionExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitNumberExpr(NumberComparisonParser.NumberExprContext ctx) { }
+	@Override public void exitFunctionExpr(SkelligGrammarParser.FunctionExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPropertyExpr(NumberComparisonParser.PropertyExprContext ctx) { }
+	@Override public void enterKeySymbols(SkelligGrammarParser.KeySymbolsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPropertyExpr(NumberComparisonParser.PropertyExprContext ctx) { }
+	@Override public void exitKeySymbols(SkelligGrammarParser.KeySymbolsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMultiplicationExpr(NumberComparisonParser.MultiplicationExprContext ctx) { }
+	@Override public void enterStringExpr(SkelligGrammarParser.StringExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMultiplicationExpr(NumberComparisonParser.MultiplicationExprContext ctx) { }
+	@Override public void exitStringExpr(SkelligGrammarParser.StringExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterParenthesesExpr(NumberComparisonParser.ParenthesesExprContext ctx) { }
+	@Override public void enterIdExpr(SkelligGrammarParser.IdExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitParenthesesExpr(NumberComparisonParser.ParenthesesExprContext ctx) { }
+	@Override public void exitIdExpr(SkelligGrammarParser.IdExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDivisionExpr(NumberComparisonParser.DivisionExprContext ctx) { }
+	@Override public void enterNameValue(SkelligGrammarParser.NameValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitDivisionExpr(NumberComparisonParser.DivisionExprContext ctx) { }
+	@Override public void exitNameValue(SkelligGrammarParser.NameValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSubtractionExpr(NumberComparisonParser.SubtractionExprContext ctx) { }
+	@Override public void enterValueExpression(SkelligGrammarParser.ValueExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitSubtractionExpr(NumberComparisonParser.SubtractionExprContext ctx) { }
+	@Override public void exitValueExpression(SkelligGrammarParser.ValueExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionExpr(NumberComparisonParser.FunctionExprContext ctx) { }
+	@Override public void enterParenthesesExpr(SkelligGrammarParser.ParenthesesExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionExpr(NumberComparisonParser.FunctionExprContext ctx) { }
+	@Override public void exitParenthesesExpr(SkelligGrammarParser.ParenthesesExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIdExpr(NumberComparisonParser.IdExprContext ctx) { }
+	@Override public void enterSymbols(SkelligGrammarParser.SymbolsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitIdExpr(NumberComparisonParser.IdExprContext ctx) { }
+	@Override public void exitSymbols(SkelligGrammarParser.SymbolsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionInvocation(NumberComparisonParser.FunctionInvocationContext ctx) { }
+	@Override public void enterColon(SkelligGrammarParser.ColonContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionInvocation(NumberComparisonParser.FunctionInvocationContext ctx) { }
+	@Override public void exitColon(SkelligGrammarParser.ColonContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionBase(NumberComparisonParser.FunctionBaseContext ctx) { }
+	@Override public void enterLessThanEquals(SkelligGrammarParser.LessThanEqualsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionBase(NumberComparisonParser.FunctionBaseContext ctx) { }
+	@Override public void exitLessThanEquals(SkelligGrammarParser.LessThanEqualsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunctionCall(NumberComparisonParser.FunctionCallContext ctx) { }
+	@Override public void enterMoreThanEquals(SkelligGrammarParser.MoreThanEqualsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFunctionCall(NumberComparisonParser.FunctionCallContext ctx) { }
+	@Override public void exitMoreThanEquals(SkelligGrammarParser.MoreThanEqualsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArg(NumberComparisonParser.ArgContext ctx) { }
+	@Override public void enterEquals(SkelligGrammarParser.EqualsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArg(NumberComparisonParser.ArgContext ctx) { }
+	@Override public void exitEquals(SkelligGrammarParser.EqualsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLambdaExpression(NumberComparisonParser.LambdaExpressionContext ctx) { }
+	@Override public void enterNotEquals(SkelligGrammarParser.NotEqualsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLambdaExpression(NumberComparisonParser.LambdaExpressionContext ctx) { }
+	@Override public void exitNotEquals(SkelligGrammarParser.NotEqualsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPropertyInvocation(NumberComparisonParser.PropertyInvocationContext ctx) { }
+	@Override public void enterNumberExpr(SkelligGrammarParser.NumberExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPropertyInvocation(NumberComparisonParser.PropertyInvocationContext ctx) { }
+	@Override public void exitNumberExpr(SkelligGrammarParser.NumberExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPropertyExpression(NumberComparisonParser.PropertyExpressionContext ctx) { }
+	@Override public void enterFunctionExpression(SkelligGrammarParser.FunctionExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPropertyExpression(NumberComparisonParser.PropertyExpressionContext ctx) { }
+	@Override public void exitFunctionExpression(SkelligGrammarParser.FunctionExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNumber(NumberComparisonParser.NumberContext ctx) { }
+	@Override public void enterArg(SkelligGrammarParser.ArgContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitNumber(NumberComparisonParser.NumberContext ctx) { }
+	@Override public void exitArg(SkelligGrammarParser.ArgContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterComparator(NumberComparisonParser.ComparatorContext ctx) { }
+	@Override public void enterPropertyExpression(SkelligGrammarParser.PropertyExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitComparator(NumberComparisonParser.ComparatorContext ctx) { }
+	@Override public void exitPropertyExpression(SkelligGrammarParser.PropertyExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterNumber(SkelligGrammarParser.NumberContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNumber(SkelligGrammarParser.NumberContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

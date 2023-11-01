@@ -1,12 +1,13 @@
 package org.skellig.teststep.reader.sts
 
-import org.skellig.teststep.reader.exception.TestStepReadException
 import java.io.InputStream
 
 class StsFileParser {
 
     fun parse(inputStream: InputStream): List<Map<String, Any?>> {
-        val rawTestSteps: MutableList<Map<String, Any?>> = ArrayList()
+        val inputAsString = inputStream.bufferedReader().use { it.readText() }
+       return SkelligTestStepParser().parse(inputAsString)
+        /* val rawTestSteps: MutableList<Map<String, Any?>> = ArrayList()
         try {
             StsFileBufferedReader(inputStream).use { reader ->
                 RawTestStepHandler().use { rawTestStepHandler ->
@@ -19,6 +20,6 @@ class StsFileParser {
             }
         } catch (e: Exception) {
             throw TestStepReadException(e)
-        }
+        }*/
     }
 }

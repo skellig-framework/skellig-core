@@ -31,26 +31,26 @@ class StsFileParserTest {
         val firstTestStep = testSteps[0]
         val secondTestStep = testSteps[1]
         assertAll(
-                { assertEquals("Simple test step", firstTestStep["name"]) },
+                { assertEquals("\"Simple test step\"", firstTestStep["name"]) },
                 { assertEquals("POST", firstTestStep["method"]) },
-                { assertEquals("\${baseUrl}/a/b/c", firstTestStep["url"]) },
-                { assertEquals("v 1 2 3", getValueFromMap(firstTestStep, "payload", "json", "value")) },
-                { assertEquals("go", getValueFromMap(firstTestStep, "payload", "json", "command")) },
-                { assertEquals("#[\${a : #[\${b}.length]}.size]", getValueFromMap(firstTestStep, "payload", "json", "v2")) },
-                { assertEquals("\${a : \${b}.'a.b' }", getValueFromMap(firstTestStep, "payload", "json", "v3")) }
+                { assertEquals("\"\${baseUrl}/a/b/c\"", firstTestStep["url"]) },
+                { assertEquals("\"v 1 2 3\"", getValueFromMap(firstTestStep, "payload", "json", "value")) },
+                { assertEquals("\"go\"", getValueFromMap(firstTestStep, "payload", "json", "command")) },
+                { assertEquals("\${a:\${b}.length}.size", getValueFromMap(firstTestStep, "payload", "json", "v2")) },
+                { assertEquals("\${a:\${b}.\"a.b\"}", getValueFromMap(firstTestStep, "payload", "json", "v3")) }
         )
         assertAll(
-                { assertEquals("Send \\d{1} message (.*) from csv \\(test\\)", secondTestStep["name"]) },
+                { assertEquals("\" Send \\d{1} message (.*) from csv \\(test\\)\"", secondTestStep["name"]) },
                 { assertEquals("POST", secondTestStep["method"]) },
-                { assertEquals("/'a/'b/'c'", secondTestStep["url"]) },
+                { assertEquals("/+\"a/\"+b/+\"c\"", secondTestStep["url"]) },
                 { assertEquals("\${user}", getValueFromMap(secondTestStep, "auth", "username")) },
                 { assertEquals("\${password}\\_", getValueFromMap(secondTestStep, "auth", "password")) },
                 {
-                    assertEquals("//resources/\"templates\"/msg_get(id).ftl",
+                    assertEquals("\"//resources/\\\"templates\\\"/msg_get(id).ftl\"",
                             getValueFromMap(secondTestStep, "body", "template", "file"))
                 },
                 {
-                    assertEquals("/resources/data/test1.csv",
+                    assertEquals("\"/resources/data/test1.csv\"",
                             getValueFromMap(secondTestStep, "body", "template", "csv", "file"))
                 },
                 {
@@ -58,7 +58,7 @@ class StsFileParserTest {
                             getValueFromMap(secondTestStep, "body", "template", "csv", "convert"))
                 },
                 {
-                    assertEquals("\\\ttest da'ta wi'th 'valid' values",
+                    assertEquals("\"\\\\\\ttest da\"+tawi+\"th \"+valid+\" values\"",
                             getValueFromMap(secondTestStep, "body", "template", "csv", "row", "name"))
                 },
                 {
