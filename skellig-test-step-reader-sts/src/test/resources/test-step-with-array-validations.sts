@@ -3,38 +3,38 @@ name ("Validate response") {   // some comment
 
     validate {
         size = 3
-        all_match [  // some comment
-            {
-                c1 {
-                    none_match [
-                        v1
-                        v2
-                        v3
-                    ]   // some comment
-                }
-
-                c2 {
-                    any_match [
-                        v5
-                        v6
-                    ]
-                }
+    all_match [  // some comment
+        {
+            c1 {
+                none_match [
+                    v1,
+                    v2,
+                    v3,
+                ]   // some comment
             }
 
-            {
-                c1 = v2  // some comment
+            c2 {
+                any_match [
+                    v5,
+                    v6,
+                ]
             }
-        ]
+        },
 
-        records {  // some comment
-            fromIndex(0) = contains(v1)
-            fromIndex(1) = contains(v2)
-        }  // some comment
+    {
+    c1 = v2  // some comment
+    }
+    ]
 
-        records.fromIndex(2).fromIndex(1).toString() = contains(v3)
+    records {  // some comment
+    fromIndex(0) = contains(v1)
+    fromIndex(1) = contains(v2)
+    }  // some comment
 
-        fromIndex(0) {
-            " c 1 " = " a#b  "
-        }
+    records.fromIndex(2).fromIndex(1).toString() = contains(v3)
+
+    fromIndex(0) {
+                " c 1 " = " a#b  "
+    }
     }
 }

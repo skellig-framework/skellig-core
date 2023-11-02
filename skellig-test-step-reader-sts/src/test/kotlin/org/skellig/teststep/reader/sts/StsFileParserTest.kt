@@ -78,10 +78,10 @@ class StsFileParserTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertEquals("Run command (.*)", firstTestStep["name"]) },
+            { assertEquals("\"Run command (.*)\"", firstTestStep["name"]) },
             {
                 assertEquals(
-                    """{          command: ${'$'}1          value: v1        }""",
+                    """"{          command: ${'$'}1          value: v1        }"""",
                     firstTestStep["payload"].toString().replace(Regex("[\r\n]+"), "")
                 )
             }
@@ -98,19 +98,19 @@ class StsFileParserTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-                { assertEquals("Validate response", firstTestStep["name"]) },
+                { assertEquals("\"Validate response\"", firstTestStep["name"]) },
                 { assertEquals("T1", getValueFromMap(firstTestStep, "validate", "fromTest")) },
                 {
                     assertTrue(
                             (getValueFromMap(firstTestStep, "validate", "contains_expected_values") as List<*>)
                                     .containsAll(listOf(
-                                            "equals to something",
+                                            "\"equals to something\"",
                                             "contains(success)",
-                                            "contains(go go go)",
-                                            "match('.*get(\\\"id\\\").*')")))
+                                            "contains(\"go go go\")",
+                                            "match(\".*get(\\\"id\\\").*\")")))
                 },
-                { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "has_\\'fields\\'", "f1")) },
-                { assertEquals("get(id) and more", getValueFromMap(firstTestStep, "validate", "has_\\'fields\\'", "json_path('f1.f2')")) }
+                { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "\"has_'fields'\"", "f1")) },
+                { assertEquals("get(id)+\"and more\"", getValueFromMap(firstTestStep, "validate", "\"has_'fields'\"", "json_path(\"f1.f2\")")) }
         )
     }
 
@@ -124,7 +124,7 @@ class StsFileParserTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-                { assertEquals("do something big", firstTestStep["name"]) },
+                { assertEquals("\"do something big\"", firstTestStep["name"]) },
                 { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values") as List<*>).size) },
                 { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values", 0) as Map<*, *>).size) },
                 { assertEquals("v1", getValueFromMap(firstTestStep, "data", "values", 0, "c1")) },
@@ -144,7 +144,7 @@ class StsFileParserTest {
         val testSteps = stsFileParser.parse(filePath.openStream())
 
         val firstTestStep = testSteps[0]
-        assertEquals("Given something", firstTestStep["name"])
+        assertEquals("\"Given something\"", firstTestStep["name"])
     }
 
     @Test
@@ -162,7 +162,7 @@ class StsFileParserTest {
                 { assertEquals("application/json", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "headers", "content-type")) },  // spaced inside the value must be preserved
                 { assertEquals("contains(fail  1 )", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "log", "none_match", 0)) },
                 { assertEquals("contains( error)", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "log", "none_match", 1)) },
-                { assertEquals("v3", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "body", "regex('.*f3=(\\w+).*')")) },
+                { assertEquals("v3", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "body", "regex(\".*f3=(\\w+).*\")")) },
                 { assertEquals("v2", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "body", "json_path(f1.f3)")) },
                 { assertEquals("\${p1 : \${p2: \${p3 : 4}}}", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "body", "json_path(f1.f2)")) },
                 { assertEquals("200", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "status")) }
@@ -190,7 +190,7 @@ class StsFileParserTest {
                 { assertEquals("v5", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c2", "any_match", 0)) },
                 { assertEquals("v6", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c2", "any_match", 1)) },
                 { assertEquals("v2", getValueFromMap(firstTestStep, "validate", "all_match", 1, "c1")) },
-                { assertEquals(" a#b  ", getValueFromMap(firstTestStep, "validate", "fromIndex(0)", " c 1 ")) }
+                { assertEquals("\" a#b  \"", getValueFromMap(firstTestStep, "validate", "fromIndex(0)", "\" c 1 \"")) }
         )
     }
 
@@ -204,7 +204,7 @@ class StsFileParserTest {
 
         assertAll(
                 { assertNull(getValueFromMap(testSteps[0], "payload", "a")) },
-                { assertEquals("", getValueFromMap(testSteps[0], "payload", "b")) }
+                { assertEquals("\"\"", getValueFromMap(testSteps[0], "payload", "b")) }
         )
     }
 
