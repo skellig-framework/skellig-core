@@ -1,4 +1,4 @@
-package org.skellig.teststep.reader.sts.parser;// Generated from SkelligGrammar.g4 by ANTLR 4.13.1
+package org.skellig.teststep.reader.sts.parser.teststep;// Generated from SkelligGrammar.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**

@@ -3,11 +3,11 @@ package org.skellig.teststep.reader.sts
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTree
-import org.skellig.teststep.reader.sts.parser.SkelligGrammarLexer
-import org.skellig.teststep.reader.sts.parser.SkelligGrammarParser
-import org.skellig.teststep.reader.sts.parser.SkelligGrammarParser.ArrayContext
-import org.skellig.teststep.reader.sts.parser.SkelligGrammarParser.MapContext
-import org.skellig.teststep.reader.sts.parser.SkelligGrammarParser.ValueContext
+import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarLexer
+import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser
+import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.ArrayContext
+import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.MapContext
+import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.ValueContext
 
 private const val NAME_KEYWORD = "name"
 
