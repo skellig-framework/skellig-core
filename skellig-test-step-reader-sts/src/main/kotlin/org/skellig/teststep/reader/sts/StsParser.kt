@@ -11,7 +11,7 @@ import org.skellig.teststep.reader.sts.parser.SkelligGrammarParser.ValueContext
 
 private const val NAME_KEYWORD = "name"
 
-internal class SkelligTestStepParser {
+internal class StsParser {
 
     fun parse(content: String): List<Map<String, Any?>> {
         val skelligGrammarLexer = SkelligGrammarLexer(CharStreams.fromString(content))
@@ -57,7 +57,7 @@ internal class SkelligTestStepParser {
 
     private fun convertValue(valueContext: ValueContext): Any? {
         val text = valueContext.text
-        return if("null".equals(text)) null else text
+        return if("null" == text) null else text
     }
 
     private fun convertMap(mapContext: MapContext): Map<String, Any?> {

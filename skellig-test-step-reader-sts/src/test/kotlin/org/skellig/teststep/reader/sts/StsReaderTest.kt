@@ -4,28 +4,29 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URISyntaxException
+import java.net.URL
 
 @DisplayName("Read sts-file")
-class StsFileParserTest {
+class StsReaderTest {
 
-    private var stsFileParser = StsFileParser()
+    private var stsReader = StsReader()
 
     @Test
     fun testReturnedDataPreserveOrder() {
-        val filePath = javaClass.getResource("/simple-test-step.sts").toURI().toURL()
+        val filePath = getFileUrl("/simple-test-step.sts")
 
-        val testSteps = stsFileParser.parse(filePath.openStream())
+        val testSteps = stsReader.read(filePath.openStream())
 
-        assertTrue(testSteps[0] is LinkedHashMap)
+        assertTrue(testSteps[0] is LinkedHashMap<*, *>)
     }
 
     @Test
     @DisplayName("When test step is simple with parameters, regex and functions")
     @Throws(URISyntaxException::class)
     fun testParseSimpleTestStep() {
-        val filePath = javaClass.getResource("/simple-test-steps.sts").toURI().toURL()
+        val filePath = getFileUrl("/simple-test-steps.sts")
 
-        val testSteps = stsFileParser.parse(filePath.openStream())
+        val testSteps = stsReader.read(filePath.openStream())
 
         assertEquals(2, testSteps.size)
         val firstTestStep = testSteps[0]
@@ -72,9 +73,9 @@ class StsFileParserTest {
     @DisplayName("When value has text enclosed in single quotes")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithQuotes() {
-        val filePath = javaClass.getResource("/test-step-with-quotes.sts").toURI().toURL()
+        val filePath = getFileUrl("/test-step-with-quotes.sts")
 
-        val testSteps = stsFileParser.parse(filePath.openStream())
+        val testSteps = stsReader.read(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
@@ -92,9 +93,9 @@ class StsFileParserTest {
     @DisplayName("When test step has validations")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithValidations() {
-        val filePath = javaClass.getResource("/test-step-with-validations.sts").toURI().toURL()
+        val filePath = getFileUrl("/test-step-with-validations.sts")
 
-        val testSteps = stsFileParser.parse(filePath.openStream())
+        val testSteps = stsReader.read(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
@@ -118,9 +119,9 @@ class StsFileParserTest {
     @DisplayName("When test step has array of maps")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithArrayOfMaps() {
-        val filePath = javaClass.getResource("/test-step-with-array-of-maps.sts").toURI().toURL()
+        val filePath = getFileUrl("/test-step-with-array-of-maps.sts")
 
-        val testSteps = stsFileParser.parse(filePath.openStream())
+        val testSteps = stsReader.read(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
@@ -139,9 +140,9 @@ class StsFileParserTest {
     @DisplayName("When step is empty")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithEmptyStep() {
-        val filePath = javaClass.getResource("/empty-step.sts").toURI().toURL()
+        val filePath = getFileUrl("/empty-step.sts")
 
-        val testSteps = stsFileParser.parse(filePath.openStream())
+        val testSteps = stsReader.read(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertEquals("\"Given something\"", firstTestStep["name"])
@@ -151,21 +152,21 @@ class StsFileParserTest {
     @DisplayName("When test step has complex validation details")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithComplexValidation() {
-        val filePath = javaClass.getResource("/test-step-with-complex-validations.sts").toURI().toURL()
+        val filePath = getFileUrl("/test-step-with-complex-validations.sts")
 
-        val testSteps = stsFileParser.parse(filePath.openStream())
+        val testSteps = stsReader.read(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
-                { assertEquals("Validate response", firstTestStep["name"]) },
-                { assertEquals("'T 1 2 3'", getValueFromMap(firstTestStep, "validate", "fromTest")) },
-                { assertEquals("application/json", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "headers", "content-type")) },  // spaced inside the value must be preserved
-                { assertEquals("contains(fail  1 )", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "log", "none_match", 0)) },
-                { assertEquals("contains( error)", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "log", "none_match", 1)) },
-                { assertEquals("v3", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "body", "regex(\".*f3=(\\w+).*\")")) },
-                { assertEquals("v2", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "body", "json_path(f1.f3)")) },
-                { assertEquals("\${p1 : \${p2: \${p3 : 4}}}", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "body", "json_path(f1.f2)")) },
-                { assertEquals("200", getValueFromMap(firstTestStep, "validate", "any_match", "[srv1, srv2, srv3]", "status")) }
+                { assertEquals("\"Validate response\"", firstTestStep["name"]) },
+                { assertEquals("\"T 1 2 3\"", getValueFromMap(firstTestStep, "validate", "fromTest")) },
+                { assertEquals("application/json", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "headers", "content-type")) },  // spaced inside the value must be preserved
+                { assertEquals("contains(\"fail  1 \")", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "log", "none_match", 0)) },
+                { assertEquals("contains(\" error\")", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "log", "none_match", 1)) },
+                { assertEquals("v3", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "body", "regex(\".*f3=(\\w+).*\")")) },
+                { assertEquals("v2", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "body", "json_path(f1.f3)")) },
+                { assertEquals("\${p1:\${p2:\${p3:4}}}", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "body", "json_path(f1.f2)")) },
+                { assertEquals("200", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "status")) }
         )
     }
 
@@ -173,9 +174,9 @@ class StsFileParserTest {
     @DisplayName("When test step has validation details with array of maps and properties as indexes")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithArrayValidation() {
-        val filePath = javaClass.getResource("/test-step-with-array-validations.sts").toURI().toURL()
+        val filePath = getFileUrl("/test-step-with-array-validations.sts")
 
-        val testSteps = stsFileParser.parse(filePath.openStream())
+        val testSteps = stsReader.read(filePath.openStream())
 
         val firstTestStep = testSteps[0]
         assertAll(
@@ -198,15 +199,17 @@ class StsFileParserTest {
     @DisplayName("When test step has null values Then verify null is preserved")
     @Throws(URISyntaxException::class)
     fun testParseTestStepWithNullValues() {
-        val filePath = javaClass.getResource("/test-step-with-null.sts").toURI().toURL()
+        val filePath = getFileUrl("/test-step-with-null.sts")
 
-        val testSteps = stsFileParser.parse(filePath.openStream())
+        val testSteps = stsReader.read(filePath.openStream())
 
         assertAll(
                 { assertNull(getValueFromMap(testSteps[0], "payload", "a")) },
                 { assertEquals("\"\"", getValueFromMap(testSteps[0], "payload", "b")) }
         )
     }
+
+    private fun getFileUrl(filePath: String): URL = javaClass.getResource(filePath)!!.toURI().toURL()
 
     private fun getValueFromMap(data: Map<String, Any?>, vararg keys: Any): Any? {
         var value: Any? = data

@@ -30,7 +30,7 @@ import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecut
 import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.TestStepReader
-import org.skellig.teststep.reader.sts.StsTestStepReader
+import org.skellig.teststep.reader.sts.StsReader
 import org.skellig.teststep.runner.DefaultTestStepRunner
 import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.exception.TestStepRegistryException
@@ -270,7 +270,7 @@ open class SkelligTestContext : Closeable {
     }
 
     protected open fun createTestStepReader(): TestStepReader {
-        return StsTestStepReader()
+        return StsReader()
     }
 
     protected open fun createTestScenarioState(): TestScenarioState {

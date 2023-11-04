@@ -2,13 +2,12 @@ package org.skellig.teststep.reader.sts
 
 import org.skellig.teststep.reader.TestStepReader
 import java.io.InputStream
-import java.nio.file.Path
 
-class StsTestStepReader : TestStepReader {
+class StsReader : TestStepReader {
 
-    private var parser: StsFileParser = StsFileParser()
+    private var parser = StsParser()
 
     override fun read(inputStream: InputStream): List<Map<String, Any?>> {
-        return parser.parse(inputStream)
+        return inputStream.bufferedReader().use { parser.parse(it.readText()) }
     }
 }
