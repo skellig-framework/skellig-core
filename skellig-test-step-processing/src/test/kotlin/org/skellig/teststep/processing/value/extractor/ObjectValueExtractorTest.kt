@@ -8,29 +8,24 @@ import org.skellig.teststep.processing.exception.ValueExtractionException
 
 class ObjectValueExtractorTest {
 
-    private var valueExtractor: ObjectValueExtractor? = null
-
-    @BeforeEach
-    fun setUp() {
-        valueExtractor = ObjectValueExtractor()
-    }
+    private var valueExtractor = ObjectValueExtractor()
 
     @Test
     @DisplayName("Extract from Map with null value")
     fun testExtractFromMapNullValue() {
-        Assertions.assertNull(valueExtractor!!.extractFrom("", mapOf(Pair("f1", null)), arrayOf("f1")))
+        Assertions.assertNull(valueExtractor.extractFrom("", mapOf(Pair("f1", null)), arrayOf("f1")))
     }
 
     @Test
     @DisplayName("Extract from Map last String value")
     fun testExtractFromMapStringValue() {
-        Assertions.assertEquals("v3", valueExtractor!!.extractFrom("", getTestMap(), arrayOf("f1","f2", "f3")))
+        Assertions.assertEquals("v3", valueExtractor.extractFrom("", getTestMap(), arrayOf("f1", "f2", "f3")))
     }
 
     @Test
     @DisplayName("Extract from Map internal Map")
     fun testExtractFromMap() {
-        val response = valueExtractor!!.extractFrom("", getTestMap(), arrayOf("f1", "f2"))
+        val response = valueExtractor.extractFrom("", getTestMap(), arrayOf("f1", "f2"))
 
         Assertions.assertTrue((response as Map<*, *>?)!!.containsKey("f3"))
     }
@@ -38,13 +33,19 @@ class ObjectValueExtractorTest {
     @Test
     @DisplayName("Extract size of List")
     fun testExtractSizeOfList() {
-        Assertions.assertEquals(2, valueExtractor!!.extractFrom("size", mutableListOf("v1", "v2"), emptyArray()))
+        Assertions.assertEquals(2, valueExtractor.extractFrom("size", mutableListOf("v1", "v2"), emptyArray()))
+    }
+
+    @Test
+    @DisplayName("Extract value of List by index")
+    fun testExtractValueOfListByIndex() {
+        Assertions.assertEquals("v2", valueExtractor.extractFrom("", mutableMapOf(Pair("values", mutableListOf("v1", "v2"))), arrayOf("values[1]")))
     }
 
     @Test
     @DisplayName("Extract size of Map")
     fun testExtractLengthOfArray() {
-        Assertions.assertEquals(1, valueExtractor!!.extractFrom("size", valueExtractor!!.extractFrom("", getTestMap(), arrayOf("f1")), emptyArray()))
+        Assertions.assertEquals(1, valueExtractor.extractFrom("size", valueExtractor.extractFrom("", getTestMap(), arrayOf("f1")), emptyArray()))
     }
 
     @Test
@@ -52,15 +53,15 @@ class ObjectValueExtractorTest {
     fun testExtractFromCustomObject() {
         val testObject = TestObject("test")
 
-        val name = valueExtractor!!.extractFrom("", testObject, arrayOf("name"))
+        val name = valueExtractor.extractFrom("", testObject, arrayOf("name"))
         Assertions.assertEquals(testObject.name, name)
-        Assertions.assertEquals(testObject.name.length, valueExtractor!!.extractFrom("length", name, emptyArray()))
+        Assertions.assertEquals(testObject.name.length, valueExtractor.extractFrom("length", name, emptyArray()))
     }
 
     @Test
     @DisplayName("Extract from object where method not found")
     fun testExtractFromObjectWhenMethodNotFound() {
-        Assertions.assertThrows(ValueExtractionException::class.java) { valueExtractor!!.extractFrom("", Any(), arrayOf("param")) }
+        Assertions.assertThrows(ValueExtractionException::class.java) { valueExtractor.extractFrom("", Any(), arrayOf("param")) }
     }
 
     @Test
@@ -73,10 +74,10 @@ class ObjectValueExtractorTest {
         )
 
         Assertions.assertAll(
-            { Assertions.assertEquals(1, valueExtractor!!.extractFrom("", map, arrayOf("a.b.c"))) },
-            { Assertions.assertEquals(1, valueExtractor!!.extractFrom("", map, arrayOf("a.b.c"))) },
-            { Assertions.assertEquals(2, valueExtractor!!.extractFrom("", map, arrayOf("a b.c"))) },
-            { Assertions.assertEquals(3, valueExtractor!!.extractFrom("", map, arrayOf("a.b ","d"))) },
+            { Assertions.assertEquals(1, valueExtractor.extractFrom("", map, arrayOf("a.b.c"))) },
+            { Assertions.assertEquals(1, valueExtractor.extractFrom("", map, arrayOf("a.b.c"))) },
+            { Assertions.assertEquals(2, valueExtractor.extractFrom("", map, arrayOf("a b.c"))) },
+            { Assertions.assertEquals(3, valueExtractor.extractFrom("", map, arrayOf("a.b ", "d"))) },
         )
     }
 

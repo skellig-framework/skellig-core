@@ -5,9 +5,14 @@ import java.beans.IntrospectionException
 import java.beans.Introspector
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
+import java.util.regex.Pattern
 
 
 class ObjectValueExtractor : ValueExtractor {
+
+    companion object {
+        private val INDEX_PATTERN = Pattern.compile("(.+)\\[(\\d+)]")
+    }
 
     override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
         return if (value != null) {
@@ -17,10 +22,26 @@ class ObjectValueExtractor : ValueExtractor {
                 var newValue: Any? = value
                 args.mapNotNull { key -> processKey(key?.toString()) }
                     .forEach { key ->
+                        var updatedKey = key
+                        var index : Int? = null
+                        val matcher = INDEX_PATTERN.matcher(key)
+                        if (matcher.find()) {
+                             updatedKey = matcher.group(1)
+                             index = matcher.group(2).toInt()
+                        }
+
                         if (newValue is Map<*, *>) {
-                            newValue = extractValueFromMap(newValue as Map<*, *>, key)
+                            newValue = extractValueFromMap(newValue as Map<*, *>, updatedKey)
                         } else if (newValue != null) {
-                            newValue = extractValueFromObject(key, newValue)
+                            newValue = extractValueFromObject(updatedKey, newValue)
+                        }
+
+                        index?.let {
+                            newValue = when (newValue) {
+                                is List<*> -> (newValue as List<*>)[index]
+                                is Array<*> -> (newValue as Array<*>)[index]
+                                else -> throw ValueExtractionException("Cannot get value by index '$index' from non array or list object: $newValue")
+                            }
                         }
                     }
                 newValue
