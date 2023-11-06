@@ -1,12 +1,12 @@
 package org.skellig.teststep.reader.sts.value.expression
 
-class PropertyValueExpression(private val name: String, private val defaultValue: ValueExpression) : ValueExpression {
+class PropertyValueExpression(private val key: String, private val defaultValue: ValueExpression) : ValueExpression {
 
-    override fun evaluate(): Any? {
-        return null
+    override fun evaluate(context: ValueExpressionContext): Any? {
+        return context.propertyCallDelegate(key) { defaultValue.evaluate(context) }
     }
 
     override fun toString(): String {
-        return "\${$name: $defaultValue}"
+        return "\${$key: $defaultValue}"
     }
 }

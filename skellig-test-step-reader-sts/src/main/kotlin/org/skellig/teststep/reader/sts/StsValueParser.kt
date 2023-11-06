@@ -40,6 +40,7 @@ internal class StsValueParser {
                     AndExprContext::class.java -> valueExpression = convert(tree as AndExprContext)
                     OrExprContext::class.java -> valueExpression = convert(tree as OrExprContext)
                     ArrayValueAccessorContext::class.java -> valueExpression = convert(tree as ArrayValueAccessorContext)
+                    LambdaExpressionContext::class.java -> valueExpression = convert(tree as LambdaExpressionContext)
                 }
             } else if (tree is TerminalNode) {
                 valueExpression = if (tree.symbol.type == SkelligTestValueGrammarLexer.STRING) {
@@ -122,30 +123,35 @@ internal class StsValueParser {
         return CallChainExpression(callChain)
     }
 
-    private fun convert(functionContext: FunctionCallContext): ValueExpression {
-        val name = functionContext.ID().text
-        val args = functionContext.arg().stream()
+    private fun convert(context: FunctionCallContext): ValueExpression {
+        val name = context.ID().text
+        val args = context.arg().stream()
             .map{ convert(it) }
             .toList()
         return FunctionCallExpression(name, args)
     }
 
-    private fun convert(propertyExpressionContext: PropertyExpressionContext): ValueExpression {
-        val name = extractString(propertyExpressionContext.propertyKey().text)
-        val defaultValue = convert(propertyExpressionContext.expression())
+    private fun convert(context: PropertyExpressionContext): ValueExpression {
+        val name = extractString(context.propertyKey().text)
+        val defaultValue = convert(context.expression())
         return PropertyValueExpression(name, defaultValue!!)
     }
 
-    private fun convert(arrayValueAccessorContext: ArrayValueAccessorContext): ValueExpression {
-        return ArrayValueExpression(arrayValueAccessorContext.ID().text, arrayValueAccessorContext.INT().text.toInt())
+    private fun convert(context: LambdaExpressionContext): ValueExpression {
+        val name = context.ID().text
+        return LambdaExpression(name, convert(if(context.expression() != null) context.expression() else context.logicalExpression())!!)
     }
 
-    private fun convert(idExprContext: IdExprContext): ValueExpression {
-        return StringValueExpression(idExprContext.text)
+    private fun convert(context: ArrayValueAccessorContext): ValueExpression {
+        return StringValueExpression(context.text)
     }
 
-    private fun convert(stringExprContext: StringExprContext): ValueExpression {
-        return StringValueExpression(extractString(stringExprContext.text))
+    private fun convert(context: IdExprContext): ValueExpression {
+        return AlphanumericValueExpression(context.text)
+    }
+
+    private fun convert(context: StringExprContext): ValueExpression {
+        return StringValueExpression(extractString(context.text))
     }
 
     private fun convert(context: NumberContext): ValueExpression {

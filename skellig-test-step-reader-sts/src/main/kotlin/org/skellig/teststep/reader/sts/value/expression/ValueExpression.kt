@@ -1,5 +1,5 @@
 package org.skellig.teststep.reader.sts.value.expression
 
 interface ValueExpression {
-    fun evaluate(): Any?
+    fun evaluate(context: ValueExpressionContext): Any?
 }

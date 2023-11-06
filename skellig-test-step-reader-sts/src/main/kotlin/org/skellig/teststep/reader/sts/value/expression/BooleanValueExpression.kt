@@ -7,7 +7,7 @@ class BooleanValueExpression(value: String) : ValueExpression {
         this.value = value.toBoolean()
     }
 
-    override fun evaluate(): Any = value
+    override fun evaluate(context: ValueExpressionContext): Any = value
 
     override fun toString(): String {
         return value.toString()

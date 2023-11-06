@@ -10,7 +10,7 @@ class NumberValueExpression(value: String?) : ValueExpression {
         this.value = BigDecimal(value)
     }
 
-    override fun evaluate(): Any {
+    override fun evaluate(context: ValueExpressionContext): Any {
         return value
     }
 

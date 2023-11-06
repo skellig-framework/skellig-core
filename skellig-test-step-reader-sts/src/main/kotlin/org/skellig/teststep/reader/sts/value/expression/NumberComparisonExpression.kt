@@ -1,28 +1,40 @@
 package org.skellig.teststep.reader.sts.value.expression
 
-class NumberComparisonExpression(private val operator: String,
-                                 private val leftValueExpression: ValueExpression,
-                                 private val rightValueExpression: ValueExpression) : ValueExpression {
+import java.math.BigDecimal
 
-    override fun evaluate(): Any {
-//        BigDecimal left = (BigDecimal) leftExpression.evaluate();
-//        BigDecimal right = (BigDecimal) rightExpression.evaluate();
-//
-//        switch (operator) {
-//            case ">": left > right; break;
-//            case ">=": left >= right; break;
-//            case "<": left < right; break;
-//            case "<=": left <= right; break;
-//            case "==": left == right; break;
-//            case "!=": left != right; break;
-//            default: throw new IllegalArgumentException("Invalid operator: $operator");
-//        }
-//
-//        return result;
-        return false
+class NumberComparisonExpression(
+    private val operator: String,
+    private val leftExpression: ValueExpression,
+    private val rightExpression: ValueExpression
+) : ValueExpression {
+
+    override fun evaluate(context: ValueExpressionContext): Any {
+        var evaluatedLeft = leftExpression.evaluate(context)
+        var evaluatedRight = rightExpression.evaluate(context)
+        return if (evaluatedLeft is String || evaluatedRight is String) {
+            when (operator) {
+                "==" -> evaluatedLeft.toString() == evaluatedRight.toString()
+                "!=" -> evaluatedLeft.toString() != evaluatedRight.toString()
+                else -> throw IllegalArgumentException("Invalid comparison operator for String values: \$operator")
+            }
+        } else {
+            if (!(evaluatedLeft is BigDecimal && evaluatedRight is BigDecimal)) {
+                evaluatedLeft = evaluatedLeft.toString().toBigDecimal()
+                evaluatedRight = evaluatedRight.toString().toBigDecimal()
+            }
+            when (operator) {
+                ">" -> evaluatedLeft > evaluatedRight
+                ">=" -> evaluatedLeft >= evaluatedRight
+                "<" -> evaluatedLeft < evaluatedRight
+                "<=" -> evaluatedLeft <= evaluatedRight
+                "==" -> evaluatedLeft == evaluatedRight
+                "!=" -> evaluatedLeft != evaluatedRight
+                else -> throw IllegalArgumentException("Invalid comparison operator for numeric values: \$operator")
+            }
+        }
     }
 
     override fun toString(): String {
-        return "$leftValueExpression $operator $rightValueExpression"
+        return "$leftExpression $operator $rightExpression"
     }
 }
