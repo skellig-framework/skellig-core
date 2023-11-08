@@ -9,7 +9,7 @@ class LambdaExpression(private val name: String, private val body: ValueExpressi
     override fun evaluate(context: ValueExpressionContext): Any {
         return {
             context.setLambdaExpressionParameter(name, context.value)
-            body.evaluate(context)
+            body.evaluate(ValueExpressionContext(context))
         }
     }
 

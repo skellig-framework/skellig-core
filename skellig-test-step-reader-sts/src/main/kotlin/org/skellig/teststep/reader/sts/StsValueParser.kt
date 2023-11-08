@@ -134,7 +134,7 @@ internal class StsValueParser {
     private fun convert(context: PropertyExpressionContext): ValueExpression {
         val name = extractString(context.propertyKey().text)
         val defaultValue = convert(context.expression())
-        return PropertyValueExpression(name, defaultValue!!)
+        return PropertyValueExpression(name, defaultValue)
     }
 
     private fun convert(context: LambdaExpressionContext): ValueExpression {
@@ -159,6 +159,6 @@ internal class StsValueParser {
     }
 
     private fun extractString(value: String): String {
-        return value.substring(1, value.length - 1).replace("\\\"", "\"")
+        return if (value.first() == '\"' && value.last() == '\"') value.substring(1, value.length - 1).replace("\\\"", "\"") else value
     }
 }

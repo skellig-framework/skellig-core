@@ -6,11 +6,11 @@ name ("Validate response")
       values().anyMatch {
          status = 200
          body {
-            json_path(f1.f2) = ${p1 : ${p2: ${p3 : 4}}}
+            json_path(f1.f2) = ${p1, ${p2, ${p3, 4}}}
             json_path(f1.f3) = v2
             regex(".*f3=(\w+).*") = v3
          }
-         headers {  content-type = application/json  }
+         headers {  content-type = "application/json"  }
          log {
             none_match [
               contains("fail  1 "),

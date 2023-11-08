@@ -5,13 +5,13 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTree
 import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarLexer
 import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser
-import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.ArrayContext
-import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.MapContext
-import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.ValueContext
+import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.*
 
 private const val NAME_KEYWORD = "name"
 
 internal class StsParser {
+
+    private val valueParser = StsValueParser()
 
     fun parse(content: String): List<Map<String, Any?>> {
         val skelligGrammarLexer = SkelligGrammarLexer(CharStreams.fromString(content))
@@ -28,9 +28,9 @@ internal class StsParser {
         if (tree != null) {
             var c = 0;
             while (c < tree.childCount) {
-                if (tree.getChild(c) is SkelligGrammarParser.TestStepNameContext) {
+                if (tree.getChild(c) is TestStepNameContext) {
                     val rawTestStep: MutableMap<String, Any?> = LinkedHashMap()
-                    val testStepNameContext = tree.getChild(c) as SkelligGrammarParser.TestStepNameContext
+                    val testStepNameContext = tree.getChild(c) as TestStepNameContext
                     rawTestStep[NAME_KEYWORD] = testStepNameContext.STRING().text
                     for (pairContext in testStepNameContext.pair()) {
                         convertPair(pairContext)?.let { rawTestStep[it.first] = it.second }
@@ -43,13 +43,14 @@ internal class StsParser {
         return result
     }
 
-    private fun convertPair(pair: SkelligGrammarParser.PairContext): Pair<String, Any?>? {
+    private fun convertPair(pair: PairContext): Pair<String, Any?>? {
+        val key = pair.key().text
         return if (pair.value() != null) {
-            Pair(pair.key().text, convertValue(pair.value()))
+            Pair(key, convertValue(pair.value()))
         } else if (pair.map() != null) {
-            Pair(pair.key().text, convertMap(pair.map()))
+            Pair(key, convertMap(pair.map()))
         } else if (pair.array() != null) {
-            Pair(pair.key().text, convertArray(pair.array()))
+            Pair(key, convertArray(pair.array()))
         } else {
             return null
         }
@@ -57,7 +58,7 @@ internal class StsParser {
 
     private fun convertValue(valueContext: ValueContext): Any? {
         val text = valueContext.text
-        return if("null" == text) null else text
+        return if ("null" == text) null else valueParser.parse(text)
     }
 
     private fun convertMap(mapContext: MapContext): Map<String, Any?> {
@@ -68,18 +69,18 @@ internal class StsParser {
 
     private fun convertArray(arrayContext: ArrayContext): List<Any?> {
         val array = mutableListOf<Any?>()
-        var c = 0;
+        var c = 0
         val values = arrayContext.values()
         while (c < values.size) {
-            if(arrayContext.values()[c].value() != null) {
+            if (arrayContext.values()[c].value() != null) {
                 array.add(convertValue(arrayContext.values()[c].value()))
-            } else if(arrayContext.values()[c].map() != null) {
+            } else if (arrayContext.values()[c].map() != null) {
                 array.add(convertMap(arrayContext.values()[c].map()))
-            } else if(arrayContext.values()[c].array() != null) {
+            } else if (arrayContext.values()[c].array() != null) {
                 array.add(convertArray(arrayContext.values()[c].array()))
             }
             c++
         }
-      return array
+        return array
     }
 }

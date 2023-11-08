@@ -4,28 +4,21 @@ class CallChainExpression(private val callChain: List<ValueExpression?>) : Value
 
     override fun evaluate(context: ValueExpressionContext): Any? {
         var result: Any? = null
-        if (callChain.isNotEmpty()) {
-            var startFrom = 0
-            val firstInChain = callChain[0]
-            // check if first in chain is a parameter from lambda expression which can be assigned to the result.
-            // Otherwise, just continue normally.
-            if (firstInChain is StringValueExpression) {
-                val text = firstInChain.evaluate(context).toString()
-                if(context.lambdaExpressionParameters.containsKey(text)) {
-                    result = context.lambdaExpressionParameters[text]
-                    startFrom++
-                }
+        context.evaluationType = EvaluationType.CALL_CHAIN
+        (callChain.indices step 1)
+            .forEach {
+                if (it > 0 && result == null)
+                    throw NullPointerException("Failed to call '${callChain[it]}' on null value")
+
+                context.value = result
+                result = callChain[it]?.evaluate(context)
             }
-            (startFrom until callChain.size step 1)
-                .forEach {
-                    context.value = result
-                    result = callChain[it]?.evaluate(context)
-                }
-        }
+        context.evaluationType = EvaluationType.DEFAULT
+        context.value = null
         return result
     }
 
     override fun toString(): String {
-        return callChain.toString()
+        return callChain.joinToString(".")
     }
 }

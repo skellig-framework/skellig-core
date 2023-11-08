@@ -1,15 +1,12 @@
 package org.skellig.teststep.reader.sts.parser.value;// Generated from SkelligTestValueGrammar.g4 by ANTLR 4.13.1
-
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.atn.ATN;
-import org.antlr.v4.runtime.atn.ATNDeserializer;
-import org.antlr.v4.runtime.atn.ParserATNSimulator;
-import org.antlr.v4.runtime.atn.PredictionContextCache;
+import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.misc.*;
+import org.antlr.v4.runtime.tree.*;
 import java.util.List;
+import java.util.Iterator;
+import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue"})
 public class SkelligTestValueGrammarParser extends Parser {
@@ -674,51 +671,51 @@ public class SkelligTestValueGrammarParser extends Parser {
 				break;
 			case 4:
 				{
-				_localctx = new CallChainExpContext(_localctx);
+				_localctx = new ParenthesesExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(65);
-				callChain();
+				match(T__0);
+				setState(66);
+				expression(0);
+				setState(67);
+				match(T__1);
 				}
 				break;
 			case 5:
 				{
-				_localctx = new ParenthesesExprContext(_localctx);
+				_localctx = new StringExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(66);
-				match(T__0);
-				setState(67);
-				expression(0);
-				setState(68);
-				match(T__1);
+				setState(69);
+				match(STRING);
 				}
 				break;
 			case 6:
 				{
-				_localctx = new StringExprContext(_localctx);
+				_localctx = new NumberExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(70);
-				match(STRING);
+				number();
 				}
 				break;
 			case 7:
 				{
-				_localctx = new NumberExprContext(_localctx);
+				_localctx = new IdExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(71);
-				number();
+				match(ID);
 				}
 				break;
 			case 8:
 				{
-				_localctx = new IdExprContext(_localctx);
+				_localctx = new CallChainExpContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(72);
-				match(ID);
+				callChain();
 				}
 				break;
 			}
@@ -1143,27 +1140,28 @@ public class SkelligTestValueGrammarParser extends Parser {
 		LambdaExpressionContext _localctx = new LambdaExpressionContext(_ctx, getState());
 		enterRule(_localctx, 16, RULE_lambdaExpression);
 		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(129);
+			match(ID);
+			setState(130);
+			match(LAMBDA);
 			setState(133);
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,13,_ctx) ) {
 			case 1:
-				enterOuterAlt(_localctx, 1);
 				{
-				setState(129);
-				match(ID);
-				setState(130);
-				match(LAMBDA);
 				setState(131);
 				logicalExpression(0);
 				}
 				break;
 			case 2:
-				enterOuterAlt(_localctx, 2);
 				{
 				setState(132);
 				expression(0);
 				}
 				break;
+			}
 			}
 		}
 		catch (RecognitionException re) {
@@ -1495,7 +1493,7 @@ public class SkelligTestValueGrammarParser extends Parser {
 		",\u0001\u0000\u0000\u0000\u00049\u0001\u0000\u0000\u0000\u0006I\u0001"+
 		"\u0000\u0000\u0000\b^\u0001\u0000\u0000\u0000\nk\u0001\u0000\u0000\u0000"+
 		"\fm\u0001\u0000\u0000\u0000\u000e\u007f\u0001\u0000\u0000\u0000\u0010"+
-		"\u0085\u0001\u0000\u0000\u0000\u0012\u0087\u0001\u0000\u0000\u0000\u0014"+
+		"\u0081\u0001\u0000\u0000\u0000\u0012\u0087\u0001\u0000\u0000\u0000\u0014"+
 		"\u008f\u0001\u0000\u0000\u0000\u0016\u0091\u0001\u0000\u0000\u0000\u0018"+
 		"\u0096\u0001\u0000\u0000\u0000\u001a\u0098\u0001\u0000\u0000\u0000\u001c"+
 		"\u001d\u0003\u0002\u0001\u0000\u001d\u001e\u0005\u0000\u0000\u0001\u001e"+
@@ -1513,12 +1511,12 @@ public class SkelligTestValueGrammarParser extends Parser {
 		"\u0000\u00007\u0003\u0001\u0000\u0000\u000086\u0001\u0000\u0000\u0000"+
 		"9:\u0003\u0006\u0003\u0000:;\u0003\u001a\r\u0000;<\u0003\u0006\u0003\u0000"+
 		"<\u0005\u0001\u0000\u0000\u0000=>\u0006\u0003\uffff\uffff\u0000>J\u0003"+
-		"\u0016\u000b\u0000?J\u0003\f\u0006\u0000@J\u0003\u0012\t\u0000AJ\u0003"+
-		"\b\u0004\u0000BC\u0005\u0001\u0000\u0000CD\u0003\u0006\u0003\u0000DE\u0005"+
-		"\u0002\u0000\u0000EJ\u0001\u0000\u0000\u0000FJ\u0005\u001a\u0000\u0000"+
-		"GJ\u0003\u0018\f\u0000HJ\u0005\u0019\u0000\u0000I=\u0001\u0000\u0000\u0000"+
+		"\u0016\u000b\u0000?J\u0003\f\u0006\u0000@J\u0003\u0012\t\u0000AB\u0005"+
+		"\u0001\u0000\u0000BC\u0003\u0006\u0003\u0000CD\u0005\u0002\u0000\u0000"+
+		"DJ\u0001\u0000\u0000\u0000EJ\u0005\u001a\u0000\u0000FJ\u0003\u0018\f\u0000"+
+		"GJ\u0005\u0019\u0000\u0000HJ\u0003\b\u0004\u0000I=\u0001\u0000\u0000\u0000"+
 		"I?\u0001\u0000\u0000\u0000I@\u0001\u0000\u0000\u0000IA\u0001\u0000\u0000"+
-		"\u0000IB\u0001\u0000\u0000\u0000IF\u0001\u0000\u0000\u0000IG\u0001\u0000"+
+		"\u0000IE\u0001\u0000\u0000\u0000IF\u0001\u0000\u0000\u0000IG\u0001\u0000"+
 		"\u0000\u0000IH\u0001\u0000\u0000\u0000JY\u0001\u0000\u0000\u0000KL\n\f"+
 		"\u0000\u0000LM\u0005\u000f\u0000\u0000MX\u0003\u0006\u0003\rNO\n\u000b"+
 		"\u0000\u0000OP\u0005\u0010\u0000\u0000PX\u0003\u0006\u0003\fQR\n\n\u0000"+
@@ -1545,8 +1543,8 @@ public class SkelligTestValueGrammarParser extends Parser {
 		"~\u0080\u0003\u0010\b\u0000\u007f{\u0001\u0000\u0000\u0000\u007f|\u0001"+
 		"\u0000\u0000\u0000\u007f}\u0001\u0000\u0000\u0000\u007f~\u0001\u0000\u0000"+
 		"\u0000\u0080\u000f\u0001\u0000\u0000\u0000\u0081\u0082\u0005\u0019\u0000"+
-		"\u0000\u0082\u0083\u0005\u0018\u0000\u0000\u0083\u0086\u0003\u0002\u0001"+
-		"\u0000\u0084\u0086\u0003\u0006\u0003\u0000\u0085\u0081\u0001\u0000\u0000"+
+		"\u0000\u0082\u0085\u0005\u0018\u0000\u0000\u0083\u0086\u0003\u0002\u0001"+
+		"\u0000\u0084\u0086\u0003\u0006\u0003\u0000\u0085\u0083\u0001\u0000\u0000"+
 		"\u0000\u0085\u0084\u0001\u0000\u0000\u0000\u0086\u0011\u0001\u0000\u0000"+
 		"\u0000\u0087\u0088\u0005\u0003\u0000\u0000\u0088\u008b\u0003\u0014\n\u0000"+
 		"\u0089\u008a\u0005\u0016\u0000\u0000\u008a\u008c\u0003\u0006\u0003\u0000"+
