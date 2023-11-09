@@ -10,4 +10,15 @@ class FunctionCallExpression(private val name: String, private val args: List<Va
     override fun toString(): String {
         return if (args.isEmpty()) "$name()" else "$name(${args.joinToString(",")})"
     }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is FunctionCallExpression)
+            name == other.name &&
+                    args == other.args
+        else false
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode() + args.hashCode()
+    }
 }

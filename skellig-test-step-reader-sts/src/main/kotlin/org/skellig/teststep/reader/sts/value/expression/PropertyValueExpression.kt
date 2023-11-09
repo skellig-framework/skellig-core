@@ -9,4 +9,13 @@ class PropertyValueExpression(private val key: String, private val defaultValue:
     override fun toString(): String {
         return defaultValue?.let { "\${$key, $defaultValue}" } ?: "\${$key}"
     }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is PropertyValueExpression) key == other.key
+        else false
+    }
+
+    override fun hashCode(): Int {
+        return key.hashCode()
+    }
 }

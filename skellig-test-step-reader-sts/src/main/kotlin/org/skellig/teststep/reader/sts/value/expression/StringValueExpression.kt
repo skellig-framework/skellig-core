@@ -5,7 +5,17 @@ class StringValueExpression(private val value: String) : ValueExpression {
         return if (context.evaluationType == EvaluationType.CALL_CHAIN) context.functionCallDelegate(value, context.value, emptyArray())
         else value
     }
+
     override fun toString(): String {
         return value
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is StringValueExpression) value == other.value
+        else value == other
+    }
+
+    override fun hashCode(): Int {
+        return value.hashCode()
     }
 }

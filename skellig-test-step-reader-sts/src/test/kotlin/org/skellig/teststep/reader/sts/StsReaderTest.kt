@@ -3,6 +3,8 @@ package org.skellig.teststep.reader.sts
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.skellig.teststep.reader.sts.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.sts.value.expression.StringValueExpression
 import java.net.URISyntaxException
 import java.net.URL
 
@@ -32,18 +34,18 @@ class StsReaderTest {
         val firstTestStep = testSteps[0]
         val secondTestStep = testSteps[1]
         assertAll(
-            { assertEquals("\"Simple test step\"", firstTestStep["name"]) },
-            { assertEquals("POST", firstTestStep["method"].toString()) },
-            { assertEquals("\${baseUrl}/a/b/c", firstTestStep["url"].toString()) },
+            { assertEquals("\"Simple test step\"", getValueFromMap(firstTestStep, "name")) },
+            { assertEquals("POST", getValueFromMap(firstTestStep, "method").toString()) },
+            { assertEquals("\${baseUrl}/a/b/c", firstTestStep[alphaNumOf("url")].toString()) },
             { assertEquals("v 1 2 3", getValueFromMap(firstTestStep, "payload", "json", "value").toString()) },
             { assertEquals("go", getValueFromMap(firstTestStep, "payload", "json", "command").toString()) },
             { assertEquals("\${a, \${b}.length}.size", getValueFromMap(firstTestStep, "payload", "json", "v2").toString()) },
             { assertEquals("\${a, \${b}.a.b}", getValueFromMap(firstTestStep, "payload", "json", "v3").toString()) }
         )
         assertAll(
-            { assertEquals("\" Send \\d{1} message (.*) from csv \\(test\\)\"", secondTestStep["name"]) },
-            { assertEquals("POST", secondTestStep["method"].toString()) },
-            { assertEquals("/a/ + b/ + c", secondTestStep["url"].toString()) },
+            { assertEquals("\" Send \\d{1} message (.*) from csv \\(test\\)\"", getValueFromMap(secondTestStep, "name")) },
+            { assertEquals("POST", getValueFromMap(secondTestStep, "method").toString()) },
+            { assertEquals("/a/ + b/ + c", getValueFromMap(secondTestStep, "url").toString()) },
             { assertEquals("\${user}", getValueFromMap(secondTestStep, "auth", "username").toString()) },
             { assertEquals("\${password} + \\_", getValueFromMap(secondTestStep, "auth", "password").toString()) },
             {
@@ -89,11 +91,11 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertEquals("\"Run command (.*)\"", firstTestStep["name"]) },
+            { assertEquals("\"Run command (.*)\"", getValueFromMap(firstTestStep, "name")) },
             {
                 assertEquals(
                     """{          command: ${'$'}1          value: v1        }""",
-                    firstTestStep["payload"].toString().replace(Regex("[\r\n]+"), "")
+                    getValueFromMap(firstTestStep, "payload").toString().replace(Regex("[\r\n]+"), "")
                 )
             }
         )
@@ -109,7 +111,7 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertEquals("\"Validate response\"", firstTestStep["name"]) },
+            { assertEquals("\"Validate response\"", getValueFromMap(firstTestStep, "name")) },
             { assertEquals("T1", getValueFromMap(firstTestStep, "validate", "fromTest").toString()) },
             {
                 assertTrue(
@@ -124,8 +126,8 @@ class StsReaderTest {
                             )
                         ))
             },
-            { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "\"has_'fields'\"", "f1").toString()) },
-            { assertEquals("get(id) + and more", getValueFromMap(firstTestStep, "validate", "\"has_'fields'\"", "json_path(\"f1.f2\")").toString()) }
+            { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "has_'fields'", "f1").toString()) },
+            { assertEquals("get(id) + and more", getValueFromMap(firstTestStep, "validate", "has_'fields'", "json_path(f1.f2)").toString()) }
         )
     }
 
@@ -139,7 +141,7 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertEquals("\"do something big\"", firstTestStep["name"]) },
+            { assertEquals("\"do something big\"", getValueFromMap(firstTestStep, "name")) },
             { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values") as List<*>).size) },
             { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values", 0) as Map<*, *>).size) },
             { assertEquals("v1", getValueFromMap(firstTestStep, "data", "values", 0, "c1").toString()) },
@@ -159,7 +161,7 @@ class StsReaderTest {
         val testSteps = stsReader.read(filePath.openStream())
 
         val firstTestStep = testSteps[0]
-        assertEquals("\"Given something\"", firstTestStep["name"])
+        assertEquals("\"Given something\"", getValueFromMap(firstTestStep, "name"))
     }
 
     @Test
@@ -172,12 +174,12 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertEquals("\"Validate response\"", firstTestStep["name"]) },
+            { assertEquals("\"Validate response\"", getValueFromMap(firstTestStep, "name")) },
             { assertEquals("T 1 2 3", getValueFromMap(firstTestStep, "validate", "fromTest").toString()) },
             { assertEquals("application/json", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "headers", "content-type").toString()) },  // spaced inside the value must be preserved
             { assertEquals("contains(fail  1 )", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "log", "none_match", 0).toString()) },
             { assertEquals("contains( error)", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "log", "none_match", 1).toString()) },
-            { assertEquals("v3", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "body", "regex(\".*f3=(\\w+).*\")").toString()) },
+            { assertEquals("v3", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "body", "regex(.*f3=(\\w+).*)").toString()) },
             { assertEquals("v2", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "body", "json_path(f1.f3)").toString()) },
             { assertEquals("\${p1, \${p2, \${p3, 4}}}", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "body", "json_path(f1.f2)").toString()) },
             { assertEquals("200", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "status").toString()) }
@@ -194,7 +196,7 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertTrue((firstTestStep["services"] as Collection<*>).map { it.toString() }.contains("srv1"), "Services field does not contain srv1") },
+            { assertTrue(( getValueFromMap(firstTestStep, "services") as Collection<*>).map { it.toString() }.contains("srv1"), "Services field does not contain srv1") },
             { assertEquals("3", getValueFromMap(firstTestStep, "validate", "size").toString()) },
             { assertEquals("contains(v1)", getValueFromMap(firstTestStep, "validate", "records", "fromIndex(0)").toString()) },
             { assertEquals("contains(v2)", getValueFromMap(firstTestStep, "validate", "records", "fromIndex(1)").toString()) },
@@ -205,7 +207,7 @@ class StsReaderTest {
             { assertEquals("v5", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c2", "any_match", 0).toString()) },
             { assertEquals("v6", getValueFromMap(firstTestStep, "validate", "all_match", 0, "c2", "any_match", 1).toString()) },
             { assertEquals("v2", getValueFromMap(firstTestStep, "validate", "all_match", 1, "c1").toString()) },
-            { assertEquals(" a#b  ", getValueFromMap(firstTestStep, "validate", "fromIndex(0)", "\" c 1 \"").toString()) }
+            { assertEquals(" a#b  ", getValueFromMap(firstTestStep, "validate", "fromIndex(0)", stringOf(" c 1 ")).toString()) }
         )
     }
 
@@ -225,17 +227,25 @@ class StsReaderTest {
 
     private fun getFileUrl(filePath: String): URL = javaClass.getResource(filePath)!!.toURI().toURL()
 
-    private fun getValueFromMap(data: Map<String, Any?>, vararg keys: Any): Any? {
+    private fun getValueFromMap(data: Map<Any, Any?>, vararg keys: Any): Any? {
         var value: Any? = data
         for (key in keys) {
             if (key is String) {
                 if (value is Map<*, *>) {
-                    value = value[key]
+                    val alphaNumKey = alphaNumOf(key)
+                    value = if (value.containsKey(alphaNumKey)) value[alphaNumKey]
+                    else value.keys.filter { it.toString() == key }.map { (value as Map<*, *>)[it] }.first()
                 }
             } else if (key is Int) {
                 value = (value as List<*>)[key]
+            } else if (value is Map<*, *>) {
+                value = value[key]
             }
         }
         return value
     }
+
+    private fun alphaNumOf(value: String) = AlphanumericValueExpression(value)
+
+    private fun stringOf(value: String) = StringValueExpression(value)
 }

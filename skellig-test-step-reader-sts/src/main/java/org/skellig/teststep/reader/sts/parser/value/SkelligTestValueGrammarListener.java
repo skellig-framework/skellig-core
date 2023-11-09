@@ -87,18 +87,6 @@ public interface SkelligTestValueGrammarListener extends ParseTreeListener {
 	 */
 	void exitComparison(SkelligTestValueGrammarParser.ComparisonContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code stringExpr}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterStringExpr(SkelligTestValueGrammarParser.StringExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code stringExpr}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitStringExpr(SkelligTestValueGrammarParser.StringExprContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code functionCallExp}
 	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
 	 * @param ctx the parse tree
@@ -110,18 +98,6 @@ public interface SkelligTestValueGrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFunctionCallExp(SkelligTestValueGrammarParser.FunctionCallExpContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code callChainExp}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterCallChainExp(SkelligTestValueGrammarParser.CallChainExpContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code callChainExp}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitCallChainExp(SkelligTestValueGrammarParser.CallChainExpContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code additionExpr}
 	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
@@ -146,6 +122,66 @@ public interface SkelligTestValueGrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitNumberExpr(SkelligTestValueGrammarParser.NumberExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code parenthesesExpr}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterParenthesesExpr(SkelligTestValueGrammarParser.ParenthesesExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code parenthesesExpr}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitParenthesesExpr(SkelligTestValueGrammarParser.ParenthesesExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code divisionExpr}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterDivisionExpr(SkelligTestValueGrammarParser.DivisionExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code divisionExpr}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitDivisionExpr(SkelligTestValueGrammarParser.DivisionExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code subtractionExpr}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterSubtractionExpr(SkelligTestValueGrammarParser.SubtractionExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code subtractionExpr}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitSubtractionExpr(SkelligTestValueGrammarParser.SubtractionExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code stringExpr}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterStringExpr(SkelligTestValueGrammarParser.StringExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code stringExpr}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitStringExpr(SkelligTestValueGrammarParser.StringExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code callChainExp}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterCallChainExp(SkelligTestValueGrammarParser.CallChainExpContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code callChainExp}
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitCallChainExp(SkelligTestValueGrammarParser.CallChainExpContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code propertyExpr}
 	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
@@ -183,41 +219,17 @@ public interface SkelligTestValueGrammarListener extends ParseTreeListener {
 	 */
 	void exitArrayValueAccessorExp(SkelligTestValueGrammarParser.ArrayValueAccessorExpContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code parenthesesExpr}
+	 * Enter a parse tree produced by the {@code boolExpr}
 	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void enterParenthesesExpr(SkelligTestValueGrammarParser.ParenthesesExprContext ctx);
+	void enterBoolExpr(SkelligTestValueGrammarParser.BoolExprContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code parenthesesExpr}
+	 * Exit a parse tree produced by the {@code boolExpr}
 	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void exitParenthesesExpr(SkelligTestValueGrammarParser.ParenthesesExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code divisionExpr}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterDivisionExpr(SkelligTestValueGrammarParser.DivisionExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code divisionExpr}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitDivisionExpr(SkelligTestValueGrammarParser.DivisionExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code subtractionExpr}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterSubtractionExpr(SkelligTestValueGrammarParser.SubtractionExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code subtractionExpr}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitSubtractionExpr(SkelligTestValueGrammarParser.SubtractionExprContext ctx);
+	void exitBoolExpr(SkelligTestValueGrammarParser.BoolExprContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code idExpr}
 	 * labeled alternative in {@link SkelligTestValueGrammarParser#expression}.

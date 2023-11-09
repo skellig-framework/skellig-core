@@ -2,11 +2,13 @@ package org.skellig.teststep.reader.sts.value.expression
 
 import java.math.BigDecimal
 
-class MathOperationExpression(private val operator: String, private val left: ValueExpression, private val right: ValueExpression) : ValueExpression {
+class MathOperationExpression(private val operator: String,
+                              private val leftExpression: ValueExpression,
+                              private val rightExpression: ValueExpression) : ValueExpression {
 
     override fun evaluate(context: ValueExpressionContext): Any {
-        var evaluatedLeft = left.evaluate(context)
-        var evaluatedRight = right.evaluate(context)
+        var evaluatedLeft = leftExpression.evaluate(context)
+        var evaluatedRight = rightExpression.evaluate(context)
         return if (operator == "+" && (evaluatedLeft is String || evaluatedRight is String)) {
             evaluatedLeft.toString() + evaluatedRight
         } else {
@@ -25,6 +27,18 @@ class MathOperationExpression(private val operator: String, private val left: Va
     }
 
     override fun toString(): String {
-        return "$left $operator $right"
+        return "$leftExpression $operator $rightExpression"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is MathOperationExpression)
+            operator == other.operator &&
+                    leftExpression == other.leftExpression &&
+                    rightExpression == other.rightExpression
+        else false
+    }
+
+    override fun hashCode(): Int {
+        return operator.hashCode() + leftExpression.hashCode() + rightExpression.hashCode()
     }
 }

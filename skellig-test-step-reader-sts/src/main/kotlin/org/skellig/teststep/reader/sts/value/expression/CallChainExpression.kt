@@ -21,4 +21,13 @@ class CallChainExpression(private val callChain: List<ValueExpression?>) : Value
     override fun toString(): String {
         return callChain.joinToString(".")
     }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is CallChainExpression) callChain == other.callChain
+        else false
+    }
+
+    override fun hashCode(): Int {
+        return callChain.sumOf { it.hashCode() }
+    }
 }

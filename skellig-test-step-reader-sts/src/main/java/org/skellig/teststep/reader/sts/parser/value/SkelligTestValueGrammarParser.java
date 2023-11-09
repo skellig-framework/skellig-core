@@ -18,8 +18,8 @@ public class SkelligTestValueGrammarParser extends Parser {
 	public static final int
 		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, LESSER=7, GREATER=8, LESSER_EQUAL=9, 
 		GREATER_EQUAL=10, EQUAL=11, NOT_EQUAL=12, FLOAT=13, INT=14, MULT=15, DIV=16, 
-		ADD=17, SUB=18, AND=19, OR=20, NOT=21, COMMA=22, DOT=23, LAMBDA=24, ID=25, 
-		STRING=26, WS=27;
+		ADD=17, SUB=18, AND=19, OR=20, NOT=21, COMMA=22, DOT=23, LAMBDA=24, BOOL=25, 
+		ID=26, STRING=27, WS=28;
 	public static final int
 		RULE_start = 0, RULE_logicalExpression = 1, RULE_comparison = 2, RULE_expression = 3, 
 		RULE_callChain = 4, RULE_functionBase = 5, RULE_functionCall = 6, RULE_arg = 7, 
@@ -46,8 +46,8 @@ public class SkelligTestValueGrammarParser extends Parser {
 		return new String[] {
 			null, null, null, null, null, null, null, "LESSER", "GREATER", "LESSER_EQUAL", 
 			"GREATER_EQUAL", "EQUAL", "NOT_EQUAL", "FLOAT", "INT", "MULT", "DIV", 
-			"ADD", "SUB", "AND", "OR", "NOT", "COMMA", "DOT", "LAMBDA", "ID", "STRING", 
-			"WS"
+			"ADD", "SUB", "AND", "OR", "NOT", "COMMA", "DOT", "LAMBDA", "BOOL", "ID", 
+			"STRING", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -177,6 +177,16 @@ public class SkelligTestValueGrammarParser extends Parser {
 	@SuppressWarnings("CheckReturnValue")
 	public static class NotExprContext extends LogicalExpressionContext {
 		public TerminalNode NOT() { return getToken(SkelligTestValueGrammarParser.NOT, 0); }
+		public TerminalNode BOOL() { return getToken(SkelligTestValueGrammarParser.BOOL, 0); }
+		public FunctionCallContext functionCall() {
+			return getRuleContext(FunctionCallContext.class,0);
+		}
+		public PropertyExpressionContext propertyExpression() {
+			return getRuleContext(PropertyExpressionContext.class,0);
+		}
+		public CallChainContext callChain() {
+			return getRuleContext(CallChainContext.class,0);
+		}
 		public LogicalExpressionContext logicalExpression() {
 			return getRuleContext(LogicalExpressionContext.class,0);
 		}
@@ -274,32 +284,68 @@ public class SkelligTestValueGrammarParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(44);
+			setState(53);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,1,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,2,_ctx) ) {
 			case 1:
-				{
-				_localctx = new NotExprContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
-
-				setState(37);
-				match(NOT);
-				setState(38);
-				logicalExpression(3);
-				}
-				break;
-			case 2:
 				{
 				_localctx = new ParenthesesLogicalExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(39);
+
+				setState(37);
 				match(T__0);
-				setState(40);
+				setState(38);
 				logicalExpression(0);
-				setState(41);
+				setState(39);
 				match(T__1);
+				}
+				break;
+			case 2:
+				{
+				_localctx = new NotExprContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(41);
+				match(NOT);
+				setState(50);
+				_errHandler.sync(this);
+				switch ( getInterpreter().adaptivePredict(_input,1,_ctx) ) {
+				case 1:
+					{
+					setState(42);
+					match(BOOL);
+					}
+					break;
+				case 2:
+					{
+					setState(43);
+					functionCall();
+					}
+					break;
+				case 3:
+					{
+					setState(44);
+					propertyExpression();
+					}
+					break;
+				case 4:
+					{
+					setState(45);
+					callChain();
+					}
+					break;
+				case 5:
+					{
+					setState(46);
+					match(T__0);
+					setState(47);
+					logicalExpression(0);
+					setState(48);
+					match(T__1);
+					}
+					break;
+				}
 				}
 				break;
 			case 3:
@@ -307,32 +353,32 @@ public class SkelligTestValueGrammarParser extends Parser {
 				_localctx = new ComparisonExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(43);
+				setState(52);
 				comparison();
 				}
 				break;
 			}
 			_ctx.stop = _input.LT(-1);
-			setState(54);
+			setState(63);
 			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,3,_ctx);
+			_alt = getInterpreter().adaptivePredict(_input,4,_ctx);
 			while ( _alt!=2 && _alt!= ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					if ( _parseListeners!=null ) triggerExitRuleEvent();
 					_prevctx = _localctx;
 					{
-					setState(52);
+					setState(61);
 					_errHandler.sync(this);
-					switch ( getInterpreter().adaptivePredict(_input,2,_ctx) ) {
+					switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
 					case 1:
 						{
 						_localctx = new AndExprContext(new LogicalExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_logicalExpression);
-						setState(46);
+						setState(55);
 						if (!(precpred(_ctx, 5))) throw new FailedPredicateException(this, "precpred(_ctx, 5)");
-						setState(47);
+						setState(56);
 						match(AND);
-						setState(48);
+						setState(57);
 						logicalExpression(6);
 						}
 						break;
@@ -340,20 +386,20 @@ public class SkelligTestValueGrammarParser extends Parser {
 						{
 						_localctx = new OrExprContext(new LogicalExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_logicalExpression);
-						setState(49);
+						setState(58);
 						if (!(precpred(_ctx, 4))) throw new FailedPredicateException(this, "precpred(_ctx, 4)");
-						setState(50);
+						setState(59);
 						match(OR);
-						setState(51);
+						setState(60);
 						logicalExpression(5);
 						}
 						break;
 					}
 					} 
 				}
-				setState(56);
+				setState(65);
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,3,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,4,_ctx);
 			}
 			}
 		}
@@ -399,11 +445,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(57);
+			setState(66);
 			expression(0);
-			setState(58);
+			setState(67);
 			comparator();
-			setState(59);
+			setState(68);
 			expression(0);
 			}
 		}
@@ -431,19 +477,6 @@ public class SkelligTestValueGrammarParser extends Parser {
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
-	public static class StringExprContext extends ExpressionContext {
-		public TerminalNode STRING() { return getToken(SkelligTestValueGrammarParser.STRING, 0); }
-		public StringExprContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterStringExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitStringExpr(this);
-		}
-	}
-	@SuppressWarnings("CheckReturnValue")
 	public static class FunctionCallExpContext extends ExpressionContext {
 		public FunctionCallContext functionCall() {
 			return getRuleContext(FunctionCallContext.class,0);
@@ -456,21 +489,6 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitFunctionCallExp(this);
-		}
-	}
-	@SuppressWarnings("CheckReturnValue")
-	public static class CallChainExpContext extends ExpressionContext {
-		public CallChainContext callChain() {
-			return getRuleContext(CallChainContext.class,0);
-		}
-		public CallChainExpContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterCallChainExp(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitCallChainExp(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -505,55 +523,6 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitNumberExpr(this);
-		}
-	}
-	@SuppressWarnings("CheckReturnValue")
-	public static class PropertyExprContext extends ExpressionContext {
-		public PropertyExpressionContext propertyExpression() {
-			return getRuleContext(PropertyExpressionContext.class,0);
-		}
-		public PropertyExprContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterPropertyExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitPropertyExpr(this);
-		}
-	}
-	@SuppressWarnings("CheckReturnValue")
-	public static class MultiplicationExprContext extends ExpressionContext {
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public TerminalNode MULT() { return getToken(SkelligTestValueGrammarParser.MULT, 0); }
-		public MultiplicationExprContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterMultiplicationExpr(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitMultiplicationExpr(this);
-		}
-	}
-	@SuppressWarnings("CheckReturnValue")
-	public static class ArrayValueAccessorExpContext extends ExpressionContext {
-		public ArrayValueAccessorContext arrayValueAccessor() {
-			return getRuleContext(ArrayValueAccessorContext.class,0);
-		}
-		public ArrayValueAccessorExpContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterArrayValueAccessorExp(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitArrayValueAccessorExp(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -610,6 +579,96 @@ public class SkelligTestValueGrammarParser extends Parser {
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
+	public static class StringExprContext extends ExpressionContext {
+		public TerminalNode STRING() { return getToken(SkelligTestValueGrammarParser.STRING, 0); }
+		public StringExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterStringExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitStringExpr(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class CallChainExpContext extends ExpressionContext {
+		public CallChainContext callChain() {
+			return getRuleContext(CallChainContext.class,0);
+		}
+		public CallChainExpContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterCallChainExp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitCallChainExp(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class PropertyExprContext extends ExpressionContext {
+		public PropertyExpressionContext propertyExpression() {
+			return getRuleContext(PropertyExpressionContext.class,0);
+		}
+		public PropertyExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterPropertyExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitPropertyExpr(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class MultiplicationExprContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode MULT() { return getToken(SkelligTestValueGrammarParser.MULT, 0); }
+		public MultiplicationExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterMultiplicationExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitMultiplicationExpr(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class ArrayValueAccessorExpContext extends ExpressionContext {
+		public ArrayValueAccessorContext arrayValueAccessor() {
+			return getRuleContext(ArrayValueAccessorContext.class,0);
+		}
+		public ArrayValueAccessorExpContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterArrayValueAccessorExp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitArrayValueAccessorExp(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class BoolExprContext extends ExpressionContext {
+		public TerminalNode BOOL() { return getToken(SkelligTestValueGrammarParser.BOOL, 0); }
+		public BoolExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterBoolExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitBoolExpr(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
 	public static class IdExprContext extends ExpressionContext {
 		public TerminalNode ID() { return getToken(SkelligTestValueGrammarParser.ID, 0); }
 		public IdExprContext(ExpressionContext ctx) { copyFrom(ctx); }
@@ -638,16 +697,16 @@ public class SkelligTestValueGrammarParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(73);
+			setState(83);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,4,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,5,_ctx) ) {
 			case 1:
 				{
 				_localctx = new ArrayValueAccessorExpContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 
-				setState(62);
+				setState(71);
 				arrayValueAccessor();
 				}
 				break;
@@ -656,7 +715,7 @@ public class SkelligTestValueGrammarParser extends Parser {
 				_localctx = new FunctionCallExpContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(63);
+				setState(72);
 				functionCall();
 				}
 				break;
@@ -665,7 +724,7 @@ public class SkelligTestValueGrammarParser extends Parser {
 				_localctx = new PropertyExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(64);
+				setState(73);
 				propertyExpression();
 				}
 				break;
@@ -674,11 +733,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 				_localctx = new ParenthesesExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(65);
+				setState(74);
 				match(T__0);
-				setState(66);
+				setState(75);
 				expression(0);
-				setState(67);
+				setState(76);
 				match(T__1);
 				}
 				break;
@@ -687,7 +746,7 @@ public class SkelligTestValueGrammarParser extends Parser {
 				_localctx = new StringExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(69);
+				setState(78);
 				match(STRING);
 				}
 				break;
@@ -696,7 +755,7 @@ public class SkelligTestValueGrammarParser extends Parser {
 				_localctx = new NumberExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(70);
+				setState(79);
 				number();
 				}
 				break;
@@ -705,86 +764,95 @@ public class SkelligTestValueGrammarParser extends Parser {
 				_localctx = new IdExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(71);
+				setState(80);
 				match(ID);
 				}
 				break;
 			case 8:
 				{
+				_localctx = new BoolExprContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(81);
+				match(BOOL);
+				}
+				break;
+			case 9:
+				{
 				_localctx = new CallChainExpContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(72);
+				setState(82);
 				callChain();
 				}
 				break;
 			}
 			_ctx.stop = _input.LT(-1);
-			setState(89);
+			setState(99);
 			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,6,_ctx);
+			_alt = getInterpreter().adaptivePredict(_input,7,_ctx);
 			while ( _alt!=2 && _alt!= ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					if ( _parseListeners!=null ) triggerExitRuleEvent();
 					_prevctx = _localctx;
 					{
-					setState(87);
+					setState(97);
 					_errHandler.sync(this);
-					switch ( getInterpreter().adaptivePredict(_input,5,_ctx) ) {
+					switch ( getInterpreter().adaptivePredict(_input,6,_ctx) ) {
 					case 1:
 						{
 						_localctx = new MultiplicationExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(75);
-						if (!(precpred(_ctx, 12))) throw new FailedPredicateException(this, "precpred(_ctx, 12)");
-						setState(76);
+						setState(85);
+						if (!(precpred(_ctx, 13))) throw new FailedPredicateException(this, "precpred(_ctx, 13)");
+						setState(86);
 						match(MULT);
-						setState(77);
-						expression(13);
+						setState(87);
+						expression(14);
 						}
 						break;
 					case 2:
 						{
 						_localctx = new DivisionExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(78);
-						if (!(precpred(_ctx, 11))) throw new FailedPredicateException(this, "precpred(_ctx, 11)");
-						setState(79);
+						setState(88);
+						if (!(precpred(_ctx, 12))) throw new FailedPredicateException(this, "precpred(_ctx, 12)");
+						setState(89);
 						match(DIV);
-						setState(80);
-						expression(12);
+						setState(90);
+						expression(13);
 						}
 						break;
 					case 3:
 						{
 						_localctx = new AdditionExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(81);
-						if (!(precpred(_ctx, 10))) throw new FailedPredicateException(this, "precpred(_ctx, 10)");
-						setState(82);
+						setState(91);
+						if (!(precpred(_ctx, 11))) throw new FailedPredicateException(this, "precpred(_ctx, 11)");
+						setState(92);
 						match(ADD);
-						setState(83);
-						expression(11);
+						setState(93);
+						expression(12);
 						}
 						break;
 					case 4:
 						{
 						_localctx = new SubtractionExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(84);
-						if (!(precpred(_ctx, 9))) throw new FailedPredicateException(this, "precpred(_ctx, 9)");
-						setState(85);
+						setState(94);
+						if (!(precpred(_ctx, 10))) throw new FailedPredicateException(this, "precpred(_ctx, 10)");
+						setState(95);
 						match(SUB);
-						setState(86);
-						expression(10);
+						setState(96);
+						expression(11);
 						}
 						break;
 					}
 					} 
 				}
-				setState(91);
+				setState(101);
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,6,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,7,_ctx);
 			}
 			}
 		}
@@ -835,42 +903,42 @@ public class SkelligTestValueGrammarParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(94);
+			setState(104);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case ID:
 			case STRING:
 				{
-				setState(92);
+				setState(102);
 				functionBase();
 				}
 				break;
 			case T__2:
 				{
-				setState(93);
+				setState(103);
 				propertyExpression();
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
 			}
-			setState(100);
+			setState(110);
 			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,8,_ctx);
+			_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			while ( _alt!=2 && _alt!= ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					{
 					{
-					setState(96);
+					setState(106);
 					match(DOT);
-					setState(97);
+					setState(107);
 					functionBase();
 					}
 					} 
 				}
-				setState(102);
+				setState(112);
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,8,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			}
 			}
 		}
@@ -913,34 +981,34 @@ public class SkelligTestValueGrammarParser extends Parser {
 		FunctionBaseContext _localctx = new FunctionBaseContext(_ctx, getState());
 		enterRule(_localctx, 10, RULE_functionBase);
 		try {
-			setState(107);
+			setState(117);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,9,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,10,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(103);
+				setState(113);
 				functionCall();
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(104);
+				setState(114);
 				arrayValueAccessor();
 				}
 				break;
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(105);
+				setState(115);
 				match(ID);
 				}
 				break;
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(106);
+				setState(116);
 				match(STRING);
 				}
 				break;
@@ -991,37 +1059,37 @@ public class SkelligTestValueGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(109);
-			match(ID);
-			setState(110);
-			match(T__0);
 			setState(119);
+			match(ID);
+			setState(120);
+			match(T__0);
+			setState(129);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 102785034L) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 237002762L) != 0)) {
 				{
-				setState(111);
+				setState(121);
 				arg();
-				setState(116);
+				setState(126);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				while (_la==COMMA) {
 					{
 					{
-					setState(112);
+					setState(122);
 					match(COMMA);
-					setState(113);
+					setState(123);
 					arg();
 					}
 					}
-					setState(118);
+					setState(128);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 				}
 				}
 			}
 
-			setState(121);
+			setState(131);
 			match(T__1);
 			}
 		}
@@ -1068,34 +1136,34 @@ public class SkelligTestValueGrammarParser extends Parser {
 		ArgContext _localctx = new ArgContext(_ctx, getState());
 		enterRule(_localctx, 14, RULE_arg);
 		try {
-			setState(127);
+			setState(137);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,12,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,13,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(123);
+				setState(133);
 				expression(0);
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(124);
+				setState(134);
 				logicalExpression(0);
 				}
 				break;
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(125);
+				setState(135);
 				comparison();
 				}
 				break;
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(126);
+				setState(136);
 				lambdaExpression();
 				}
 				break;
@@ -1142,22 +1210,22 @@ public class SkelligTestValueGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(129);
+			setState(139);
 			match(ID);
-			setState(130);
+			setState(140);
 			match(LAMBDA);
-			setState(133);
+			setState(143);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,13,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,14,_ctx) ) {
 			case 1:
 				{
-				setState(131);
+				setState(141);
 				logicalExpression(0);
 				}
 				break;
 			case 2:
 				{
-				setState(132);
+				setState(142);
 				expression(0);
 				}
 				break;
@@ -1205,23 +1273,23 @@ public class SkelligTestValueGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(135);
+			setState(145);
 			match(T__2);
-			setState(136);
+			setState(146);
 			propertyKey();
-			setState(139);
+			setState(149);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			if (_la==COMMA) {
 				{
-				setState(137);
+				setState(147);
 				match(COMMA);
-				setState(138);
+				setState(148);
 				expression(0);
 				}
 			}
 
-			setState(141);
+			setState(151);
 			match(T__3);
 			}
 		}
@@ -1262,9 +1330,9 @@ public class SkelligTestValueGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(143);
+			setState(153);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 100679680L) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 201342976L) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -1309,13 +1377,13 @@ public class SkelligTestValueGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(145);
+			setState(155);
 			match(ID);
-			setState(146);
+			setState(156);
 			match(T__4);
-			setState(147);
+			setState(157);
 			match(INT);
-			setState(148);
+			setState(158);
 			match(T__5);
 			}
 		}
@@ -1355,7 +1423,7 @@ public class SkelligTestValueGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(150);
+			setState(160);
 			_la = _input.LA(1);
 			if ( !(_la==FLOAT || _la==INT) ) {
 			_errHandler.recoverInline(this);
@@ -1407,7 +1475,7 @@ public class SkelligTestValueGrammarParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(152);
+			setState(162);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 8064L) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -1451,112 +1519,121 @@ public class SkelligTestValueGrammarParser extends Parser {
 	private boolean expression_sempred(ExpressionContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 2:
-			return precpred(_ctx, 12);
+			return precpred(_ctx, 13);
 		case 3:
-			return precpred(_ctx, 11);
+			return precpred(_ctx, 12);
 		case 4:
-			return precpred(_ctx, 10);
+			return precpred(_ctx, 11);
 		case 5:
-			return precpred(_ctx, 9);
+			return precpred(_ctx, 10);
 		}
 		return true;
 	}
 
 	public static final String _serializedATN =
-		"\u0004\u0001\u001b\u009b\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001"+
+		"\u0004\u0001\u001c\u00a5\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001"+
 		"\u0002\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0002\u0004\u0007\u0004"+
 		"\u0002\u0005\u0007\u0005\u0002\u0006\u0007\u0006\u0002\u0007\u0007\u0007"+
 		"\u0002\b\u0007\b\u0002\t\u0007\t\u0002\n\u0007\n\u0002\u000b\u0007\u000b"+
 		"\u0002\f\u0007\f\u0002\r\u0007\r\u0001\u0000\u0001\u0000\u0001\u0000\u0001"+
 		"\u0000\u0001\u0000\u0001\u0000\u0003\u0000#\b\u0000\u0001\u0001\u0001"+
 		"\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001"+
-		"\u0001\u0003\u0001-\b\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001"+
-		"\u0001\u0001\u0001\u0001\u0001\u0005\u00015\b\u0001\n\u0001\f\u00018\t"+
-		"\u0001\u0001\u0002\u0001\u0002\u0001\u0002\u0001\u0002\u0001\u0003\u0001"+
-		"\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001"+
-		"\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0003\u0003J\b"+
-		"\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001"+
-		"\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001"+
-		"\u0003\u0005\u0003X\b\u0003\n\u0003\f\u0003[\t\u0003\u0001\u0004\u0001"+
-		"\u0004\u0003\u0004_\b\u0004\u0001\u0004\u0001\u0004\u0005\u0004c\b\u0004"+
-		"\n\u0004\f\u0004f\t\u0004\u0001\u0005\u0001\u0005\u0001\u0005\u0001\u0005"+
-		"\u0003\u0005l\b\u0005\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006"+
-		"\u0001\u0006\u0005\u0006s\b\u0006\n\u0006\f\u0006v\t\u0006\u0003\u0006"+
-		"x\b\u0006\u0001\u0006\u0001\u0006\u0001\u0007\u0001\u0007\u0001\u0007"+
-		"\u0001\u0007\u0003\u0007\u0080\b\u0007\u0001\b\u0001\b\u0001\b\u0001\b"+
-		"\u0003\b\u0086\b\b\u0001\t\u0001\t\u0001\t\u0001\t\u0003\t\u008c\b\t\u0001"+
-		"\t\u0001\t\u0001\n\u0001\n\u0001\u000b\u0001\u000b\u0001\u000b\u0001\u000b"+
-		"\u0001\u000b\u0001\f\u0001\f\u0001\r\u0001\r\u0001\r\u0000\u0002\u0002"+
-		"\u0006\u000e\u0000\u0002\u0004\u0006\b\n\f\u000e\u0010\u0012\u0014\u0016"+
-		"\u0018\u001a\u0000\u0003\u0002\u0000\u000e\u000e\u0019\u001a\u0001\u0000"+
-		"\r\u000e\u0001\u0000\u0007\f\u00a8\u0000\"\u0001\u0000\u0000\u0000\u0002"+
-		",\u0001\u0000\u0000\u0000\u00049\u0001\u0000\u0000\u0000\u0006I\u0001"+
-		"\u0000\u0000\u0000\b^\u0001\u0000\u0000\u0000\nk\u0001\u0000\u0000\u0000"+
-		"\fm\u0001\u0000\u0000\u0000\u000e\u007f\u0001\u0000\u0000\u0000\u0010"+
-		"\u0081\u0001\u0000\u0000\u0000\u0012\u0087\u0001\u0000\u0000\u0000\u0014"+
-		"\u008f\u0001\u0000\u0000\u0000\u0016\u0091\u0001\u0000\u0000\u0000\u0018"+
-		"\u0096\u0001\u0000\u0000\u0000\u001a\u0098\u0001\u0000\u0000\u0000\u001c"+
-		"\u001d\u0003\u0002\u0001\u0000\u001d\u001e\u0005\u0000\u0000\u0001\u001e"+
-		"#\u0001\u0000\u0000\u0000\u001f \u0003\u0006\u0003\u0000 !\u0005\u0000"+
-		"\u0000\u0001!#\u0001\u0000\u0000\u0000\"\u001c\u0001\u0000\u0000\u0000"+
-		"\"\u001f\u0001\u0000\u0000\u0000#\u0001\u0001\u0000\u0000\u0000$%\u0006"+
-		"\u0001\uffff\uffff\u0000%&\u0005\u0015\u0000\u0000&-\u0003\u0002\u0001"+
-		"\u0003\'(\u0005\u0001\u0000\u0000()\u0003\u0002\u0001\u0000)*\u0005\u0002"+
-		"\u0000\u0000*-\u0001\u0000\u0000\u0000+-\u0003\u0004\u0002\u0000,$\u0001"+
-		"\u0000\u0000\u0000,\'\u0001\u0000\u0000\u0000,+\u0001\u0000\u0000\u0000"+
-		"-6\u0001\u0000\u0000\u0000./\n\u0005\u0000\u0000/0\u0005\u0013\u0000\u0000"+
-		"05\u0003\u0002\u0001\u000612\n\u0004\u0000\u000023\u0005\u0014\u0000\u0000"+
-		"35\u0003\u0002\u0001\u00054.\u0001\u0000\u0000\u000041\u0001\u0000\u0000"+
-		"\u000058\u0001\u0000\u0000\u000064\u0001\u0000\u0000\u000067\u0001\u0000"+
-		"\u0000\u00007\u0003\u0001\u0000\u0000\u000086\u0001\u0000\u0000\u0000"+
-		"9:\u0003\u0006\u0003\u0000:;\u0003\u001a\r\u0000;<\u0003\u0006\u0003\u0000"+
-		"<\u0005\u0001\u0000\u0000\u0000=>\u0006\u0003\uffff\uffff\u0000>J\u0003"+
-		"\u0016\u000b\u0000?J\u0003\f\u0006\u0000@J\u0003\u0012\t\u0000AB\u0005"+
-		"\u0001\u0000\u0000BC\u0003\u0006\u0003\u0000CD\u0005\u0002\u0000\u0000"+
-		"DJ\u0001\u0000\u0000\u0000EJ\u0005\u001a\u0000\u0000FJ\u0003\u0018\f\u0000"+
-		"GJ\u0005\u0019\u0000\u0000HJ\u0003\b\u0004\u0000I=\u0001\u0000\u0000\u0000"+
-		"I?\u0001\u0000\u0000\u0000I@\u0001\u0000\u0000\u0000IA\u0001\u0000\u0000"+
-		"\u0000IE\u0001\u0000\u0000\u0000IF\u0001\u0000\u0000\u0000IG\u0001\u0000"+
-		"\u0000\u0000IH\u0001\u0000\u0000\u0000JY\u0001\u0000\u0000\u0000KL\n\f"+
-		"\u0000\u0000LM\u0005\u000f\u0000\u0000MX\u0003\u0006\u0003\rNO\n\u000b"+
-		"\u0000\u0000OP\u0005\u0010\u0000\u0000PX\u0003\u0006\u0003\fQR\n\n\u0000"+
-		"\u0000RS\u0005\u0011\u0000\u0000SX\u0003\u0006\u0003\u000bTU\n\t\u0000"+
-		"\u0000UV\u0005\u0012\u0000\u0000VX\u0003\u0006\u0003\nWK\u0001\u0000\u0000"+
-		"\u0000WN\u0001\u0000\u0000\u0000WQ\u0001\u0000\u0000\u0000WT\u0001\u0000"+
-		"\u0000\u0000X[\u0001\u0000\u0000\u0000YW\u0001\u0000\u0000\u0000YZ\u0001"+
-		"\u0000\u0000\u0000Z\u0007\u0001\u0000\u0000\u0000[Y\u0001\u0000\u0000"+
-		"\u0000\\_\u0003\n\u0005\u0000]_\u0003\u0012\t\u0000^\\\u0001\u0000\u0000"+
-		"\u0000^]\u0001\u0000\u0000\u0000_d\u0001\u0000\u0000\u0000`a\u0005\u0017"+
-		"\u0000\u0000ac\u0003\n\u0005\u0000b`\u0001\u0000\u0000\u0000cf\u0001\u0000"+
-		"\u0000\u0000db\u0001\u0000\u0000\u0000de\u0001\u0000\u0000\u0000e\t\u0001"+
-		"\u0000\u0000\u0000fd\u0001\u0000\u0000\u0000gl\u0003\f\u0006\u0000hl\u0003"+
-		"\u0016\u000b\u0000il\u0005\u0019\u0000\u0000jl\u0005\u001a\u0000\u0000"+
-		"kg\u0001\u0000\u0000\u0000kh\u0001\u0000\u0000\u0000ki\u0001\u0000\u0000"+
-		"\u0000kj\u0001\u0000\u0000\u0000l\u000b\u0001\u0000\u0000\u0000mn\u0005"+
-		"\u0019\u0000\u0000nw\u0005\u0001\u0000\u0000ot\u0003\u000e\u0007\u0000"+
-		"pq\u0005\u0016\u0000\u0000qs\u0003\u000e\u0007\u0000rp\u0001\u0000\u0000"+
-		"\u0000sv\u0001\u0000\u0000\u0000tr\u0001\u0000\u0000\u0000tu\u0001\u0000"+
-		"\u0000\u0000ux\u0001\u0000\u0000\u0000vt\u0001\u0000\u0000\u0000wo\u0001"+
-		"\u0000\u0000\u0000wx\u0001\u0000\u0000\u0000xy\u0001\u0000\u0000\u0000"+
-		"yz\u0005\u0002\u0000\u0000z\r\u0001\u0000\u0000\u0000{\u0080\u0003\u0006"+
-		"\u0003\u0000|\u0080\u0003\u0002\u0001\u0000}\u0080\u0003\u0004\u0002\u0000"+
-		"~\u0080\u0003\u0010\b\u0000\u007f{\u0001\u0000\u0000\u0000\u007f|\u0001"+
-		"\u0000\u0000\u0000\u007f}\u0001\u0000\u0000\u0000\u007f~\u0001\u0000\u0000"+
-		"\u0000\u0080\u000f\u0001\u0000\u0000\u0000\u0081\u0082\u0005\u0019\u0000"+
-		"\u0000\u0082\u0085\u0005\u0018\u0000\u0000\u0083\u0086\u0003\u0002\u0001"+
-		"\u0000\u0084\u0086\u0003\u0006\u0003\u0000\u0085\u0083\u0001\u0000\u0000"+
-		"\u0000\u0085\u0084\u0001\u0000\u0000\u0000\u0086\u0011\u0001\u0000\u0000"+
-		"\u0000\u0087\u0088\u0005\u0003\u0000\u0000\u0088\u008b\u0003\u0014\n\u0000"+
-		"\u0089\u008a\u0005\u0016\u0000\u0000\u008a\u008c\u0003\u0006\u0003\u0000"+
-		"\u008b\u0089\u0001\u0000\u0000\u0000\u008b\u008c\u0001\u0000\u0000\u0000"+
-		"\u008c\u008d\u0001\u0000\u0000\u0000\u008d\u008e\u0005\u0004\u0000\u0000"+
-		"\u008e\u0013\u0001\u0000\u0000\u0000\u008f\u0090\u0007\u0000\u0000\u0000"+
-		"\u0090\u0015\u0001\u0000\u0000\u0000\u0091\u0092\u0005\u0019\u0000\u0000"+
-		"\u0092\u0093\u0005\u0005\u0000\u0000\u0093\u0094\u0005\u000e\u0000\u0000"+
-		"\u0094\u0095\u0005\u0006\u0000\u0000\u0095\u0017\u0001\u0000\u0000\u0000"+
-		"\u0096\u0097\u0007\u0001\u0000\u0000\u0097\u0019\u0001\u0000\u0000\u0000"+
-		"\u0098\u0099\u0007\u0002\u0000\u0000\u0099\u001b\u0001\u0000\u0000\u0000"+
-		"\u000f\",46IWY^dktw\u007f\u0085\u008b";
+		"\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001"+
+		"\u0001\u0003\u00013\b\u0001\u0001\u0001\u0003\u00016\b\u0001\u0001\u0001"+
+		"\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0005\u0001"+
+		">\b\u0001\n\u0001\f\u0001A\t\u0001\u0001\u0002\u0001\u0002\u0001\u0002"+
+		"\u0001\u0002\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003"+
+		"\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003"+
+		"\u0001\u0003\u0001\u0003\u0003\u0003T\b\u0003\u0001\u0003\u0001\u0003"+
+		"\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003"+
+		"\u0001\u0003\u0001\u0003\u0001\u0003\u0001\u0003\u0005\u0003b\b\u0003"+
+		"\n\u0003\f\u0003e\t\u0003\u0001\u0004\u0001\u0004\u0003\u0004i\b\u0004"+
+		"\u0001\u0004\u0001\u0004\u0005\u0004m\b\u0004\n\u0004\f\u0004p\t\u0004"+
+		"\u0001\u0005\u0001\u0005\u0001\u0005\u0001\u0005\u0003\u0005v\b\u0005"+
+		"\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006\u0001\u0006\u0005\u0006"+
+		"}\b\u0006\n\u0006\f\u0006\u0080\t\u0006\u0003\u0006\u0082\b\u0006\u0001"+
+		"\u0006\u0001\u0006\u0001\u0007\u0001\u0007\u0001\u0007\u0001\u0007\u0003"+
+		"\u0007\u008a\b\u0007\u0001\b\u0001\b\u0001\b\u0001\b\u0003\b\u0090\b\b"+
+		"\u0001\t\u0001\t\u0001\t\u0001\t\u0003\t\u0096\b\t\u0001\t\u0001\t\u0001"+
+		"\n\u0001\n\u0001\u000b\u0001\u000b\u0001\u000b\u0001\u000b\u0001\u000b"+
+		"\u0001\f\u0001\f\u0001\r\u0001\r\u0001\r\u0000\u0002\u0002\u0006\u000e"+
+		"\u0000\u0002\u0004\u0006\b\n\f\u000e\u0010\u0012\u0014\u0016\u0018\u001a"+
+		"\u0000\u0003\u0002\u0000\u000e\u000e\u001a\u001b\u0001\u0000\r\u000e\u0001"+
+		"\u0000\u0007\f\u00b7\u0000\"\u0001\u0000\u0000\u0000\u00025\u0001\u0000"+
+		"\u0000\u0000\u0004B\u0001\u0000\u0000\u0000\u0006S\u0001\u0000\u0000\u0000"+
+		"\bh\u0001\u0000\u0000\u0000\nu\u0001\u0000\u0000\u0000\fw\u0001\u0000"+
+		"\u0000\u0000\u000e\u0089\u0001\u0000\u0000\u0000\u0010\u008b\u0001\u0000"+
+		"\u0000\u0000\u0012\u0091\u0001\u0000\u0000\u0000\u0014\u0099\u0001\u0000"+
+		"\u0000\u0000\u0016\u009b\u0001\u0000\u0000\u0000\u0018\u00a0\u0001\u0000"+
+		"\u0000\u0000\u001a\u00a2\u0001\u0000\u0000\u0000\u001c\u001d\u0003\u0002"+
+		"\u0001\u0000\u001d\u001e\u0005\u0000\u0000\u0001\u001e#\u0001\u0000\u0000"+
+		"\u0000\u001f \u0003\u0006\u0003\u0000 !\u0005\u0000\u0000\u0001!#\u0001"+
+		"\u0000\u0000\u0000\"\u001c\u0001\u0000\u0000\u0000\"\u001f\u0001\u0000"+
+		"\u0000\u0000#\u0001\u0001\u0000\u0000\u0000$%\u0006\u0001\uffff\uffff"+
+		"\u0000%&\u0005\u0001\u0000\u0000&\'\u0003\u0002\u0001\u0000\'(\u0005\u0002"+
+		"\u0000\u0000(6\u0001\u0000\u0000\u0000)2\u0005\u0015\u0000\u0000*3\u0005"+
+		"\u0019\u0000\u0000+3\u0003\f\u0006\u0000,3\u0003\u0012\t\u0000-3\u0003"+
+		"\b\u0004\u0000./\u0005\u0001\u0000\u0000/0\u0003\u0002\u0001\u000001\u0005"+
+		"\u0002\u0000\u000013\u0001\u0000\u0000\u00002*\u0001\u0000\u0000\u0000"+
+		"2+\u0001\u0000\u0000\u00002,\u0001\u0000\u0000\u00002-\u0001\u0000\u0000"+
+		"\u00002.\u0001\u0000\u0000\u000036\u0001\u0000\u0000\u000046\u0003\u0004"+
+		"\u0002\u00005$\u0001\u0000\u0000\u00005)\u0001\u0000\u0000\u000054\u0001"+
+		"\u0000\u0000\u00006?\u0001\u0000\u0000\u000078\n\u0005\u0000\u000089\u0005"+
+		"\u0013\u0000\u00009>\u0003\u0002\u0001\u0006:;\n\u0004\u0000\u0000;<\u0005"+
+		"\u0014\u0000\u0000<>\u0003\u0002\u0001\u0005=7\u0001\u0000\u0000\u0000"+
+		"=:\u0001\u0000\u0000\u0000>A\u0001\u0000\u0000\u0000?=\u0001\u0000\u0000"+
+		"\u0000?@\u0001\u0000\u0000\u0000@\u0003\u0001\u0000\u0000\u0000A?\u0001"+
+		"\u0000\u0000\u0000BC\u0003\u0006\u0003\u0000CD\u0003\u001a\r\u0000DE\u0003"+
+		"\u0006\u0003\u0000E\u0005\u0001\u0000\u0000\u0000FG\u0006\u0003\uffff"+
+		"\uffff\u0000GT\u0003\u0016\u000b\u0000HT\u0003\f\u0006\u0000IT\u0003\u0012"+
+		"\t\u0000JK\u0005\u0001\u0000\u0000KL\u0003\u0006\u0003\u0000LM\u0005\u0002"+
+		"\u0000\u0000MT\u0001\u0000\u0000\u0000NT\u0005\u001b\u0000\u0000OT\u0003"+
+		"\u0018\f\u0000PT\u0005\u001a\u0000\u0000QT\u0005\u0019\u0000\u0000RT\u0003"+
+		"\b\u0004\u0000SF\u0001\u0000\u0000\u0000SH\u0001\u0000\u0000\u0000SI\u0001"+
+		"\u0000\u0000\u0000SJ\u0001\u0000\u0000\u0000SN\u0001\u0000\u0000\u0000"+
+		"SO\u0001\u0000\u0000\u0000SP\u0001\u0000\u0000\u0000SQ\u0001\u0000\u0000"+
+		"\u0000SR\u0001\u0000\u0000\u0000Tc\u0001\u0000\u0000\u0000UV\n\r\u0000"+
+		"\u0000VW\u0005\u000f\u0000\u0000Wb\u0003\u0006\u0003\u000eXY\n\f\u0000"+
+		"\u0000YZ\u0005\u0010\u0000\u0000Zb\u0003\u0006\u0003\r[\\\n\u000b\u0000"+
+		"\u0000\\]\u0005\u0011\u0000\u0000]b\u0003\u0006\u0003\f^_\n\n\u0000\u0000"+
+		"_`\u0005\u0012\u0000\u0000`b\u0003\u0006\u0003\u000baU\u0001\u0000\u0000"+
+		"\u0000aX\u0001\u0000\u0000\u0000a[\u0001\u0000\u0000\u0000a^\u0001\u0000"+
+		"\u0000\u0000be\u0001\u0000\u0000\u0000ca\u0001\u0000\u0000\u0000cd\u0001"+
+		"\u0000\u0000\u0000d\u0007\u0001\u0000\u0000\u0000ec\u0001\u0000\u0000"+
+		"\u0000fi\u0003\n\u0005\u0000gi\u0003\u0012\t\u0000hf\u0001\u0000\u0000"+
+		"\u0000hg\u0001\u0000\u0000\u0000in\u0001\u0000\u0000\u0000jk\u0005\u0017"+
+		"\u0000\u0000km\u0003\n\u0005\u0000lj\u0001\u0000\u0000\u0000mp\u0001\u0000"+
+		"\u0000\u0000nl\u0001\u0000\u0000\u0000no\u0001\u0000\u0000\u0000o\t\u0001"+
+		"\u0000\u0000\u0000pn\u0001\u0000\u0000\u0000qv\u0003\f\u0006\u0000rv\u0003"+
+		"\u0016\u000b\u0000sv\u0005\u001a\u0000\u0000tv\u0005\u001b\u0000\u0000"+
+		"uq\u0001\u0000\u0000\u0000ur\u0001\u0000\u0000\u0000us\u0001\u0000\u0000"+
+		"\u0000ut\u0001\u0000\u0000\u0000v\u000b\u0001\u0000\u0000\u0000wx\u0005"+
+		"\u001a\u0000\u0000x\u0081\u0005\u0001\u0000\u0000y~\u0003\u000e\u0007"+
+		"\u0000z{\u0005\u0016\u0000\u0000{}\u0003\u000e\u0007\u0000|z\u0001\u0000"+
+		"\u0000\u0000}\u0080\u0001\u0000\u0000\u0000~|\u0001\u0000\u0000\u0000"+
+		"~\u007f\u0001\u0000\u0000\u0000\u007f\u0082\u0001\u0000\u0000\u0000\u0080"+
+		"~\u0001\u0000\u0000\u0000\u0081y\u0001\u0000\u0000\u0000\u0081\u0082\u0001"+
+		"\u0000\u0000\u0000\u0082\u0083\u0001\u0000\u0000\u0000\u0083\u0084\u0005"+
+		"\u0002\u0000\u0000\u0084\r\u0001\u0000\u0000\u0000\u0085\u008a\u0003\u0006"+
+		"\u0003\u0000\u0086\u008a\u0003\u0002\u0001\u0000\u0087\u008a\u0003\u0004"+
+		"\u0002\u0000\u0088\u008a\u0003\u0010\b\u0000\u0089\u0085\u0001\u0000\u0000"+
+		"\u0000\u0089\u0086\u0001\u0000\u0000\u0000\u0089\u0087\u0001\u0000\u0000"+
+		"\u0000\u0089\u0088\u0001\u0000\u0000\u0000\u008a\u000f\u0001\u0000\u0000"+
+		"\u0000\u008b\u008c\u0005\u001a\u0000\u0000\u008c\u008f\u0005\u0018\u0000"+
+		"\u0000\u008d\u0090\u0003\u0002\u0001\u0000\u008e\u0090\u0003\u0006\u0003"+
+		"\u0000\u008f\u008d\u0001\u0000\u0000\u0000\u008f\u008e\u0001\u0000\u0000"+
+		"\u0000\u0090\u0011\u0001\u0000\u0000\u0000\u0091\u0092\u0005\u0003\u0000"+
+		"\u0000\u0092\u0095\u0003\u0014\n\u0000\u0093\u0094\u0005\u0016\u0000\u0000"+
+		"\u0094\u0096\u0003\u0006\u0003\u0000\u0095\u0093\u0001\u0000\u0000\u0000"+
+		"\u0095\u0096\u0001\u0000\u0000\u0000\u0096\u0097\u0001\u0000\u0000\u0000"+
+		"\u0097\u0098\u0005\u0004\u0000\u0000\u0098\u0013\u0001\u0000\u0000\u0000"+
+		"\u0099\u009a\u0007\u0000\u0000\u0000\u009a\u0015\u0001\u0000\u0000\u0000"+
+		"\u009b\u009c\u0005\u001a\u0000\u0000\u009c\u009d\u0005\u0005\u0000\u0000"+
+		"\u009d\u009e\u0005\u000e\u0000\u0000\u009e\u009f\u0005\u0006\u0000\u0000"+
+		"\u009f\u0017\u0001\u0000\u0000\u0000\u00a0\u00a1\u0007\u0001\u0000\u0000"+
+		"\u00a1\u0019\u0001\u0000\u0000\u0000\u00a2\u00a3\u0007\u0002\u0000\u0000"+
+		"\u00a3\u001b\u0001\u0000\u0000\u0000\u0010\"25=?Sachnu~\u0081\u0089\u008f"+
+		"\u0095";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

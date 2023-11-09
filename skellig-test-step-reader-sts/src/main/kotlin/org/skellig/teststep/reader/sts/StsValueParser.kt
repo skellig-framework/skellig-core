@@ -11,7 +11,7 @@ import org.skellig.teststep.reader.sts.value.expression.*
 
 internal class StsValueParser {
 
-    fun parse(value: String) : ValueExpression? {
+    fun parse(value: String): ValueExpression? {
         val parser = SkelligTestValueGrammarParser(CommonTokenStream(SkelligTestValueGrammarLexer(CharStreams.fromString(value))))
 
         return convert(parser.expression())
@@ -25,6 +25,7 @@ internal class StsValueParser {
                     IdExprContext::class.java -> convert(tree as IdExprContext)
                     StringExprContext::class.java -> convert(tree as StringExprContext)
                     NumberContext::class.java -> convert(tree as NumberContext)
+                    BoolExprContext::class.java -> convert(tree as BoolExprContext)
                     else -> convert(tree.getChild(0))
                 }
             } else if (tree.childCount > 1) {
@@ -41,6 +42,7 @@ internal class StsValueParser {
                     OrExprContext::class.java -> valueExpression = convert(tree as OrExprContext)
                     ArrayValueAccessorContext::class.java -> valueExpression = convert(tree as ArrayValueAccessorContext)
                     LambdaExpressionContext::class.java -> valueExpression = convert(tree as LambdaExpressionContext)
+                    NotExprContext::class.java -> valueExpression = convert(tree as NotExprContext)
                 }
             } else if (tree is TerminalNode) {
                 valueExpression = if (tree.symbol.type == SkelligTestValueGrammarLexer.STRING) {
@@ -93,7 +95,7 @@ internal class StsValueParser {
         val left = convert(context.expression(0))
         val comparator = context.comparator().text
         val right = convert(context.expression(1))
-        return NumberComparisonExpression(comparator, left!!, right!!)
+        return ValueComparisonExpression(comparator, left!!, right!!)
     }
 
     private fun convert(context: AndExprContext): ValueExpression {
@@ -117,7 +119,7 @@ internal class StsValueParser {
         }
         callChain.addAll(
             context.functionBase().stream()
-                .map{ convert(it) }
+                .map { convert(it) }
                 .toList()
         )
         return CallChainExpression(callChain)
@@ -126,7 +128,7 @@ internal class StsValueParser {
     private fun convert(context: FunctionCallContext): ValueExpression {
         val name = context.ID().text
         val args = context.arg().stream()
-            .map{ convert(it) }
+            .map { convert(it) }
             .toList()
         return FunctionCallExpression(name, args)
     }
@@ -139,11 +141,21 @@ internal class StsValueParser {
 
     private fun convert(context: LambdaExpressionContext): ValueExpression {
         val name = context.ID().text
-        return LambdaExpression(name, convert(if(context.expression() != null) context.expression() else context.logicalExpression())!!)
+        return LambdaExpression(name, convert(if (context.expression() != null) context.expression() else context.logicalExpression())!!)
     }
 
     private fun convert(context: ArrayValueAccessorContext): ValueExpression {
         return StringValueExpression(context.text)
+    }
+
+    private fun convert(context: NotExprContext): ValueExpression {
+        val innerContext: ParseTree =
+            if (context.logicalExpression() != null) context.logicalExpression()
+            else if (context.propertyExpression() != null) context.propertyExpression()
+            else if (context.functionCall() != null) context.functionCall()
+            else if (context.callChain() != null) context.callChain()
+            else context.BOOL()
+        return BooleanNotOperationExpression(convert(innerContext))
     }
 
     private fun convert(context: IdExprContext): ValueExpression {
@@ -156,6 +168,10 @@ internal class StsValueParser {
 
     private fun convert(context: NumberContext): ValueExpression {
         return NumberValueExpression(context.text)
+    }
+
+    private fun convert(context: BoolExprContext): ValueExpression {
+        return BooleanValueExpression(context.text)
     }
 
     private fun extractString(value: String): String {

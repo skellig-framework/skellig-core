@@ -18,4 +18,16 @@ class BooleanOperationExpression(
             }
         } else throw IllegalArgumentException("Failed to evaluate boolean operator '$operator' on non-boolean values '$evaluatedLeft' and '$evaluatedRight'")
     }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is BooleanOperationExpression)
+            operator == other.operator &&
+                    leftExpression == other.leftExpression &&
+                    rightExpression == other.rightExpression
+        else false
+    }
+
+    override fun hashCode(): Int {
+        return operator.hashCode() + leftExpression.hashCode() + rightExpression.hashCode()
+    }
 }

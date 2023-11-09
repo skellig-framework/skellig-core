@@ -100,18 +100,6 @@ public class SkelligTestValueGrammarBaseListener implements SkelligTestValueGram
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterStringExpr(SkelligTestValueGrammarParser.StringExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitStringExpr(SkelligTestValueGrammarParser.StringExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterFunctionCallExp(SkelligTestValueGrammarParser.FunctionCallExpContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -119,18 +107,6 @@ public class SkelligTestValueGrammarBaseListener implements SkelligTestValueGram
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitFunctionCallExp(SkelligTestValueGrammarParser.FunctionCallExpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterCallChainExp(SkelligTestValueGrammarParser.CallChainExpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitCallChainExp(SkelligTestValueGrammarParser.CallChainExpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -155,6 +131,66 @@ public class SkelligTestValueGrammarBaseListener implements SkelligTestValueGram
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitNumberExpr(SkelligTestValueGrammarParser.NumberExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterParenthesesExpr(SkelligTestValueGrammarParser.ParenthesesExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParenthesesExpr(SkelligTestValueGrammarParser.ParenthesesExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterDivisionExpr(SkelligTestValueGrammarParser.DivisionExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDivisionExpr(SkelligTestValueGrammarParser.DivisionExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSubtractionExpr(SkelligTestValueGrammarParser.SubtractionExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSubtractionExpr(SkelligTestValueGrammarParser.SubtractionExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterStringExpr(SkelligTestValueGrammarParser.StringExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStringExpr(SkelligTestValueGrammarParser.StringExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCallChainExp(SkelligTestValueGrammarParser.CallChainExpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCallChainExp(SkelligTestValueGrammarParser.CallChainExpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -196,37 +232,13 @@ public class SkelligTestValueGrammarBaseListener implements SkelligTestValueGram
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterParenthesesExpr(SkelligTestValueGrammarParser.ParenthesesExprContext ctx) { }
+	@Override public void enterBoolExpr(SkelligTestValueGrammarParser.BoolExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitParenthesesExpr(SkelligTestValueGrammarParser.ParenthesesExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterDivisionExpr(SkelligTestValueGrammarParser.DivisionExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitDivisionExpr(SkelligTestValueGrammarParser.DivisionExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterSubtractionExpr(SkelligTestValueGrammarParser.SubtractionExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSubtractionExpr(SkelligTestValueGrammarParser.SubtractionExprContext ctx) { }
+	@Override public void exitBoolExpr(SkelligTestValueGrammarParser.BoolExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

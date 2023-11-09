@@ -17,4 +17,13 @@ class NumberValueExpression(value: String?) : ValueExpression {
     override fun toString(): String {
         return value.toString()
     }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is NumberValueExpression) value == other.value
+        else false
+    }
+
+    override fun hashCode(): Int {
+        return value.hashCode()
+    }
 }

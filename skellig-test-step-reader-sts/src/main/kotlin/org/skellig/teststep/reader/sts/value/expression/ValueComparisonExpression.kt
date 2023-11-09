@@ -2,7 +2,7 @@ package org.skellig.teststep.reader.sts.value.expression
 
 import java.math.BigDecimal
 
-class NumberComparisonExpression(
+class ValueComparisonExpression(
     private val operator: String,
     private val leftExpression: ValueExpression,
     private val rightExpression: ValueExpression
@@ -36,5 +36,17 @@ class NumberComparisonExpression(
 
     override fun toString(): String {
         return "$leftExpression $operator $rightExpression"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other is ValueComparisonExpression)
+            operator == other.operator &&
+                    leftExpression == other.leftExpression &&
+                    rightExpression == other.rightExpression
+        else false
+    }
+
+    override fun hashCode(): Int {
+        return operator.hashCode() + leftExpression.hashCode() + rightExpression.hashCode()
     }
 }
