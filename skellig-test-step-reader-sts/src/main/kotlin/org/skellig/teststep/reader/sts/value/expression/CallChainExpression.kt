@@ -1,6 +1,6 @@
 package org.skellig.teststep.reader.sts.value.expression
 
-class CallChainExpression(private val callChain: List<ValueExpression?>) : ValueExpression {
+class CallChainExpression(val callChain: List<ValueExpression?>) : ValueExpression {
 
     override fun evaluate(context: ValueExpressionContext): Any? {
         var result: Any? = null

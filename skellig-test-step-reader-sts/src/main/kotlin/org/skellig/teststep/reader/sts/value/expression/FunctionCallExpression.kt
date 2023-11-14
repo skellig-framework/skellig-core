@@ -4,7 +4,7 @@ class FunctionCallExpression(private val name: String, private val args: List<Va
 
     override fun evaluate(context: ValueExpressionContext): Any? {
         // if value from context is not null, then the function should be called as a method of this value
-        return context.functionCallDelegate(name, context.value, args.map { it?.evaluate(context) }.toTypedArray())
+        return context.onFunctionCall(name, context.value, args.map { it?.evaluate(context) }.toTypedArray())
     }
 
     override fun toString(): String {

@@ -2,14 +2,15 @@ package org.skellig.teststep.reader.sts.value.expression
 
 class ValueExpressionContext(
     var evaluationType: EvaluationType = EvaluationType.DEFAULT,
-    val functionCallDelegate: (name: String, currentValue: Any?, args: Array<Any?>) -> Any?,
-    val propertyCallDelegate: (key: String, default: () -> Any?) -> Any?,
+    val onFunctionCall: (name: String, currentValue: Any?, args: Array<Any?>) -> Any?,
+    val onGetReferenceValue: (refName: String, default: () -> Any?) -> Any?,
 ) {
     var value: Any? = null
+    var args: Array<Any?>? = null
     private var lambdaExpressionParameters: MutableMap<String, Any?>? = null
 
     constructor(copy: ValueExpressionContext)
-            :this(EvaluationType.DEFAULT, copy.functionCallDelegate, copy.propertyCallDelegate){
+            :this(EvaluationType.DEFAULT, copy.onFunctionCall, copy.onGetReferenceValue){
                 this.value = copy.value
                 this.lambdaExpressionParameters = copy.lambdaExpressionParameters
             }
