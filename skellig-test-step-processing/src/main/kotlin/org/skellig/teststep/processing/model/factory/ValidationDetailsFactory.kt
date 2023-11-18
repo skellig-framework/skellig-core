@@ -36,7 +36,7 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null) {
         )
     }
 
-    fun create(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): ValidationDetails? {
+    fun create(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): ValidationDetails? {
         val rawValidationDetails = getValidationDetails(rawTestStep)
         val builder = ValidationDetails.Builder()
 
@@ -63,7 +63,7 @@ class ValidationDetailsFactory(val keywordsProperties: Properties? = null) {
         }
     }
 
-    private fun getValidationDetails(rawTestStep: Map<String, Any?>): Any? {
+    private fun getValidationDetails(rawTestStep: Map<Any, Any?>): Any? {
         return validationKeywords
             .map { rawTestStep[it] }
             .firstOrNull { it != null }
