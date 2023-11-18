@@ -29,7 +29,7 @@ abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(testStepRegistry: 
             getKeywordName(WHERE_KEYWORD, "where"),
             getKeywordName(VALUES_KEYWORD, "values"))
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): TS {
+    override fun create(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): TS {
         val testStep = super.create(testStepName, rawTestStep, parameters)
         if (testStep.testData != null) {
             if (testStep.query != null && testStep.testData !is List<*>) {
@@ -42,7 +42,7 @@ abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(testStepRegistry: 
         return testStep
     }
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<TS> {
+    override fun createTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<TS> {
         val servers = getStringArrayDataFromRawTestStep(getKeywordName(SERVERS_KEYWORD, "servers"), rawTestStep, parameters)
         return createDatabaseTestStepBuilder(rawTestStep, parameters)
                 .withServers(servers)
@@ -51,18 +51,18 @@ abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(testStepRegistry: 
                 .withQuery(convertValue<String>(rawTestStep[getQueryKeyword()], parameters))
     }
 
-    protected abstract fun createDatabaseTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DatabaseTestStep.Builder<TS>
+    protected abstract fun createDatabaseTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): DatabaseTestStep.Builder<TS>
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
         return rawTestStep.containsKey(getTableKeyword()) || rawTestStep.containsKey(getQueryKeyword())
     }
 
-    override fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    override fun getDelay(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): Int {
         val delay = super.getDelay(rawTestStep, parameters)
         return if (delay == 0) DEFAULT_DELAY else delay
     }
 
-    override fun getAttempts(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    override fun getAttempts(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): Int {
         val attempts = super.getAttempts(rawTestStep, parameters)
         return if (attempts == 0) DEFAULT_ATTEMPTS else attempts
     }

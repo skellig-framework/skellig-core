@@ -17,7 +17,7 @@ abstract class BaseTestStepFactory<T : TestStep>(
         return testStepFactoryValueConverter.convertValue(value, parameters)
     }
 
-    protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<String, Any?>): Map<String, String?>? {
+    protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<Any, Any?>): Map<String, String?>? {
         var parameters: MutableMap<String, String?>? = null
         val matcher = CachedPattern.compile(getName(rawTestStep)).matcher(testStepName)
         if (matcher.find()) {
@@ -32,7 +32,7 @@ abstract class BaseTestStepFactory<T : TestStep>(
         return parameters
     }
 
-    protected open fun getName(rawTestStep: Map<String, Any?>): String {
+    protected open fun getName(rawTestStep: Map<Any, Any?>): String {
         return rawTestStep[getKeywordName(TEST_STEP_NAME_KEYWORD, "name")].toString()
     }
 

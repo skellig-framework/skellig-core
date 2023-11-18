@@ -4,7 +4,7 @@ import org.skellig.teststep.processing.model.TestStep
 
 interface TestStepFactory<T : TestStep> {
 
-    fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): T
+    fun create(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): T
 
-    fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean
+    fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean
 }

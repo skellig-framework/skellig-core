@@ -39,10 +39,10 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         )
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): T {
+    override fun create(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): T {
         val parentTestSteps = rawTestStep[getKeywordName(PARENT_KEYWORD, "parent")]
         return if (parentTestSteps != null) {
-            val newRawTestStep = mutableMapOf<String, Any?>()
+            val newRawTestStep = mutableMapOf<Any, Any?>()
             // if parent exists, then merge its data with rawTestStep
             when (parentTestSteps) {
                 is String -> testStepRegistry.getById(parentTestSteps)?.let { newRawTestStep.putAll(it) }
@@ -56,7 +56,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         } else createTestStep(testStepName, rawTestStep, parameters)
     }
 
-    fun createTestStep(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): T {
+    fun createTestStep(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): T {
         val additionalParameters = HashMap<String, Any?>(parameters)
         val parametersFromTestName = extractParametersFromTestStepName(testStepName, rawTestStep)
         parametersFromTestName?.let {
@@ -78,10 +78,10 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
             .build()
     }
 
-    protected abstract fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<T>
+    protected abstract fun createTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<T>
 
     protected open fun getStringArrayDataFromRawTestStep(
-        propertyName: String?, rawTestStep: Map<String, Any?>,
+        propertyName: Any?, rawTestStep: Map<Any, Any?>,
         parameters: Map<String, Any?>
     ): Collection<String>? {
         return rawTestStep[propertyName]?.let {
@@ -99,7 +99,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     }
 
     private fun extractVariablesToParameters(
-        rawTestStep: Map<String, Any?>,
+        rawTestStep: Map<Any, Any?>,
         parameters: MutableMap<String, Any?>
     ): Map<String, Any?>? {
         val rawVariables = rawTestStep[getKeywordName(VARIABLES_KEYWORD, "variables")]
@@ -114,38 +114,38 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         }
     }
 
-    protected open fun extractTestData(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Any? {
+    protected open fun extractTestData(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): Any? {
         return getTestDataKeywords()!!
             .filter { rawTestStep.containsKey(it) }
             .map { keyword: String -> convertValue<Any>(rawTestStep[keyword], parameters) }
             .firstOrNull()
     }
 
-    protected open fun getId(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): String? {
+    protected open fun getId(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): String? {
         return if (rawTestStep.containsKey("id")) convertValue<String>(rawTestStep["id"], parameters) else null
     }
 
-    protected open fun getExecutionType(rawTestStep: Map<String, Any?>): TestStepExecutionType? {
+    protected open fun getExecutionType(rawTestStep: Map<Any, Any?>): TestStepExecutionType? {
         val executionKeyword = getKeywordName(EXECUTION_KEYWORD, "execution")
         return if (rawTestStep.containsKey(executionKeyword)) {
             TestStepExecutionType.fromName(rawTestStep[executionKeyword].toString())
         } else TestStepExecutionType.SYNC
     }
 
-    protected open fun getTimeout(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    protected open fun getTimeout(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): Int {
         return getInteger(rawTestStep, parameters, getKeywordName(TIMEOUT_KEYWORD, "timeout"), DEFAULT_TIMEOUT)
     }
 
-    protected open fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    protected open fun getDelay(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): Int {
         return getInteger(rawTestStep, parameters, getKeywordName(DELAY_KEYWORD, "delay"), 0)
     }
 
-    protected open fun getAttempts(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    protected open fun getAttempts(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): Int {
         return getInteger(rawTestStep, parameters, getKeywordName(ATTEMPTS_KEYWORD, "attempts"), 0)
     }
 
     private fun getInteger(
-        rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>,
+        rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>,
         keywordName: String, defaultValue: Int
     ): Int {
         var value = defaultValue

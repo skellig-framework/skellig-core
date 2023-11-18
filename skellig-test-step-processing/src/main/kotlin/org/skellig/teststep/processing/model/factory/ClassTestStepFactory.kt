@@ -6,7 +6,7 @@ import java.util.regex.Pattern
 
 internal class ClassTestStepFactory : TestStepFactory<ClassTestStep> {
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): ClassTestStep {
+    override fun create(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): ClassTestStep {
         return ClassTestStep(
                 rawTestStep["id"] as String,
                 rawTestStep["testStepNamePattern"] as Pattern,
@@ -17,7 +17,7 @@ internal class ClassTestStepFactory : TestStepFactory<ClassTestStep> {
         )
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
         return rawTestStep.containsKey("testStepNamePattern") &&
                 rawTestStep.containsKey("testStepDefInstance") &&
                 rawTestStep.containsKey("testStepMethod") &&

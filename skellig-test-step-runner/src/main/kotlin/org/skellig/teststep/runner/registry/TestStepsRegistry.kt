@@ -21,31 +21,31 @@ internal class TestStepsRegistry(
         private val LOGGER: Logger = LoggerFactory.getLogger(TestStepsRegistry::class.java)
     }
 
-    private var testSteps: Collection<Map<String, Any?>> = emptyList()
-    private var testStepsGroupedById: Map<String, Map<String, Any?>> = mutableMapOf()
+    private var testSteps: Collection<Map<Any, Any?>> = emptyList()
+    private var testStepsGroupedById: Map<String, Map<Any, Any?>> = mutableMapOf()
 
     fun registerFoundTestStepsInPath(testStepsPaths: Collection<URI>) {
         testSteps = getTestStepsFromPath(testStepsPaths)
         testStepsGroupedById = testSteps.filter { it.containsKey(ID) }.associateBy { it[ID].toString() }
     }
 
-    override fun getByName(testStepName: String): Map<String, Any?>? =
+    override fun getByName(testStepName: String): Map<Any, Any?>? =
         testSteps.parallelStream()
-            .filter { testStep: Map<String, Any?> ->
+            .filter { testStep: Map<Any, Any?> ->
                 compile(getTestStepName(testStep)).matcher(testStepName).matches()
             }
             .findFirst()
             .orElse(null)
 
-    override fun getById(testStepId: String): Map<String, Any?>? =
+    override fun getById(testStepId: String): Map<Any, Any?>? =
         testStepsGroupedById[testStepId]
 
-    override fun getTestSteps(): Collection<Map<String, Any?>> = testSteps
+    override fun getTestSteps(): Collection<Map<Any, Any?>> = testSteps
 
-    private fun getTestStepName(rawTestStep: Map<String, Any?>): String =
+    private fun getTestStepName(rawTestStep: Map<Any, Any?>): String =
         rawTestStep["name"]?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
 
-    private fun getTestStepsFromPath(rootPaths: Collection<URI>): Collection<Map<String, Any?>> {
+    private fun getTestStepsFromPath(rootPaths: Collection<URI>): Collection<Map<Any, Any?>> {
         LOGGER.debug("Extracting test steps from files in '$rootPaths'")
 
         val readFileStrategy = RawTestStepsReaderStrategy()
@@ -62,7 +62,7 @@ internal class TestStepsRegistry(
         )
 
 
-        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<String, Any?>> =
+        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<Any, Any?>> =
             try {
                 val protocol = rootUri.toURL().protocol
                 fileReader[protocol]?.getTestStepsFromUri(rootUri)
@@ -77,10 +77,10 @@ internal class TestStepsRegistry(
 
     private open inner class RawTestStepsFromFileReader : RawTestStepsReader {
 
-        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<String, Any?>> =
+        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<Any, Any?>> =
             walkThroughFiles(Paths.get(rootUri))
 
-        protected fun walkThroughFiles(root: Path): Collection<Map<String, Any?>> =
+        protected fun walkThroughFiles(root: Path): Collection<Map<Any, Any?>> =
             if (Files.isDirectory(root)) {
                 Files.walk(root)
                     .parallel()
@@ -92,7 +92,7 @@ internal class TestStepsRegistry(
                 readFileFromPath(root)
             }
 
-        private fun readFileFromPath(it: Path): List<Map<String, Any?>> {
+        private fun readFileFromPath(it: Path): List<Map<Any, Any?>> {
             LOGGER.debug("Extract test steps from file '$it'")
             return testStepReader.read(it.toUri().toURL().openStream())
         }
@@ -100,8 +100,8 @@ internal class TestStepsRegistry(
 
     private inner class RawTestStepsFromJarFileReader : RawTestStepsFromFileReader() {
 
-        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<String, Any?>> {
-            val rawTestSteps = mutableListOf<Map<String, Any?>>()
+        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<Any, Any?>> {
+            val rawTestSteps = mutableListOf<Map<Any, Any?>>()
             FileSystems.newFileSystem(rootUri, emptyMap<String, Any>()).use {
                 for (root in it.rootDirectories) {
                     rawTestSteps.addAll(walkThroughFiles(root))

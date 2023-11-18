@@ -19,12 +19,12 @@ abstract class BaseTcpTestStepFactory<T : BaseTcpTestStep>(testStepRegistry: Tes
         internal const val TCP = "tcp"
     }
 
-    protected fun getReadBufferSize(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>) : Int? {
+    protected fun getReadBufferSize(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>) : Int? {
         val readBufferSize = rawTestStep[getKeywordName(BUFFER_SIZE_KEYWORD, "bufferSize")]
         return convertValue(readBufferSize, parameters)
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
         return rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == TCP
     }
 

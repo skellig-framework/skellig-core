@@ -12,9 +12,9 @@ class CassandraTestStepFactory(testStepRegistry: TestStepRegistry,
                                testStepFactoryValueConverter: TestStepFactoryValueConverter)
     : DatabaseTestStepFactory<CassandraTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
-    override fun createDatabaseTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>):
+    override fun createDatabaseTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>):
             DatabaseTestStep.Builder<CassandraTestStep> = CassandraTestStep.Builder()
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean =
             rawTestStep[getProviderKeyword()] == "cassandra" && super.isConstructableFrom(rawTestStep)
 }

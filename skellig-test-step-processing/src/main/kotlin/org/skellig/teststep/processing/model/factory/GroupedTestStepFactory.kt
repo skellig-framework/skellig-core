@@ -16,7 +16,7 @@ internal class GroupedTestStepFactory(private val testStepRegistry: TestStepRegi
         private const val FAILED = "failed"
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): GroupedTestStep {
+    override fun create(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): GroupedTestStep {
         val additionalParameters: MutableMap<String, String?> = HashMap(parameters)
         val parametersFromTestName = extractParametersFromTestStepName(testStepName, rawTestStep)
         parametersFromTestName?.let {
@@ -26,21 +26,21 @@ internal class GroupedTestStepFactory(private val testStepRegistry: TestStepRegi
         return GroupedTestStep(testStepName, createTestStepRun(rawTestStep, additionalParameters)!!)
     }
 
-    private fun createTestStepRun(rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): GroupedTestStep.TestStepRun? {
+    private fun createTestStepRun(rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): GroupedTestStep.TestStepRun? {
         var passed: GroupedTestStep.TestStepRun? = null
         var failed: GroupedTestStep.TestStepRun? = null
         if (rawTestStep.containsKey(PASSED)) {
-            passed = createTestStepRun(rawTestStep[PASSED] as Map<String, Any?>, parameters)
+            passed = createTestStepRun(rawTestStep[PASSED] as Map<Any, Any?>, parameters)
         }
         if (rawTestStep.containsKey(FAILED)) {
-            failed = createTestStepRun(rawTestStep[FAILED] as Map<String, Any?>, parameters)
+            failed = createTestStepRun(rawTestStep[FAILED] as Map<Any, Any?>, parameters)
         }
         return if (rawTestStep.containsKey(TEST)) {
             GroupedTestStep.TestStepRun(createConvertToTestDataFunction(rawTestStep, parameters), passed, failed)
         } else null
     }
 
-    private fun createConvertToTestDataFunction(rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): () -> TestStep =
+    private fun createConvertToTestDataFunction(rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): () -> TestStep =
             {
                 var testStepName = rawTestStep[TEST] as String
                 testStepName = testStepFactoryValueConverter.convertValue<String>(testStepName, parameters) ?: testStepName
@@ -49,7 +49,7 @@ internal class GroupedTestStepFactory(private val testStepRegistry: TestStepRegi
                 testStepFactory.create(testStepName, rawTestStepToRun, parameters)
             }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
         return rawTestStep.containsKey(TEST)
     }
 }

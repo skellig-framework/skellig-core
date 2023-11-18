@@ -11,7 +11,7 @@ class TcpConsumableTestStepFactory(testStepRegistry: TestStepRegistry,
                                    testStepFactoryValueConverter: TestStepFactoryValueConverter)
     : BaseTcpTestStepFactory<TcpConsumableTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>,
+    override fun createTestStepBuilder(rawTestStep: Map<Any, Any?>,
                                        parameters: Map<String, Any?>): BaseTcpTestStep.Builder<TcpConsumableTestStep> {
         return TcpConsumableTestStep.Builder()
             .consumeFrom(getConsumeFromChannels(rawTestStep, parameters))
@@ -19,10 +19,10 @@ class TcpConsumableTestStepFactory(testStepRegistry: TestStepRegistry,
             .readBufferSize(getReadBufferSize(rawTestStep, parameters))
     }
 
-    private fun getRespondToChannels(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): List<String>? =
+    private fun getRespondToChannels(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): List<String>? =
         toList(convertValue<Any>(rawTestStep[getKeywordName(RESPOND_TO_KEYWORD, "respondTo")], parameters))
 
-    private fun getConsumeFromChannels(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): List<String>? =
+    private fun getConsumeFromChannels(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): List<String>? =
         toList(convertValue<Any>(rawTestStep[getConsumeFromKeyword()], parameters))
 
     private fun toList(channel: Any?): List<String>? {
@@ -32,6 +32,6 @@ class TcpConsumableTestStepFactory(testStepRegistry: TestStepRegistry,
         }
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean =
         rawTestStep.containsKey(getConsumeFromKeyword()) && super.isConstructableFrom(rawTestStep)
 }

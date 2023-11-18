@@ -10,11 +10,11 @@ internal class DefaultTestStepFactory(
     testStepFactoryValueConverter: TestStepFactoryValueConverter)
     : BaseDefaultTestStepFactory<DefaultTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<DefaultTestStep> {
+    override fun createTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<DefaultTestStep> {
         return DefaultTestStep.DefaultTestStepBuilder()
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
         return true
     }
 

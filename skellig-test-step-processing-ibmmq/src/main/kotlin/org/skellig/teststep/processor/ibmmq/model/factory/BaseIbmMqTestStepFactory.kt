@@ -29,6 +29,6 @@ abstract class BaseIbmMqTestStepFactory<T : DefaultTestStep>(
 
     internal fun getConsumeFromKeyword() = getKeywordName(CONSUME_FROM_KEYWORD, "consumeFrom")
 
-    internal fun hasIbmMqRequiredData(rawTestStep: Map<String, Any?>): Boolean =
+    internal fun hasIbmMqRequiredData(rawTestStep: Map<Any, Any?>): Boolean =
         rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == IBMMQ
 }

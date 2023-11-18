@@ -20,13 +20,13 @@ abstract class BaseRmqTestStepFactory<T : BaseRmqTestStep>(testStepRegistry: Tes
         internal const val RMQ = "rmq"
     }
 
-    protected fun getRoutingKey(rawTestStep: Map<String, Any?>): Any? =
+    protected fun getRoutingKey(rawTestStep: Map<Any, Any?>): Any? =
         rawTestStep[getKeywordName(ROUTING_KEY_KEYWORD, "routingKey")]
 
-    protected fun getProperties(rawTestStep: Map<String, Any?>): Any? =
+    protected fun getProperties(rawTestStep: Map<Any, Any?>): Any? =
         rawTestStep[getKeywordName(RMQ_PROPERTIES_KEYWORD, "properties")]
 
-    internal fun hasRmqRequiredData(rawTestStep: Map<String, Any?>): Boolean =
+    internal fun hasRmqRequiredData(rawTestStep: Map<Any, Any?>): Boolean =
         getRoutingKey(rawTestStep) != null ||
                 rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == RMQ
 

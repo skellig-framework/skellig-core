@@ -12,11 +12,11 @@ class SimpleTestStepFactory(
     testStepFactoryValueConverter: TestStepFactoryValueConverter)
     : BaseDefaultTestStepFactory<SimpleTestStepFactory.SimpleTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
         return rawTestStep.containsKey("captureData")
     }
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<SimpleTestStep> {
+    override fun createTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<SimpleTestStep> {
         return SimpleTestStep.Builder()
                 .withCaptureData(convertValue<String>(rawTestStep["captureData"], parameters))
     }

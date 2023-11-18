@@ -29,12 +29,12 @@ class CompositeTestStepFactory private constructor(
         factories.add(factory)
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): TestStep {
+    override fun create(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): TestStep {
         val factory = factories.firstOrNull { it.isConstructableFrom(rawTestStep) } ?: defaultTestStepFactory
         return factory.create(testStepName, rawTestStep, parameters)
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
         return true
     }
 

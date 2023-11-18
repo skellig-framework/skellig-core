@@ -26,7 +26,7 @@ class PerformanceTestStepFactory(
         private val TIME_PATTERN = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): PerformanceTestStep {
+    override fun create(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): PerformanceTestStep {
         val rps = getRps(rawTestStep, parameters)
         val timeToRun = getTimeToRun(rawTestStep, parameters)
         val before = rawTestStep[getBeforeKeyword()] as List<*>?
@@ -46,8 +46,7 @@ class PerformanceTestStepFactory(
             rawListOfTestSteps.map {
                 when (it) {
                     is Map<*, *> -> {
-                        val rawTestStep = it as Map<String, Any?>
-                        createToTestDataFunction(getName(rawTestStep), parameters)
+                        createToTestDataFunction(getName(it as Map<Any, Any?>), parameters)
                     }
                     is String -> createToTestDataFunction(it, emptyMap())
                     else -> throw TestStepCreationException(
@@ -58,13 +57,13 @@ class PerformanceTestStepFactory(
             }
         } ?: emptyList()
 
-    private fun getRps(rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): Int {
+    private fun getRps(rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): Int {
         val rps = rawTestStep[getRpsKeyword()].toString()
         return convertValue<String>(rps, parameters)?.toInt()
             ?: error("Invalid RPS value '$rps' for the test '${getName(rawTestStep)}'. The value must be Int")
     }
 
-    private fun getTimeToRun(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): LocalTime {
+    private fun getTimeToRun(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): LocalTime {
         val timeToRun = convertValue<String>(rawTestStep[getTimeToRunKeyword()].toString(), parameters)
         return LocalTime.parse(timeToRun, TIME_PATTERN)
     }
@@ -76,7 +75,7 @@ class PerformanceTestStepFactory(
             testStepFactory.create(testStepName, rawTestStepToRun, parameters)
         }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean =
         rawTestStep.containsKey(getRpsKeyword()) &&
                 rawTestStep.containsKey(getTimeToRunKeyword()) &&
                 rawTestStep.containsKey(getRunKeyword())

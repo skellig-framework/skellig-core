@@ -12,10 +12,10 @@ class JdbcTestStepFactory(testStepRegistry: TestStepRegistry,
                           testStepFactoryValueConverter: TestStepFactoryValueConverter)
     : DatabaseTestStepFactory<JdbcTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
 
-    override fun createDatabaseTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>):
+    override fun createDatabaseTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>):
             DatabaseTestStep.Builder<JdbcTestStep> = JdbcTestStep.Builder()
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
+    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean =
             (rawTestStep[getProviderKeyword()] == "jdbc" || !rawTestStep.containsKey(getProviderKeyword())) &&
                     super.isConstructableFrom(rawTestStep)
 }
