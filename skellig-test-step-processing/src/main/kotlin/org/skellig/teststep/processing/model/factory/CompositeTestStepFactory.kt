@@ -2,20 +2,22 @@ package org.skellig.teststep.processing.model.factory
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import java.util.*
 
 
 class CompositeTestStepFactory private constructor(
     testStepsRegistry: TestStepRegistry,
     keywordsProperties: Properties?,
-    testStepFactoryValueConverter: TestStepFactoryValueConverter
+    testStepFactoryValueConverter: TestStepFactoryValueConverter,
+    valueExpressionContextFactory: ValueExpressionContextFactory
 ) : TestStepFactory<TestStep> {
 
     private val factories: MutableList<TestStepFactory<out TestStep>> = mutableListOf()
     private var defaultTestStepFactory: TestStepFactory<DefaultTestStep>
 
     init {
-        registerTestStepFactory(GroupedTestStepFactory(testStepsRegistry, this, keywordsProperties, testStepFactoryValueConverter))
+        registerTestStepFactory(GroupedTestStepFactory(testStepsRegistry, this, keywordsProperties, testStepFactoryValueConverter, valueExpressionContextFactory))
         registerTestStepFactory(ClassTestStepFactory())
 
         defaultTestStepFactory = DefaultTestStepFactory.Builder()
@@ -43,6 +45,7 @@ class CompositeTestStepFactory private constructor(
         private var testStepsRegistry: TestStepRegistry? = null
         private var keywordsProperties: Properties? = null
         private var testStepFactoryValueConverter: TestStepFactoryValueConverter? = null
+        private var valueExpressionContextFactory: ValueExpressionContextFactory? = null
 
         fun withKeywordsProperties(keywordsProperties: Properties?) =
             apply { this.keywordsProperties = keywordsProperties }
@@ -50,11 +53,16 @@ class CompositeTestStepFactory private constructor(
         fun withTestStepFactoryValueConverter(testStepFactoryValueConverter: TestStepFactoryValueConverter) =
             apply { this.testStepFactoryValueConverter = testStepFactoryValueConverter }
 
+        fun withValueExpressionContextFactory(valueExpressionContextFactory: ValueExpressionContextFactory?) =
+            apply { this.valueExpressionContextFactory = valueExpressionContextFactory }
+
         fun withTestDataRegistry(testStepsRegistry: TestStepRegistry) =
             apply { this.testStepsRegistry = testStepsRegistry }
 
         fun build(): CompositeTestStepFactory {
-            return CompositeTestStepFactory(testStepsRegistry!!, keywordsProperties, testStepFactoryValueConverter!!)
+            return CompositeTestStepFactory(testStepsRegistry!!, keywordsProperties,
+                testStepFactoryValueConverter ?: error("TestStepFactoryValueConverter is mandatory for DefaultTestStepFactory"),
+                valueExpressionContextFactory ?: error("ValueExpressionContextFactory is mandatory for DefaultTestStepFactory"))
         }
 
     }

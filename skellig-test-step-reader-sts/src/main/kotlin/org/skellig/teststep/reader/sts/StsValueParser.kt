@@ -118,18 +118,18 @@ internal class StsValueParser {
             callChain.add(convert(context.propertyExpression()))
         }
         callChain.addAll(
-            context.functionBase().stream()
+            context.functionBase()
                 .map { convert(it) }
-                .toList()
+                .toTypedArray()
         )
         return CallChainExpression(callChain)
     }
 
     private fun convert(context: FunctionCallContext): ValueExpression {
         val name = context.ID().text
-        val args = context.arg().stream()
+        val args = context.arg()
             .map { convert(it) }
-            .toList()
+            .toTypedArray()
         return FunctionCallExpression(name, args)
     }
 

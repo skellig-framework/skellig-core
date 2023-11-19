@@ -6,6 +6,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ValidationDetails
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.validation.TestStepResultValidator
+import org.skellig.teststep.processing.validation.ValidationNode
 
 /**
  * This is a basic processor for tests steps whose result can be validated.
@@ -25,13 +26,7 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
     @Throws(ValidationException::class)
     protected fun validate(testStep: DefaultTestStep) {
         testStep.validationDetails?.let { validationDetails ->
-            validationDetails.testStepId?.let { testStepId ->
-                getLatestResultOfTestStep(testStepId, testStep.delay, testStep.timeout)?.let {
-                    validate(testStep.getId, validationDetails, it)
-                } ?: run {
-                    throw ValidationException("Result from test step with id '$testStepId' was not found in Test Scenario State")
-                }
-            }
+            validate(testStep.getId, validationDetails, null)
         }
     }
 
@@ -65,9 +60,9 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
             false
         }
 
-    protected fun validate(testStepId: String?, validationDetails: ValidationDetails, actualResult: Any?) {
+    protected fun validate(testStepId: String?, validationDetails: ValidationNode, actualResult: Any?) {
         try {
-            validator.validate(validationDetails.expectedResult, actualResult)
+            validationDetails.validate(actualResult)
         } catch (ex: ValidationException) {
             throw ValidationException(ex.message, testStepId)
         }

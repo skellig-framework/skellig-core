@@ -3,14 +3,16 @@ package org.skellig.teststep.processing.model.factory
 import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import java.util.*
 import java.util.regex.Pattern
 
 abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     private val testStepRegistry: TestStepRegistry,
     keywordsProperties: Properties?,
-    testStepFactoryValueConverter: TestStepFactoryValueConverter
-) : BaseTestStepFactory<T>(keywordsProperties, testStepFactoryValueConverter) {
+    testStepFactoryValueConverter: TestStepFactoryValueConverter,
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseTestStepFactory<T>(keywordsProperties, testStepFactoryValueConverter, valueExpressionContextFactory) {
 
     companion object {
         private val COMMA_SPLIT_PATTERN = Pattern.compile(",")
@@ -26,7 +28,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         private var testDataKeywords: Set<String>? = null
     }
 
-    private var validationDetailsFactory = ValidationDetailsFactory(keywordsProperties)
+    private var validationDetailsFactory = ValidationNodeFactory(valueExpressionContextFactory)
 
     init {
         testDataKeywords = setOf(

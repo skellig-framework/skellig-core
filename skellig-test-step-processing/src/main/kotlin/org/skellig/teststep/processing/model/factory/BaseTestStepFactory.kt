@@ -2,11 +2,13 @@ package org.skellig.teststep.processing.model.factory
 
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.util.CachedPattern
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import java.util.*
 
 abstract class BaseTestStepFactory<T : TestStep>(
     val keywordsProperties: Properties?,
-    val testStepFactoryValueConverter: TestStepFactoryValueConverter
+    val testStepFactoryValueConverter: TestStepFactoryValueConverter,
+    private val valueExpressionContextFactory: ValueExpressionContextFactory
 ) : TestStepFactory<T> {
 
     companion object {

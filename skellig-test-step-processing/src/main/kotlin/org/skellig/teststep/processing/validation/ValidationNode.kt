@@ -1,70 +1,79 @@
 package org.skellig.teststep.processing.validation
 
+import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
-import org.skellig.teststep.reader.sts.value.expression.*
+import org.skellig.teststep.reader.sts.value.expression.ValueExpression
 
 interface ValidationNode {
-    fun compare(value: Any?, parameters: Map<String, Any?>): Boolean
+    fun validate(value: Any?)
 }
 
-class SingleValidationNode(val expected: ValueExpression,
-                           private val valueExpressionContextFactory: ValueExpressionContextFactory) : ValidationNode {
+class SingleValidationNode(
+    val expected: ValueExpression?,
+    private val parameters: Map<String, Any?>,
+    private val valueExpressionContextFactory: ValueExpressionContextFactory
+) : ValidationNode {
 
-    override fun compare(value: Any?, parameters: Map<String, Any?>): Boolean {
-        return expected.evaluate(valueExpressionContextFactory.createForValidation(value, parameters)) as Boolean
+    override fun validate(value: Any?) {
+        val evaluated = expected?.evaluate(valueExpressionContextFactory.createForValidation(value, parameters))
+
+        if (evaluated is Boolean) {
+            if (!evaluated)
+                throw ValidationException(
+                    "Validation failed for '$value'.\n" +
+                            "Expected: $evaluated\n"
+                )
+        } else if (evaluated != value) {
+            throw ValidationException("Validation failed.\n" +
+                    "Actual: $value" +
+                    "Expected: $evaluated\n")
+        }
+        else throw ValidationException("Invalid type returned for the expression '$expected'. Expected 'Boolean' but got '${evaluated?.javaClass}'")
     }
-
 }
 
-class PairValidationNode(val actual: ValueExpression, val expected: ValueExpression,
-                         private val valueExpressionContextFactory: ValueExpressionContextFactory) : ValidationNode {
+class ValidationNodes(val nodes: List<ValidationNode>) : ValidationNode {
 
-    override fun compare(value: Any?, parameters: Map<String, Any?>): Boolean {
+    override fun validate(value: Any?) {
+        if (value is List<*>) {
+            value.forEach { v -> nodes.forEach { n -> n.validate(v) } }
+        } else {
+            nodes.forEach { it.validate(value) }
+        }
+    }
+}
+
+class PairValidationNode(
+    val actual: ValueExpression,
+    val expected: ValueExpression?,
+    private val parameters: Map<String, Any?>,
+    private val valueExpressionContextFactory: ValueExpressionContextFactory
+) : ValidationNode {
+
+    override fun validate(value: Any?) {
         val contextForActual = valueExpressionContextFactory.createForValidation(value, parameters)
         val contextForExpected = valueExpressionContextFactory.createForValidation(parameters, value)
 
-        return actual.evaluate(contextForActual) == expected.evaluate(contextForExpected)
+        val actualEvaluated = actual.evaluate(contextForActual)
+        val expectedEvaluated = expected?.evaluate(contextForExpected)
+        if (actualEvaluated != expectedEvaluated)
+            throw ValidationException(
+                "Validation failed for '$expected = $actual'.\n" +
+                        "Actual: $actualEvaluated" +
+                        "Expected: $expectedEvaluated\n"
+            )
     }
 }
 
-class GroupedValidationNode(val actual: ValueExpression, val items: List<ValidationNode>,
-                            private val valueExpressionContextFactory: ValueExpressionContextFactory) : ValidationNode {
+class GroupedValidationNode(
+    val actual: ValueExpression,
+    val items: ValidationNode,
+    private val parameters: Map<String, Any?>,
+    private val valueExpressionContextFactory: ValueExpressionContextFactory
+) : ValidationNode {
 
-    companion object {
-        private const val ANY_MATCH = "anyMatch"
-        private const val NONE_MATCH = "noneMatch"
-        private const val DEFAULT_MATCHING = "allMatch"
-    }
-
-    override fun compare(value: Any?, parameters: Map<String, Any?>): Boolean {
+    override fun validate(value: Any?) {
         val evaluatedActualValue = actual.evaluate(valueExpressionContextFactory.createForValidation(value, parameters))
-
-        return if (getMatching() == ANY_MATCH) {
-            if (evaluatedActualValue is List<*>) {
-                evaluatedActualValue.any { v -> items.all { n -> n.compare(v, parameters) } }
-            } else {
-                items.any { it.compare(evaluatedActualValue, parameters) }
-            }
-        } else if (getMatching() == NONE_MATCH) {
-            if (evaluatedActualValue is List<*>) {
-                evaluatedActualValue.none { v -> items.all { n -> n.compare(v, parameters) } }
-            } else {
-                items.none { it.compare(evaluatedActualValue, parameters) }
-            }
-        } else {
-            if (evaluatedActualValue is List<*>) {
-                evaluatedActualValue.all { v -> items.all { n -> n.compare(v, parameters) } }
-            } else {
-                items.all { it.compare(evaluatedActualValue, parameters) }
-            }
-        }
-    }
-
-    private fun getMatching(): String {
-        return when (actual) {
-            is CallChainExpression -> actual.callChain.last().toString()
-            is AlphanumericValueExpression -> actual.toString()
-            else -> DEFAULT_MATCHING
-        }
+        items.validate(evaluatedActualValue)
     }
 }

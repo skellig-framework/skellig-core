@@ -1,5 +1,7 @@
 package org.skellig.teststep.processing.model
 
+import org.skellig.teststep.processing.validation.ValidationNode
+
 /**
  * A basic test step with common properties and validation details for a result.
  *
@@ -25,7 +27,7 @@ open class DefaultTestStep(
     val attempts: Int = 0,
     val variables: Map<String, Any?>? = null,
     val testData: Any? = null,
-    val validationDetails: ValidationDetails? = null
+    val validationDetails: ValidationNode? = null
 ) : TestStep {
 
     val getId: String? = id
@@ -45,7 +47,7 @@ open class DefaultTestStep(
         protected var name: String? = null,
         protected var variables: Map<String, Any?>? = null,
         protected var testData: Any? = null,
-        protected var validationDetails: ValidationDetails? = null,
+        protected var validationDetails: ValidationNode? = null,
         protected var execution: TestStepExecutionType? = null,
         protected var timeout: Int = 0,
         protected var delay: Int = 0,
@@ -58,7 +60,7 @@ open class DefaultTestStep(
 
         fun withTestData(testData: Any?) = apply { this.testData = testData }
 
-        fun withValidationDetails(validationDetails: ValidationDetails?) = apply { this.validationDetails = validationDetails }
+        fun withValidationDetails(validationDetails: ValidationNode?) = apply { this.validationDetails = validationDetails }
 
         fun withVariables(variables: Map<String, Any?>?) = apply { this.variables = variables }
 

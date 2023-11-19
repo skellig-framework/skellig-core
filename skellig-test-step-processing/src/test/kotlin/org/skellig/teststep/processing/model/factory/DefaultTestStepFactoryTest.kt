@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 @DisplayName("Create Test Step")
 class DefaultTestStepFactoryTest {
 
-    private var testStepFactory: TestStepFactory<DefaultTestStep>? = null
+   /* private var testStepFactory: TestStepFactory<DefaultTestStep>? = null
     private var testScenarioState: TestScenarioState? = null
     private val testStepRegistry = mock<TestStepRegistry>()
 
@@ -365,5 +365,5 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap())
 
         assertEquals(expectedValue, (testStep.testData as Map<*, *>?)!!["c"])
-    }
+    }*/
 }

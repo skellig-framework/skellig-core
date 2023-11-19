@@ -2,13 +2,16 @@ package org.skellig.teststep.processing.model.factory
 
 import org.skellig.teststep.processing.model.GroupedTestStep
 import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import java.util.*
 
-internal class GroupedTestStepFactory(private val testStepRegistry: TestStepRegistry,
-                                      private val testStepFactory: TestStepFactory<TestStep>,
-                                      keywordsProperties: Properties?,
-                                      testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseTestStepFactory<GroupedTestStep>(keywordsProperties, testStepFactoryValueConverter) {
+internal class GroupedTestStepFactory(
+    private val testStepRegistry: TestStepRegistry,
+    private val testStepFactory: TestStepFactory<TestStep>,
+    keywordsProperties: Properties?,
+    testStepFactoryValueConverter: TestStepFactoryValueConverter,
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseTestStepFactory<GroupedTestStep>(keywordsProperties, testStepFactoryValueConverter, valueExpressionContextFactory) {
 
     companion object {
         private const val TEST = "test"
@@ -41,13 +44,13 @@ internal class GroupedTestStepFactory(private val testStepRegistry: TestStepRegi
     }
 
     private fun createConvertToTestDataFunction(rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): () -> TestStep =
-            {
-                var testStepName = rawTestStep[TEST] as String
-                testStepName = testStepFactoryValueConverter.convertValue<String>(testStepName, parameters) ?: testStepName
-                val rawTestStepToRun = testStepRegistry.getByName(testStepName)
-                        ?: error("Test step '$testStepName' is not found in any of test data files or classes indicated in the runner")
-                testStepFactory.create(testStepName, rawTestStepToRun, parameters)
-            }
+        {
+            var testStepName = rawTestStep[TEST] as String
+            testStepName = testStepFactoryValueConverter.convertValue<String>(testStepName, parameters) ?: testStepName
+            val rawTestStepToRun = testStepRegistry.getByName(testStepName)
+                ?: error("Test step '$testStepName' is not found in any of test data files or classes indicated in the runner")
+            testStepFactory.create(testStepName, rawTestStepToRun, parameters)
+        }
 
     override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
         return rawTestStep.containsKey(TEST)

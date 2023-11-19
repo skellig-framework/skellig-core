@@ -17,10 +17,7 @@ class ValueExpressionContextFactory(
     }
 
     private val onFunctionCallForValidation = { name: String, ownerValue: Any?, args: Array<Any?> ->
-        when (name) {
-            "anyMatch", "nonMatch", "allMatch" -> ownerValue
-            else -> ownerValue?.let { valueExtractor.extractFrom(name, it, args) } ?: functionExecutor.execute(name, args)
-        }
+        ownerValue?.let { valueExtractor.extractFrom(name, it, args) } ?: functionExecutor.execute(name, args)
     }
 
     fun create(parameters: Map<String, Any?>): ValueExpressionContext = ValueExpressionContext(EvaluationType.DEFAULT, onFunctionCall, createOnGetReferenceValue(parameters))

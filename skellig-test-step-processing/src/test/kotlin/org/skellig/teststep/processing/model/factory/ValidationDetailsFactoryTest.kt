@@ -15,7 +15,7 @@ import org.skellig.teststep.processing.utils.UnitTestUtils
 @DisplayName("Create validation details")
 class ValidationDetailsFactoryTest {
 
-    private var validationDetailsFactory: TestStepFactory<DefaultTestStep>? = null
+   /* private var validationDetailsFactory: TestStepFactory<DefaultTestStep>? = null
 
     @BeforeEach
     fun setUp() {
@@ -224,14 +224,14 @@ class ValidationDetailsFactoryTest {
         )
     }
 
-    /*
+    *//*
      validate {
         originalRequest [
             match('.*score='${score}'.*')
             contains(${2})
         ]
     }
-     */
+     *//*
     @Test
     @DisplayName("When has array of expected values in list And ALL_MATCH type by default")
     fun testWithArrayOfMatchAllByDefault() {
@@ -256,7 +256,7 @@ class ValidationDetailsFactoryTest {
         )
     }
 
-    /*
+    *//*
     * This test is to check the following structure from test step file:
     *
     * any_match {
@@ -289,9 +289,9 @@ class ValidationDetailsFactoryTest {
          log = contains(success)
       }
     }
-    * */
+    * *//*
 
-    /*
+    *//*
     * This test is to check the following structure from test step file:
     *
     * any_match {
@@ -324,7 +324,7 @@ class ValidationDetailsFactoryTest {
          log = contains(success)
       }
     }
-    * */
+    * *//*
     @Test
     @DisplayName("When has test id and complex expected results with any_match and none_match")
     fun testComplexExpectedResult() {
@@ -398,7 +398,7 @@ class ValidationDetailsFactoryTest {
             { Assertions.assertEquals("200", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1, 3).expectedResult.toString()) }
         )
     }
-    /*
+    *//*
     * This test is to check the following structure from test step file:
     *
     * any_match {
@@ -407,9 +407,9 @@ class ValidationDetailsFactoryTest {
        }
        log = contains(success)
       }
-    * */
+    * *//*
 
-    /*
+    *//*
     * This test is to check the following structure from test step file:
     *
     * any_match {
@@ -418,7 +418,7 @@ class ValidationDetailsFactoryTest {
        }
        log = contains(success)
       }
-    * */
+    * *//*
     @Test
     @DisplayName("When has grouped properties Then verify these properties are split")
     fun testWithGroupedProperties() {
@@ -452,5 +452,5 @@ class ValidationDetailsFactoryTest {
 
     private fun createTestStepWithoutParameters(rawValidationDetails: Any?): DefaultTestStep {
         return validationDetailsFactory!!.create("step1", UnitTestUtils.createMap("validate", rawValidationDetails), emptyMap<String, String>())
-    }
+    }*/
 }

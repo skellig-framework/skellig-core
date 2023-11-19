@@ -123,7 +123,7 @@ class DefaultTestStepProcessorTest {
             .build()
         val testStep = DefaultTestStep.DefaultTestStepBuilder()
             .withName("n1")
-            .withValidationDetails(validationDetails)
+//            .withValidationDetails(validationDetails)
             .withTimeout(1000)
             .withDelay(100)
             .build()

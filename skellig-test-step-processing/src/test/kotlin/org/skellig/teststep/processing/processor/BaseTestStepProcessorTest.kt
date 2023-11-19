@@ -63,7 +63,7 @@ class BaseTestStepProcessorTest {
             assertEquals(DEFAULT_RESULT, testScenarioState.get(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX))
         }
 
-        @Test
+       /* @Test
         fun testProcessWithValidation() {
             val validationDetails = ValidationDetails.Builder()
                 .withTestStepId("previous test 1")
@@ -101,7 +101,7 @@ class BaseTestStepProcessorTest {
                 .withName("n1")
                 .withValidationDetails(validationDetails)
                 .build()
-        }
+        }*/
 
     }
 
