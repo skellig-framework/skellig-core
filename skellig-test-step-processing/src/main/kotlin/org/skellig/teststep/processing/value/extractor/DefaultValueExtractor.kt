@@ -20,12 +20,13 @@ private constructor(private val extractors: Map<String, ValueExtractor>) : Value
         }
 
         fun build(): ValueExtractor {
-            val objectValueExtractor = ObjectValueExtractor()
+            val objectValueExtractor = NewObjectValueExtractor()
             withValueExtractor(JsonPathValueExtractor())
             withValueExtractor(JsonToMapTestStepValueExtractor())
             withValueExtractor(JsonToListTestStepValueExtractor())
             withValueExtractor(XPathValueExtractor())
             withValueExtractor(objectValueExtractor)
+            withValueExtractor(ValuesValueExtractor())
             withValueExtractor(FindFromStateValueExtractor(objectValueExtractor))
             withValueExtractor(FromIndexValueExtractor())
             withValueExtractor(ToStringValueExtractor())
@@ -48,6 +49,7 @@ private constructor(private val extractors: Map<String, ValueExtractor>) : Value
             withValueExtractor(ToDateTimeValueExtractor())
             withValueExtractor(ToDateValueExtractor())
             withValueExtractor(ToBytesValueExtractor())
+            withValueExtractor(SizeValueExtractor())
 
             return DefaultValueExtractor(extractors)
         }

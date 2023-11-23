@@ -20,15 +20,26 @@ class SingleValidationNode(
         if (evaluated is Boolean) {
             if (!evaluated)
                 throw ValidationException(
-                    "Validation failed for '$value'.\n" +
-                            "Expected: $evaluated\n"
+                    "Validation failed for '$expected'!\n" +
+                            "Actual: $value\n" +
+                            "Expected: $evaluated"
                 )
-        } else if (evaluated != value) {
-            throw ValidationException("Validation failed.\n" +
-                    "Actual: $value" +
-                    "Expected: $evaluated\n")
+        } else {
+            if (evaluated != value) {
+                throw ValidationException(
+                    "Validation failed!\n" +
+                            "Actual: $value\n" +
+                            "Expected: $evaluated"
+                )
+            }
         }
-        else throw ValidationException("Invalid type returned for the expression '$expected'. Expected 'Boolean' but got '${evaluated?.javaClass}'")
+    }
+}
+
+class RootValidationNodes(val nodes: List<ValidationNode>) : ValidationNode {
+
+    override fun validate(value: Any?) {
+        nodes.forEach { it.validate(value) }
     }
 }
 
@@ -36,7 +47,18 @@ class ValidationNodes(val nodes: List<ValidationNode>) : ValidationNode {
 
     override fun validate(value: Any?) {
         if (value is List<*>) {
-            value.forEach { v -> nodes.forEach { n -> n.validate(v) } }
+            nodes.forEach { n ->
+                var errors = ""
+                if (!value.any { v ->
+                        try {
+                            n.validate(v)
+                            true
+                        } catch (ex: ValidationException) {
+                            errors += "${ex.message}\n"
+                            false
+                        }
+                    }) throw ValidationException(errors)
+            }
         } else {
             nodes.forEach { it.validate(value) }
         }
@@ -58,9 +80,9 @@ class PairValidationNode(
         val expectedEvaluated = expected?.evaluate(contextForExpected)
         if (actualEvaluated != expectedEvaluated)
             throw ValidationException(
-                "Validation failed for '$expected = $actual'.\n" +
-                        "Actual: $actualEvaluated" +
-                        "Expected: $expectedEvaluated\n"
+                "Validation failed for '$actual = $expected'!\n" +
+                        "Actual: $actualEvaluated\n" +
+                        "Expected: $expectedEvaluated"
             )
     }
 }

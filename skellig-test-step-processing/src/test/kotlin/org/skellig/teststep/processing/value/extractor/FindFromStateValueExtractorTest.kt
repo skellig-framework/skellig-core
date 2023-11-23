@@ -9,7 +9,7 @@ import org.skellig.teststep.processing.value.extractor.ObjectValueExtractor
 
 class FindFromStateValueExtractorTest {
 
-    private val findFromStateValueExtractor = FindFromStateValueExtractor(ObjectValueExtractor())
+    private val findFromStateValueExtractor = FindFromStateValueExtractor(NewObjectValueExtractor())
 
     @Test
     fun testFindWithTwoSameValuesFromExtractionPaths() {
