@@ -76,7 +76,7 @@ class NewObjectValueExtractor : ValueExtractor {
             } catch (e: InvocationTargetException) {
                 throw ValueExtractionException("Failed to call function `$methodName` of `$actualResult`", e)
             }
-        } else throw ValueExtractionException("No function `$methodName` found in the result `$actualResult`")
+        } else throw ValueExtractionException("No function `$methodName` found in the result `$actualResult` with argument pairs (${args.map { it?.javaClass }.joinToString(",")})")
     }
 
     private fun findMethod(name: String, resultClass: Class<*>, paramsTypes: Array<Class<*>>): Method? =

@@ -1,4 +1,4 @@
-package org.skellig.teststep.reader.sts.value.expression
+package org.skellig.teststep.reader.value.expression
 
 class ValueExpressionContext(
     var evaluationType: EvaluationType = EvaluationType.DEFAULT,
@@ -9,11 +9,14 @@ class ValueExpressionContext(
     var args: Array<Any?>? = null
     private var lambdaExpressionParameters: MutableMap<String, Any?>? = null
 
+    constructor()
+            : this(EvaluationType.DEFAULT, { _, _, _ -> }, { _, _ -> })
+
     constructor(copy: ValueExpressionContext)
-            :this(EvaluationType.DEFAULT, copy.onFunctionCall, copy.onGetReferenceValue){
-                this.value = copy.value
-                this.lambdaExpressionParameters = copy.lambdaExpressionParameters
-            }
+            : this(EvaluationType.DEFAULT, copy.onFunctionCall, copy.onGetReferenceValue) {
+        this.value = copy.value
+        this.lambdaExpressionParameters = copy.lambdaExpressionParameters
+    }
 
     fun hasLambdaParameterWithName(value: String): Boolean =
         lambdaExpressionParameters != null && lambdaExpressionParameters!!.containsKey(value)

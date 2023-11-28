@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.rmq
 
 import com.typesafe.config.ConfigFactory
-import org.junit.Assert
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -20,7 +19,7 @@ internal class RmqDetailsConfigReaderTest {
     fun testReadRmqDetailsWhenConfigIsNull() {
         val ex = Assertions.assertThrows(NullPointerException::class.java) { rmqDetailsConfigReader.read(null) }
 
-        Assert.assertEquals("RMQ config cannot be null", ex.message)
+        assertEquals("RMQ config cannot be null", ex.message)
     }
 
     @Test

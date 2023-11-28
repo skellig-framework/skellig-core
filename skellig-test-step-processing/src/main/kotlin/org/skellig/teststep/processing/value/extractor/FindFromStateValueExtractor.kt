@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.value.extractor
 
-class FindFromStateValueExtractor(val valueExtractor: NewObjectValueExtractor?) : ValueExtractor {
+class FindFromStateValueExtractor(private val valueExtractor: NewObjectValueExtractor?) : ValueExtractor {
 
     override fun extractFrom(name: String, value: Any?, args: Array<Any?>): Any? {
         return when (value) {

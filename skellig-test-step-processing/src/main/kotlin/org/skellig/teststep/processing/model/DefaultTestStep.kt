@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.model
 
-import org.skellig.teststep.processing.validation.ValidationNode
+import org.skellig.teststep.processing.model.validation.ValidationNode
 
 /**
  * A basic test step with common properties and validation details for a result.

@@ -13,12 +13,10 @@ class UnixShellTestStepProcessorConfig : TestStepProcessorConfig<UnixShellTestSt
             UnixShellTestStepProcessor.Builder()
                 .withHost(details.config)
                 .withTestScenarioState(details.state)
-                .withValidator(details.validator)
                 .build(),
             UnixShellTestStepFactory(
                 details.testStepRegistry,
-                details.keywordProperties,
-                details.testStepFactoryValueConverter
+                details.valueExpressionContextFactory
             )
         )
         else null

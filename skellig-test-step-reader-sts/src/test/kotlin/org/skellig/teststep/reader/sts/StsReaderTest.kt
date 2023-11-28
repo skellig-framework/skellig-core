@@ -3,8 +3,9 @@ package org.skellig.teststep.reader.sts
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.reader.sts.value.expression.AlphanumericValueExpression
-import org.skellig.teststep.reader.sts.value.expression.StringValueExpression
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.StringValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 import java.net.URISyntaxException
 import java.net.URL
 
@@ -227,7 +228,7 @@ class StsReaderTest {
 
     private fun getFileUrl(filePath: String): URL = javaClass.getResource(filePath)!!.toURI().toURL()
 
-    private fun getValueFromMap(data: Map<Any, Any?>, vararg keys: Any): Any? {
+    private fun getValueFromMap(data: Map<ValueExpression, ValueExpression?>, vararg keys: Any): Any? {
         var value: Any? = data
         for (key in keys) {
             if (key is String) {

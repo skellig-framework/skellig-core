@@ -20,7 +20,7 @@ internal class UnixShellTestStepProcessorTest {
             Pair("h1", sshClient),
             Pair("h2", sshClient2))
 
-        processor = UnixShellTestStepProcessor(mock(), mock(), hosts)
+        processor = UnixShellTestStepProcessor(mock(), hosts)
     }
 
     @Test
@@ -42,7 +42,7 @@ internal class UnixShellTestStepProcessorTest {
     fun testRunCommandToNoHostWhenOneWasRegistered() {
         val hosts = mapOf(Pair("h1", sshClient))
 
-        processor = UnixShellTestStepProcessor(mock(), mock(), hosts)
+        processor = UnixShellTestStepProcessor(mock(), hosts)
 
         val testStep = UnixShellTestStep.Builder()
             .withCommand("ls")

@@ -4,14 +4,12 @@ import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 
 open class IbmMqTestStepProcessor protected constructor(
     testScenarioState: TestScenarioState?,
-    validator: TestStepResultValidator?,
     private val ibmMqChannels: Map<String, IbmMqChannel>
-) : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState!!, validator!!) {
+) : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState!!) {
 
     override fun processTestStep(testStep: IbmMqTestStep): Any? {
         var response: Map<*, Any?>? = null
@@ -72,7 +70,7 @@ open class IbmMqTestStepProcessor protected constructor(
 
     class Builder : BaseIbmMqTestStepProcessorBuilder<IbmMqTestStep>() {
         override fun build(): TestStepProcessor<IbmMqTestStep> {
-            return IbmMqTestStepProcessor(testScenarioState, validator, ibmMqChannels)
+            return IbmMqTestStepProcessor(testScenarioState, ibmMqChannels)
         }
     }
 }

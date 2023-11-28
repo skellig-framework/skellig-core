@@ -3,25 +3,19 @@ package org.skellig.teststep.processing.processor
 import org.skellig.task.TaskUtils.Companion.runTask
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
-import org.skellig.teststep.processing.validation.ValidationNode
 
 /**
  * This is a basic processor for tests steps whose result can be validated.
  */
-abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(
-    protected val testScenarioState: TestScenarioState,
-    protected val validator: TestStepResultValidator,
-) : TestStepProcessor<T> {
+abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(protected val testScenarioState: TestScenarioState) : TestStepProcessor<T> {
 
     /**
-     * Validated test step from another test.
-     * Usually the result from another test step is taken by its `id` property,
-     * and indicated in `fromTest` property inside `validation` section of the test step.
-     *
-     * If no result from another test is found, then it throws `ValidationException`
+     * Validate any result (ex. from other test step).
+     * Usually the result from another test step is taken by its `id` property using `get` function,
+     * for example:
+     *  [get(a).values().size > 0 = true]
      */
     @Throws(ValidationException::class)
     protected fun validate(testStep: DefaultTestStep) {

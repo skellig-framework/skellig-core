@@ -2,28 +2,34 @@ package org.skellig.runner.config
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
-import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
-import java.util.*
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
 class SimpleTestStepFactory(
     testStepRegistry: TestStepRegistry,
-    keywordsProperties: Properties?,
-    testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<SimpleTestStepFactory.SimpleTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseDefaultTestStepFactory<SimpleTestStepFactory.SimpleTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
-    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
-        return rawTestStep.containsKey("captureData")
+    companion object {
+        private val CAPTURE_DATA = AlphanumericValueExpression("captureData")
     }
 
-    override fun createTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<SimpleTestStep> {
+    override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {
+        return rawTestStep.containsKey(CAPTURE_DATA)
+    }
+
+    override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<SimpleTestStep> {
         return SimpleTestStep.Builder()
-                .withCaptureData(convertValue<String>(rawTestStep["captureData"], parameters))
+            .withCaptureData(convertValue<String>(rawTestStep[CAPTURE_DATA], parameters))
     }
 
-    class SimpleTestStep(id: String,
-                         override val name: String,
-                         val captureData: String) : DefaultTestStep(id = id, name = name) {
+    class SimpleTestStep(
+        id: String,
+        override val name: String,
+        val captureData: String
+    ) : DefaultTestStep(id = id, name = name) {
 
         class Builder : DefaultTestStep.Builder<SimpleTestStep>() {
 

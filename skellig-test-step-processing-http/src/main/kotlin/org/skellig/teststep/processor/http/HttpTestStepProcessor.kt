@@ -7,16 +7,14 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.http.model.HttpMethodName
 import org.skellig.teststep.processor.http.model.HttpRequestDetails
 import org.skellig.teststep.processor.http.model.HttpResponse
 import org.skellig.teststep.processor.http.model.HttpTestStep
 
 class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
-                            testScenarioState: TestScenarioState,
-                            validator: TestStepResultValidator)
-    : BaseTestStepProcessor<HttpTestStep>(testScenarioState, validator) {
+                            testScenarioState: TestScenarioState)
+    : BaseTestStepProcessor<HttpTestStep>(testScenarioState) {
 
     override fun processTestStep(testStep: HttpTestStep): Any? {
         var services: Collection<String>? = testStep.services
@@ -91,7 +89,7 @@ class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
             if (httpChannelPerService.isEmpty()) {
                 throw TestDataProcessingInitException("No HTTP services were registered for the processor")
             }
-            return HttpTestStepProcessor(httpChannelPerService, testScenarioState!!, validator!!)
+            return HttpTestStepProcessor(httpChannelPerService, testScenarioState!!)
         }
 
     }

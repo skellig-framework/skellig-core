@@ -6,12 +6,9 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.skellig.teststep.processing.exception.ValidationException
-import org.skellig.teststep.processing.model.ExpectedResult
-import org.skellig.teststep.processing.model.MatchingType
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -27,7 +24,6 @@ internal class TcpTestStepProcessorTest {
     private var processor: TestStepProcessor<TcpTestStep>? = null
     private var tcpChannel = Mockito.mock(TcpChannel::class.java)
     private var tcpChannel2 = Mockito.mock(TcpChannel::class.java)
-    private var validator: TestStepResultValidator? = null
     private var testScenarioState: TestScenarioState? = null
 
     @BeforeEach
@@ -36,9 +32,8 @@ internal class TcpTestStepProcessorTest {
                 Pair(CHANNEL_ID, tcpChannel),
                 Pair(CHANNEL_ID_2, tcpChannel2))
 
-        validator = Mockito.mock(TestStepResultValidator::class.java)
         testScenarioState = Mockito.mock(TestScenarioState::class.java)
-        processor = TcpTestStepProcessor(tcpChannels, testScenarioState, validator)
+        processor = TcpTestStepProcessor(tcpChannels, testScenarioState)
     }
 
     @Test
@@ -121,21 +116,16 @@ internal class TcpTestStepProcessorTest {
         @DisplayName("Receive invalid response And try to respond Then verify tcp channel did not respond")
         fun testReceiveInvalidAndTryRespond() {
             val response = "yo"
-            val expectedResult = ExpectedResult(null, "yo yo", MatchingType.ALL_MATCH)
+            val expectedResult = mock<ValidationNode>()
             val testStep = TcpTestStep.Builder()
                     .respondTo(setOf(CHANNEL_ID))
                     .readFrom(setOf(CHANNEL_ID))
                     .withTestData("hi")
                     .withName("n1")
-                    .withValidationDetails(
-                            ValidationDetails.Builder()
-                                    .withExpectedResult(expectedResult)
-                                    .build())
                     .build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(response)
-            doThrow(ValidationException("oops")).whenever(validator!!)
-                    .validate(eq(expectedResult),
-                            argThat { args -> (args as Map<*, *>)[CHANNEL_ID] == response })
+            doThrow(ValidationException("oops")).whenever(expectedResult)
+                .validate(argThat { args -> (args as Map<*, *>)[CHANNEL_ID] == response })
 
             processor!!.process(testStep)
 

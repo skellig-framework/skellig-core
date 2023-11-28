@@ -1,15 +1,15 @@
-package org.skellig.teststep.processing.model.factory
+package org.skellig.teststep.processing.model.validation.factory
 
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.skellig.teststep.processing.model.validation.*
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
-import org.skellig.teststep.processing.validation.*
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
-import org.skellig.teststep.reader.sts.value.expression.*
+import org.skellig.teststep.reader.value.expression.*
 
 class ValidationNodeFactoryTest {
 
@@ -36,13 +36,13 @@ class ValidationNodeFactoryTest {
     @Test
     fun testWhenValidationDetailsWithNullAsExpected() {
         assertNull((createValidationNodeFrom(null) as SingleValidationNode).expected)
-        assertNull(((createValidationNodeFrom(listOf(null)) as ValidationNodes).nodes[0] as SingleValidationNode).expected)
+        assertNull(((createValidationNodeFrom(ListValueExpression(listOf(null))) as RootValidationNodes).nodes[0] as SingleValidationNode).expected)
     }
 
     @Test
     fun testWhenValidationDetailsWithFieldNullAsExpected() {
         val logProperty = AlphanumericValueExpression("log")
-        val validationNode = (createValidationNodeFrom(mapOf(Pair(logProperty, null))) as ValidationNodes).nodes[0] as PairValidationNode
+        val validationNode = (createValidationNodeFrom(MapValueExpression(mapOf(Pair(logProperty, null)))) as RootValidationNodes).nodes[0] as PairValidationNode
 
         assertEquals(logProperty, validationNode.actual)
         assertNull(validationNode.expected)
@@ -63,9 +63,14 @@ class ValidationNodeFactoryTest {
         val expectedResult = StringValueExpression("something")
 
         val validationNode = (validationDetailsFactory!!.create(
-            mapOf(Pair("validate", mapOf(Pair(MathOperationExpression("+", StringValueExpression("key-"), PropertyValueExpression("key1", null)), expectedResult)))),
+            mapOf(
+                Pair(
+                    AlphanumericValueExpression("validate"),
+                    MapValueExpression(mapOf(Pair(MathOperationExpression("+", StringValueExpression("key-"), PropertyValueExpression("key1", null)), expectedResult)))
+                )
+            ),
             mapOf(Pair("key1", "1"))
-        ) as ValidationNodes).nodes[0] as PairValidationNode
+        ) as RootValidationNodes).nodes[0] as PairValidationNode
 
         // validation details are processed when actual validation happens
         assertAll(
@@ -77,12 +82,12 @@ class ValidationNodeFactoryTest {
     @Test
     @DisplayName("When has few expected values")
     fun testSimpleExpectedResult() {
-        val rawValidationDetails = mapOf(
+        val rawValidationDetails = MapValueExpression(mapOf(
             Pair(AlphanumericValueExpression("status"), AlphanumericValueExpression("200")),
             Pair(AlphanumericValueExpression("log"), StringValueExpression(""))
-        )
+        ))
 
-        val validationNodes = (createValidationNodeFrom(rawValidationDetails) as ValidationNodes).nodes
+        val validationNodes = (createValidationNodeFrom(rawValidationDetails) as RootValidationNodes).nodes
 
         assertAll(
             { assertEquals("status", (validationNodes[0] as PairValidationNode).actual.toString()) },
@@ -95,9 +100,9 @@ class ValidationNodeFactoryTest {
     @Test
     @DisplayName("When default values for empty parameters provided")
     fun testSimpleExpectedResultWithDefaultParameters() {
-        val rawValidationDetails = mapOf(Pair(AlphanumericValueExpression("status"), PropertyValueExpression("\${f1}", AlphanumericValueExpression("v1"))))
+        val rawValidationDetails = MapValueExpression(mapOf(Pair(AlphanumericValueExpression("status"), PropertyValueExpression("\${f1}", AlphanumericValueExpression("v1")))))
 
-        val validationNode = (validationDetailsFactory!!.create(mapOf(Pair("validate", rawValidationDetails)), mapOf(Pair("f1", ""))) as ValidationNodes).nodes[0]
+        val validationNode = (validationDetailsFactory!!.create(mapOf(Pair(AlphanumericValueExpression("validate"), rawValidationDetails)), mapOf(Pair("f1", ""))) as RootValidationNodes).nodes[0]
 
         // validation details are processed when actual validation happens
         assertAll(
@@ -110,18 +115,18 @@ class ValidationNodeFactoryTest {
     @DisplayName("When has array of expected values as Map And additional field to check")
     fun testWithArrayOfMaps() {
 
-        val rawValidationDetails = listOf(
-            linkedMapOf(
+        val rawValidationDetails = ListValueExpression(listOf(
+            MapValueExpression(linkedMapOf(
                 Pair(AlphanumericValueExpression("a1"), AlphanumericValueExpression("v1")),
                 Pair(AlphanumericValueExpression("a2"), AlphanumericValueExpression("v2"))
-            ),
-            linkedMapOf(
+            )),
+            MapValueExpression(linkedMapOf(
                 Pair(AlphanumericValueExpression("b1"), AlphanumericValueExpression("v1")),
                 Pair(AlphanumericValueExpression("b2"), AlphanumericValueExpression("v2"))
-            )
-        )
+            ))
+        ))
 
-        val validationNodes = (createValidationNodeFrom(rawValidationDetails) as ValidationNodes).nodes
+        val validationNodes = (createValidationNodeFrom(rawValidationDetails) as RootValidationNodes).nodes
 
         assertAll(
             { assertEquals("a1", ((validationNodes[0] as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()) },
@@ -148,17 +153,17 @@ class ValidationNodeFactoryTest {
     @Test
     @DisplayName("When has array of expected values for a property in Map")
     fun testWithValueInMapAsArray() {
-        val rawValidationDetails = mapOf(
+        val rawValidationDetails = MapValueExpression(mapOf(
             Pair(
                 AlphanumericValueExpression("originalRequest"),
-                listOf(
+                ListValueExpression(listOf(
                     FunctionCallExpression("match", arrayOf(MathOperationExpression("+", StringValueExpression(".*score="), PropertyValueExpression("score", null)))),
                     FunctionCallExpression("contains", arrayOf(PropertyValueExpression("2", null)))
                 )
-            )
-        )
+            ))
+        ))
 
-        val validationNode = (createValidationNodeFrom(rawValidationDetails) as ValidationNodes).nodes[0] as GroupedValidationNode
+        val validationNode = (createValidationNodeFrom(rawValidationDetails) as RootValidationNodes).nodes[0] as GroupedValidationNode
 
         assertAll(
             { assertEquals("originalRequest", validationNode.actual.toString()) },
@@ -203,32 +208,32 @@ class ValidationNodeFactoryTest {
     @DisplayName("When has test id and complex expected results with any_match and none_match")
     fun testComplexExpectedResult() {
         // use StringValueExpression for simplicity of expressions
-        val rawValidationDetails = linkedMapOf(
+        val rawValidationDetails = MapValueExpression(linkedMapOf(
             Pair(
-                AlphanumericValueExpression("srv1"), linkedMapOf(
+                AlphanumericValueExpression("srv1"), MapValueExpression(linkedMapOf(
                     Pair(AlphanumericValueExpression("status"), NumberValueExpression("200")),
                     Pair(
-                        AlphanumericValueExpression("body"), linkedMapOf(
+                        AlphanumericValueExpression("body"), MapValueExpression(linkedMapOf(
                             Pair(StringValueExpression("json_path('f1.f2')"), AlphanumericValueExpression("v1")),
                             Pair(StringValueExpression("json_path('f1.f3')"), AlphanumericValueExpression("v2")),
                             Pair(StringValueExpression("regex('.*f3=(\\\\w+).*')"), AlphanumericValueExpression("v3"))
-                        )
+                        ))
                     ),
-                    Pair(AlphanumericValueExpression("headers"), linkedMapOf(Pair(AlphanumericValueExpression("content-type"), StringValueExpression("application/json")))),
-                    Pair(AlphanumericValueExpression("log"), listOf(StringValueExpression("contains(fail)"), StringValueExpression("contains(error)")))
+                    Pair(AlphanumericValueExpression("headers"), MapValueExpression(linkedMapOf(Pair(AlphanumericValueExpression("content-type"), StringValueExpression("application/json"))))),
+                    Pair(AlphanumericValueExpression("log"), ListValueExpression(listOf(StringValueExpression("contains(fail)"), StringValueExpression("contains(error)"))))
                 )
-            ),
+            )),
             Pair(
-                AlphanumericValueExpression("srv2"), linkedMapOf(
+                AlphanumericValueExpression("srv2"), MapValueExpression(linkedMapOf(
                     Pair(AlphanumericValueExpression("status"), NumberValueExpression("200")),
-                    Pair(AlphanumericValueExpression("body"), linkedMapOf(Pair(StringValueExpression("json_path('f1.f2')"), AlphanumericValueExpression("v1")))),
-                    Pair(AlphanumericValueExpression("headers"), linkedMapOf(Pair(AlphanumericValueExpression("content-type"), StringValueExpression("application/json")))),
-                    Pair(AlphanumericValueExpression("log"), listOf(StringValueExpression("contains(success)")))
-                )
+                    Pair(AlphanumericValueExpression("body"), MapValueExpression(linkedMapOf(Pair(StringValueExpression("json_path('f1.f2')"), AlphanumericValueExpression("v1"))))),
+                    Pair(AlphanumericValueExpression("headers"), MapValueExpression(linkedMapOf(Pair(AlphanumericValueExpression("content-type"), StringValueExpression("application/json"))))),
+                    Pair(AlphanumericValueExpression("log"), ListValueExpression(listOf(StringValueExpression("contains(success)"))))
+                ))
             )
-        )
+        ))
 
-        val validationNode = (createValidationNodeFrom(rawValidationDetails) as ValidationNodes).nodes
+        val validationNode = (createValidationNodeFrom(rawValidationDetails) as RootValidationNodes).nodes
 
         assertAll(
             { assertEquals("srv1", (validationNode[0] as GroupedValidationNode).actual.toString()) },
@@ -236,20 +241,70 @@ class ValidationNodeFactoryTest {
             { assertEquals("200", (((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()) },
 
             { assertEquals("body", (((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).actual.toString()) },
-            { assertEquals("json_path('f1.f2')", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()) },
-            { assertEquals("v1", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()) },
-            { assertEquals("json_path('f1.f3')", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[1] as PairValidationNode).actual.toString()) },
-            { assertEquals("v2", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[1] as PairValidationNode).expected?.toString()) },
-            { assertEquals("regex('.*f3=(\\\\w+).*')", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[2] as PairValidationNode).actual.toString()) },
-            { assertEquals("v3", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[2] as PairValidationNode).expected?.toString()) },
+            {
+                assertEquals(
+                    "json_path('f1.f2')",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()
+                )
+            },
+            {
+                assertEquals(
+                    "v1",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()
+                )
+            },
+            {
+                assertEquals(
+                    "json_path('f1.f3')",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[1] as PairValidationNode).actual.toString()
+                )
+            },
+            {
+                assertEquals(
+                    "v2",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[1] as PairValidationNode).expected?.toString()
+                )
+            },
+            {
+                assertEquals(
+                    "regex('.*f3=(\\\\w+).*')",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[2] as PairValidationNode).actual.toString()
+                )
+            },
+            {
+                assertEquals(
+                    "v3",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[2] as PairValidationNode).expected?.toString()
+                )
+            },
 
             { assertEquals("headers", (((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).actual.toString()) },
-            { assertEquals("content-type", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()) },
-            { assertEquals("application/json", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()) },
+            {
+                assertEquals(
+                    "content-type",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()
+                )
+            },
+            {
+                assertEquals(
+                    "application/json",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()
+                )
+            },
 
             { assertEquals("log", (((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[3] as GroupedValidationNode).actual.toString()) },
-            { assertEquals("contains(fail)", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[3] as GroupedValidationNode).items as ValidationNodes).nodes[0] as SingleValidationNode).expected?.toString()) },
-            { assertEquals("contains(error)", (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[3] as GroupedValidationNode).items as ValidationNodes).nodes[1] as SingleValidationNode).expected?.toString()) },
+            {
+                assertEquals(
+                    "contains(fail)",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[3] as GroupedValidationNode).items as ValidationNodes).nodes[0] as SingleValidationNode).expected?.toString()
+                )
+            },
+            {
+                assertEquals(
+                    "contains(error)",
+                    (((((validationNode[0] as GroupedValidationNode).items as ValidationNodes).nodes[3] as GroupedValidationNode).items as ValidationNodes).nodes[1] as SingleValidationNode).expected?.toString()
+                )
+            },
 
 
             { assertEquals("srv2", (validationNode[1] as GroupedValidationNode).actual.toString()) },
@@ -257,19 +312,44 @@ class ValidationNodeFactoryTest {
             { assertEquals("200", (((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()) },
 
             { assertEquals("body", (((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).actual.toString()) },
-            { assertEquals("json_path('f1.f2')", (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()) },
-            { assertEquals("v1", (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()) },
+            {
+                assertEquals(
+                    "json_path('f1.f2')",
+                    (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()
+                )
+            },
+            {
+                assertEquals(
+                    "v1",
+                    (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[1] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()
+                )
+            },
 
             { assertEquals("headers", (((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).actual.toString()) },
-            { assertEquals("content-type", (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()) },
-            { assertEquals("application/json", (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()) },
+            {
+                assertEquals(
+                    "content-type",
+                    (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()
+                )
+            },
+            {
+                assertEquals(
+                    "application/json",
+                    (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[2] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).expected?.toString()
+                )
+            },
 
             { assertEquals("log", (((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[3] as GroupedValidationNode).actual.toString()) },
-            { assertEquals("contains(success)", (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[3] as GroupedValidationNode).items as ValidationNodes).nodes[0] as SingleValidationNode).expected?.toString()) },
+            {
+                assertEquals(
+                    "contains(success)",
+                    (((((validationNode[1] as GroupedValidationNode).items as ValidationNodes).nodes[3] as GroupedValidationNode).items as ValidationNodes).nodes[0] as SingleValidationNode).expected?.toString()
+                )
+            },
         )
     }
 
-    private fun createValidationNodeFrom(rawValidationDetails: Any?): ValidationNode? {
-        return validationDetailsFactory!!.create(mapOf(Pair("validate", rawValidationDetails)), emptyMap<String, String>())
+    private fun createValidationNodeFrom(rawValidationDetails: ValueExpression?): ValidationNode? {
+        return validationDetailsFactory!!.create(mapOf(Pair(AlphanumericValueExpression("validate"), rawValidationDetails)), emptyMap<String, String>())
     }
 }

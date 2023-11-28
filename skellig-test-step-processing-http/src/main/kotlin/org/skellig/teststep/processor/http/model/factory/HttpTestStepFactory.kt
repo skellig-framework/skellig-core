@@ -2,68 +2,55 @@ package org.skellig.teststep.processor.http.model.factory
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
-import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.http.model.HttpTestStep
-import java.util.*
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
-class HttpTestStepFactory(testStepRegistry: TestStepRegistry,
-                          keywordsProperties: Properties?,
-                          testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<HttpTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
+class HttpTestStepFactory(
+    testStepRegistry: TestStepRegistry,
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseDefaultTestStepFactory<HttpTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
     companion object {
-        private const val SERVICE_KEYWORD = "test.step.keyword.services"
-        private const val URL_KEYWORD = "test.step.keyword.url"
-        private const val METHOD_KEYWORD = "test.step.keyword.http_method"
-        private const val HEADERS_KEYWORD = "test.step.keyword.http_headers"
-        private const val QUERY_KEYWORD = "test.step.keyword.http_query"
-        private const val FORM_KEYWORD = "test.step.keyword.form"
-        private const val USER_KEYWORD = "test.step.keyword.username"
-        private const val PASSWORD_KEYWORD = "test.step.keyword.password"
+        private val SERVICE_KEYWORD = AlphanumericValueExpression("services")
+        private val URL_KEYWORD = AlphanumericValueExpression("url")
+        private val METHOD_KEYWORD = AlphanumericValueExpression("http_method")
+        private val HEADERS_KEYWORD = AlphanumericValueExpression("http_headers")
+        private val QUERY_KEYWORD = AlphanumericValueExpression("http_query")
+        private val FORM_KEYWORD = AlphanumericValueExpression("form")
+        private val USER_KEYWORD = AlphanumericValueExpression("username")
+        private val PASSWORD_KEYWORD = AlphanumericValueExpression("password")
     }
 
-    override fun createTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<HttpTestStep> {
-        val services = getStringArrayDataFromRawTestStep(getKeywordName(SERVICE_KEYWORD, "services"), rawTestStep, parameters)
+    override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<HttpTestStep> {
+        val services = getStringArrayDataFromRawTestStep(SERVICE_KEYWORD, rawTestStep, parameters)
         return HttpTestStep.Builder()
-                .withService(services)
-                .withUrl(convertValue<String>(rawTestStep[getUrlKeyword()], parameters))
-                .withMethod(rawTestStep[getMethodKeyword()] as String?)
-                .withHeaders(getHttpHeaders(rawTestStep, parameters))
-                .withQuery(getHttpQuery(rawTestStep, parameters))
-                .withForm(getForm(rawTestStep, parameters))
-                .withUsername(convertValue<String>(rawTestStep[getKeywordName(USER_KEYWORD, "username")], parameters))
-                .withPassword(convertValue<String>(rawTestStep[getKeywordName(PASSWORD_KEYWORD, "password")], parameters))
+            .withService(services)
+            .withUrl(convertValue<String>(rawTestStep[URL_KEYWORD], parameters))
+            .withMethod(rawTestStep[METHOD_KEYWORD] as String?)
+            .withHeaders(getHttpHeaders(rawTestStep, parameters))
+            .withQuery(getHttpQuery(rawTestStep, parameters))
+            .withForm(getForm(rawTestStep, parameters))
+            .withUsername(convertValue<String>(rawTestStep[USER_KEYWORD], parameters))
+            .withPassword(convertValue<String>(rawTestStep[PASSWORD_KEYWORD], parameters))
     }
 
-    private fun getForm(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): Map<String, String?>? {
-        return (rawTestStep[getKeywordName(FORM_KEYWORD, "form")] as Map<Any, Any?>?)?.entries
-                ?.map { convertValue<String>(it.key, parameters)!! to convertValue<String?>(it.value, parameters) }
-                ?.toMap()
+    private fun getForm(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Map<String, String?>? {
+        return convertValue<Map<String, String?>>(rawTestStep[FORM_KEYWORD], parameters)
     }
 
-    private fun getHttpQuery(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): Map<String, String?>? {
-        return (rawTestStep[getKeywordName(QUERY_KEYWORD, "http_query")] as Map<Any, Any?>?)?.entries
-                ?.map { convertValue<String>(it.key, parameters)!! to convertValue<String?>(it.value, parameters) }
-                ?.toMap()
+    private fun getHttpQuery(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Map<String, String?>? {
+        return convertValue<Map<String, String?>>(rawTestStep[QUERY_KEYWORD], parameters)
     }
 
-    private fun getHttpHeaders(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): Map<String, String?>? {
-        return (rawTestStep[getKeywordName(HEADERS_KEYWORD, "http_headers")] as Map<Any, Any?>?)?.entries
-                ?.map { convertValue<String>(it.key, parameters)!! to convertValue<String?>(it.value, parameters) }
-                ?.toMap()
+    private fun getHttpHeaders(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Map<String, String?>? {
+        return convertValue<Map<String, String?>>(rawTestStep[HEADERS_KEYWORD], parameters)
     }
 
 
-    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
-        return rawTestStep.containsKey(getUrlKeyword())
-    }
-
-    private fun getMethodKeyword(): String {
-        return getKeywordName(METHOD_KEYWORD, "http_method")
-    }
-
-    private fun getUrlKeyword(): String {
-        return getKeywordName(URL_KEYWORD, "url")
+    override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {
+        return rawTestStep.containsKey(URL_KEYWORD) && rawTestStep.containsKey(METHOD_KEYWORD)
     }
 }

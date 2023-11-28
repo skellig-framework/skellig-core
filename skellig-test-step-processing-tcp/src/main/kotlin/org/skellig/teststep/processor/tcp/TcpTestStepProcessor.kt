@@ -4,13 +4,12 @@ import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
 
-open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>,
-                                testScenarioState: TestScenarioState?,
-                                validator: TestStepResultValidator?)
-    : BaseTestStepProcessor<TcpTestStep>(testScenarioState!!, validator!!) {
+open class TcpTestStepProcessor(
+    private val tcpChannels: Map<String, TcpChannel>,
+    testScenarioState: TestScenarioState?
+) : BaseTestStepProcessor<TcpTestStep>(testScenarioState!!) {
 
     override fun processTestStep(testStep: TcpTestStep): Any? {
         var response: Any? = null
@@ -32,32 +31,32 @@ open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>
 
     private fun read(testStep: TcpTestStep, channels: Set<String?>): Map<*, Any?> {
         val tasks = channels
-                .map {
-                    it to {
-                        val channel = tcpChannels[it] ?: error(getChannelNotExistErrorMessage(it))
-                        channel.read(testStep.timeout, testStep.readBufferSize)
-                    }
+            .map {
+                it to {
+                    val channel = tcpChannels[it] ?: error(getChannelNotExistErrorMessage(it))
+                    channel.read(testStep.timeout, testStep.readBufferSize)
                 }
-                .toMap()
+            }
+            .toMap()
         return runTasksAsyncAndWait(
-                tasks,
-                { isValid(testStep, it) },
-                testStep.delay,
-                testStep.attempts,
-                testStep.timeout
+            tasks,
+            { isValid(testStep, it) },
+            testStep.delay,
+            testStep.attempts,
+            testStep.timeout
         )
     }
 
     private fun send(testData: Any?, channels: Set<String>) {
         val tasks = channels
-                .map {
-                    it to {
-                        val channel = tcpChannels[it] ?: error(getChannelNotExistErrorMessage(it))
-                        channel.send(testData)
-                        "sent"
-                    }
+            .map {
+                it to {
+                    val channel = tcpChannels[it] ?: error(getChannelNotExistErrorMessage(it))
+                    channel.send(testData)
+                    "sent"
                 }
-                .toMap()
+            }
+            .toMap()
         runTasksAsyncAndWait(tasks)
     }
 
@@ -70,11 +69,11 @@ open class TcpTestStepProcessor(private val tcpChannels: Map<String, TcpChannel>
     }
 
     private fun getChannelNotExistErrorMessage(channelId: String?) =
-            "Channel '$channelId' was not registered in TCP Test Step Processor"
+        "Channel '$channelId' was not registered in TCP Test Step Processor"
 
     class Builder : BaseTcpProcessorBuilder<TcpTestStep>() {
         override fun build(): TestStepProcessor<TcpTestStep> {
-            return TcpTestStepProcessor(tcpChannels, testScenarioState, validator)
+            return TcpTestStepProcessor(tcpChannels, testScenarioState)
         }
     }
 }

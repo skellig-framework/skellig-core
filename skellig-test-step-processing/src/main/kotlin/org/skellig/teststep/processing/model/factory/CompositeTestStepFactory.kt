@@ -3,13 +3,10 @@ package org.skellig.teststep.processing.model.factory
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
-import java.util.*
-
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
 class CompositeTestStepFactory private constructor(
     testStepsRegistry: TestStepRegistry,
-    keywordsProperties: Properties?,
-    testStepFactoryValueConverter: TestStepFactoryValueConverter,
     valueExpressionContextFactory: ValueExpressionContextFactory
 ) : TestStepFactory<TestStep> {
 
@@ -17,12 +14,11 @@ class CompositeTestStepFactory private constructor(
     private var defaultTestStepFactory: TestStepFactory<DefaultTestStep>
 
     init {
-        registerTestStepFactory(GroupedTestStepFactory(testStepsRegistry, this, keywordsProperties, testStepFactoryValueConverter, valueExpressionContextFactory))
+        registerTestStepFactory(GroupedTestStepFactory(testStepsRegistry, this, valueExpressionContextFactory))
         registerTestStepFactory(ClassTestStepFactory())
 
         defaultTestStepFactory = DefaultTestStepFactory.Builder()
-            .withKeywordsProperties(keywordsProperties)
-            .withTestStepValueConverter(testStepFactoryValueConverter)
+            .withValueExpressionContextFactory(valueExpressionContextFactory)
             .withTestStepRegistry(testStepsRegistry)
             .build()
     }
@@ -31,27 +27,19 @@ class CompositeTestStepFactory private constructor(
         factories.add(factory)
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): TestStep {
+    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): TestStep {
         val factory = factories.firstOrNull { it.isConstructableFrom(rawTestStep) } ?: defaultTestStepFactory
         return factory.create(testStepName, rawTestStep, parameters)
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
+    override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {
         return true
     }
 
     class Builder {
 
         private var testStepsRegistry: TestStepRegistry? = null
-        private var keywordsProperties: Properties? = null
-        private var testStepFactoryValueConverter: TestStepFactoryValueConverter? = null
         private var valueExpressionContextFactory: ValueExpressionContextFactory? = null
-
-        fun withKeywordsProperties(keywordsProperties: Properties?) =
-            apply { this.keywordsProperties = keywordsProperties }
-
-        fun withTestStepFactoryValueConverter(testStepFactoryValueConverter: TestStepFactoryValueConverter) =
-            apply { this.testStepFactoryValueConverter = testStepFactoryValueConverter }
 
         fun withValueExpressionContextFactory(valueExpressionContextFactory: ValueExpressionContextFactory?) =
             apply { this.valueExpressionContextFactory = valueExpressionContextFactory }
@@ -60,9 +48,10 @@ class CompositeTestStepFactory private constructor(
             apply { this.testStepsRegistry = testStepsRegistry }
 
         fun build(): CompositeTestStepFactory {
-            return CompositeTestStepFactory(testStepsRegistry!!, keywordsProperties,
-                testStepFactoryValueConverter ?: error("TestStepFactoryValueConverter is mandatory for DefaultTestStepFactory"),
-                valueExpressionContextFactory ?: error("ValueExpressionContextFactory is mandatory for DefaultTestStepFactory"))
+            return CompositeTestStepFactory(
+                testStepsRegistry!!,
+                valueExpressionContextFactory ?: error("ValueExpressionContextFactory is mandatory for DefaultTestStepFactory")
+            )
         }
 
     }

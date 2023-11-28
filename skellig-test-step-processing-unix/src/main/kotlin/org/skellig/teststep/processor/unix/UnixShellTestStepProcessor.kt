@@ -6,15 +6,13 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.unix.model.UnixShellHostDetails
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 
 open class UnixShellTestStepProcessor(
     testScenarioState: TestScenarioState,
-    validator: TestStepResultValidator,
     private val hosts: Map<String, DefaultSshClient>
-) : BaseTestStepProcessor<UnixShellTestStep>(testScenarioState, validator) {
+) : BaseTestStepProcessor<UnixShellTestStep>(testScenarioState) {
 
     override fun processTestStep(testStep: UnixShellTestStep): Any? {
         var hostsToUse: Collection<String>? = testStep.hosts
@@ -84,7 +82,7 @@ open class UnixShellTestStepProcessor(
         }
 
         override fun build(): TestStepProcessor<UnixShellTestStep> {
-            return UnixShellTestStepProcessor(testScenarioState!!, validator!!, hosts)
+            return UnixShellTestStepProcessor(testScenarioState!!, hosts)
         }
     }
 }

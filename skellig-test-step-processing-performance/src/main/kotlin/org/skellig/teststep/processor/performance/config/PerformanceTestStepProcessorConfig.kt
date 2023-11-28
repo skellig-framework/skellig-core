@@ -24,8 +24,7 @@ class PerformanceTestStepProcessorConfig : TestStepProcessorConfig<PerformanceTe
                 .build(),
             PerformanceTestStepFactory(
                 details.testStepFactory,
-                details.keywordProperties,
-                details.testStepFactoryValueConverter
+                details.valueExpressionContextFactory
             )
         )
     }

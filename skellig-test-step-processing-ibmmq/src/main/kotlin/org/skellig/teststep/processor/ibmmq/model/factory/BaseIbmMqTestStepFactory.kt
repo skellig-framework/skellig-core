@@ -2,20 +2,20 @@ package org.skellig.teststep.processor.ibmmq.model.factory
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
-import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
-import java.util.*
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
 abstract class BaseIbmMqTestStepFactory<T : DefaultTestStep>(
     testStepRegistry: TestStepRegistry,
-    keywordsProperties: Properties?,
-    testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<T>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseDefaultTestStepFactory<T>(testStepRegistry, valueExpressionContextFactory) {
 
     companion object {
-        protected const val PROTOCOL_KEY_KEYWORD = "test.step.keyword.protocol"
-        internal const val RESPOND_TO_KEYWORD = "test.step.keyword.respondTo"
-        protected const val CONSUME_FROM_KEYWORD = "test.step.keyword.consumeFrom"
+        protected val PROTOCOL_KEY_KEYWORD = AlphanumericValueExpression("protocol")
+        internal val RESPOND_TO_KEYWORD = AlphanumericValueExpression("respondTo")
+        protected val CONSUME_FROM_KEYWORD = AlphanumericValueExpression("consumeFrom")
         protected const val IBMMQ = "ibmmq"
 
     }
@@ -27,8 +27,8 @@ abstract class BaseIbmMqTestStepFactory<T : DefaultTestStep>(
         }
     }
 
-    internal fun getConsumeFromKeyword() = getKeywordName(CONSUME_FROM_KEYWORD, "consumeFrom")
+    internal fun getConsumeFromKeyword() = CONSUME_FROM_KEYWORD
 
-    internal fun hasIbmMqRequiredData(rawTestStep: Map<Any, Any?>): Boolean =
-        rawTestStep.getOrDefault(getKeywordName(PROTOCOL_KEY_KEYWORD, "protocol"), "") == IBMMQ
+    internal fun hasIbmMqRequiredData(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean =
+        rawTestStep.getOrDefault(PROTOCOL_KEY_KEYWORD, "") == IBMMQ
 }

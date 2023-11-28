@@ -4,51 +4,53 @@ import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.BaseTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepFactory
-import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.performance.model.PerformanceTestStep
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.MapValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 class PerformanceTestStepFactory(
     private val testStepFactory: TestStepFactory<TestStep>,
-    keywordsProperties: Properties?,
-    testStepFactoryValueConverter: TestStepFactoryValueConverter
-) : BaseTestStepFactory<PerformanceTestStep>(keywordsProperties, testStepFactoryValueConverter) {
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseTestStepFactory<PerformanceTestStep>(valueExpressionContextFactory) {
 
     companion object {
-        private const val RPS = "test.step.keyword.rps"
-        private const val TIME_TO_RUN = "test.step.keyword.timeToRun"
-        private const val BEFORE = "test.step.keyword.before"
-        private const val AFTER = "test.step.keyword.after"
-        private const val RUN = "test.step.keyword.run"
+        private val RPS = AlphanumericValueExpression("rps")
+        private val TIME_TO_RUN = AlphanumericValueExpression("timeToRun")
+        private val BEFORE = AlphanumericValueExpression("before")
+        private val AFTER = AlphanumericValueExpression("after")
+        private val RUN = AlphanumericValueExpression("run")
         private val TIME_PATTERN = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): PerformanceTestStep {
+    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): PerformanceTestStep {
         val rps = getRps(rawTestStep, parameters)
         val timeToRun = getTimeToRun(rawTestStep, parameters)
-        val before = rawTestStep[getBeforeKeyword()] as List<*>?
-        val after = rawTestStep[getAfterKeyword()] as List<*>?
-        val run = rawTestStep[getRunKeyword()] as List<*>
+        val before = rawTestStep[BEFORE] as List<*>?
+        val after = rawTestStep[AFTER] as List<*>?
+        val run = rawTestStep[RUN] as List<*>
 
-        val beforeList = toListOfTestStepsToRun(before, testStepName, parameters, getBeforeKeyword())
-        val afterList = toListOfTestStepsToRun(after, testStepName, parameters, getAfterKeyword())
-        val runList = toListOfTestStepsToRun(run, testStepName, parameters, getRunKeyword())
+        val beforeList = toListOfTestStepsToRun(before, testStepName, parameters, BEFORE)
+        val afterList = toListOfTestStepsToRun(after, testStepName, parameters, AFTER)
+        val runList = toListOfTestStepsToRun(run, testStepName, parameters, RUN)
 
         return PerformanceTestStep(testStepName, rps, timeToRun, beforeList, afterList, runList)
     }
 
-    private fun toListOfTestStepsToRun(rawListOfTestSteps: List<*>?, testStepName: String,
-                                       parameters: Map<String, String?>, propertyName: String): List<(testStepRegistry: TestStepRegistry) -> TestStep> =
+    private fun toListOfTestStepsToRun(
+        rawListOfTestSteps: List<*>?, testStepName: String,
+        parameters: Map<String, String?>,
+        propertyName: AlphanumericValueExpression
+    ): List<(testStepRegistry: TestStepRegistry) -> TestStep> =
         rawListOfTestSteps?.let {
             rawListOfTestSteps.map {
                 when (it) {
-                    is Map<*, *> -> {
-                        createToTestDataFunction(getName(it as Map<Any, Any?>), parameters)
-                    }
-                    is String -> createToTestDataFunction(it, emptyMap())
+                    is MapValueExpression -> createAsTestStepDelegate(getName(it.value), parameters)
+                    is String -> createAsTestStepDelegate(it, emptyMap())
                     else -> throw TestStepCreationException(
                         "Invalid data type of '${propertyName}' in test step '${testStepName}'. " +
                                 "Must have a list of test steps to run with parameters or without"
@@ -57,36 +59,27 @@ class PerformanceTestStepFactory(
             }
         } ?: emptyList()
 
-    private fun getRps(rawTestStep: Map<Any, Any?>, parameters: Map<String, String?>): Int {
-        val rps = rawTestStep[getRpsKeyword()].toString()
+    private fun getRps(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): Int {
+        val rps = rawTestStep[RPS]
         return convertValue<String>(rps, parameters)?.toInt()
             ?: error("Invalid RPS value '$rps' for the test '${getName(rawTestStep)}'. The value must be Int")
     }
 
-    private fun getTimeToRun(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): LocalTime {
-        val timeToRun = convertValue<String>(rawTestStep[getTimeToRunKeyword()].toString(), parameters)
+    private fun getTimeToRun(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): LocalTime {
+        val timeToRun = convertValue<String>(rawTestStep[TIME_TO_RUN], parameters)
         return LocalTime.parse(timeToRun, TIME_PATTERN)
     }
 
-    private fun createToTestDataFunction(testStepName: String, parameters: Map<String, String?>): (testStepRegistry: TestStepRegistry) -> TestStep =
+    private fun createAsTestStepDelegate(testStepName: String, parameters: Map<String, String?>): (testStepRegistry: TestStepRegistry) -> TestStep =
         { testStepRegistry: TestStepRegistry ->
             val rawTestStepToRun = testStepRegistry.getByName(testStepName)
                 ?: error("Test step '$testStepName' is not found in any of test data files or classes indicated in the runner")
             testStepFactory.create(testStepName, rawTestStepToRun, parameters)
         }
 
-    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean =
-        rawTestStep.containsKey(getRpsKeyword()) &&
-                rawTestStep.containsKey(getTimeToRunKeyword()) &&
-                rawTestStep.containsKey(getRunKeyword())
+    override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean =
+        rawTestStep.containsKey(RPS) &&
+                rawTestStep.containsKey(TIME_TO_RUN) &&
+                rawTestStep.containsKey(RUN)
 
-    private fun getRpsKeyword() = getKeywordName(RPS, "rps")
-
-    private fun getTimeToRunKeyword() = getKeywordName(TIME_TO_RUN, "timeToRun")
-
-    private fun getRunKeyword() = getKeywordName(RUN, "run")
-
-    private fun getAfterKeyword() = getKeywordName(AFTER, "after")
-
-    private fun getBeforeKeyword() = getKeywordName(BEFORE, "before")
 }

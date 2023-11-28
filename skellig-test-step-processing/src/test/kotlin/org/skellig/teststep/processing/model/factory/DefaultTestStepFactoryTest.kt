@@ -6,10 +6,8 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.CachedPattern
-import org.skellig.teststep.processing.utils.UnitTestUtils
 import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor

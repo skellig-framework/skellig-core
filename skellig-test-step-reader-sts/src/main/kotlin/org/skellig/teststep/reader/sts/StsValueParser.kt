@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
 import org.skellig.teststep.reader.sts.parser.value.SkelligTestValueGrammarLexer
 import org.skellig.teststep.reader.sts.parser.value.SkelligTestValueGrammarParser
 import org.skellig.teststep.reader.sts.parser.value.SkelligTestValueGrammarParser.*
-import org.skellig.teststep.reader.sts.value.expression.*
+import org.skellig.teststep.reader.value.expression.*
 
 internal class StsValueParser {
 

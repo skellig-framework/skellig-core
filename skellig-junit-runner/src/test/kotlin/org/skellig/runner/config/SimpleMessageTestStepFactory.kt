@@ -2,23 +2,29 @@ package org.skellig.runner.config
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
-import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
-import java.util.*
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
 class SimpleMessageTestStepFactory(
     testStepRegistry: TestStepRegistry,
-    keywordsProperties: Properties?,
-    testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<SimpleMessageTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseDefaultTestStepFactory<SimpleMessageTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
-    override fun createTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<SimpleMessageTestStep> {
-        return SimpleMessageTestStep.Builder()
-                .withReceiver(convertValue(rawTestStep["receiver"], parameters))
-                .withReceiveFrom(convertValue(rawTestStep["receiveFrom"], parameters))
+    companion object {
+        private val RECEIVER = AlphanumericValueExpression("receiver")
+        private val RECEIVE_FROM = AlphanumericValueExpression("receiveFrom")
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean {
-        return rawTestStep.containsKey("receiver") || rawTestStep.containsKey("receiveFrom")
+    override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<SimpleMessageTestStep> {
+        return SimpleMessageTestStep.Builder()
+            .withReceiver(convertValue(rawTestStep[RECEIVER], parameters))
+            .withReceiveFrom(convertValue(rawTestStep[RECEIVE_FROM], parameters))
+    }
+
+    override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {
+
+        return rawTestStep.containsKey(RECEIVER) || rawTestStep.containsKey(RECEIVE_FROM)
     }
 }

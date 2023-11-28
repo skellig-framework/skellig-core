@@ -1,4 +1,4 @@
-package org.skellig.teststep.reader.sts.value.expression
+package org.skellig.teststep.reader.value.expression
 
 class AlphanumericValueExpression(private val value: String) : ValueExpression {
 

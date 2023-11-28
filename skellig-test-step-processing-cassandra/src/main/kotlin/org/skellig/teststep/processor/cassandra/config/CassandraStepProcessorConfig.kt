@@ -14,12 +14,10 @@ class CassandraTestStepProcessorConfig : TestStepProcessorConfig<CassandraTestSt
                 CassandraTestStepProcessor.Builder()
                     .withDbServers(details.config)
                     .withTestScenarioState(details.state)
-                    .withValidator(details.validator)
                     .build(),
                 CassandraTestStepFactory(
                     details.testStepRegistry,
-                    details.keywordProperties,
-                    details.testStepFactoryValueConverter
+                    details.valueExpressionContextFactory
                 )
             )
         else null

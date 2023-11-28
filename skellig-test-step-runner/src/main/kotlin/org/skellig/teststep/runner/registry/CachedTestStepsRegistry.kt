@@ -1,17 +1,16 @@
 package org.skellig.teststep.runner.registry
 
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
 internal class CachedTestStepsRegistry(private val testStepRegistries: List<TestStepRegistry>) : TestStepRegistry {
 
-    private var cachedTestSteps: MutableMap<String, Map<String, Any?>?> = mutableMapOf()
+    private var cachedTestSteps: MutableMap<String, Map<ValueExpression, ValueExpression?>?> = mutableMapOf()
 
-    override fun getByName(testStepName: String): Map<String, Any?>? {
+    override fun getByName(testStepName: String): Map<ValueExpression, ValueExpression?>? {
         var testStep = cachedTestSteps[testStepName]
         if (testStep == null) {
-            testStep = testStepRegistries
-                .mapNotNull { it.getByName(testStepName) }
-                .firstOrNull()
+            testStep = testStepRegistries.firstNotNullOfOrNull { it.getByName(testStepName) }
             if (testStep != null) {
                 cachedTestSteps[testStepName] = testStep
             }
@@ -19,11 +18,9 @@ internal class CachedTestStepsRegistry(private val testStepRegistries: List<Test
         return testStep
     }
 
-    override fun getById(testStepId: String): Map<String, Any?>? =
-        testStepRegistries
-            .mapNotNull { it.getById(testStepId) }
-            .firstOrNull()
+    override fun getById(testStepId: String): Map<ValueExpression, ValueExpression?>? =
+        testStepRegistries.firstNotNullOfOrNull { it.getById(testStepId) }
 
-    override fun getTestSteps(): Collection<Map<String, Any?>> =
+    override fun getTestSteps(): Collection<Map<ValueExpression, ValueExpression?>> =
         testStepRegistries.flatMap { it.getTestSteps() }
 }

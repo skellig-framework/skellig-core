@@ -1,8 +1,6 @@
 package org.skellig.runner.junit.report.model
 
-import org.apache.commons.lang3.StringUtils
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.GroupedTestStep
 import org.skellig.teststep.processing.model.TestStep
 import java.beans.Introspector
@@ -10,11 +8,13 @@ import java.beans.PropertyDescriptor
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
-open class TestStepReportDetails<T>(val name: String,
-                                    val originalTestStep: T?,
-                                    val result: Any?,
-                                    val errorLog: String?,
-                                    val logRecords: List<String>?) {
+open class TestStepReportDetails<T>(
+    val name: String,
+    val originalTestStep: T?,
+    val result: Any?,
+    val errorLog: String?,
+    val logRecords: List<String>?
+) {
 
     fun isPassed(): Boolean {
         return errorLog == null || errorLog == ""
@@ -33,9 +33,9 @@ open class TestStepReportDetails<T>(val name: String,
 
             val properties = getPropertyGettersOfTestStep(originalTestStep.javaClass)
             return properties.entries
-                    .filter { it.value != null }
-                    .map { getPropertyWithValue(it) }
-                    .joinToString("\n")
+                .filter { it.value != null }
+                .map { getPropertyWithValue(it) }
+                .joinToString("\n")
         }
         return ""
     }
@@ -47,8 +47,8 @@ open class TestStepReportDetails<T>(val name: String,
     private fun getPropertyWithValue(propertyGetterPair: Map.Entry<String, Method?>): String? {
         return try {
             propertyGetterPair.value?.invoke(originalTestStep)
-                    ?.let { propertyGetterPair.key + ": " + it }
-                    ?: ""
+                ?.let { propertyGetterPair.key + ": " + it }
+                ?: ""
         } catch (e: IllegalAccessException) {
             e.message
         } catch (e: InvocationTargetException) {
@@ -58,14 +58,13 @@ open class TestStepReportDetails<T>(val name: String,
 
     private fun getPropertyGettersOfTestStep(beanClass: Class<*>): Map<String, Method?> {
         return beanClass.declaredFields
-                .map {
-                    it.name to Introspector.getBeanInfo(beanClass).propertyDescriptors
-                            .filter { pd: PropertyDescriptor -> pd.readMethod != null && it.name == pd.name }
-                            .map { obj: PropertyDescriptor -> obj.readMethod }
-                            .firstOrNull()
-                }
-                .toMap()
-
+            .map {
+                it.name to Introspector.getBeanInfo(beanClass).propertyDescriptors
+                    .filter { pd: PropertyDescriptor -> pd.readMethod != null && it.name == pd.name }
+                    .map { obj: PropertyDescriptor -> obj.readMethod }
+                    .firstOrNull()
+            }
+            .toMap()
     }
 
     class Builder {
@@ -118,27 +117,9 @@ class DefaultTestStepReportDetails(
     }
 
     override fun getValidationDetails(): String {
-        val stringBuilder = StringBuilder()
-        originalTestStep?.validationDetails?.let { constructValidationDetails(it.expectedResult, stringBuilder) }
-        return stringBuilder.toString()
+        return originalTestStep?.validationDetails?.toString() ?: ""
     }
 
-    private fun constructValidationDetails(expectedResult: ExpectedResult, stringBuilder: StringBuilder) {
-        if (StringUtils.isNotEmpty(expectedResult.property?.toString())) {
-            stringBuilder.append(expectedResult.property).append(": ")
-        }
-        if (expectedResult.expectedResult is List<*>) {
-            stringBuilder.append(getValidationType(expectedResult)).append("[\n")
-            expectedResult.get<List<ExpectedResult>>()?.forEach { item -> constructValidationDetails(item, stringBuilder) }
-            stringBuilder.append("]\n")
-        } else if (expectedResult.expectedResult != null) {
-            stringBuilder.append(expectedResult.expectedResult.toString()).append("\n")
-        }
-    }
-
-    private fun getValidationType(expectedResult: ExpectedResult): String? {
-        return expectedResult.matchingType?.name?.lowercase()
-    }
 }
 
 class GroupedTestStepReportDetails(
@@ -147,7 +128,4 @@ class GroupedTestStepReportDetails(
     result: Any?,
     errorLog: String?,
     logRecords: List<String>?
-)
-    : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords) {
-
-}
+) : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords)

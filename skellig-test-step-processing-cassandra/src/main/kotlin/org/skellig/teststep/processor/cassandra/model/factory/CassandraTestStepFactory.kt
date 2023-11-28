@@ -1,20 +1,25 @@
 package org.skellig.teststep.processor.cassandra.model.factory
 
-import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.cassandra.model.CassandraTestStep
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 import org.skellig.teststep.processor.db.model.factory.DatabaseTestStepFactory
-import java.util.*
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
-class CassandraTestStepFactory(testStepRegistry: TestStepRegistry,
-                               keywordsProperties: Properties?,
-                               testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : DatabaseTestStepFactory<CassandraTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
+class CassandraTestStepFactory(
+    testStepRegistry: TestStepRegistry,
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : DatabaseTestStepFactory<CassandraTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
-    override fun createDatabaseTestStepBuilder(rawTestStep: Map<Any, Any?>, parameters: Map<String, Any?>):
+    companion object {
+        private val CASSANDRA = AlphanumericValueExpression("cassandra")
+    }
+
+    override fun createDatabaseTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>):
             DatabaseTestStep.Builder<CassandraTestStep> = CassandraTestStep.Builder()
 
-    override fun isConstructableFrom(rawTestStep: Map<Any, Any?>): Boolean =
-            rawTestStep[getProviderKeyword()] == "cassandra" && super.isConstructableFrom(rawTestStep)
+    override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean =
+        rawTestStep[PROPERTY_PROVIDER_KEYWORD] == CASSANDRA && super.isConstructableFrom(rawTestStep)
 }

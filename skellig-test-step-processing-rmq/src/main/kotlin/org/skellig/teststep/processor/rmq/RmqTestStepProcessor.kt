@@ -5,15 +5,12 @@ import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
-import java.util.*
 
 open class RmqTestStepProcessor(
-        protected val rmqChannels: Map<String, RmqChannel>,
-        testScenarioState: TestScenarioState?,
-        validator: TestStepResultValidator?
-) : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!, validator!!) {
+    protected val rmqChannels: Map<String, RmqChannel>,
+    testScenarioState: TestScenarioState?
+) : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!) {
 
     override fun processTestStep(testStep: RmqTestStep): Any? {
         var response: Map<*, Any?>? = null
@@ -35,32 +32,32 @@ open class RmqTestStepProcessor(
 
     private fun read(testStep: RmqTestStep, channels: Set<String?>, responseTestData: Any? = null): Map<*, Any?> {
         val tasks = channels
-                .map {
-                    it to {
-                        val channel = rmqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
-                        channel.read(responseTestData)
-                    }
+            .map {
+                it to {
+                    val channel = rmqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
+                    channel.read(responseTestData)
                 }
-                .toMap()
+            }
+            .toMap()
         return runTasksAsyncAndWait(
-                tasks,
-                { isValid(testStep, it) },
-                testStep.delay,
-                testStep.attempts,
-                testStep.timeout
+            tasks,
+            { isValid(testStep, it) },
+            testStep.delay,
+            testStep.attempts,
+            testStep.timeout
         )
     }
 
     private fun send(testData: Any?, channels: Set<String>, routingKey: String?, properties: AMQP.BasicProperties?) {
         val tasks = channels
-                .map {
-                    it to {
-                        val channel = rmqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
-                        channel.send(testData, routingKey, properties)
-                        "sent"
-                    }
+            .map {
+                it to {
+                    val channel = rmqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
+                    channel.send(testData, routingKey, properties)
+                    "sent"
                 }
-                .toMap()
+            }
+            .toMap()
         runTasksAsyncAndWait(tasks)
     }
 
@@ -73,11 +70,11 @@ open class RmqTestStepProcessor(
     }
 
     private fun getChannelNotExistErrorMessage(channelId: String?) =
-            "Channel '$channelId' was not registered in RMQ Test Step Processor"
+        "Channel '$channelId' was not registered in RMQ Test Step Processor"
 
     class Builder : BaseRmqProcessorBuilder<RmqTestStep>() {
         override fun build(): TestStepProcessor<RmqTestStep> {
-            return RmqTestStepProcessor(rmqChannels, testScenarioState, validator)
+            return RmqTestStepProcessor(rmqChannels, testScenarioState)
         }
     }
 }

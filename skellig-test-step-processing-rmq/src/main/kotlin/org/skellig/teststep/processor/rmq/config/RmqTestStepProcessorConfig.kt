@@ -17,12 +17,10 @@ class RmqTestStepProcessorConfig : TestStepProcessorConfig<RmqTestStep> {
                 RmqTestStepProcessor.Builder()
                     .rmqChannels(details.config)
                     .withTestScenarioState(details.state)
-                    .withValidator(details.validator)
                     .build(),
                 RmqTestStepFactory(
                     details.testStepRegistry,
-                    details.keywordProperties,
-                    details.testStepFactoryValueConverter
+                    details.valueExpressionContextFactory
                 )
             )
         else null
@@ -37,12 +35,10 @@ class RmqConsumableTestStepProcessorConfig : TestStepProcessorConfig<RmqConsumab
                 RmqConsumableTestStepProcessor.Builder()
                     .rmqChannels(details.config)
                     .withTestScenarioState(details.state)
-                    .withValidator(details.validator)
                     .build(),
                 RmqConsumableTestStepFactory(
                     details.testStepRegistry,
-                    details.keywordProperties,
-                    details.testStepFactoryValueConverter
+                    details.valueExpressionContextFactory
                 )
             )
         else null

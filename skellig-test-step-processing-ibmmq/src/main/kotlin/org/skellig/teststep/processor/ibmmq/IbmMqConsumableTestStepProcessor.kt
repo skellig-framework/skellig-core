@@ -5,14 +5,12 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
 
 open class IbmMqConsumableTestStepProcessor(
     protected val ibmMqChannels: Map<String, IbmMqChannel>,
     testScenarioState: TestScenarioState?,
-    validator: TestStepResultValidator?
-) : ValidatableTestStepProcessor<IbmMqConsumableTestStep>(testScenarioState!!, validator!!) {
+) : ValidatableTestStepProcessor<IbmMqConsumableTestStep>(testScenarioState!!) {
 
     override fun process(testStep: IbmMqConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
@@ -73,7 +71,7 @@ open class IbmMqConsumableTestStepProcessor(
 
     class Builder : BaseIbmMqTestStepProcessorBuilder<IbmMqConsumableTestStep>() {
         override fun build(): TestStepProcessor<IbmMqConsumableTestStep> {
-            return IbmMqConsumableTestStepProcessor(ibmMqChannels, testScenarioState, validator)
+            return IbmMqConsumableTestStepProcessor(ibmMqChannels, testScenarioState)
         }
     }
 }

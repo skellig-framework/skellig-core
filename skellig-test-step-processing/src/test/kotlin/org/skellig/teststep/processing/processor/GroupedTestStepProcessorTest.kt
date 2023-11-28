@@ -5,9 +5,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.model.GroupedTestStep
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 
 class GroupedTestStepProcessorTest {
 
@@ -62,13 +61,9 @@ class GroupedTestStepProcessorTest {
     }
 
     private fun createTestStep(): GroupedTestStep {
-        val validationDetails = ValidationDetails.Builder()
-            .withTestStepId("previous test 1")
-            .withExpectedResult(ExpectedResult())
-            .build()
         val testStep = DefaultTestStep.DefaultTestStepBuilder()
             .withName("n1")
-//            .withValidationDetails(validationDetails)
+            .withValidationDetails(mock<ValidationNode>())
             .withTimeout(1000)
             .withDelay(100)
             .build()

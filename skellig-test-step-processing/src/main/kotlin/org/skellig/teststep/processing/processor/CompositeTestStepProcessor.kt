@@ -4,17 +4,13 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 
 /**
  * Processes any test step by assigning an appropriate test step processor from its registry.
  *
  * If no processor found for the provided test step, then it throws `TestStepProcessingException`
  */
-open class CompositeTestStepProcessor private constructor(
-    testScenarioState: TestScenarioState,
-    testStepResultValidator: TestStepResultValidator
-) : TestStepProcessor<TestStep> {
+open class CompositeTestStepProcessor private constructor(testScenarioState: TestScenarioState) : TestStepProcessor<TestStep> {
 
     private val testStepProcessors: MutableList<TestStepProcessor<in TestStep>> = mutableListOf()
 
@@ -22,7 +18,6 @@ open class CompositeTestStepProcessor private constructor(
         registerTestStepProcessor(
             DefaultTestStepProcessor.Builder()
                 .withTestScenarioState(testScenarioState)
-                .withValidator(testStepResultValidator)
                 .build()
         )
         registerTestStepProcessor(GroupedTestStepProcessor(this))
@@ -56,7 +51,7 @@ open class CompositeTestStepProcessor private constructor(
     class Builder : BaseTestStepProcessor.Builder<TestStep>() {
 
         override fun build(): CompositeTestStepProcessor {
-            return CompositeTestStepProcessor(testScenarioState!!, validator!!)
+            return CompositeTestStepProcessor(testScenarioState!!)
         }
     }
 }

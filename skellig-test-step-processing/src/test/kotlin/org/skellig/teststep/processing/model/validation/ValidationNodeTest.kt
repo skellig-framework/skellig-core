@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.validation
+package org.skellig.teststep.processing.model.validation
 
 import org.junit.Ignore
 import org.junit.jupiter.api.Assertions
@@ -11,7 +11,7 @@ import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
-import org.skellig.teststep.reader.sts.value.expression.*
+import org.skellig.teststep.reader.value.expression.*
 
 @DisplayName("Validate result")
 class ValidationNodeTest {

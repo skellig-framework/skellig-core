@@ -1,4 +1,4 @@
-package org.skellig.teststep.reader.sts.value.expression
+package org.skellig.teststep.reader.value.expression
 
 class StringValueExpression(private val value: String) : ValueExpression {
     override fun evaluate(context: ValueExpressionContext): Any? {

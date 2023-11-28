@@ -1,7 +1,7 @@
 package org.skellig.teststep.processor.rmq.model
 
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 
 open class RmqTestStep protected constructor(id: String?,
                                              name: String?,
@@ -11,7 +11,7 @@ open class RmqTestStep protected constructor(id: String?,
                                              attempts: Int,
                                              variables: Map<String, Any?>?,
                                              testData: Any?,
-                                             validationDetails: ValidationDetails?,
+                                             validationDetails: ValidationNode?,
                                              val sendTo: Set<String>?,
                                              val receiveFrom: Set<String>?,
                                              val respondTo: Set<String>?,

@@ -3,7 +3,7 @@ package org.skellig.teststep.processor.rmq.model
 import com.rabbitmq.client.AMQP
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 import java.util.*
 
 open class BaseRmqTestStep protected constructor(id: String?,
@@ -14,7 +14,7 @@ open class BaseRmqTestStep protected constructor(id: String?,
                                                  attempts: Int,
                                                  variables: Map<String, Any?>?,
                                                  testData: Any?,
-                                                 validationDetails: ValidationDetails?,
+                                                 validationDetails: ValidationNode?,
                                                  val routingKey: String?,
                                                  val properties: Map<String, Any?>?)
     : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails) {

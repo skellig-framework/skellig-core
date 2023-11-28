@@ -6,13 +6,9 @@ import org.skellig.teststep.processing.processor.config.ConfiguredTestStepProces
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.slf4j.LoggerFactory
 
-class SimpleTestStepProcessor private constructor(
-    testScenarioState: TestScenarioState?,
-    validator: TestStepResultValidator?
-) : BaseTestStepProcessor<SimpleTestStepFactory.SimpleTestStep>(testScenarioState!!, validator!!) {
+class SimpleTestStepProcessor private constructor(testScenarioState: TestScenarioState?) : BaseTestStepProcessor<SimpleTestStepFactory.SimpleTestStep>(testScenarioState!!) {
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(SimpleTestStepProcessor::class.java)
@@ -27,18 +23,13 @@ class SimpleTestStepProcessor private constructor(
 
     class Builder {
         private var testScenarioState: TestScenarioState? = null
-        private var validator: TestStepResultValidator? = null
 
         fun withTestScenarioState(testScenarioState: TestScenarioState?) = apply {
             this.testScenarioState = testScenarioState
         }
 
-        fun withValidator(validator: TestStepResultValidator?) = apply {
-            this.validator = validator
-        }
-
         fun build(): TestStepProcessor<SimpleTestStepFactory.SimpleTestStep> {
-            return SimpleTestStepProcessor(testScenarioState, validator)
+            return SimpleTestStepProcessor(testScenarioState)
         }
     }
 }
@@ -48,12 +39,10 @@ class SimpleTestStepProcessorConfig : TestStepProcessorConfig<SimpleTestStepFact
         return ConfiguredTestStepProcessorDetails(
             SimpleTestStepProcessor.Builder()
                 .withTestScenarioState(details.state)
-                .withValidator(details.validator)
                 .build(),
             SimpleTestStepFactory(
                 details.testStepRegistry,
-                details.keywordProperties,
-                details.testStepFactoryValueConverter
+                details.valueExpressionContextFactory
             )
         )
     }

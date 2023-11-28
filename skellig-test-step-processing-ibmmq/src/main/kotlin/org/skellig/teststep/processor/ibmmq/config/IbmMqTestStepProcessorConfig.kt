@@ -17,12 +17,10 @@ class IbmMqTestStepProcessorConfig : TestStepProcessorConfig<IbmMqTestStep> {
                 IbmMqTestStepProcessor.Builder()
                     .ibmMqChannels(details.config)
                     .withTestScenarioState(details.state)
-                    .withValidator(details.validator)
                     .build(),
                 IbmMqTestStepFactory(
                     details.testStepRegistry,
-                    details.keywordProperties,
-                    details.testStepFactoryValueConverter
+                    details.valueExpressionContextFactory
                 )
             )
         else null
@@ -37,12 +35,10 @@ class IbmMqConsumableTestStepProcessorConfig : TestStepProcessorConfig<IbmMqCons
                 IbmMqConsumableTestStepProcessor.Builder()
                     .ibmMqChannels(details.config)
                     .withTestScenarioState(details.state)
-                    .withValidator(details.validator)
                     .build(),
                 IbmMqConsumableTestStepFactory(
                     details.testStepRegistry,
-                    details.keywordProperties,
-                    details.testStepFactoryValueConverter
+                    details.valueExpressionContextFactory
                 )
             )
         else null

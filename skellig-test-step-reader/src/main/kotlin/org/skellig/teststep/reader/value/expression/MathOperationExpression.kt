@@ -1,10 +1,11 @@
-package org.skellig.teststep.reader.sts.value.expression
+package org.skellig.teststep.reader.value.expression
 
 import java.math.BigDecimal
 
 class MathOperationExpression(private val operator: String,
                               private val leftExpression: ValueExpression,
-                              private val rightExpression: ValueExpression) : ValueExpression {
+                              private val rightExpression: ValueExpression
+) : ValueExpression {
 
     override fun evaluate(context: ValueExpressionContext): Any {
         var evaluatedLeft = leftExpression.evaluate(context)

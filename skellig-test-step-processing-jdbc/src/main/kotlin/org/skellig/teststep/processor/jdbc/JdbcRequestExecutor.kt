@@ -18,8 +18,8 @@ class JdbcRequestExecutor(details: JdbcDetails) : DatabaseRequestExecutor {
         factory = JdbcRequestExecutorFactory(connection!!)
     }
 
-    override fun execute(request: DatabaseRequest): Any? {
-        return factory[request]!!.execute(request)
+    override fun execute(databaseRequest: DatabaseRequest): Any? {
+        return factory[databaseRequest]!!.execute(databaseRequest)
     }
 
     private fun connectToDatabase(details: JdbcDetails) {

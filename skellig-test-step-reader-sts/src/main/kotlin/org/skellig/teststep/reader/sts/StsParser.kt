@@ -6,9 +6,7 @@ import org.antlr.v4.runtime.tree.ParseTree
 import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarLexer
 import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser
 import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.*
-import org.skellig.teststep.reader.sts.value.expression.AlphanumericValueExpression
-import org.skellig.teststep.reader.sts.value.expression.StringValueExpression
-import org.skellig.teststep.reader.sts.value.expression.ValueExpression
+import org.skellig.teststep.reader.value.expression.*
 
 internal class StsParser {
     companion object {
@@ -17,7 +15,7 @@ internal class StsParser {
 
     private val valueParser = StsValueParser()
 
-    fun parse(content: String): List<Map<Any, Any?>> {
+    fun parse(content: String): List<Map<ValueExpression, ValueExpression?>> {
         val skelligGrammarLexer = SkelligGrammarLexer(CharStreams.fromString(content))
         val input = CommonTokenStream(skelligGrammarLexer)
         val parser = SkelligGrammarParser(input)
@@ -26,16 +24,16 @@ internal class StsParser {
         return convert(tree)
     }
 
-    private fun convert(tree: ParseTree?): List<Map<Any, Any?>> {
-        val result = mutableListOf<Map<Any, Any?>>();
+    private fun convert(tree: ParseTree?): List<Map<ValueExpression, ValueExpression?>> {
+        val result = mutableListOf<Map<ValueExpression, ValueExpression?>>();
 
         if (tree != null) {
             var c = 0;
             while (c < tree.childCount) {
                 if (tree.getChild(c) is TestStepNameContext) {
-                    val rawTestStep: MutableMap<Any, Any?> = LinkedHashMap()
+                    val rawTestStep: MutableMap<ValueExpression, ValueExpression?> = LinkedHashMap()
                     val testStepNameContext = tree.getChild(c) as TestStepNameContext
-                    rawTestStep[NAME_KEYWORD] = testStepNameContext.STRING().text
+                    rawTestStep[NAME_KEYWORD] = StringValueExpression(testStepNameContext.STRING().text)
                     for (pairContext in testStepNameContext.pair()) {
                         convertPair(pairContext)?.let { rawTestStep[it.first] = it.second }
                     }
@@ -47,14 +45,14 @@ internal class StsParser {
         return result
     }
 
-    private fun convertPair(pair: PairContext): Pair<ValueExpression, Any?>? {
+    private fun convertPair(pair: PairContext): Pair<ValueExpression, ValueExpression?>? {
         val key = valueParser.parse(pair.key().text)!!
         return if (pair.value() != null) {
             Pair(key, convertValue(pair.value()))
         } else if (pair.map() != null) {
-            Pair(key, convertMap(pair.map()))
+            Pair(key, MapValueExpression(convertMap(pair.map())))
         } else if (pair.array() != null) {
-            Pair(key, convertArray(pair.array()))
+            Pair(key, ListValueExpression(convertArray(pair.array())))
         } else {
             return null
         }
@@ -65,23 +63,23 @@ internal class StsParser {
         return if ("null" == text) null else valueParser.parse(text)
     }
 
-    private fun convertMap(mapContext: MapContext): Map<ValueExpression, Any?> {
+    private fun convertMap(mapContext: MapContext): Map<ValueExpression, ValueExpression?> {
         return mapContext.pair().mapNotNull { pair ->
             convertPair(pair)?.let { it.first to it.second }
         }.toMap()
     }
 
-    private fun convertArray(arrayContext: ArrayContext): List<Any?> {
-        val array = mutableListOf<Any?>()
+    private fun convertArray(arrayContext: ArrayContext): List<ValueExpression?> {
+        val array = mutableListOf<ValueExpression?>()
         var c = 0
         val values = arrayContext.values()
         while (c < values.size) {
             if (arrayContext.values()[c].value() != null) {
                 array.add(convertValue(arrayContext.values()[c].value()))
             } else if (arrayContext.values()[c].map() != null) {
-                array.add(convertMap(arrayContext.values()[c].map()))
+                array.add(MapValueExpression(convertMap(arrayContext.values()[c].map())))
             } else if (arrayContext.values()[c].array() != null) {
-                array.add(convertArray(arrayContext.values()[c].array()))
+                array.add(ListValueExpression(convertArray(arrayContext.values()[c].array())))
             }
             c++
         }

@@ -4,7 +4,6 @@ import org.junit.Ignore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.utils.UnitTestUtils.Companion.createMap
 
 @Ignore
 class IfFunctionExecutorTest {
@@ -133,9 +132,9 @@ class IfFunctionExecutorTest {
 
     @Test
     fun testConditionWithMap() {
-        val data = createMap(
-            "a", "1",
-            "b", mapOf(Pair("c", "success"))
+        val data = mapOf(
+            Pair("a", "1"),
+            Pair("b", mapOf(Pair("c", "success")))
         )
 
         Assertions.assertEquals(data, converter!!.execute("if", arrayOf("1 > 0", data)))

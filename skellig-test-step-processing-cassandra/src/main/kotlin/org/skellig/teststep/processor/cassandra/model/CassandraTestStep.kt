@@ -1,7 +1,7 @@
 package org.skellig.teststep.processor.cassandra.model
 
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 
 open class CassandraTestStep protected constructor(id: String?,
@@ -12,7 +12,7 @@ open class CassandraTestStep protected constructor(id: String?,
                                                    attempts: Int,
                                                    variables: Map<String, Any?>?,
                                                    testData: Any?,
-                                                   validationDetails: ValidationDetails?,
+                                                   validationDetails: ValidationNode?,
                                                    servers: Collection<String>?,
                                                    command: String?,
                                                    table: String?,

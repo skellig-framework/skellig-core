@@ -4,8 +4,8 @@ import org.skellig.teststep.processing.validation.comparator.DefaultValueCompara
 import org.skellig.teststep.processing.value.extractor.ValueExtractor
 import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 import org.skellig.teststep.processing.value.property.PropertyExtractor
-import org.skellig.teststep.reader.sts.value.expression.EvaluationType
-import org.skellig.teststep.reader.sts.value.expression.ValueExpressionContext
+import org.skellig.teststep.reader.value.expression.EvaluationType
+import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 
 class ValueExpressionContextFactory(
     private val functionExecutor: FunctionValueExecutor,
@@ -28,6 +28,8 @@ class ValueExpressionContextFactory(
     }
 
     fun create(parameters: Map<String, Any?>): ValueExpressionContext = ValueExpressionContext(EvaluationType.DEFAULT, onFunctionCall, createOnGetReferenceValue(parameters))
+
+    fun createEmpty() = ValueExpressionContext()
 
     fun createForValidation(value: Any?, parameters: Map<String, Any?>): ValueExpressionContext {
         val context = ValueExpressionContext(

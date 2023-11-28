@@ -2,26 +2,25 @@ package org.skellig.teststep.runner.registry
 
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
-import io.github.classgraph.ScanResult
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.reader.value.expression.*
 import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.regex.Pattern
 
 internal class ClassTestStepsRegistry(packages: Collection<String>) : TestStepRegistry {
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(ClassTestStepsRegistry.javaClass)
+        private val LOGGER: Logger = LoggerFactory.getLogger(ClassTestStepsRegistry::class.java)
 
-        private const val ID = "id"
-        private const val TEST_STEP_NAME_PATTERN = "testStepNamePattern"
-        private const val TEST_STEP_DEF_INSTANCE = "testStepDefInstance"
-        private const val TEST_STEP_METHOD = "testStepMethod"
+        private val ID = StringValueExpression("id")
+        private val TEST_STEP_NAME_PATTERN = StringValueExpression("testStepNamePattern")
+        private val TEST_STEP_DEF_INSTANCE = StringValueExpression("testStepDefInstance")
+        private val TEST_STEP_METHOD = StringValueExpression("testStepMethod")
     }
 
-    private var testStepsPerClass: MutableCollection<Map<String, Any?>> = mutableListOf()
+    private var testStepsPerClass: MutableCollection<Map<ValueExpression, ValueExpression?>> = mutableListOf()
 
     init {
         ClassGraph().acceptPackages(*packages.toTypedArray())
@@ -36,12 +35,12 @@ internal class ClassTestStepsRegistry(packages: Collection<String>) : TestStepRe
             }
     }
 
-    override fun getByName(testStepName: String): Map<String, Any?>? =
-        testStepsPerClass.firstOrNull { (it[TEST_STEP_NAME_PATTERN] as Pattern).matcher(testStepName).matches() }
+    override fun getByName(testStepName: String): Map<ValueExpression, ValueExpression?>? =
+        testStepsPerClass.firstOrNull { it[TEST_STEP_NAME_PATTERN]?.evaluate(ValueExpressionContext()) as Boolean? == true }
 
-    override fun getById(testStepId: String): Map<String, Any?>? = getByName(testStepId)
+    override fun getById(testStepId: String): Map<ValueExpression, ValueExpression?>? = getByName(testStepId)
 
-    override fun getTestSteps(): Collection<Map<String, Any?>> = testStepsPerClass
+    override fun getTestSteps(): Collection<Map<ValueExpression, ValueExpression?>> = testStepsPerClass
 
     private fun loadStepDefsMethods(classInfo: ClassInfo) {
         var foundClassInstance: Any? = null
@@ -66,14 +65,14 @@ internal class ClassTestStepsRegistry(packages: Collection<String>) : TestStepRe
                 method?.let { methodInstance ->
                     val testStepAnnotation = methodInstance.getAnnotation(TestStep::class.java)
                     val testStepNameId = testStepAnnotation.id
-                    val testStepNamePattern = Pattern.compile(testStepAnnotation.name)
+                    val testStepNamePattern = PatternValueExpression(testStepAnnotation.name)
 
                     testStepsPerClass.add(
                         mapOf(
-                            Pair(ID, testStepNameId),
+                            Pair(ID, StringValueExpression(testStepNameId)),
                             Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
-                            Pair(TEST_STEP_DEF_INSTANCE, foundClassInstance!!),
-                            Pair(TEST_STEP_METHOD, methodInstance)
+                            Pair(TEST_STEP_DEF_INSTANCE, AnyValueExpression(foundClassInstance!!)),
+                            Pair(TEST_STEP_METHOD, AnyValueExpression(methodInstance))
                         )
                     )
                 }
