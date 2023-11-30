@@ -138,6 +138,7 @@ class RmqTestStepProcessorTest {
                 .receiveFrom(setOf(CHANNEL_NAME))
                 .withTestData("hi")
                 .withName("n1")
+                .withValidationDetails(expectedResult)
                 .build()
             whenever(rmqChannel!!.read(ArgumentMatchers.any())).thenReturn(response)
             doThrow(ValidationException("oops")).whenever(expectedResult)

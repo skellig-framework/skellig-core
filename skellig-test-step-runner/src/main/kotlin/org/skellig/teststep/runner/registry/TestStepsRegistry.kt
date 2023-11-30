@@ -3,8 +3,10 @@ package org.skellig.teststep.runner.registry
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.util.CachedPattern.Companion.compile
 import org.skellig.teststep.reader.TestStepReader
-import org.skellig.teststep.reader.value.expression.StringValueExpression
+import org.skellig.teststep.reader.exception.TestStepReadException
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.skellig.teststep.runner.model.TestStepFileExtension
 import org.slf4j.Logger
@@ -22,8 +24,8 @@ internal class TestStepsRegistry(
 ) : TestStepRegistry {
 
     companion object {
-        private val ID = StringValueExpression("id")
-        private val NAME = StringValueExpression("name")
+        private val ID = AlphanumericValueExpression("id")
+        private val NAME = AlphanumericValueExpression("name")
         private val LOGGER: Logger = LoggerFactory.getLogger(TestStepsRegistry::class.java)
     }
 
@@ -49,7 +51,7 @@ internal class TestStepsRegistry(
     override fun getTestSteps(): Collection<Map<ValueExpression, ValueExpression?>> = testSteps
 
     private fun getTestStepName(rawTestStep: Map<ValueExpression, ValueExpression?>): String =
-        rawTestStep[NAME]?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
+        rawTestStep[NAME]?.evaluate(ValueExpressionContext.EMPTY)?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
 
     private fun getTestStepsFromPath(rootPaths: Collection<URI>): Collection<Map<ValueExpression, ValueExpression?>> {
         LOGGER.debug("Extracting test steps from files in '{}'", rootPaths)
@@ -77,7 +79,7 @@ internal class TestStepsRegistry(
                                 "when reading test steps from files on URI '$rootUri'"
                     )
             } catch (ex: Exception) {
-                throw TestStepRegistryException(ex.message, ex)
+                throw TestStepRegistryException("Failed to register test steps in '$rootUri'", ex)
             }
     }
 
@@ -99,8 +101,12 @@ internal class TestStepsRegistry(
             }
 
         private fun readFileFromPath(it: Path): List<Map<ValueExpression, ValueExpression?>> {
-            LOGGER.debug("Extract test steps from file '$it'")
-            return testStepReader.read(it.toUri().toURL().openStream())
+            LOGGER.debug("Extract test steps from file '{}'", it)
+            try {
+                return testStepReader.read(it.toUri().toURL().openStream())
+            } catch (ex: TestStepReadException) {
+                throw TestStepReadException("Failed to read test steps in file '$it'", ex)
+            }
         }
     }
 

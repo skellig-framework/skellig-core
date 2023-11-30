@@ -127,6 +127,7 @@ internal class IbmMqTestStepProcessorTest {
                 .readFrom(setOf(CHANNEL_ID))
                 .withTestData("hi")
                 .withName("n1")
+                .withValidationDetails(expectedResult)
                 .build()
             whenever(ibmMqChannel.read(anyInt())).thenReturn(response)
 

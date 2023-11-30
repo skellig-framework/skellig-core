@@ -122,6 +122,7 @@ internal class TcpTestStepProcessorTest {
                     .readFrom(setOf(CHANNEL_ID))
                     .withTestData("hi")
                     .withName("n1")
+                    .withValidationDetails(expectedResult)
                     .build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(response)
             doThrow(ValidationException("oops")).whenever(expectedResult)

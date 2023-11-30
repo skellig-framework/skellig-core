@@ -48,7 +48,7 @@ class ValueExpressionContextFactory(
         ) { name: String, default: () -> Any? ->
             when (name) {
                 "it" -> referencedValue
-                else -> referenceExtractor.extractFrom(name, parameters)?.let { default() }
+                else -> referenceExtractor.extractFrom(name, parameters)?: default()
             }
         }
         return context

@@ -8,6 +8,7 @@ import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser
 import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.*
 import org.skellig.teststep.reader.value.expression.*
 
+
 internal class StsParser {
     companion object {
         private val NAME_KEYWORD = AlphanumericValueExpression("name")
@@ -19,6 +20,8 @@ internal class StsParser {
         val skelligGrammarLexer = SkelligGrammarLexer(CharStreams.fromString(content))
         val input = CommonTokenStream(skelligGrammarLexer)
         val parser = SkelligGrammarParser(input)
+        parser.removeErrorListeners()
+        parser.addErrorListener(SkelligTestStepParserErrorListener.INSTANCE)
         val tree: ParseTree = parser.file()
 
         return convert(tree)
@@ -33,7 +36,7 @@ internal class StsParser {
                 if (tree.getChild(c) is TestStepNameContext) {
                     val rawTestStep: MutableMap<ValueExpression, ValueExpression?> = LinkedHashMap()
                     val testStepNameContext = tree.getChild(c) as TestStepNameContext
-                    rawTestStep[NAME_KEYWORD] = StringValueExpression(testStepNameContext.STRING().text)
+                    rawTestStep[NAME_KEYWORD] = valueParser.parse(testStepNameContext.STRING().toString())
                     for (pairContext in testStepNameContext.pair()) {
                         convertPair(pairContext)?.let { rawTestStep[it.first] = it.second }
                     }
@@ -46,7 +49,7 @@ internal class StsParser {
     }
 
     private fun convertPair(pair: PairContext): Pair<ValueExpression, ValueExpression?>? {
-        val key = valueParser.parse(pair.key().text)!!
+        val key = valueParser.parse(pair.key().text) ?: error("Failed to parse Skellig Test Step: Property cannot be null")
         return if (pair.value() != null) {
             Pair(key, convertValue(pair.value()))
         } else if (pair.map() != null) {
@@ -85,4 +88,5 @@ internal class StsParser {
         }
         return array
     }
+
 }

@@ -26,6 +26,7 @@ import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.reader.sts.StsReader
+import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 import org.skellig.teststep.runner.DefaultTestStepRunner
 import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.exception.TestStepRegistryException
@@ -95,6 +96,7 @@ open class SkelligTestContext : Closeable {
 
         rootTestStepFactory = CompositeTestStepFactory.Builder()
             .withTestDataRegistry(getTestStepRegistry())
+            .withValueExpressionContextFactory(valueExpressionContextFactory)
             .build()
 
         // initialise additional test step processors if found
@@ -135,7 +137,9 @@ open class SkelligTestContext : Closeable {
 
         val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths)
         classTestStepsRegistry.getTestSteps().forEach { testStep ->
-            testStep.values.filterIsInstance<SkelligTestContextAware>()
+            testStep.values
+                .mapNotNull { it?.evaluate(ValueExpressionContext.EMPTY) }
+                .filterIsInstance<SkelligTestContextAware>()
                 .forEach { it.setSkelligTestContext(this) }
         }
         return CachedTestStepsRegistry(listOf(testStepsRegistry, classTestStepsRegistry))

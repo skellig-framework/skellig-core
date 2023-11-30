@@ -8,16 +8,17 @@ import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.regex.Pattern
 
 internal class ClassTestStepsRegistry(packages: Collection<String>) : TestStepRegistry {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(ClassTestStepsRegistry::class.java)
 
-        private val ID = StringValueExpression("id")
-        private val TEST_STEP_NAME_PATTERN = StringValueExpression("testStepNamePattern")
-        private val TEST_STEP_DEF_INSTANCE = StringValueExpression("testStepDefInstance")
-        private val TEST_STEP_METHOD = StringValueExpression("testStepMethod")
+        private val ID = AlphanumericValueExpression("id")
+        private val TEST_STEP_NAME_PATTERN = AlphanumericValueExpression("testStepNamePattern")
+        private val TEST_STEP_DEF_INSTANCE = AlphanumericValueExpression("testStepDefInstance")
+        private val TEST_STEP_METHOD = AlphanumericValueExpression("testStepMethod")
     }
 
     private var testStepsPerClass: MutableCollection<Map<ValueExpression, ValueExpression?>> = mutableListOf()
@@ -36,7 +37,7 @@ internal class ClassTestStepsRegistry(packages: Collection<String>) : TestStepRe
     }
 
     override fun getByName(testStepName: String): Map<ValueExpression, ValueExpression?>? =
-        testStepsPerClass.firstOrNull { it[TEST_STEP_NAME_PATTERN]?.evaluate(ValueExpressionContext()) as Boolean? == true }
+        testStepsPerClass.firstOrNull { it[TEST_STEP_NAME_PATTERN]?.evaluate(ValueExpressionContext(testStepName)) as Boolean? == true }
 
     override fun getById(testStepId: String): Map<ValueExpression, ValueExpression?>? = getByName(testStepId)
 

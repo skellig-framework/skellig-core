@@ -6,7 +6,7 @@ import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.validation.factory.ValidationNodeFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
-import org.skellig.teststep.reader.value.expression.StringValueExpression
+import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
@@ -15,14 +15,14 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 ) : BaseTestStepFactory<T>(valueExpressionContextFactory) {
 
     companion object {
-        private val ID = StringValueExpression("id")
+        private val ID = AlphanumericValueExpression("id")
 
-        private val PARENT_KEYWORD = StringValueExpression("parent")
-        private val VARIABLES_KEYWORD = StringValueExpression("variables")
-        private val EXECUTION_KEYWORD = StringValueExpression("execution")
-        private val TIMEOUT_KEYWORD = StringValueExpression("timeout")
-        private val DELAY_KEYWORD = StringValueExpression("delay")
-        private val ATTEMPTS_KEYWORD = StringValueExpression("attempts")
+        private val PARENT_KEYWORD = AlphanumericValueExpression("parent")
+        private val VARIABLES_KEYWORD = AlphanumericValueExpression("variables")
+        private val EXECUTION_KEYWORD = AlphanumericValueExpression("execution")
+        private val TIMEOUT_KEYWORD = AlphanumericValueExpression("timeout")
+        private val DELAY_KEYWORD = AlphanumericValueExpression("delay")
+        private val ATTEMPTS_KEYWORD = AlphanumericValueExpression("attempts")
         private const val DEFAULT_TIMEOUT = 30000
 
         private var testDataKeywords: Set<ValueExpression>? = null
@@ -66,6 +66,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         }
 
         val variables = extractVariablesToParameters(rawTestStep, additionalParameters)
+        variables?.let { additionalParameters.putAll(it) }
 
         return createTestStepBuilder(rawTestStep, additionalParameters)
             .withId(getId(rawTestStep, additionalParameters))
@@ -106,9 +107,9 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         parameters: MutableMap<String, Any?>
     ): Map<String, Any?>? {
         val rawVariables = rawTestStep[VARIABLES_KEYWORD]
-        return rawVariables?.let {
-            (convertValue<Map<*,*>>(it, parameters) as Map<String, Any?>?)
-                ?:throw TestStepCreationException("Variables of the test step must have key-value pair (ex. type: Map<String, Any>)")
+        return (rawVariables as MapValueExpression?)?.let {
+            (convertValue<Map<String, Any?>>(it, parameters))
+                ?: throw TestStepCreationException("Variables of the test step must have key-value pair (ex. type: Map<String, Any>)")
         }
     }
 
@@ -134,7 +135,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     }
 
     protected open fun getDelay(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Int {
-        return getInteger(rawTestStep, parameters,DELAY_KEYWORD, 0)
+        return getInteger(rawTestStep, parameters, DELAY_KEYWORD, 0)
     }
 
     protected open fun getAttempts(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Int {

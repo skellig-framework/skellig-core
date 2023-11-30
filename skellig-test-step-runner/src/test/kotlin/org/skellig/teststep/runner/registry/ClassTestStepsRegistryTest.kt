@@ -1,8 +1,12 @@
 package org.skellig.teststep.runner.registry
 
+import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.AnyValueExpression
+import org.skellig.teststep.reader.value.expression.PatternValueExpression
 import org.skellig.teststep.runner.annotation.TestStep
 
 class ClassTestStepsRegistryTest {
@@ -24,10 +28,10 @@ class ClassTestStepsRegistryTest {
         assertAll(
             { assertEquals(1, testSteps.size) },
             { assertEquals(4, testSteps.first().size) },
-            { assertEquals("step1", firstStep["id"].toString()) },
-            { assertEquals("test A", firstStep["testStepNamePattern"].toString()) },
-            { assertEquals(Steps::class.java, firstStep["testStepDefInstance"]?.javaClass) },
-            { assertEquals(Steps::class.java.methods[0], firstStep["testStepMethod"]) }
+            { assertEquals("step1", firstStep[AlphanumericValueExpression("id")].toString()) },
+            { assertEquals("test A", (firstStep[AlphanumericValueExpression("testStepNamePattern")] as PatternValueExpression).pattern.pattern()) },
+            { assertEquals(Steps::class.java, (firstStep[AlphanumericValueExpression("testStepDefInstance")] as AnyValueExpression).evaluate(mock()).javaClass) },
+            { assertEquals(Steps::class.java.methods[0], (firstStep[AlphanumericValueExpression("testStepMethod")] as AnyValueExpression).evaluate(mock())) }
         )
     }
 }

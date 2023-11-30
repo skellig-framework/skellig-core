@@ -13,6 +13,8 @@ internal class StsValueParser {
 
     fun parse(value: String): ValueExpression? {
         val parser = SkelligTestValueGrammarParser(CommonTokenStream(SkelligTestValueGrammarLexer(CharStreams.fromString(value))))
+        parser.removeErrorListeners()
+        parser.addErrorListener(SkelligTestStepParserErrorListener.INSTANCE)
 
         return convert(parser.expression())
     }

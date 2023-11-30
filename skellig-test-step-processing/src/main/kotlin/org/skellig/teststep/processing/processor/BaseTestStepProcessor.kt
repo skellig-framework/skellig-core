@@ -74,7 +74,7 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
         abstract fun build(): TestStepProcessor<T>
     }
 
-    class DefaultTestStepRunResult(private val testStep: DefaultTestStep?) : TestStepProcessor.TestStepRunResult(testStep) {
+    class DefaultTestStepRunResult(private val testStep: DefaultTestStep?) : TestStepRunResult(testStep) {
 
         override fun getTimeout(): Long {
             val attempts = testStep?.attempts ?: 1

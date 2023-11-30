@@ -1,9 +1,6 @@
 name("Create user .*") {
     assert {
-        fromTest = t1
-        all_match [
-                 "dude"
-                 ]
+        get(t1) = "dude"
     }
 }
 
@@ -20,13 +17,13 @@ name("Get user name (.*)"){
 name("User (.+) exist") {
     test = "Check user exist"
     failed {
-               test = "Get user name ${1}"
+               test = "Get user name " + ${1}
                passed {
-                          test = "Create user ${usr}"
+                          test = "Create user " + ${usr}
                       }
            }
 }
 
 name("User (.+) is signed in") {
-    test = "User ${1} exist"
+    test = "User " + ${1} + " exist"
 }

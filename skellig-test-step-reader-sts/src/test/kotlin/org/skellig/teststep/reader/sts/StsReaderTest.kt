@@ -3,9 +3,7 @@ package org.skellig.teststep.reader.sts
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
-import org.skellig.teststep.reader.value.expression.StringValueExpression
-import org.skellig.teststep.reader.value.expression.ValueExpression
+import org.skellig.teststep.reader.value.expression.*
 import java.net.URISyntaxException
 import java.net.URL
 
@@ -35,7 +33,7 @@ class StsReaderTest {
         val firstTestStep = testSteps[0]
         val secondTestStep = testSteps[1]
         assertAll(
-            { assertEquals("\"Simple test step\"", getValueFromMap(firstTestStep, "name")) },
+            { assertEquals("Simple test step", getValueFromMap(firstTestStep, "name").toString()) },
             { assertEquals("POST", getValueFromMap(firstTestStep, "method").toString()) },
             { assertEquals("\${baseUrl}/a/b/c", firstTestStep[alphaNumOf("url")].toString()) },
             { assertEquals("v 1 2 3", getValueFromMap(firstTestStep, "payload", "json", "value").toString()) },
@@ -44,7 +42,7 @@ class StsReaderTest {
             { assertEquals("\${a, \${b}.a.b}", getValueFromMap(firstTestStep, "payload", "json", "v3").toString()) }
         )
         assertAll(
-            { assertEquals("\" Send \\d{1} message (.*) from csv \\(test\\)\"", getValueFromMap(secondTestStep, "name")) },
+            { assertEquals(" Send \\d{1} message (.*) from csv \\(test\\)", getValueFromMap(secondTestStep, "name").toString()) },
             { assertEquals("POST", getValueFromMap(secondTestStep, "method").toString()) },
             { assertEquals("/a/ + b/ + c", getValueFromMap(secondTestStep, "url").toString()) },
             { assertEquals("\${user}", getValueFromMap(secondTestStep, "auth", "username").toString()) },
@@ -92,7 +90,7 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertEquals("\"Run command (.*)\"", getValueFromMap(firstTestStep, "name")) },
+            { assertEquals("Run command (.*)", getValueFromMap(firstTestStep, "name").toString()) },
             {
                 assertEquals(
                     """{          command: ${'$'}1          value: v1        }""",
@@ -112,11 +110,11 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertEquals("\"Validate response\"", getValueFromMap(firstTestStep, "name")) },
+            { assertEquals("Validate response", getValueFromMap(firstTestStep, "name").toString()) },
             { assertEquals("T1", getValueFromMap(firstTestStep, "validate", "fromTest").toString()) },
             {
                 assertTrue(
-                    (getValueFromMap(firstTestStep, "validate", "contains_expected_values") as List<*>)
+                    (getValueFromMap(firstTestStep, "validate", "contains_expected_values") as ListValueExpression).value
                         .map { it.toString() }
                         .containsAll(
                             listOf(
@@ -142,12 +140,12 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertEquals("\"do something big\"", getValueFromMap(firstTestStep, "name")) },
-            { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values") as List<*>).size) },
-            { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values", 0) as Map<*, *>).size) },
+            { assertEquals("do something big", getValueFromMap(firstTestStep, "name").toString()) },
+            { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values") as ListValueExpression).value.size) },
+            { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values", 0) as MapValueExpression).value.size) },
             { assertEquals("v1", getValueFromMap(firstTestStep, "data", "values", 0, "c1").toString()) },
             { assertEquals("v2", getValueFromMap(firstTestStep, "data", "values", 0, "c2").toString()) },
-            { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values", 1) as Map<*, *>).size) },
+            { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values", 1) as MapValueExpression).value.size) },
             { assertEquals("v3", getValueFromMap(firstTestStep, "data", "values", 1, "c1").toString()) },
             { assertEquals("v4", getValueFromMap(firstTestStep, "data", "values", 1, "c2").toString()) }
         )
@@ -162,7 +160,7 @@ class StsReaderTest {
         val testSteps = stsReader.read(filePath.openStream())
 
         val firstTestStep = testSteps[0]
-        assertEquals("\"Given something\"", getValueFromMap(firstTestStep, "name"))
+        assertEquals("Given something", getValueFromMap(firstTestStep, "name").toString())
     }
 
     @Test
@@ -175,7 +173,7 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertEquals("\"Validate response\"", getValueFromMap(firstTestStep, "name")) },
+            { assertEquals("Validate response", getValueFromMap(firstTestStep, "name").toString()) },
             { assertEquals("T 1 2 3", getValueFromMap(firstTestStep, "validate", "fromTest").toString()) },
             { assertEquals("application/json", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "headers", "content-type").toString()) },  // spaced inside the value must be preserved
             { assertEquals("contains(fail  1 )", getValueFromMap(firstTestStep, "validate", "values().anyMatch", "log", "none_match", 0).toString()) },
@@ -197,7 +195,7 @@ class StsReaderTest {
 
         val firstTestStep = testSteps[0]
         assertAll(
-            { assertTrue(( getValueFromMap(firstTestStep, "services") as Collection<*>).map { it.toString() }.contains("srv1"), "Services field does not contain srv1") },
+            { assertTrue((getValueFromMap(firstTestStep, "services") as ListValueExpression).value.map { it.toString() }.contains("srv1"), "Services field does not contain srv1") },
             { assertEquals("3", getValueFromMap(firstTestStep, "validate", "size").toString()) },
             { assertEquals("contains(v1)", getValueFromMap(firstTestStep, "validate", "records", "fromIndex(0)").toString()) },
             { assertEquals("contains(v2)", getValueFromMap(firstTestStep, "validate", "records", "fromIndex(1)").toString()) },
@@ -232,15 +230,16 @@ class StsReaderTest {
         var value: Any? = data
         for (key in keys) {
             if (key is String) {
-                if (value is Map<*, *>) {
+                if (value is Map<*, *> || value is MapValueExpression) {
+                    value = if (value is MapValueExpression) value.value else value as Map<*, *>
                     val alphaNumKey = alphaNumOf(key)
                     value = if (value.containsKey(alphaNumKey)) value[alphaNumKey]
                     else value.keys.filter { it.toString() == key }.map { (value as Map<*, *>)[it] }.first()
                 }
             } else if (key is Int) {
-                value = (value as List<*>)[key]
-            } else if (value is Map<*, *>) {
-                value = value[key]
+                value = (value as ListValueExpression).value[key]
+            } else if (value is MapValueExpression) {
+                value = value.value[key]
             }
         }
         return value

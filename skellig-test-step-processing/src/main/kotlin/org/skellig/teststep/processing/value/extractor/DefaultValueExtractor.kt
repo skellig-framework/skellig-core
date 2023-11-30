@@ -27,7 +27,6 @@ private constructor(private val extractors: Map<String, ValueExtractor>) : Value
             withValueExtractor(XPathValueExtractor())
             withValueExtractor(objectValueExtractor)
             withValueExtractor(ValuesValueExtractor())
-            withValueExtractor(FindFromStateValueExtractor(objectValueExtractor))
             withValueExtractor(FromIndexValueExtractor())
             withValueExtractor(ToStringValueExtractor())
             withValueExtractor(SubStringValueExtractor())
