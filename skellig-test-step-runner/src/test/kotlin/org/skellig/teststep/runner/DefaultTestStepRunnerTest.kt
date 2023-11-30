@@ -13,6 +13,9 @@ import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.reader.TestStepReader
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.StringValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.skellig.teststep.runner.model.TestStepFileExtension
 import org.skellig.teststep.runner.registry.TestStepsRegistry
 
@@ -65,7 +68,7 @@ internal class DefaultTestStepRunnerTest {
     }
 
     private fun initializeTestSteps(testStepName: String, parameters: Map<String, String?>) {
-        val rawTestStep = mapOf(Pair("name", testStepName))
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(Pair(AlphanumericValueExpression("name"), StringValueExpression(testStepName)))
         testStep = DefaultTestStep.DefaultTestStepBuilder()
                 .withId("t1")
                 .withName(testStepName)

@@ -3,12 +3,19 @@ package org.skellig.teststep.runner.registry
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.util.CachedPattern.Companion.compile
 import org.skellig.teststep.reader.TestStepReader
+import org.skellig.teststep.reader.exception.TestStepReadException
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.skellig.teststep.runner.model.TestStepFileExtension
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
-import java.nio.file.*
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.stream.Collectors
 
 internal class TestStepsRegistry(
@@ -17,36 +24,37 @@ internal class TestStepsRegistry(
 ) : TestStepRegistry {
 
     companion object {
-        private const val ID = "id"
+        private val ID = AlphanumericValueExpression("id")
+        private val NAME = AlphanumericValueExpression("name")
         private val LOGGER: Logger = LoggerFactory.getLogger(TestStepsRegistry::class.java)
     }
 
-    private var testSteps: Collection<Map<String, Any?>> = emptyList()
-    private var testStepsGroupedById: Map<String, Map<String, Any?>> = mutableMapOf()
+    private var testSteps: Collection<Map<ValueExpression, ValueExpression?>> = emptyList()
+    private var testStepsGroupedById: Map<String, Map<ValueExpression, ValueExpression?>> = mutableMapOf()
 
     fun registerFoundTestStepsInPath(testStepsPaths: Collection<URI>) {
         testSteps = getTestStepsFromPath(testStepsPaths)
         testStepsGroupedById = testSteps.filter { it.containsKey(ID) }.associateBy { it[ID].toString() }
     }
 
-    override fun getByName(testStepName: String): Map<String, Any?>? =
+    override fun getByName(testStepName: String): Map<ValueExpression, ValueExpression?>? =
         testSteps.parallelStream()
-            .filter { testStep: Map<String, Any?> ->
+            .filter { testStep: Map<ValueExpression, ValueExpression?> ->
                 compile(getTestStepName(testStep)).matcher(testStepName).matches()
             }
             .findFirst()
             .orElse(null)
 
-    override fun getById(testStepId: String): Map<String, Any?>? =
+    override fun getById(testStepId: String): Map<ValueExpression, ValueExpression?>? =
         testStepsGroupedById[testStepId]
 
-    override fun getTestSteps(): Collection<Map<String, Any?>> = testSteps
+    override fun getTestSteps(): Collection<Map<ValueExpression, ValueExpression?>> = testSteps
 
-    private fun getTestStepName(rawTestStep: Map<String, Any?>): String =
-        rawTestStep["name"]?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
+    private fun getTestStepName(rawTestStep: Map<ValueExpression, ValueExpression?>): String =
+        rawTestStep[NAME]?.evaluate(ValueExpressionContext.EMPTY)?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
 
-    private fun getTestStepsFromPath(rootPaths: Collection<URI>): Collection<Map<String, Any?>> {
-        LOGGER.debug("Extracting test steps from files in '$rootPaths'")
+    private fun getTestStepsFromPath(rootPaths: Collection<URI>): Collection<Map<ValueExpression, ValueExpression?>> {
+        LOGGER.debug("Extracting test steps from files in '{}'", rootPaths)
 
         val readFileStrategy = RawTestStepsReaderStrategy()
         return rootPaths
@@ -62,7 +70,7 @@ internal class TestStepsRegistry(
         )
 
 
-        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<String, Any?>> =
+        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<ValueExpression, ValueExpression?>> =
             try {
                 val protocol = rootUri.toURL().protocol
                 fileReader[protocol]?.getTestStepsFromUri(rootUri)
@@ -71,16 +79,16 @@ internal class TestStepsRegistry(
                                 "when reading test steps from files on URI '$rootUri'"
                     )
             } catch (ex: Exception) {
-                throw TestStepRegistryException(ex.message, ex)
+                throw TestStepRegistryException("Failed to register test steps in '$rootUri'", ex)
             }
     }
 
     private open inner class RawTestStepsFromFileReader : RawTestStepsReader {
 
-        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<String, Any?>> =
+        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<ValueExpression, ValueExpression?>> =
             walkThroughFiles(Paths.get(rootUri))
 
-        protected fun walkThroughFiles(root: Path): Collection<Map<String, Any?>> =
+        protected fun walkThroughFiles(root: Path): Collection<Map<ValueExpression, ValueExpression?>> =
             if (Files.isDirectory(root)) {
                 Files.walk(root)
                     .parallel()
@@ -92,16 +100,20 @@ internal class TestStepsRegistry(
                 readFileFromPath(root)
             }
 
-        private fun readFileFromPath(it: Path): List<Map<String, Any?>> {
-            LOGGER.debug("Extract test steps from file '$it'")
-            return testStepReader.read(it.toUri().toURL().openStream())
+        private fun readFileFromPath(it: Path): List<Map<ValueExpression, ValueExpression?>> {
+            LOGGER.debug("Extract test steps from file '{}'", it)
+            try {
+                return testStepReader.read(it.toUri().toURL().openStream())
+            } catch (ex: TestStepReadException) {
+                throw TestStepReadException("Failed to read test steps in file '$it'", ex)
+            }
         }
     }
 
     private inner class RawTestStepsFromJarFileReader : RawTestStepsFromFileReader() {
 
-        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<String, Any?>> {
-            val rawTestSteps = mutableListOf<Map<String, Any?>>()
+        override fun getTestStepsFromUri(rootUri: URI): Collection<Map<ValueExpression, ValueExpression?>> {
+            val rawTestSteps = mutableListOf<Map<ValueExpression, ValueExpression?>>()
             FileSystems.newFileSystem(rootUri, emptyMap<String, Any>()).use {
                 for (root in it.rootDirectories) {
                     rawTestSteps.addAll(walkThroughFiles(root))

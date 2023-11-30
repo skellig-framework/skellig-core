@@ -16,12 +16,10 @@ class TcpTestStepProcessorConfig : TestStepProcessorConfig<TcpTestStep> {
             TcpTestStepProcessor.Builder()
                 .tcpChannels(details.config)
                 .withTestScenarioState(details.state)
-                .withValidator(details.validator)
                 .build(),
             TcpTestStepFactory(
                 details.testStepRegistry,
-                details.keywordProperties,
-                details.testStepFactoryValueConverter
+                details.valueExpressionContextFactory
             )
         )
         else null
@@ -35,12 +33,10 @@ class TcpConsumableTestStepProcessorConfig : TestStepProcessorConfig<TcpConsumab
             TcpConsumableTestStepProcessor.Builder()
                 .tcpChannels(details.config)
                 .withTestScenarioState(details.state)
-                .withValidator(details.validator)
                 .build(),
             TcpConsumableTestStepFactory(
                 details.testStepRegistry,
-                details.keywordProperties,
-                details.testStepFactoryValueConverter
+                details.valueExpressionContextFactory,
             )
         )
         else null

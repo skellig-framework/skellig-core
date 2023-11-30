@@ -6,14 +6,12 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
 
 open class RmqConsumableTestStepProcessor(
     protected val rmqChannels: Map<String, RmqChannel>,
     testScenarioState: TestScenarioState?,
-    validator: TestStepResultValidator?
-) : ValidatableTestStepProcessor<RmqConsumableTestStep>(testScenarioState!!, validator!!) {
+) : ValidatableTestStepProcessor<RmqConsumableTestStep>(testScenarioState!!) {
 
 
     override fun process(testStep: RmqConsumableTestStep): TestStepProcessor.TestStepRunResult {
@@ -25,9 +23,11 @@ open class RmqConsumableTestStepProcessor(
         return testStepRunResult
     }
 
-    private fun consume(testStep: RmqConsumableTestStep,
-                        channels: List<String>,
-                        result: TestStepProcessor.TestStepRunResult) {
+    private fun consume(
+        testStep: RmqConsumableTestStep,
+        channels: List<String>,
+        result: TestStepProcessor.TestStepRunResult
+    ) {
         val respondTo = testStep.respondTo
         val response = testStep.testData
         channels.forEachIndexed { index, channelName ->
@@ -71,7 +71,7 @@ open class RmqConsumableTestStepProcessor(
 
     class Builder : BaseRmqProcessorBuilder<RmqConsumableTestStep>() {
         override fun build(): TestStepProcessor<RmqConsumableTestStep> {
-            return RmqConsumableTestStepProcessor(rmqChannels, testScenarioState, validator)
+            return RmqConsumableTestStepProcessor(rmqChannels, testScenarioState)
         }
     }
 }

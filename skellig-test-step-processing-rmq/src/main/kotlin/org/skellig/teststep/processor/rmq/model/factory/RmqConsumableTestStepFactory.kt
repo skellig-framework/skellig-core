@@ -1,18 +1,20 @@
 package org.skellig.teststep.processor.rmq.model.factory
 
-import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.rmq.model.BaseRmqTestStep
 import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
-import java.util.*
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
-class RmqConsumableTestStepFactory(testStepRegistry: TestStepRegistry,
-                                   keywordsProperties: Properties?,
-                                   testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseRmqTestStepFactory<RmqConsumableTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
+class RmqConsumableTestStepFactory(
+    testStepRegistry: TestStepRegistry,
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseRmqTestStepFactory<RmqConsumableTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>,
-                                       parameters: Map<String, Any?>): BaseRmqTestStep.Builder<RmqConsumableTestStep> {
+    override fun createTestStepBuilder(
+        rawTestStep: Map<ValueExpression, ValueExpression?>,
+        parameters: Map<String, Any?>
+    ): BaseRmqTestStep.Builder<RmqConsumableTestStep> {
         return RmqConsumableTestStep.Builder()
             .consumeFrom(getConsumeFromChannels(rawTestStep, parameters))
             .respondTo(getRespondToChannels(rawTestStep, parameters))
@@ -20,10 +22,10 @@ class RmqConsumableTestStepFactory(testStepRegistry: TestStepRegistry,
             .properties(convertValue(getProperties(rawTestStep), parameters))
     }
 
-    private fun getRespondToChannels(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): List<String>? =
-        toList(convertValue<Any>(rawTestStep[getKeywordName(RESPOND_TO_KEYWORD, "respondTo")], parameters))
+    private fun getRespondToChannels(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): List<String>? =
+        toList(convertValue<Any>(rawTestStep[RESPOND_TO_KEYWORD], parameters))
 
-    private fun getConsumeFromChannels(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): List<String>? =
+    private fun getConsumeFromChannels(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): List<String>? =
         toList(convertValue<Any>(rawTestStep[getConsumeFromKeyword()], parameters))
 
     private fun toList(channel: Any?): List<String>? {
@@ -33,6 +35,6 @@ class RmqConsumableTestStepFactory(testStepRegistry: TestStepRegistry,
         }
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
+    override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean =
         rawTestStep.containsKey(getConsumeFromKeyword()) && hasRmqRequiredData(rawTestStep)
 }

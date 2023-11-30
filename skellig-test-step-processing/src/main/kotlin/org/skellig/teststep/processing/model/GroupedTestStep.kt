@@ -10,7 +10,7 @@ package org.skellig.teststep.processing.model
  * Then the process is repeated until it reaches `null` for `passed` or `failed`
  * depending on the previous outcome.
  */
-class GroupedTestStep constructor(
+class GroupedTestStep(
     override val name: String,
     val testStepToRun: TestStepRun
 ) : TestStep {

@@ -1,7 +1,6 @@
 name("Run command (.*)") {
  method = POST
- payload =
-        "{
+ payload ="{
           command: $1
           value: v1
         }"

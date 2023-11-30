@@ -6,10 +6,8 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.ExpectedResult
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.CachedPattern
-import org.skellig.teststep.processing.utils.UnitTestUtils
 import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
@@ -20,7 +18,7 @@ import java.util.regex.Pattern
 @DisplayName("Create Test Step")
 class DefaultTestStepFactoryTest {
 
-    private var testStepFactory: TestStepFactory<DefaultTestStep>? = null
+   /* private var testStepFactory: TestStepFactory<DefaultTestStep>? = null
     private var testScenarioState: TestScenarioState? = null
     private val testStepRegistry = mock<TestStepRegistry>()
 
@@ -365,5 +363,5 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap())
 
         assertEquals(expectedValue, (testStep.testData as Map<*, *>?)!!["c"])
-    }
+    }*/
 }

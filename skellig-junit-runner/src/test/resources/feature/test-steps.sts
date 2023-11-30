@@ -1,8 +1,8 @@
 name ("User (\w+) prepares a message with score (\w+)") {
     id = step1
     variables {
-        "id" = 00001
-        "name" = ${1}
+        id = 00001
+        name = ${1}
         score = ${2}
     }
 }
@@ -12,7 +12,7 @@ name ("The user sends the message to (\w+)") {
     receiver = ${1}
     message {
         toCustomFormat {
-            "id" = get(step1).variables.id
+            id = get(step1).variables.id
             userName = get(step1).variables.name
             score = get(step1).variables.score
         }
@@ -26,13 +26,14 @@ name ("User (\w+) receives valid response from (\w+)") {
         score = get(step1).variables.score
     }
     validate {
-        "fromTest" = step2
-        originalRequest.toCustomFormat [
-            match('.*score='${score}'.*')
-            contains(${2})
-        ]
-        receivedBy = ${1}
-        status = success
+        get(step2_result){
+            originalRequest.toCustomFormat [
+                match(".*score=" + ${score} + ".*"),
+                contains(${2})
+            ]
+            receivedBy = ${1}
+            status = success
+        }
     }
 }
 
@@ -53,29 +54,27 @@ name ("Send a message with if statement") {
 
     message {
         f1 = 0
-        f2 = "if(${num} == 1, ${part1}, ${part2})"
+        f2 = if(${num} == 1, ${part1}, ${part2})
     }
 }
 
 name ("Validate test with if statement") {
     validate {
       // enclose this keyword in quotes to check whether it still works
-        "fromTest" = if_test_1
-      // do not enclose `=` in quotes and check if it works
-        originalRequest.toString() [
-            contains('f2='${expected_f2})
-            contains('f3='${expected_f3})
-        ]
-        status = success
+       get(if_test_1_result){
+          // do not enclose `=` in quotes and check if it works
+            originalRequest.toString() [
+                contains("f2=" + ${expected_f2}),
+                contains("f3=" + ${expected_f3})
+            ]
+            status = success
+       }
     }
 }
 
 name ("Check result after log in test step file") {
     validate {
       // `log1` test is from TestStepDefs class
-        'fromTest' = log1
-        all_match [
-            match(Log record: result)
-        ]
+        get(log1_result).match("Log record: result") = true
     }
 }

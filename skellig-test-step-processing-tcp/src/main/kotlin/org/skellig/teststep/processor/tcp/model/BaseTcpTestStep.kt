@@ -2,7 +2,7 @@ package org.skellig.teststep.processor.tcp.model
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 
 abstract class BaseTcpTestStep protected constructor(id: String?,
                                                      name: String,
@@ -12,7 +12,7 @@ abstract class BaseTcpTestStep protected constructor(id: String?,
                                                      attempts: Int,
                                                      variables: Map<String, Any?>?,
                                                      testData: Any?,
-                                                     validationDetails: ValidationDetails?,
+                                                     validationDetails: ValidationNode?,
                                                      val readBufferSize: Int)
     : DefaultTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails) {
 

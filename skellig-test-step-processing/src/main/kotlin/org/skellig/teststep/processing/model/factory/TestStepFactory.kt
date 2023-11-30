@@ -1,10 +1,11 @@
 package org.skellig.teststep.processing.model.factory
 
 import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
 interface TestStepFactory<T : TestStep> {
 
-    fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): T
+    fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): T
 
-    fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean
+    fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean
 }

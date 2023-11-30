@@ -1,5 +1,8 @@
 package org.skellig.performance.runner.service.controller
 
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.skellig.teststep.runner.context.SkelligTestContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -17,12 +20,12 @@ class SkelligPerformancePageController {
 
     companion object {
         private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_]+)(\\s*:\\s*(.+))?}")
-        private const val RPS = "test.step.keyword.rps"
-        private const val TIME_TO_RUN = "test.step.keyword.timeToRun"
-        private const val BEFORE = "test.step.keyword.before"
-        private const val AFTER = "test.step.keyword.after"
-        private const val RUN = "test.step.keyword.run"
-        private const val NAME = "test.step.keyword.name"
+        private val RPS = AlphanumericValueExpression("rps")
+        private val TIME_TO_RUN = AlphanumericValueExpression("timeToRun")
+        private val BEFORE = AlphanumericValueExpression("before")
+        private val AFTER = AlphanumericValueExpression("after")
+        private val RUN = AlphanumericValueExpression("run")
+        private val NAME = AlphanumericValueExpression("name")
 
         val TIME_PATTERN = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
@@ -45,15 +48,15 @@ class SkelligPerformancePageController {
             configPath
         )
         val testStepRegistry = skelligTestContext!!.getTestStepRegistry()
-        val properties = skelligTestContext!!.testStepKeywordsProperties
+        val valueExpressionContextFactory = skelligTestContext!!.getValueExpressionContextFactory()
         var idCounter = 0
         model["testItems"] = testStepRegistry.getTestSteps()
-            .filter { it.containsKey(getRpsKeyword(properties)) }
+            .filter { it.containsKey(RPS) }
             .map {
-                val name = it[getKeywordName(NAME, "name", properties)].toString()
-                val rps = getRps(it, properties)
-                val timeToRun = getTimeToRun(it, properties)
-                val parameters = findAllParameters(it, properties)
+                val name = it[NAME].toString()
+                val parameters = findAllParameters(it)
+                val rps = getRps(it, valueExpressionContextFactory)
+                val timeToRun = getTimeToRun(it, valueExpressionContextFactory)
                 PerformanceTestDetails(
                     (idCounter++).toString(), name, timeToRun?.first, timeToRun?.second,
                     rps?.first, rps?.second, parameters
@@ -63,44 +66,50 @@ class SkelligPerformancePageController {
         return "index"
     }
 
-    private fun getTimeToRun(rawTestStep: Map<String, Any?>, properties: Properties?): Pair<String?, String?>? {
-        val timeToRun = rawTestStep[getTimeToRunKeyword(properties)]?.toString()
+    private fun getTimeToRun(
+        rawTestStep: Map<ValueExpression, ValueExpression?>,
+        valueExpressionContextFactory: ValueExpressionContextFactory,
+    ): Pair<String?, String?>? {
+        val timeToRun = rawTestStep[TIME_TO_RUN]?.evaluate(valueExpressionContextFactory.create(emptyMap()))?.toString()
         return timeToRun?.let {
             tryExtractParameterWithDefaultValue(it)
                 ?: Pair(null, LocalTime.parse(it, TIME_PATTERN).format(TIME_PATTERN))
         }
     }
 
-    private fun getRps(rawTestStep: Map<String, Any?>, properties: Properties?): Pair<String?, String?>? {
-        val rps = rawTestStep[getRpsKeyword(properties)]?.toString()
+    private fun getRps(
+        rawTestStep: Map<ValueExpression, ValueExpression?>,
+        valueExpressionContextFactory: ValueExpressionContextFactory
+    ): Pair<String?, String?>? {
+        val rps = rawTestStep[RPS]?.evaluate(valueExpressionContextFactory.create(emptyMap()))?.toString()
         return rps?.let {
             tryExtractParameterWithDefaultValue(it) ?: Pair(null, it)
         }
     }
 
-    private fun findAllParameters(rawTestStep: Map<String, Any?>, properties: Properties?): Collection<Parameter> {
+    private fun findAllParameters(rawTestStep: Map<ValueExpression, ValueExpression?>): Collection<Parameter> {
         val rawTestSteps = mutableListOf<String>()
         val testStepRegistry = skelligTestContext!!.getTestStepRegistry()
-        (rawTestStep[getKeywordName(BEFORE, "before", properties)] as List<*>?)?.forEach {
+        (rawTestStep[BEFORE] as List<*>?)?.forEach {
             rawTestSteps.add(it.toString())
         }
-        (rawTestStep[getKeywordName(AFTER, "after", properties)] as List<*>?)?.forEach {
+        (rawTestStep[AFTER] as List<*>?)?.forEach {
             rawTestSteps.add(it.toString())
         }
-        (rawTestStep[getKeywordName(RUN, "run", properties)] as List<*>?)?.forEach {
+        (rawTestStep[RUN] as List<*>?)?.forEach {
             rawTestSteps.add(it.toString())
         }
         return rawTestSteps.flatMap {
-            findAllParameters(testStepRegistry.getByName(it))
-        }.union(findAllParameters(rawTestStep.filter {
-            it.key != getTimeToRunKeyword(properties) && it.key != getRpsKeyword(properties)
+            findAllParametersFrom(testStepRegistry.getByName(it))
+        }.union(findAllParametersFrom(rawTestStep.filter {
+            it.key != TIME_TO_RUN && it.key != RPS
         }))
     }
 
-    private fun findAllParameters(rawTestStep: Map<String, Any?>?): Collection<Parameter> {
+    private fun findAllParametersFrom(rawTestStep: Map<ValueExpression, ValueExpression?>?): Collection<Parameter> {
         return rawTestStep?.flatMap {
             val parameterNames = mutableSetOf<Parameter>()
-            extractAndAddParameters(it.key, parameterNames)
+            extractAndAddParameters(it.key.toString(), parameterNames)
             extractAndAddParameters(it.value?.toString() ?: "", parameterNames)
             parameterNames
         }?.toSet() ?: emptyList()
@@ -120,15 +129,6 @@ class SkelligPerformancePageController {
             if (matcher.groupCount() > 2) Pair(matcher.group(1), matcher.group(3))
             else Pair(matcher.group(1), null)
         } else null
-    }
-
-    private fun getTimeToRunKeyword(properties: Properties?) =
-        getKeywordName(TIME_TO_RUN, "timeToRun", properties)
-
-    private fun getRpsKeyword(properties: Properties?) = getKeywordName(RPS, "rps", properties)
-
-    private fun getKeywordName(keywordName: String?, defaultValue: String, properties: Properties?): String {
-        return if (properties == null) defaultValue else properties.getProperty(keywordName, defaultValue)
     }
 
     class PerformanceTestDetails(

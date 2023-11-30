@@ -3,75 +3,73 @@ package org.skellig.teststep.processor.db.model.factory
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
-import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
-import java.util.*
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
-abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(testStepRegistry: TestStepRegistry,
-                                                              keywordsProperties: Properties?,
-                                                              testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseDefaultTestStepFactory<TS>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
+abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(
+    testStepRegistry: TestStepRegistry,
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseDefaultTestStepFactory<TS>(testStepRegistry, valueExpressionContextFactory) {
 
     companion object {
-        private const val PROVIDER_KEYWORD = "test.step.keyword.db.provide"
-        private const val SERVERS_KEYWORD = "test.step.keyword.servers"
-        private const val TABLE_KEYWORD = "test.step.keyword.table"
-        private const val COMMAND_KEYWORD = "test.step.keyword.command"
-        private const val QUERY_KEYWORD = "test.step.keyword.query"
-        private const val WHERE_KEYWORD = "test.step.keyword.where"
-        private const val VALUES_KEYWORD = "test.step.keyword.values"
+        private val SERVERS_KEYWORD = AlphanumericValueExpression("servers")
+        private val TABLE_KEYWORD = AlphanumericValueExpression("table")
+        private val COMMAND_KEYWORD = AlphanumericValueExpression("command")
+        private val QUERY_KEYWORD = AlphanumericValueExpression("query")
+        private val WHERE_KEYWORD = AlphanumericValueExpression("where")
+        private val VALUES_KEYWORD = AlphanumericValueExpression("values")
+        val PROPERTY_PROVIDER_KEYWORD = AlphanumericValueExpression("provider")
         private const val DEFAULT_DELAY = 300
+
         private const val DEFAULT_ATTEMPTS = 10
+        private var DB_TEST_DATA_KEYWORDS = setOf(
+            WHERE_KEYWORD,
+            VALUES_KEYWORD
+        )
     }
 
-    private var dbTestDataKeywords = setOf(
-            getKeywordName(WHERE_KEYWORD, "where"),
-            getKeywordName(VALUES_KEYWORD, "values"))
-
-    override fun create(testStepName: String, rawTestStep: Map<String, Any?>, parameters: Map<String, String?>): TS {
+    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): TS {
         val testStep = super.create(testStepName, rawTestStep, parameters)
         if (testStep.testData != null) {
             if (testStep.query != null && testStep.testData !is List<*>) {
                 throw TestStepProcessingException("Test data for Database Test Step with query must be list of values")
             } else if (testStep.query == null && testStep.testData !is Map<*, *>) {
-                throw TestStepProcessingException("Test data for Database Test Step with command and table" +
-                                                          " must be column-value pairs")
+                throw TestStepProcessingException(
+                    "Test data for Database Test Step with command and table" +
+                            " must be column-value pairs"
+                )
             }
         }
         return testStep
     }
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<TS> {
-        val servers = getStringArrayDataFromRawTestStep(getKeywordName(SERVERS_KEYWORD, "servers"), rawTestStep, parameters)
+    override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<TS> {
+        val servers = getStringArrayDataFromRawTestStep(SERVERS_KEYWORD, rawTestStep, parameters)
         return createDatabaseTestStepBuilder(rawTestStep, parameters)
-                .withServers(servers)
-                .withCommand(convertValue<String>(rawTestStep[getKeywordName(COMMAND_KEYWORD, "command")], parameters))
-                .withTable(convertValue<String>(rawTestStep[getTableKeyword()], parameters))
-                .withQuery(convertValue<String>(rawTestStep[getQueryKeyword()], parameters))
+            .withServers(servers)
+            .withCommand(convertValue<String>(rawTestStep[COMMAND_KEYWORD], parameters))
+            .withTable(convertValue<String>(rawTestStep[TABLE_KEYWORD], parameters))
+            .withQuery(convertValue<String>(rawTestStep[QUERY_KEYWORD], parameters))
     }
 
-    protected abstract fun createDatabaseTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DatabaseTestStep.Builder<TS>
+    protected abstract fun createDatabaseTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DatabaseTestStep.Builder<TS>
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean {
-        return rawTestStep.containsKey(getTableKeyword()) || rawTestStep.containsKey(getQueryKeyword())
+    override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {
+        return rawTestStep.containsKey(TABLE_KEYWORD) || rawTestStep.containsKey(QUERY_KEYWORD)
     }
 
-    override fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    override fun getDelay(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Int {
         val delay = super.getDelay(rawTestStep, parameters)
         return if (delay == 0) DEFAULT_DELAY else delay
     }
 
-    override fun getAttempts(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    override fun getAttempts(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Int {
         val attempts = super.getAttempts(rawTestStep, parameters)
         return if (attempts == 0) DEFAULT_ATTEMPTS else attempts
     }
 
-    override fun getTestDataKeywords(): Set<String> = dbTestDataKeywords
-
-    private fun getQueryKeyword(): String = getKeywordName(QUERY_KEYWORD, "query")
-
-    private fun getTableKeyword(): String = getKeywordName(TABLE_KEYWORD, "table")
-
-    protected fun getProviderKeyword(): String = getKeywordName(PROVIDER_KEYWORD, "provider")
+    override fun getTestDataKeywords(): Set<ValueExpression> = DB_TEST_DATA_KEYWORDS
 }

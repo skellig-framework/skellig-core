@@ -16,7 +16,6 @@ class CompositeTestStepProcessorTest {
 
     private val compositeProcessor: CompositeTestStepProcessor = CompositeTestStepProcessor.Builder()
         .withTestScenarioState(mock())
-        .withValidator(mock())
         .build() as CompositeTestStepProcessor
 
     @Test

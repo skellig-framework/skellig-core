@@ -7,12 +7,9 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.skellig.teststep.processing.exception.ValidationException
-import org.skellig.teststep.processing.model.ExpectedResult
-import org.skellig.teststep.processing.model.MatchingType
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -28,7 +25,6 @@ class RmqTestStepProcessorTest {
     private var processor: TestStepProcessor<RmqTestStep>? = null
     private var rmqChannel = Mockito.mock(RmqChannel::class.java)
     private var rmqChannel2 = Mockito.mock(RmqChannel::class.java)
-    private var validator = Mockito.mock(TestStepResultValidator::class.java)
     private var testScenarioState = Mockito.mock(TestScenarioState::class.java)
 
     @BeforeEach
@@ -38,7 +34,7 @@ class RmqTestStepProcessorTest {
             Pair(CHANNEL_NAME_2, rmqChannel2)
         )
 
-        processor = RmqTestStepProcessor(rmqChannels, testScenarioState,validator)
+        processor = RmqTestStepProcessor(rmqChannels, testScenarioState)
     }
 
     @Test
@@ -111,7 +107,7 @@ class RmqTestStepProcessorTest {
                 { assertTrue(isPassed.get()) },
                 {
                     verify(testScenarioState!!).set(eq(testStep.getId + "_result"),
-                                                    argThat { args -> (args as Map<*, *>).containsKey(CHANNEL_NAME) })
+                        argThat { args -> (args as Map<*, *>).containsKey(CHANNEL_NAME) })
                 }
             )
         }
@@ -136,21 +132,17 @@ class RmqTestStepProcessorTest {
         @DisplayName("Receive invalid response And try to respond Then verify rmq channel did not respond")
         fun testReceiveInvalidAndTryRespond() {
             val response = "yo".toByteArray()
-            val expectedResult = ExpectedResult(null, "yo yo", MatchingType.ALL_MATCH)
+            val expectedResult = mock<ValidationNode>()
             val testStep: RmqTestStep = RmqTestStep.Builder()
                 .respondTo(setOf(CHANNEL_NAME))
                 .receiveFrom(setOf(CHANNEL_NAME))
                 .withTestData("hi")
                 .withName("n1")
-                .withValidationDetails(
-                    ValidationDetails.Builder()
-                        .withExpectedResult(expectedResult)
-                        .build())
+                .withValidationDetails(expectedResult)
                 .build()
             whenever(rmqChannel!!.read(ArgumentMatchers.any())).thenReturn(response)
-            doThrow(ValidationException("oops")).whenever(validator)
-                .validate(eq(expectedResult),
-                          argThat { args -> (args as Map<*, *>)[CHANNEL_NAME] == response })
+            doThrow(ValidationException("oops")).whenever(expectedResult)
+                .validate(argThat { args -> (args as Map<*, *>)[CHANNEL_NAME] == response })
 
             processor!!.process(testStep)
 

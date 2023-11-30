@@ -18,22 +18,24 @@ internal class RmqDetailsConfigReader {
 
         var rmqDetails: Collection<RmqDetails> = emptyList()
         if (config!!.hasPath(RMQ_CONFIG_KEYWORD)) {
-            val anyRefList = config.getAnyRefList(RMQ_CONFIG_KEYWORD) as List<Map<*, *>>
+            val anyRefList = config.getAnyRefList(RMQ_CONFIG_KEYWORD) as List<*>
             rmqDetails = anyRefList
-                    .map { rawRmqDetails: Map<*, *> -> createRmqDetails(rawRmqDetails) }
-                    .flatten()
-                    .toList()
+                .map { createRmqDetails(it) }
+                .flatten()
+                .toList()
         }
         return rmqDetails
     }
 
-    private fun createRmqDetails(rawRmqDetails: Map<*, *>): Collection<RmqDetails> {
-        val hostDetails = createRmqHostDetails(rawRmqDetails)
-        val queues = rawRmqDetails["queues"] as List<Map<*, *>>?
-        val exchanges = createExchanges(rawRmqDetails)
-        return queues!!
-                .map { createQueueDetails(it, exchanges, hostDetails) }
+    private fun createRmqDetails(rawRmqDetails: Any?): Collection<RmqDetails> {
+        return (rawRmqDetails as Map<*, *>?)?.let {
+            val hostDetails = createRmqHostDetails(it)
+            val queues = it["queues"] as List<*>?
+            val exchanges = createExchanges(it)
+            queues!!
+                .mapNotNull { createQueueDetails(it, exchanges, hostDetails) }
                 .toList()
+        } ?: emptyList()
     }
 
     private fun createRmqHostDetails(rawRmqDetails: Map<*, *>): RmqHostDetails {
@@ -46,52 +48,57 @@ internal class RmqDetailsConfigReader {
     }
 
     private fun createExchanges(rawExchangesDetails: Map<*, *>): Map<String, RmqExchangeDetails> {
-        val exchanges = (rawExchangesDetails["exchanges"]?:error("No exchanges were declared for RMQ")) as List<Map<*, *>>?
+        val exchanges = (rawExchangesDetails["exchanges"] ?: error("No exchanges were declared for RMQ")) as List<*>?
 
         return exchanges!!
-                .map { createExchange(it) }
-                .map { it.name to it }
-                .toMap()
+            .mapNotNull { createExchange(it) }.associateBy { it.name }
     }
 
-    private fun createExchange(rawExchangeDetails: Map<*, *>): RmqExchangeDetails {
-        val name = (rawExchangeDetails["name"]?:error("Name was not declared for RMQ Exchange")) as String?
-        val type = rawExchangeDetails["type"] as String?
+    private fun createExchange(rawExchangeDetails: Any?): RmqExchangeDetails? {
+        return (rawExchangeDetails as Map<*, *>?)?.let {
+            val name = (it["name"] ?: error("Name was not declared for RMQ Exchange")) as String?
+            val type = it["type"] as String?
 
-        return RmqExchangeDetails.Builder()
+            return RmqExchangeDetails.Builder()
                 .name(name)
                 .type(type)
-                .durable(extractIsDurable(rawExchangeDetails))
-                .autoDelete(extractIsAutoDelete(rawExchangeDetails))
-                .createIfNew(extractCreateIfNew(rawExchangeDetails))
-                .parameters(extractParameters(rawExchangeDetails))
+                .durable(extractIsDurable(it))
+                .autoDelete(extractIsAutoDelete(it))
+                .createIfNew(extractCreateIfNew(it))
+                .parameters(extractParameters(it))
                 .build()
+        }
     }
 
-    private fun createQueueDetails(item: Map<*, *>, exchanges: Map<String, RmqExchangeDetails>,
-                                   hostDetails: RmqHostDetails): RmqDetails {
-        val id = item["id"] as String?
-        val name = (item["name"]?:error("Queue name was not declared for RMQ details")) as String
-        val exchange = item["exchange"]?:error("Exchange name was not declared for RMQ details")
+    private fun createQueueDetails(
+        item: Any?,
+        exchanges: Map<String, RmqExchangeDetails>,
+        hostDetails: RmqHostDetails
+    ): RmqDetails? {
+        return (item as Map<*, *>?)?.let {
+            val id = it["id"] as String?
+            val name = (it["name"] ?: error("Queue name was not declared for RMQ details")) as String
+            val exchange = it["exchange"] ?: error("Exchange name was not declared for RMQ details")
 
-        Objects.requireNonNull(exchanges[exchange], String.format("No exchange name '%s' was declared", exchange))
+            Objects.requireNonNull(exchanges[exchange], String.format("No exchange name '%s' was declared", exchange))
 
-        val queue = RmqQueueDetails.Builder()
+            val queue = RmqQueueDetails.Builder()
                 .id(id)
                 .name(name)
-                .routingKey(extractRoutingKey(item))
-                .durable(extractIsDurable(item))
-                .autoDelete(extractIsAutoDelete(item))
-                .createIfNew(extractCreateIfNew(item))
-                .exclusive(extractIsExclusive(item))
-                .parameters(extractParameters(item))
+                .routingKey(extractRoutingKey(it))
+                .durable(extractIsDurable(it))
+                .autoDelete(extractIsAutoDelete(it))
+                .createIfNew(extractCreateIfNew(it))
+                .exclusive(extractIsExclusive(it))
+                .parameters(extractParameters(it))
                 .build()
 
-        return RmqDetails.Builder()
+            RmqDetails.Builder()
                 .hostDetails(hostDetails)
                 .queue(queue)
                 .exchange(exchanges[exchange])
                 .build()
+        }
     }
 
     private fun extractRoutingKey(rawQueueDetails: Map<*, *>): String {

@@ -15,23 +15,24 @@ class UnixShellConfigReader {
 
         var unixShellDetails = emptyList<UnixShellHostDetails>()
         if (config.hasPath(UNIX_SHELL_CONFIG_KEYWORD)) {
-            val anyRefList = config.getAnyRefList(UNIX_SHELL_CONFIG_KEYWORD) as List<Map<*, *>>
+            val anyRefList = config.getAnyRefList(UNIX_SHELL_CONFIG_KEYWORD) as List<*>
             unixShellDetails = anyRefList
-                    .map { createUnixShellDetails(it) }
-                    .toList()
+                .mapNotNull { createUnixShellDetails(it) }
+                .toList()
         }
         return unixShellDetails
     }
 
-    private fun createUnixShellDetails(rawJdbcDetails: Map<*, *>): UnixShellHostDetails {
-        val hostName = rawJdbcDetails["hostName"] as String? ?: error("Server name must be declared for JDBC instance")
-        val hostAddress = rawJdbcDetails["hostAddress"] as String? ?: error("Driver class name must be declared for JDBC instance")
-        val port = rawJdbcDetails["port"] as Int? ?: 22
-        val userName = rawJdbcDetails["userName"] as String?
-        val password = rawJdbcDetails["password"] as String?
-        val sshKeyPath = rawJdbcDetails["sshKeyPath"] as String?
+    private fun createUnixShellDetails(rawJdbcDetails: Any?): UnixShellHostDetails? {
+        return (rawJdbcDetails as Map<*, *>?)?.let {
+            val hostName = it["hostName"] as String? ?: error("Server name must be declared for JDBC instance")
+            val hostAddress = it["hostAddress"] as String? ?: error("Driver class name must be declared for JDBC instance")
+            val port = it["port"] as Int? ?: 22
+            val userName = it["userName"] as String?
+            val password = it["password"] as String?
+            val sshKeyPath = it["sshKeyPath"] as String?
 
-        return UnixShellHostDetails.Builder()
+            UnixShellHostDetails.Builder()
                 .withHostName(hostName)
                 .withHostAddress(hostAddress)
                 .withPort(port)
@@ -39,5 +40,6 @@ class UnixShellConfigReader {
                 .withPassword(password)
                 .withSshKeyPath(sshKeyPath)
                 .build()
+        }
     }
 }

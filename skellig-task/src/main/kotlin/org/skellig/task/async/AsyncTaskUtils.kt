@@ -20,7 +20,7 @@ class AsyncTaskUtils {
         }
 
         @JvmStatic
-        fun <T> runTaskAsync(task: () -> T): Future<T> {
+        fun <T> runTaskAsync(task: () -> T): Future<T?> {
             return runCallableAsync { runTask(task, 0, 0, { true }) }
         }
 
@@ -39,17 +39,17 @@ class AsyncTaskUtils {
                 runTasksAsyncAndWaitInternal(tasks, stopCondition, delay, attempts, timeout, mapOf<Any, T?>())
 
         @JvmStatic
-        fun <T> runTaskAsync(task: Callable<T>, stopCondition: Predicate<T>, timeout: Int): Future<T> {
+        fun <T> runTaskAsync(task: Callable<T?>, stopCondition: Predicate<T?>, timeout: Int): Future<T?> {
             return runCallableAsync { runTask(task, stopCondition, 0, timeout) }
         }
 
         @JvmStatic
-        fun <T> runTaskAsync(task: Callable<T>, stopCondition: Predicate<T>, delay: Int, timeout: Int): Future<T> {
+        fun <T> runTaskAsync(task: Callable<T?>, stopCondition: Predicate<T?>, delay: Int, timeout: Int): Future<T?> {
             return runCallableAsync { runTask(task, stopCondition, delay, timeout) }
         }
 
         @JvmStatic
-        fun <T> runTaskAsync(task: Callable<T>, delay: Int, attempts: Int, stopCondition: Predicate<T>): Future<T> {
+        fun <T> runTaskAsync(task: Callable<T?>, delay: Int, attempts: Int, stopCondition: Predicate<T?>): Future<T?> {
             return runCallableAsync { runTask(task, delay, attempts, stopCondition) }
         }
 
@@ -81,7 +81,7 @@ class AsyncTaskUtils {
             }
         }
 
-        private fun <T> waitAndGetResult(taskResult: Future<T>, timeout: Int) =
+        private fun <T> waitAndGetResult(taskResult: Future<T?>, timeout: Int) =
                 try {
                     if (timeout > 0) taskResult[timeout.toLong(), TimeUnit.MILLISECONDS]
                     else taskResult[1, TimeUnit.MINUTES]

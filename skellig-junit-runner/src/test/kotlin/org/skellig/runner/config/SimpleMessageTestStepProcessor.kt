@@ -1,20 +1,15 @@
 package org.skellig.runner.config
 
 import org.skellig.task.TaskUtils.Companion.runTask
-import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
-import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
-import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.config.ConfiguredTestStepProcessorDetails
+import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
+import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import java.util.*
 
-class SimpleMessageTestStepProcessor private constructor(
-    testScenarioState: TestScenarioState?,
-    validator: TestStepResultValidator?
-) : BaseTestStepProcessor<SimpleMessageTestStep>(testScenarioState!!, validator!!) {
+class SimpleMessageTestStepProcessor private constructor(testScenarioState: TestScenarioState?) : BaseTestStepProcessor<SimpleMessageTestStep>(testScenarioState!!) {
 
     private var latestReceivedMessage: MutableMap<Any, Any?>? = null
 
@@ -43,18 +38,13 @@ class SimpleMessageTestStepProcessor private constructor(
 
     class Builder {
         private var testScenarioState: TestScenarioState? = null
-        private var validator: TestStepResultValidator? = null
 
         fun withTestScenarioState(testScenarioState: TestScenarioState?) = apply {
             this.testScenarioState = testScenarioState
         }
 
-        fun withValidator(validator: TestStepResultValidator?) = apply {
-            this.validator = validator
-        }
-
         fun build(): TestStepProcessor<SimpleMessageTestStep> {
-            return SimpleMessageTestStepProcessor(testScenarioState, validator)
+            return SimpleMessageTestStepProcessor(testScenarioState)
         }
     }
 }
@@ -64,12 +54,10 @@ class SimpleMessageTestStepProcessorConfig : TestStepProcessorConfig<SimpleMessa
         return ConfiguredTestStepProcessorDetails(
             SimpleMessageTestStepProcessor.Builder()
                 .withTestScenarioState(details.state)
-                .withValidator(details.validator)
                 .build(),
             SimpleMessageTestStepFactory(
                 details.testStepRegistry,
-                details.keywordProperties,
-                details.testStepFactoryValueConverter
+                details.valueExpressionContextFactory
             )
         )
     }

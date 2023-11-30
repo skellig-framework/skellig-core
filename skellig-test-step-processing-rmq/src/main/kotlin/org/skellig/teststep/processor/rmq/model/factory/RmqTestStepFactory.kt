@@ -1,40 +1,41 @@
 package org.skellig.teststep.processor.rmq.model.factory
 
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.factory.TestStepFactoryValueConverter
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
-import java.util.*
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
-class RmqTestStepFactory(testStepRegistry: TestStepRegistry,
-                         keywordsProperties: Properties?,
-                         testStepFactoryValueConverter: TestStepFactoryValueConverter)
-    : BaseRmqTestStepFactory<RmqTestStep>(testStepRegistry, keywordsProperties, testStepFactoryValueConverter) {
+class RmqTestStepFactory(
+    testStepRegistry: TestStepRegistry,
+    valueExpressionContextFactory: ValueExpressionContextFactory
+) : BaseRmqTestStepFactory<RmqTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
     companion object {
-        private const val SEND_TO_KEYWORD = "test.step.keyword.sendTo"
-        private const val RECEIVE_FROM_KEYWORD = "test.step.keyword.receiveFrom"
+        private val SEND_TO_KEYWORD = AlphanumericValueExpression("sendTo")
+        private val RECEIVE_FROM_KEYWORD = AlphanumericValueExpression("receiveFrom")
         private const val DEFAULT_DELAY = 250
         private const val DEFAULT_ATTEMPTS = 20
     }
 
-    override fun createTestStepBuilder(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<RmqTestStep> {
+    override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<RmqTestStep> {
         return RmqTestStep.Builder()
-                .sendTo(getSendToChannels(rawTestStep, parameters))
-                .receiveFrom(getReceiveFromChannels(rawTestStep, parameters))
-                .respondTo(getRespondToChannels(rawTestStep, parameters))
-                .routingKey(convertValue(getRoutingKey(rawTestStep), parameters))
-                .properties(convertValue(getProperties(rawTestStep), parameters))
+            .sendTo(getSendToChannels(rawTestStep, parameters))
+            .receiveFrom(getReceiveFromChannels(rawTestStep, parameters))
+            .respondTo(getRespondToChannels(rawTestStep, parameters))
+            .routingKey(convertValue(getRoutingKey(rawTestStep), parameters))
+            .properties(convertValue(getProperties(rawTestStep), parameters))
     }
 
-    private fun getRespondToChannels(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Set<String>? =
-            toSet(convertValue<Any>(rawTestStep[getKeywordName(RESPOND_TO_KEYWORD, "respondTo")], parameters))
+    private fun getRespondToChannels(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Set<String>? =
+        toSet(convertValue<Any>(rawTestStep[RESPOND_TO_KEYWORD], parameters))
 
-    private fun getSendToChannels(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Set<String>? =
-            toSet(convertValue<Any>(rawTestStep[getKeywordName(SEND_TO_KEYWORD, "sendTo")], parameters))
+    private fun getSendToChannels(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Set<String>? =
+        toSet(convertValue<Any>(rawTestStep[SEND_TO_KEYWORD], parameters))
 
-    private fun getReceiveFromChannels(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Set<String>? =
-            toSet(convertValue<Any>(rawTestStep[getKeywordName(RECEIVE_FROM_KEYWORD, "readFrom")], parameters))
+    private fun getReceiveFromChannels(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Set<String>? =
+        toSet(convertValue<Any>(rawTestStep[RECEIVE_FROM_KEYWORD], parameters))
 
     private fun toSet(channel: Any?): Set<String>? {
         return when (channel) {
@@ -43,15 +44,15 @@ class RmqTestStepFactory(testStepRegistry: TestStepRegistry,
         }
     }
 
-    override fun isConstructableFrom(rawTestStep: Map<String, Any?>): Boolean =
+    override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean =
         !rawTestStep.containsKey(getConsumeFromKeyword()) && hasRmqRequiredData(rawTestStep)
 
-    override fun getDelay(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    override fun getDelay(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Int {
         val delay = super.getDelay(rawTestStep, parameters)
         return if (delay == 0) DEFAULT_DELAY else delay
     }
 
-    override fun getAttempts(rawTestStep: Map<String, Any?>, parameters: Map<String, Any?>): Int {
+    override fun getAttempts(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Int {
         val attempts = super.getAttempts(rawTestStep, parameters)
         return if (attempts == 0) DEFAULT_ATTEMPTS else attempts
     }

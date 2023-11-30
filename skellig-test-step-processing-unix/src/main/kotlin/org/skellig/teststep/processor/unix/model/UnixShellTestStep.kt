@@ -2,7 +2,7 @@ package org.skellig.teststep.processor.unix.model
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 
 open class UnixShellTestStep protected constructor(id: String?,
                                                    name: String?,
@@ -12,7 +12,7 @@ open class UnixShellTestStep protected constructor(id: String?,
                                                    attempts: Int,
                                                    variables: Map<String, Any?>?,
                                                    testData: Any?,
-                                                   validationDetails: ValidationDetails?,
+                                                   validationDetails: ValidationNode?,
                                                    val hosts: Collection<String>?,
                                                    private val command: String,
                                                    private val args: Map<String, String?>?)

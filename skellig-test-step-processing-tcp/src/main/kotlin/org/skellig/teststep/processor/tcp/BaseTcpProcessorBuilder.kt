@@ -23,17 +23,23 @@ abstract class BaseTcpProcessorBuilder<T : BaseTcpTestStep> : BaseTestStepProces
 
     fun tcpChannels(config: Config) = apply {
         if (config.hasPath(TCP_CONFIG_KEYWORD)) {
-            (config.getAnyRefList(TCP_CONFIG_KEYWORD) as List<Map<*, *>>)
+            (config.getAnyRefList(TCP_CONFIG_KEYWORD) as List<*>)
                 .forEach {
-                    try {
-                        val port = it[PORT]?.toString()?.toInt() ?: 0
-                        val keepAlive = if (it.containsKey(KEEP_ALIVE)) it[KEEP_ALIVE].toString().toBoolean() else true
-                        tcpChannel(TcpDetails(it[ID]?.toString() ?: it[HOST]?.toString() ?: "",
-                                              it[HOST]?.toString() ?: error("TCP host must not be null"),
-                                              port,
-                                              keepAlive))
-                    } catch (e: NumberFormatException) {
-                        throw NumberFormatException("Invalid number assigned to TCP port in configuration")
+                    if (it is Map<*, *>) {
+                        try {
+                            val port = it[PORT]?.toString()?.toInt() ?: 0
+                            val keepAlive = if (it.containsKey(KEEP_ALIVE)) it[KEEP_ALIVE].toString().toBoolean() else true
+                            tcpChannel(
+                                TcpDetails(
+                                    it[ID]?.toString() ?: it[HOST]?.toString() ?: "",
+                                    it[HOST]?.toString() ?: error("TCP host must not be null"),
+                                    port,
+                                    keepAlive
+                                )
+                            )
+                        } catch (e: NumberFormatException) {
+                            throw NumberFormatException("Invalid number assigned to TCP port in configuration")
+                        }
                     }
                 }
         }

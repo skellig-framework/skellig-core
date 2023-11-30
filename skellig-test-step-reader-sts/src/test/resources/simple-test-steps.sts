@@ -8,18 +8,18 @@ name ("Simple test step"){
       json {
              command = "go"
             value = "v 1 2 3"
-             v2 = #[${a : #[${b}.length]}.size]
-             v3 = ${a : ${b}.'a.b' }
+             v2 = ${a, ${b}.length}.size
+             v3 = ${a, ${b}."a.b" }
       }
  }
 }
 
 name(" Send \d{1} message (.*) from csv \(test\)") {
- url = /'a/'b/'c'
+ url = "/a/" + "b/" + "c"
  method = POST
  auth {
     username = ${user}
-    password = ${password}\_
+    password = ${password} + "\_"
  }
  body {
     template {
@@ -28,7 +28,7 @@ name(" Send \d{1} message (.*) from csv \(test\)") {
         {
           file = "/resources/data/test1.csv"
           row {
-              name = "\\\ttest da'ta wi'th 'valid' values"
+              name = "\\\ttest da" + tawi + "th " + valid + " values"
               group = 1
           }
           convert = TABLE

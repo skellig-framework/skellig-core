@@ -10,21 +10,21 @@ class TaskUtils {
 
         @JvmStatic
         @Throws(TaskRunException::class)
-        fun <T> runTask(task: Callable<T>, stopCondition: Predicate<T>, delay: Int, timeout: Int): T {
+        fun <T> runTask(task: Callable<T?>, stopCondition: Predicate<T?>, delay: Int, timeout: Int): T? {
             return runTaskUntil(task, stopCondition, delay, timeout)
         }
 
         @JvmStatic
         @Throws(TaskRunException::class)
-        fun <T> runTask(task: Callable<T>, delay: Int, attempts: Int, stopCondition: Predicate<T>): T {
+        fun <T> runTask(task: Callable<T?>, delay: Int, attempts: Int, stopCondition: Predicate<T?>): T? {
             return runTaskUntil(task, delay, attempts, stopCondition)
         }
 
         @JvmStatic
         @Throws(TaskRunException::class)
-        private fun <T> runTaskUntil(task: Callable<T>, stopCondition: Predicate<T>, delay: Int, timeout: Int): T {
+        private fun <T> runTaskUntil(task: Callable<T?>, stopCondition: Predicate<T?>, delay: Int, timeout: Int): T? {
             var newTimeout: Int = timeout
-            var result: T
+            var result: T?
             do {
                 val startTime = System.currentTimeMillis()
                 result = call(task)
@@ -44,9 +44,9 @@ class TaskUtils {
 
         @JvmStatic
         @Throws(TaskRunException::class)
-        private fun <T> runTaskUntil(task: Callable<T>, delay: Int, attempts: Int, stopCondition: Predicate<T>): T {
+        private fun <T> runTaskUntil(task: Callable<T?>, delay: Int, attempts: Int, stopCondition: Predicate<T?>): T? {
             var newAttempts = attempts
-            var result: T
+            var result: T?
             do {
                 result = call(task)
                 newAttempts = if (stopCondition.test(result)) {
@@ -62,7 +62,7 @@ class TaskUtils {
             return result
         }
 
-        private fun <T> call(task: Callable<T>): T =
+        private fun <T> call(task: Callable<T?>): T? =
                 try {
                     task.call()
                 } catch (ex: Exception) {

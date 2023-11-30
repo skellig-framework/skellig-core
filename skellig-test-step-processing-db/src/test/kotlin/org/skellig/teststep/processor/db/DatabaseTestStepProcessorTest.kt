@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.DefaultTestStepResultValidator
-import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 
 @DisplayName("Process database test step")
@@ -33,10 +31,7 @@ class DatabaseTestStepProcessorTest {
                 Pair("srv2", dbRequestExecutor2))
 
         databaseTestStepProcessor = object : DatabaseTestStepProcessor<DatabaseRequestExecutor, TestDatabaseTestStep>(
-                dbServers, mock(TestScenarioState::class.java),
-                DefaultTestStepResultValidator.Builder()
-                        .withValueProcessingVisitor(mock(RawValueProcessingVisitor::class.java))
-                        .build()
+                dbServers, mock(TestScenarioState::class.java)
         ) {
             override fun getTestStepClass(): Class<*> = TestDatabaseTestStep::class.java
         }

@@ -26,29 +26,29 @@ class HttpTestStepProcessorTest {
 
         @BeforeEach
         fun setUp() {
-            val channels = mapOf( Pair("srv1", httpChannel))
-            processor = HttpTestStepProcessor(channels, mock(), mock())
+            val channels = mapOf(Pair("srv1", httpChannel))
+            processor = HttpTestStepProcessor(channels, mock())
         }
 
         @Test
         @DisplayName("Send HTTP request to a single service Then verify response received un-grouped")
         fun testSendHttpRequest() {
             val httpTestStep = HttpTestStep.Builder()
-                    .withService(listOf(SRV_1))
-                    .withUrl("/a/b/c")
-                    .withMethod("POST")
-                    .withName("n1")
-                    .build()
+                .withService(listOf(SRV_1))
+                .withUrl("/a/b/c")
+                .withMethod("POST")
+                .withName("n1")
+                .build()
 
             val response1 = HttpResponse.Builder().build()
             whenever(httpChannel.send(argThat { r -> r.url == "/a/b/c" })).thenReturn(response1)
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
-                    .subscribe { _, r, _ ->
-                        Assertions.assertEquals(response1, (r as Map<*,*>)[SRV_1])
-                        isPassed.set(true)
-                    }
+                .subscribe { _, r, _ ->
+                    Assertions.assertEquals(response1, (r as Map<*, *>)[SRV_1])
+                    isPassed.set(true)
+                }
 
             Assertions.assertTrue(isPassed.get())
         }
@@ -57,19 +57,19 @@ class HttpTestStepProcessorTest {
         @DisplayName("Send HTTP request When no service provided Then verify it was sent to a single default registered service")
         fun testSendHttpRequestWhenNoServiceProvided() {
             val httpTestStep = HttpTestStep.Builder()
-                    .withUrl("/a/b/c")
-                    .withMethod("POST")
-                    .withName("n1")
-                    .build()
+                .withUrl("/a/b/c")
+                .withMethod("POST")
+                .withName("n1")
+                .build()
 
             whenever(httpChannel.send(anyOrNull())).thenReturn(HttpResponse.Builder().build())
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
-                    .subscribe { _, r, _ ->
-                        Assertions.assertNotNull(r)
-                        isPassed.set(true)
-                    }
+                .subscribe { _, r, _ ->
+                    Assertions.assertNotNull(r)
+                    isPassed.set(true)
+                }
 
             Assertions.assertTrue(isPassed.get())
         }
@@ -81,20 +81,21 @@ class HttpTestStepProcessorTest {
         @BeforeEach
         fun setUp() {
             val channels = mapOf(
-                    Pair("srv1", httpChannel),
-                    Pair("srv2", httpChannel2))
-            processor = HttpTestStepProcessor(channels, mock(), mock())
+                Pair("srv1", httpChannel),
+                Pair("srv2", httpChannel2)
+            )
+            processor = HttpTestStepProcessor(channels, mock())
         }
 
         @Test
         @DisplayName("Send HTTP request to 2 service Then verify response received from both")
         fun testSendHttpRequestToAllServices() {
             val httpTestStep = HttpTestStep.Builder()
-                    .withService(listOf(SRV_1, SRV_2))
-                    .withUrl("/a/b/c")
-                    .withMethod("POST")
-                    .withName("n1")
-                    .build()
+                .withService(listOf(SRV_1, SRV_2))
+                .withUrl("/a/b/c")
+                .withMethod("POST")
+                .withName("n1")
+                .build()
             val response1 = HttpResponse.Builder().build()
             val response2 = HttpResponse.Builder().build()
 
@@ -103,11 +104,11 @@ class HttpTestStepProcessorTest {
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
-                    .subscribe { _, r, _ ->
-                        Assertions.assertEquals(response1, (r as Map<*, *>?)!![SRV_1])
-                        Assertions.assertEquals(response2, r!![SRV_2])
-                        isPassed.set(true)
-                    }
+                .subscribe { _, r, _ ->
+                    Assertions.assertEquals(response1, (r as Map<*, *>?)!![SRV_1])
+                    Assertions.assertEquals(response2, r!![SRV_2])
+                    isPassed.set(true)
+                }
             Assertions.assertTrue(isPassed.get())
         }
 
@@ -115,22 +116,22 @@ class HttpTestStepProcessorTest {
         @DisplayName("Send HTTP request to 2 service When one throws exception Then verify response received from both")
         fun testSendHttpRequestToAllServicesAndOneFailed() {
             val httpTestStep = HttpTestStep.Builder()
-                    .withService(listOf(SRV_1, SRV_2))
-                    .withUrl("/a/b/c")
-                    .withMethod("POST")
-                    .withName("n1")
-                    .build()
+                .withService(listOf(SRV_1, SRV_2))
+                .withUrl("/a/b/c")
+                .withMethod("POST")
+                .withName("n1")
+                .build()
 
             whenever(httpChannel.send(anyOrNull())).thenReturn(HttpResponse.Builder().build())
             whenever(httpChannel2.send(anyOrNull())).thenThrow(IllegalArgumentException("Failed to send request"))
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
-                    .subscribe { _, r, e ->
-                        Assertions.assertNotNull(e)
-                        Assertions.assertNull(r)
-                        isPassed.set(true)
-                    }
+                .subscribe { _, r, e ->
+                    Assertions.assertNotNull(e)
+                    Assertions.assertNull(r)
+                    isPassed.set(true)
+                }
 
             Assertions.assertTrue(isPassed.get())
         }
@@ -139,18 +140,20 @@ class HttpTestStepProcessorTest {
         @DisplayName("Send HTTP request When no services provided Then throw an error")
         fun testSendHttpRequestWhenNoServicesProvided() {
             val httpTestStep = HttpTestStep.Builder()
-                    .withUrl("/a/b/c")
-                    .withMethod("POST")
-                    .withName("n1")
-                    .build()
+                .withUrl("/a/b/c")
+                .withMethod("POST")
+                .withName("n1")
+                .build()
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
-                    .subscribe { _, _, e ->
-                        Assertions.assertEquals("No services were provided to run an HTTP request." +
-                                " Registered services are: [srv1, srv2]", e!!.message)
-                        isPassed.set(true)
-                    }
+                .subscribe { _, _, e ->
+                    Assertions.assertEquals(
+                        "No services were provided to run an HTTP request." +
+                                " Registered services are: [srv1, srv2]", e!!.message
+                    )
+                    isPassed.set(true)
+                }
             Assertions.assertTrue(isPassed.get())
         }
 
@@ -158,19 +161,21 @@ class HttpTestStepProcessorTest {
         @DisplayName("Send HTTP request to a service which not registered Then throw an error")
         fun testSendHttpRequestToNonExistentService() {
             val httpTestStep = HttpTestStep.Builder()
-                    .withService(listOf("srv3"))
-                    .withUrl("/a/b/c")
-                    .withMethod("POST")
-                    .withName("n1")
-                    .build()
+                .withService(listOf("srv3"))
+                .withUrl("/a/b/c")
+                .withMethod("POST")
+                .withName("n1")
+                .build()
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
-                    .subscribe { _, _, e ->
-                        Assertions.assertEquals("Service 'srv3' was not registered in HTTP Processor." +
-                                " Registered services are: [srv1, srv2]", e!!.message)
-                        isPassed.set(true)
-                    }
+                .subscribe { _, _, e ->
+                    Assertions.assertEquals(
+                        "Service 'srv3' was not registered in HTTP Processor." +
+                                " Registered services are: [srv1, srv2]", e!!.message
+                    )
+                    isPassed.set(true)
+                }
 
             Assertions.assertTrue(isPassed.get())
         }

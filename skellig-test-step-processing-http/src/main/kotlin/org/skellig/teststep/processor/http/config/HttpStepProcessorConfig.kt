@@ -14,12 +14,10 @@ class HttpTestStepProcessorConfig : TestStepProcessorConfig<HttpTestStep> {
                 HttpTestStepProcessor.Builder()
                     .withHttpService(details.config)
                     .withTestScenarioState(details.state)
-                    .withValidator(details.validator)
                     .build(),
                 HttpTestStepFactory(
                     details.testStepRegistry,
-                    details.keywordProperties,
-                    details.testStepFactoryValueConverter
+                    details.valueExpressionContextFactory
                 )
             )
         else null

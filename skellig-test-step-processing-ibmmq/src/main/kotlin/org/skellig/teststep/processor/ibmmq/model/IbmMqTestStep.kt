@@ -2,7 +2,7 @@ package org.skellig.teststep.processor.ibmmq.model
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.ValidationDetails
+import org.skellig.teststep.processing.model.validation.ValidationNode
 
 open class IbmMqTestStep protected constructor(id: String?,
                                                name: String?,
@@ -12,7 +12,7 @@ open class IbmMqTestStep protected constructor(id: String?,
                                                attempts: Int,
                                                variables: Map<String, Any?>?,
                                                testData: Any?,
-                                               validationDetails: ValidationDetails?,
+                                               validationDetails: ValidationNode?,
                                                val sendTo: Set<String>?,
                                                val readFrom: Set<String>?,
                                                val respondTo: Set<String>?)

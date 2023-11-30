@@ -5,14 +5,12 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 import org.skellig.teststep.processor.tcp.model.TcpConsumableTestStep
 
 open class TcpConsumableTestStepProcessor(
     protected val tcpChannels: Map<String, TcpChannel>,
     testScenarioState: TestScenarioState?,
-    validator: TestStepResultValidator?
-) : ValidatableTestStepProcessor<TcpConsumableTestStep>(testScenarioState!!, validator!!) {
+) : ValidatableTestStepProcessor<TcpConsumableTestStep>(testScenarioState!!) {
 
 
     override fun process(testStep: TcpConsumableTestStep): TestStepProcessor.TestStepRunResult {
@@ -75,7 +73,7 @@ open class TcpConsumableTestStepProcessor(
 
     class Builder : BaseTcpProcessorBuilder<TcpConsumableTestStep>() {
         override fun build(): TestStepProcessor<TcpConsumableTestStep> {
-            return TcpConsumableTestStepProcessor(tcpChannels, testScenarioState, validator)
+            return TcpConsumableTestStepProcessor(tcpChannels, testScenarioState)
         }
     }
 }

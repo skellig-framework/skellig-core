@@ -2,25 +2,21 @@
 name ("Validate response")
 {
   validate {
-    fromTest = 'T 1 2 3'
-
-    any_match {
-
-      [srv1, srv2, srv3] {
+    fromTest = "T 1 2 3"
+      values().anyMatch {
          status = 200
          body {
-            json_path(f1.f2) = ${p1 : ${p2: ${p3 : 4}}}
+            json_path(f1.f2) = ${p1, ${p2, ${p3, 4}}}
             json_path(f1.f3) = v2
-            "regex('.*f3=(\\w+).*')" = v3
+            regex(".*f3=(\w+).*") = v3
          }
-         headers {  content-type = application/json  }
+         headers {  content-type = "application/json"  }
          log {
             none_match [
-              contains(fail  1 )
-              contains( error)
+              contains("fail  1 "),
+              contains(" error")
             ]
          }
       }
-    }
  }
 }

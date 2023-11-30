@@ -8,7 +8,6 @@ import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.TestStepResultValidator
 
 /**
  * Base processor for `DefaultTestStep`.
@@ -16,10 +15,7 @@ import org.skellig.teststep.processing.validation.TestStepResultValidator
  * as well as its result after execution. After the result is received, it's validated
  * based on the validation details in the test step.
  */
-abstract class BaseTestStepProcessor<T : DefaultTestStep>(
-    testScenarioState: TestScenarioState,
-    validator: TestStepResultValidator,
-) : ValidatableTestStepProcessor<T>(testScenarioState, validator) {
+abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: TestScenarioState) : ValidatableTestStepProcessor<T>(testScenarioState) {
 
     override fun process(testStep: T): TestStepRunResult {
         val testStepRunResult = DefaultTestStepRunResult(testStep)
@@ -67,7 +63,6 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(
 
     abstract class Builder<T : TestStep> {
         protected var testScenarioState: TestScenarioState? = null
-        protected var validator: TestStepResultValidator? = null
 
         /**
          * The scenario state is needed to store the data of test step,
@@ -76,17 +71,10 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(
         fun withTestScenarioState(testScenarioState: TestScenarioState?) =
             apply { this.testScenarioState = testScenarioState }
 
-        /**
-         * The validator is required for validating the result after processing
-         * of a test step.
-         */
-        fun withValidator(validator: TestStepResultValidator?) =
-            apply { this.validator = validator }
-
         abstract fun build(): TestStepProcessor<T>
     }
 
-    class DefaultTestStepRunResult(private val testStep: DefaultTestStep?) : TestStepProcessor.TestStepRunResult(testStep) {
+    class DefaultTestStepRunResult(private val testStep: DefaultTestStep?) : TestStepRunResult(testStep) {
 
         override fun getTimeout(): Long {
             val attempts = testStep?.attempts ?: 1
