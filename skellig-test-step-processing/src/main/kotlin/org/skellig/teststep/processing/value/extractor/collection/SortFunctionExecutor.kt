@@ -7,7 +7,7 @@ class SortFunctionExecutor : BaseNonBooleanFunctionExecutor() {
     override fun executeInternal(value: Collection<*>, lambdaFunction: (Any?) -> Any?): Any =
         value.sortedBy {
             val result = lambdaFunction.invoke(it)
-            (result as? Comparable<Any>) ?: throw FunctionExecutionException(getInvalidLambdaResultType(Comparable::class.java, result?.javaClass))
+            (result as? Comparable<Any?>) ?: throw FunctionExecutionException(getInvalidLambdaResultType(Comparable::class.java, result?.javaClass))
         }
 
     override fun getExtractFunctionName(): String = "sort"
