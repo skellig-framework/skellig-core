@@ -2,35 +2,49 @@ package org.skellig.teststep.processing.model.validation
 
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
-import org.skellig.teststep.reader.value.expression.ValueExpression
+import org.skellig.teststep.reader.value.expression.*
 
 interface ValidationNode {
     fun validate(value: Any?)
 }
 
 internal abstract class BaseValidationNode : ValidationNode {
-   abstract fun toString(indent: Int): String
+    abstract fun toString(indent: Int): String
 
-   protected fun createIndent(indent: Int): String = "\t".repeat(indent)
-}
+    protected fun createIndent(indent: Int): String = "\t".repeat(indent)
 
-internal open class RootValidationNodes(val nodes: List<ValidationNode>) : BaseValidationNode() {
-
-    override fun validate(value: Any?) {
-        nodes.forEach { it.validate(value) }
+    protected fun createContext(
+        valueExpression: ValueExpression?,
+        valueExpressionContextFactory: ValueExpressionContextFactory,
+        value: Any?,
+        parameters: Map<String, Any?>
+    ): ValueExpressionContext {
+        return if (valueExpression?.javaClass == AlphanumericValueExpression::class.java ||
+//            valueExpression?.javaClass == StringValueExpression::class.java ||
+            valueExpression?.javaClass == CallChainExpression::class.java ||
+            valueExpression?.javaClass == FunctionCallExpression::class.java)
+            valueExpressionContextFactory.createForValidationAsCallChain(value, parameters)
+        else valueExpressionContextFactory.createForValidation(value, parameters, true)
     }
 
-    override fun toString(indent: Int): String {
-        return nodes.joinToString("\n", "${createIndent(indent)}[", "${createIndent(indent)}]", transform = { n -> (n as BaseValidationNode).toString(indent + 1) })
+    protected fun createContextForExpectedValue(
+        valueExpressionContextFactory: ValueExpressionContextFactory,
+        value: Any?,
+        parameters: Map<String, Any?>
+    ): ValueExpressionContext {
+        return valueExpressionContextFactory.createForValidation(value, parameters, false)
     }
-
 }
 
-internal class ValidationNodes(nodes: List<ValidationNode>) : RootValidationNodes(nodes) {
+@Deprecated(message = "Use ValidationNodes")
+internal open class RootValidationNodes(val nodes: List<ValidationNode>,
+                                        private val isMatchPerItem: Boolean = false) : BaseValidationNode() {
+
     override fun validate(value: Any?) {
-        if (value is List<*>) {
+        if (isMatchPerItem && value is List<*>) {
             nodes.forEach { n ->
                 var errors = ""
+                //TODO: check if 'any' but not 'all'
                 if (!value.any { v ->
                         try {
                             n.validate(v)
@@ -41,7 +55,22 @@ internal class ValidationNodes(nodes: List<ValidationNode>) : RootValidationNode
                         }
                     }) throw ValidationException(errors)
             }
-        } else super.validate(value)
+        } else nodes.forEach { it.validate(value) }
+    }
+
+    override fun toString(indent: Int): String {
+        return nodes.joinToString("\n", "${createIndent(indent)}[", "${createIndent(indent)}]", transform = { n -> (n as BaseValidationNode).toString(indent + 1) })
+    }
+
+}
+
+internal class ValidationNodes(
+    nodes: List<ValidationNode>,
+    private val isMatchPerItem: Boolean = false
+) : RootValidationNodes(nodes, isMatchPerItem) {
+
+    override fun validate(value: Any?) {
+        super.validate(value)
     }
 }
 
@@ -53,7 +82,7 @@ internal class GroupedValidationNode(
 ) : BaseValidationNode() {
 
     override fun validate(value: Any?) {
-        val evaluatedActualValue = actual.evaluate(valueExpressionContextFactory.createForValidation(value, parameters))
+        val evaluatedActualValue = actual.evaluate(createContext(actual, valueExpressionContextFactory, value, parameters))
         items.validate(evaluatedActualValue)
     }
 
@@ -70,8 +99,8 @@ internal class PairValidationNode(
 ) : BaseValidationNode() {
 
     override fun validate(value: Any?) {
-        val contextForActual = valueExpressionContextFactory.createForValidation(value, parameters)
-        val contextForExpected = valueExpressionContextFactory.createForValidation(parameters, value)
+        val contextForActual = createContext(actual, valueExpressionContextFactory, value, parameters)
+        val contextForExpected = createContextForExpectedValue(valueExpressionContextFactory, value, parameters)
 
         val actualEvaluated = actual.evaluate(contextForActual)
         val expectedEvaluated = expected?.evaluate(contextForExpected)
@@ -95,7 +124,7 @@ internal class SingleValidationNode(
 ) : BaseValidationNode() {
 
     override fun validate(value: Any?) {
-        val evaluated = expected?.evaluate(valueExpressionContextFactory.createForValidation(value, parameters))
+        val evaluated = expected?.evaluate(createContextForExpectedValue(valueExpressionContextFactory, value, parameters))
 
         if (evaluated is Boolean) {
             if (!evaluated)

@@ -15,7 +15,7 @@ class ValueComparisonExpression(
             when (operator) {
                 "==" -> evaluatedLeft.toString() == evaluatedRight.toString()
                 "!=" -> evaluatedLeft.toString() != evaluatedRight.toString()
-                else -> throw IllegalArgumentException("Invalid comparison operator for String values: \$operator")
+                else -> throw IllegalArgumentException("Invalid comparison operator for String values: $operator")
             }
         } else {
             if (!(evaluatedLeft is BigDecimal && evaluatedRight is BigDecimal)) {
@@ -29,7 +29,7 @@ class ValueComparisonExpression(
                 "<=" -> evaluatedLeft <= evaluatedRight
                 "==" -> evaluatedLeft == evaluatedRight
                 "!=" -> evaluatedLeft != evaluatedRight
-                else -> throw IllegalArgumentException("Invalid comparison operator for numeric values: \$operator")
+                else -> throw IllegalArgumentException("Invalid comparison operator for numeric values: $operator")
             }
         }
     }

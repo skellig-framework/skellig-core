@@ -1,6 +1,5 @@
 package org.skellig.teststep.processing.value.extractor.collection
 
-import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
 class AnyFunctionExecutor : BaseBooleanFunctionExecutor() {
 

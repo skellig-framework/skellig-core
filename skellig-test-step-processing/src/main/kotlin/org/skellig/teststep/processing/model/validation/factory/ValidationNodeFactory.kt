@@ -18,7 +18,7 @@ class ValidationNodeFactory(private val valueExpressionContextFactory: ValueExpr
     private fun createRootValidationNode(expectedResult: ValueExpression?, parameters: Map<String, Any?>): BaseValidationNode {
         return when (expectedResult) {
             is MapValueExpression -> RootValidationNodes(createValidationNodes(expectedResult.value, parameters))
-            is ListValueExpression -> RootValidationNodes(createValidationNodes(expectedResult.value, parameters))
+            is ListValueExpression -> RootValidationNodes(createValidationNodes(expectedResult.value, parameters), true)
             else -> createValidationNode(expectedResult, parameters)
         }
     }
@@ -26,7 +26,7 @@ class ValidationNodeFactory(private val valueExpressionContextFactory: ValueExpr
     private fun createValidationNode(expectedResult: Any?, parameters: Map<String, Any?>): BaseValidationNode {
         return when (expectedResult) {
             is MapValueExpression -> ValidationNodes(createValidationNodes(expectedResult.value, parameters))
-            is ListValueExpression -> ValidationNodes(createValidationNodes(expectedResult.value, parameters))
+            is ListValueExpression -> ValidationNodes(createValidationNodes(expectedResult.value, parameters), true)
             is ValueExpression -> SingleValidationNode(expectedResult, parameters, valueExpressionContextFactory)
             else -> SingleValidationNode(
                 expectedResult?.let { AlphanumericValueExpression(expectedResult.toString()) }, parameters, valueExpressionContextFactory

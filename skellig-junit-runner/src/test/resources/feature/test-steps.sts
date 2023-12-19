@@ -1,7 +1,7 @@
 name ("User (\w+) prepares a message with score (\w+)") {
     id = step1
     variables {
-        id = 00001
+        id = "00001"
         name = ${1}
         score = ${2}
     }
@@ -28,11 +28,11 @@ name ("User (\w+) receives valid response from (\w+)") {
     validate {
         get(step2_result){
             originalRequest.toCustomFormat [
-                match(".*score=" + ${score} + ".*"),
-                contains(${2})
+                $.match(".*score=" + ${score} + ".*"),
+                $.contains(${2})
             ]
             receivedBy = ${1}
-            status = success
+            status = "success"
         }
     }
 }
@@ -64,10 +64,10 @@ name ("Validate test with if statement") {
        get(if_test_1_result){
           // do not enclose `=` in quotes and check if it works
             originalRequest.toString() [
-                contains("f2=" + ${expected_f2}),
-                contains("f3=" + ${expected_f3})
+                $.contains("f2=" + ${expected_f2}),
+                $.contains("f3=" + ${expected_f3})
             ]
-            status = success
+            status = "success"
        }
     }
 }

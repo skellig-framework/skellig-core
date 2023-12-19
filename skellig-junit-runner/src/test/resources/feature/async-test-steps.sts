@@ -4,7 +4,7 @@ name ("User (\w+) is waiting for request from (\w+)") {
     execution = async
     receiveFrom = ${2}
     validate {
-        status = success
+        status = "success"
     }
 }
 
@@ -27,12 +27,12 @@ name ("User (\w+) received a valid response from (\w+)") {
     validate {
         get(step2_result, 50, 100) {
             originalRequest.toCustomFormat [
-                match(".*score=" + ${score} + ".*"),
-                contains(${2})
+                $.match(".*score=" + ${score} + ".*"),
+                $.contains(${2})
             ]
             receivedBy = ${1}
             receivedFrom = ${2}
-            status = success
+            status = "success"
         }
     }
 }
