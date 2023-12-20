@@ -58,13 +58,13 @@ public interface SkelligGrammarListener extends ParseTreeListener {
 	void exitValue(SkelligGrammarParser.ValueContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code values}
-	 * labeled alternative in {@link SkelligGrammarParser#expressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpression}.
+	 * labeled alternative in {@link SkelligGrammarParser#expressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpression}.
 	 * @param ctx the parse tree
 	 */
 	void enterValues(SkelligGrammarParser.ValuesContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code values}
-	 * labeled alternative in {@link SkelligGrammarParser#expressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpression}.
+	 * labeled alternative in {@link SkelligGrammarParser#expressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpression}.
 	 * @param ctx the parse tree
 	 */
 	void exitValues(SkelligGrammarParser.ValuesContext ctx);
@@ -136,18 +136,6 @@ public interface SkelligGrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSymbols(SkelligGrammarParser.SymbolsContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code colon}
-	 * labeled alternative in {@link SkelligGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterColon(SkelligGrammarParser.ColonContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code colon}
-	 * labeled alternative in {@link SkelligGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitColon(SkelligGrammarParser.ColonContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code lessThanEquals}
 	 * labeled alternative in {@link SkelligGrammarParser#expression}.

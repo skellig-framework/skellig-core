@@ -20,7 +20,6 @@ internal abstract class BaseValidationNode : ValidationNode {
         parameters: Map<String, Any?>
     ): ValueExpressionContext {
         return if (valueExpression?.javaClass == AlphanumericValueExpression::class.java ||
-//            valueExpression?.javaClass == StringValueExpression::class.java ||
             valueExpression?.javaClass == CallChainExpression::class.java ||
             valueExpression?.javaClass == FunctionCallExpression::class.java)
             valueExpressionContextFactory.createForValidationAsCallChain(value, parameters)
@@ -36,15 +35,13 @@ internal abstract class BaseValidationNode : ValidationNode {
     }
 }
 
-@Deprecated(message = "Use ValidationNodes")
-internal open class RootValidationNodes(val nodes: List<ValidationNode>,
-                                        private val isMatchPerItem: Boolean = false) : BaseValidationNode() {
+internal open class ValidationNodes(val nodes: List<ValidationNode>,
+                                    private val isMatchPerItem: Boolean = false) : BaseValidationNode() {
 
     override fun validate(value: Any?) {
-        if (isMatchPerItem && value is List<*>) {
+        if (isMatchPerItem && value is Collection<*>) {
             nodes.forEach { n ->
                 var errors = ""
-                //TODO: check if 'any' but not 'all'
                 if (!value.any { v ->
                         try {
                             n.validate(v)
@@ -62,16 +59,6 @@ internal open class RootValidationNodes(val nodes: List<ValidationNode>,
         return nodes.joinToString("\n", "${createIndent(indent)}[", "${createIndent(indent)}]", transform = { n -> (n as BaseValidationNode).toString(indent + 1) })
     }
 
-}
-
-internal class ValidationNodes(
-    nodes: List<ValidationNode>,
-    private val isMatchPerItem: Boolean = false
-) : RootValidationNodes(nodes, isMatchPerItem) {
-
-    override fun validate(value: Any?) {
-        super.validate(value)
-    }
 }
 
 internal class GroupedValidationNode(

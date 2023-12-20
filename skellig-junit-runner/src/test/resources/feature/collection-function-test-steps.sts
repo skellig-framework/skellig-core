@@ -20,5 +20,6 @@ name ("Validate default test value") {
                                                   name = "Alex"
                                                   $."contact.phone" = "998877"
                                               }
+                get(test_value).fromIndex(0).values() [ "Alex",  "700".toInt(),  $.contains("9988") ]
              }
 }

@@ -160,18 +160,6 @@ public class SkelligGrammarBaseListener implements SkelligGrammarListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterColon(SkelligGrammarParser.ColonContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitColon(SkelligGrammarParser.ColonContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterLessThanEquals(SkelligGrammarParser.LessThanEqualsContext ctx) { }
 	/**
 	 * {@inheritDoc}
