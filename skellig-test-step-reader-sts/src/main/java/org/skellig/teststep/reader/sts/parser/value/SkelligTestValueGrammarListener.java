@@ -18,13 +18,13 @@ public interface SkelligTestValueGrammarListener extends ParseTreeListener {
 	void exitStart(SkelligTestValueGrammarParser.StartContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code notExpr}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#logicalExpression()()}.
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#logicalExpression()}.
 	 * @param ctx the parse tree
 	 */
 	void enterNotExpr(SkelligTestValueGrammarParser.NotExprContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code notExpr}
-	 * labeled alternative in {@link SkelligTestValueGrammarParser#logicalExpression()()}.
+	 * labeled alternative in {@link SkelligTestValueGrammarParser#logicalExpression()}.
 	 * @param ctx the parse tree
 	 */
 	void exitNotExpr(SkelligTestValueGrammarParser.NotExprContext ctx);
