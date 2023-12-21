@@ -30,4 +30,10 @@ class BooleanOperationExpression(
     override fun hashCode(): Int {
         return operator.hashCode() + leftExpression.hashCode() + rightExpression.hashCode()
     }
+
+    override fun toString(): String {
+        return "$leftExpression $operator $rightExpression"
+    }
+
+
 }

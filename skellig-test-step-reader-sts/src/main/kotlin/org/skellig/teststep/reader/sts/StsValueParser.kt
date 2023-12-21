@@ -16,19 +16,29 @@ internal class StsValueParser {
         parser.removeErrorListeners()
         parser.addErrorListener(SkelligTestStepParserErrorListener.INSTANCE)
 
-        return convert(parser.expression())
+        return convert(parser.start())
     }
 
     private fun convert(tree: ParseTree?): ValueExpression? {
         var valueExpression: ValueExpression? = null
         if (tree != null) {
             if (tree.childCount == 1) {
-                valueExpression = when (tree.javaClass) {
-                    IdExprContext::class.java -> convert(tree as IdExprContext)
-                    StringExprContext::class.java -> convert(tree as StringExprContext)
-                    NumberContext::class.java -> convert(tree as NumberContext)
-                    BoolExprContext::class.java -> convert(tree as BoolExprContext)
-                    else -> convert(tree.getChild(0))
+                valueExpression = if (tree.getChild(0) is TerminalNode) {
+                    val text = tree.getChild(0).text
+                    when ((tree.getChild(0) as TerminalNode).symbol.type) {
+                        SkelligTestValueGrammarLexer.ID -> createAlphanumericValueExpression(text)
+                        SkelligTestValueGrammarLexer.INT, SkelligTestValueGrammarLexer.FLOAT -> createNumberValueExpression(text)
+                        SkelligTestValueGrammarLexer.BOOL -> createBooleanValueExpression(text)
+                        else -> createStringValueExpression(text)
+                    }
+                } else {
+                    when (tree.javaClass) {
+                        IdExprContext::class.java -> convert(tree as IdExprContext)
+                        StringExprContext::class.java -> convert(tree as StringExprContext)
+                        NumberContext::class.java -> convert(tree as NumberContext)
+                        BoolExprContext::class.java -> convert(tree as BoolExprContext)
+                        else -> convert(tree.getChild(0))
+                    }
                 }
             } else if (tree.childCount > 1) {
                 when (tree.javaClass) {
@@ -45,6 +55,7 @@ internal class StsValueParser {
                     ArrayValueAccessorContext::class.java -> valueExpression = convert(tree as ArrayValueAccessorContext)
                     LambdaExpressionContext::class.java -> valueExpression = convert(tree as LambdaExpressionContext)
                     NotExprContext::class.java -> valueExpression = convert(tree as NotExprContext)
+                    StartContext::class.java -> valueExpression = convert(tree.getChild(0))
                 }
             } else if (tree is TerminalNode) {
                 valueExpression = if (tree.symbol.type == SkelligTestValueGrammarLexer.STRING) {
@@ -161,19 +172,35 @@ internal class StsValueParser {
     }
 
     private fun convert(context: IdExprContext): ValueExpression {
-        return AlphanumericValueExpression(context.text)
+        return createAlphanumericValueExpression(context.text)
     }
 
     private fun convert(context: StringExprContext): ValueExpression {
-        return StringValueExpression(extractString(context.text))
+        return createStringValueExpression(context.text)
     }
 
     private fun convert(context: NumberContext): ValueExpression {
-        return NumberValueExpression(context.text)
+        return createNumberValueExpression(context.text)
     }
 
     private fun convert(context: BoolExprContext): ValueExpression {
-        return BooleanValueExpression(context.text)
+        return createBooleanValueExpression(context.text)
+    }
+
+    private fun createAlphanumericValueExpression(text: String): AlphanumericValueExpression {
+        return AlphanumericValueExpression(text)
+    }
+
+    private fun createBooleanValueExpression(text: String): BooleanValueExpression {
+        return BooleanValueExpression(text)
+    }
+
+    private fun createNumberValueExpression(text: String): NumberValueExpression {
+        return NumberValueExpression(text)
+    }
+
+    private fun createStringValueExpression(text: String): StringValueExpression {
+        return StringValueExpression(extractString(text))
     }
 
     private fun extractString(value: String): String {

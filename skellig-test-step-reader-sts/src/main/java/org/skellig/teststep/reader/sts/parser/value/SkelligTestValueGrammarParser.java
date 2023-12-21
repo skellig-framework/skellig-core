@@ -1,12 +1,15 @@
 package org.skellig.teststep.reader.sts.parser.value;// Generated from SkelligTestValueGrammar.g4 by ANTLR 4.13.1
-import org.antlr.v4.runtime.atn.*;
-import org.antlr.v4.runtime.dfa.DFA;
+
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.misc.*;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.atn.ATN;
+import org.antlr.v4.runtime.atn.ATNDeserializer;
+import org.antlr.v4.runtime.atn.ParserATNSimulator;
+import org.antlr.v4.runtime.atn.PredictionContextCache;
+import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue"})
 public class SkelligTestValueGrammarParser extends Parser {
@@ -116,11 +119,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_start; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterStart(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterStart(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitStart(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitStart(this);
 		}
 	}
 
@@ -193,11 +196,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public NotExprContext(LogicalExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterNotExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterNotExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitNotExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitNotExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -212,11 +215,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public OrExprContext(LogicalExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterOrExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterOrExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitOrExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitOrExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -227,11 +230,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public ComparisonExprContext(LogicalExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterComparisonExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterComparisonExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitComparisonExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitComparisonExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -242,11 +245,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public ParenthesesLogicalExprContext(LogicalExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterParenthesesLogicalExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterParenthesesLogicalExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitParenthesesLogicalExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitParenthesesLogicalExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -261,11 +264,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public AndExprContext(LogicalExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterAndExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterAndExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitAndExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitAndExpr(this);
 		}
 	}
 
@@ -431,11 +434,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_comparison; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterComparison(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterComparison(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitComparison(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitComparison(this);
 		}
 	}
 
@@ -484,11 +487,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public FunctionCallExpContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterFunctionCallExp(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterFunctionCallExp(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitFunctionCallExp(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitFunctionCallExp(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -503,11 +506,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public AdditionExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterAdditionExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterAdditionExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitAdditionExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitAdditionExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -518,11 +521,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public NumberExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterNumberExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterNumberExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitNumberExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitNumberExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -533,11 +536,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public ParenthesesExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterParenthesesExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterParenthesesExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitParenthesesExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitParenthesesExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -552,11 +555,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public DivisionExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterDivisionExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterDivisionExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitDivisionExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitDivisionExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -571,11 +574,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public SubtractionExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterSubtractionExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterSubtractionExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitSubtractionExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitSubtractionExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -584,11 +587,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public StringExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterStringExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterStringExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitStringExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitStringExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -599,11 +602,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public CallChainExpContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterCallChainExp(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterCallChainExp(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitCallChainExp(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitCallChainExp(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -614,11 +617,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public PropertyExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterPropertyExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterPropertyExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitPropertyExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitPropertyExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -633,11 +636,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public MultiplicationExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterMultiplicationExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterMultiplicationExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitMultiplicationExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitMultiplicationExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -648,11 +651,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public ArrayValueAccessorExpContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterArrayValueAccessorExp(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterArrayValueAccessorExp(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitArrayValueAccessorExp(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitArrayValueAccessorExp(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -661,11 +664,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public BoolExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterBoolExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterBoolExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitBoolExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitBoolExpr(this);
 		}
 	}
 	@SuppressWarnings("CheckReturnValue")
@@ -674,11 +677,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		public IdExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterIdExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterIdExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitIdExpr(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitIdExpr(this);
 		}
 	}
 
@@ -888,11 +891,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_callChain; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterCallChain(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterCallChain(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitCallChain(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitCallChain(this);
 		}
 	}
 
@@ -969,11 +972,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_functionBase; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterFunctionBase(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterFunctionBase(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitFunctionBase(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitFunctionBase(this);
 		}
 	}
 
@@ -1044,11 +1047,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_functionCall; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterFunctionCall(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterFunctionCall(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitFunctionCall(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitFunctionCall(this);
 		}
 	}
 
@@ -1124,11 +1127,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_arg; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterArg(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterArg(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitArg(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitArg(this);
 		}
 	}
 
@@ -1196,11 +1199,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_lambdaExpression; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterLambdaExpression(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterLambdaExpression(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitLambdaExpression(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitLambdaExpression(this);
 		}
 	}
 
@@ -1258,11 +1261,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_propertyExpression; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterPropertyExpression(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterPropertyExpression(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitPropertyExpression(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitPropertyExpression(this);
 		}
 	}
 
@@ -1315,11 +1318,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_propertyKey; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterPropertyKey(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterPropertyKey(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitPropertyKey(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitPropertyKey(this);
 		}
 	}
 
@@ -1363,11 +1366,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_arrayValueAccessor; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterArrayValueAccessor(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterArrayValueAccessor(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitArrayValueAccessor(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitArrayValueAccessor(this);
 		}
 	}
 
@@ -1408,11 +1411,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_number; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterNumber(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterNumber(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitNumber(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitNumber(this);
 		}
 	}
 
@@ -1460,11 +1463,11 @@ public class SkelligTestValueGrammarParser extends Parser {
 		@Override public int getRuleIndex() { return RULE_comparator; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).enterComparator(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).enterComparator(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SkelligTestValueGrammarListener ) ((SkelligTestValueGrammarListener)listener).exitComparator(this);
+			if ( listener instanceof SkelligTestValueGrammarListener) ((SkelligTestValueGrammarListener)listener).exitComparator(this);
 		}
 	}
 

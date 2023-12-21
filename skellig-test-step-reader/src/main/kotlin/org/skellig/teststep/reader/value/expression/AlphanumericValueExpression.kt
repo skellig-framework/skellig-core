@@ -1,10 +1,21 @@
 package org.skellig.teststep.reader.value.expression
 
+
 class AlphanumericValueExpression(private val value: String) : ValueExpression {
 
+    companion object {
+        /**
+         * Special character for the alphanum expression indicating a reference to the current value,
+         * usually used in validation
+         */
+        const val THIS = "$"
+    }
+
     override fun evaluate(context: ValueExpressionContext): Any? {
-        return if (context.hasLambdaParameterWithName(value)) context.getLambdaExpressionParameter(value)
-        else if (context.evaluationType == EvaluationType.CALL_CHAIN) context.onFunctionCall(value, context.value, emptyArray())
+        return if (context.hasLambdaParameterWithName(value))
+            context.getLambdaExpressionParameter(value)
+        else if (context.evaluationType == EvaluationType.CALL_CHAIN || value == THIS)
+            context.onFunctionCall(value, context.value, emptyArray())
         else value
     }
 

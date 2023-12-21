@@ -1,0 +1,25 @@
+name ("Validate default test value") {
+    validate {
+                 get(test_value)[
+                                {
+                                    name = "Alex"
+                                },
+                                {
+                                    $.balance < 50 = true
+                                }
+                                ]
+                 get(test_value){
+                                    $.any(i -> i.name == "Alex") = true
+                                    any(i -> i.name == "Peter") = false
+                                    $.fromIndex(1).balance + 688 = $.fromIndex(0).balance.toBigDecimal()
+                                }
+                 get(test_value).all(i -> i.balance >= 0) = true
+                 get(test_value).fromIndex(0).balance.toBigDecimal() = get(test_value).fromIndex(1).balance + 688
+                 get(test_value).fromIndex(0) {
+                                                  $.balance > 0 && $.name == "Alex" = true
+                                                  name = "Alex"
+                                                  $."contact.phone" = "998877"
+                                              }
+                get(test_value).fromIndex(0).values() [ "Alex",  "700".toInt(),  $.contains("9988") ]
+             }
+}

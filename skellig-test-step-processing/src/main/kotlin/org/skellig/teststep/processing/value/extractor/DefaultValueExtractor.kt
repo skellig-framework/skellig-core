@@ -1,5 +1,7 @@
 package org.skellig.teststep.processing.value.extractor
 
+import org.skellig.teststep.processing.value.extractor.collection.*
+
 class DefaultValueExtractor
 private constructor(private val extractors: Map<String, ValueExtractor>) : ValueExtractor {
 
@@ -49,6 +51,19 @@ private constructor(private val extractors: Map<String, ValueExtractor>) : Value
             withValueExtractor(ToDateValueExtractor())
             withValueExtractor(ToBytesValueExtractor())
             withValueExtractor(SizeValueExtractor())
+            withValueExtractor(AllFunctionExecutor())
+            withValueExtractor(AnyFunctionExecutor())
+            withValueExtractor(NoneFunctionExecutor())
+            withValueExtractor(CountFunctionExecutor())
+            withValueExtractor(FindAllFunctionExecutor())
+            withValueExtractor(FindFunctionExecutor())
+            withValueExtractor(FindLastFunctionExecutor())
+            withValueExtractor(GroupByFunctionExecutor())
+            withValueExtractor(MapFunctionExecutor())
+            withValueExtractor(MinOfFunctionExecutor())
+            withValueExtractor(MaxOfFunctionExecutor())
+            withValueExtractor(SortFunctionExecutor())
+            withValueExtractor(SumOfFunctionExecutor())
 
             return DefaultValueExtractor(extractors)
         }

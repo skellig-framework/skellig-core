@@ -1,0 +1,5 @@
+Feature: Collection functions feature
+
+    Scenario: Test collection functions
+        * The state has a default test value
+        * Validate default test value

@@ -36,13 +36,13 @@ class ValidationNodeFactoryTest {
     @Test
     fun testWhenValidationDetailsWithNullAsExpected() {
         assertNull((createValidationNodeFrom(null) as SingleValidationNode).expected)
-        assertNull(((createValidationNodeFrom(ListValueExpression(listOf(null))) as RootValidationNodes).nodes[0] as SingleValidationNode).expected)
+        assertNull(((createValidationNodeFrom(ListValueExpression(listOf(null))) as ValidationNodes).nodes[0] as SingleValidationNode).expected)
     }
 
     @Test
     fun testWhenValidationDetailsWithFieldNullAsExpected() {
         val logProperty = AlphanumericValueExpression("log")
-        val validationNode = (createValidationNodeFrom(MapValueExpression(mapOf(Pair(logProperty, null)))) as RootValidationNodes).nodes[0] as PairValidationNode
+        val validationNode = (createValidationNodeFrom(MapValueExpression(mapOf(Pair(logProperty, null)))) as ValidationNodes).nodes[0] as PairValidationNode
 
         assertEquals(logProperty, validationNode.actual)
         assertNull(validationNode.expected)
@@ -70,7 +70,7 @@ class ValidationNodeFactoryTest {
                 )
             ),
             mapOf(Pair("key1", "1"))
-        ) as RootValidationNodes).nodes[0] as PairValidationNode
+        ) as ValidationNodes).nodes[0] as PairValidationNode
 
         // validation details are processed when actual validation happens
         assertAll(
@@ -87,7 +87,7 @@ class ValidationNodeFactoryTest {
             Pair(AlphanumericValueExpression("log"), StringValueExpression(""))
         ))
 
-        val validationNodes = (createValidationNodeFrom(rawValidationDetails) as RootValidationNodes).nodes
+        val validationNodes = (createValidationNodeFrom(rawValidationDetails) as ValidationNodes).nodes
 
         assertAll(
             { assertEquals("status", (validationNodes[0] as PairValidationNode).actual.toString()) },
@@ -102,7 +102,7 @@ class ValidationNodeFactoryTest {
     fun testSimpleExpectedResultWithDefaultParameters() {
         val rawValidationDetails = MapValueExpression(mapOf(Pair(AlphanumericValueExpression("status"), PropertyValueExpression("\${f1}", AlphanumericValueExpression("v1")))))
 
-        val validationNode = (validationDetailsFactory!!.create(mapOf(Pair(AlphanumericValueExpression("validate"), rawValidationDetails)), mapOf(Pair("f1", ""))) as RootValidationNodes).nodes[0]
+        val validationNode = (validationDetailsFactory!!.create(mapOf(Pair(AlphanumericValueExpression("validate"), rawValidationDetails)), mapOf(Pair("f1", ""))) as ValidationNodes).nodes[0]
 
         // validation details are processed when actual validation happens
         assertAll(
@@ -126,7 +126,7 @@ class ValidationNodeFactoryTest {
             ))
         ))
 
-        val validationNodes = (createValidationNodeFrom(rawValidationDetails) as RootValidationNodes).nodes
+        val validationNodes = (createValidationNodeFrom(rawValidationDetails) as ValidationNodes).nodes
 
         assertAll(
             { assertEquals("a1", ((validationNodes[0] as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()) },
@@ -163,7 +163,7 @@ class ValidationNodeFactoryTest {
             ))
         ))
 
-        val validationNode = (createValidationNodeFrom(rawValidationDetails) as RootValidationNodes).nodes[0] as GroupedValidationNode
+        val validationNode = (createValidationNodeFrom(rawValidationDetails) as ValidationNodes).nodes[0] as GroupedValidationNode
 
         assertAll(
             { assertEquals("originalRequest", validationNode.actual.toString()) },
@@ -233,7 +233,7 @@ class ValidationNodeFactoryTest {
             )
         ))
 
-        val validationNode = (createValidationNodeFrom(rawValidationDetails) as RootValidationNodes).nodes
+        val validationNode = (createValidationNodeFrom(rawValidationDetails) as ValidationNodes).nodes
 
         assertAll(
             { assertEquals("srv1", (validationNode[0] as GroupedValidationNode).actual.toString()) },

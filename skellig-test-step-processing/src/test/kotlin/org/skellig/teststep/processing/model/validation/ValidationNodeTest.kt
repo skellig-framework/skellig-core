@@ -78,10 +78,10 @@ class ValidationNodeTest {
     fun testValidateWhenValid() {
         val actualResult = createActualResult()
 
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
-                PairValidationNode(AlphanumericValueExpression("k1"), AlphanumericValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
-                PairValidationNode(AlphanumericValueExpression("k2"), AlphanumericValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
+                PairValidationNode(AlphanumericValueExpression("k1"), StringValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
+                PairValidationNode(AlphanumericValueExpression("k2"), StringValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
             )
         )
 
@@ -92,14 +92,29 @@ class ValidationNodeTest {
     @DisplayName("When actual String And expect few contains values Then pass validation")
     fun testValidateListOfContainsTextWhenValid() {
 
-        val validator = RootValidationNodes(
+        ValidationNodes(
             listOf(
-                SingleValidationNode(FunctionCallExpression("contains", arrayOf(AlphanumericValueExpression("v1"))), emptyMap(), valueExpressionContextFactory),
-                SingleValidationNode(FunctionCallExpression("contains", arrayOf(AlphanumericValueExpression("v2"))), emptyMap(), valueExpressionContextFactory),
+                SingleValidationNode(
+                    CallChainExpression(listOf(AlphanumericValueExpression("$"), FunctionCallExpression("contains", arrayOf(StringValueExpression("v1"))))),
+                    emptyMap(), valueExpressionContextFactory
+                ),
+                SingleValidationNode(
+                    CallChainExpression(listOf(AlphanumericValueExpression("$"), FunctionCallExpression("contains", arrayOf(StringValueExpression("v2"))))),
+                    emptyMap(), valueExpressionContextFactory
+                ),
             )
-        )
+        ).validate("v1 v2")
+    }
 
-        validator.validate("v1 v2")
+    @Test
+    @DisplayName("When actual Array And expect few contains values Then pass validation")
+    fun testValidateListOfContainsTextForArrayWhenValid() {
+        ValidationNodes(
+            listOf(
+                SingleValidationNode(AlphanumericValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
+                SingleValidationNode(AlphanumericValueExpression("v2"), emptyMap(), valueExpressionContextFactory)
+            ), true
+        ).validate(listOf("v1", "v2"))
     }
 
     @Test
@@ -115,11 +130,11 @@ class ValidationNodeTest {
             }
         """.trimIndent()
 
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
-                PairValidationNode(FunctionCallExpression("jsonPath", arrayOf(AlphanumericValueExpression("a"))), AlphanumericValueExpression("1"), emptyMap(), valueExpressionContextFactory),
-                PairValidationNode(FunctionCallExpression("jsonPath", arrayOf(StringValueExpression("c.d"))), AlphanumericValueExpression("4"), emptyMap(), valueExpressionContextFactory),
-                PairValidationNode(FunctionCallExpression("jsonPath", arrayOf(StringValueExpression("b[1]"))), AlphanumericValueExpression("2"), emptyMap(), valueExpressionContextFactory),
+                PairValidationNode(FunctionCallExpression("jsonPath", arrayOf(AlphanumericValueExpression("a"))), StringValueExpression("1"), emptyMap(), valueExpressionContextFactory),
+                PairValidationNode(FunctionCallExpression("jsonPath", arrayOf(StringValueExpression("c.d"))), StringValueExpression("4"), emptyMap(), valueExpressionContextFactory),
+                PairValidationNode(FunctionCallExpression("jsonPath", arrayOf(StringValueExpression("b[1]"))), StringValueExpression("2"), emptyMap(), valueExpressionContextFactory),
             )
         )
 
@@ -143,7 +158,7 @@ class ValidationNodeTest {
             )
         )
 
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
                 PairValidationNode(AlphanumericValueExpression("passed"), BooleanValueExpression("true"), emptyMap(), valueExpressionContextFactory),
                 GroupedValidationNode(
@@ -157,7 +172,7 @@ class ValidationNodeTest {
                                         FunctionCallExpression("fromRegex", arrayOf(StringValueExpression("f2=(\\w+)"))),
                                     )
                                 ),
-                                AlphanumericValueExpression("300"), emptyMap(), valueExpressionContextFactory
+                                StringValueExpression("300"), emptyMap(), valueExpressionContextFactory
                             )
                         )
                     ),
@@ -168,7 +183,7 @@ class ValidationNodeTest {
                         listOf(
                             AlphanumericValueExpression("body"),
                             FunctionCallExpression("jsonPath", arrayOf(StringValueExpression("c.d"))),
-                            FunctionCallExpression("contains", arrayOf(AlphanumericValueExpression("300"))),
+                            FunctionCallExpression("contains", arrayOf(StringValueExpression("300"))),
                         )
                     ),
                     BooleanValueExpression("true"),
@@ -184,7 +199,7 @@ class ValidationNodeTest {
     @DisplayName("When expected contains+size under single group And not match actual List of String")
     fun testValidateListOfContainsTextUnderGroupAndNotMatchWithActualResult() {
         val actualResult = ArrayList(listOf("v1 v2", "v3 v4"))
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
                 PairValidationNode(FunctionCallExpression("size", emptyArray()), AlphanumericValueExpression("2"), emptyMap(), valueExpressionContextFactory),
                 PairValidationNode(
@@ -221,10 +236,10 @@ class ValidationNodeTest {
     @DisplayName("When actual Map doesn't match expected Map")
     fun testValidateWhenNotValid() {
         val actualResult = createActualResult()
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
-                PairValidationNode(AlphanumericValueExpression("k1"), AlphanumericValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
-                PairValidationNode(AlphanumericValueExpression("k2"), AlphanumericValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
+                PairValidationNode(AlphanumericValueExpression("k1"), StringValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
+                PairValidationNode(AlphanumericValueExpression("k2"), StringValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
             )
         )
 
@@ -242,10 +257,19 @@ class ValidationNodeTest {
     fun testValidateListByIndexes() {
         val actualResult = mapOf(Pair("a", listOf("v1", "v2")))
 
-        val validator = RootValidationNodes(
+        // String in the actual value cannot be alone without '$' to be able to differentiate actual string and
+        // property of the parent value.
+        // Expected value can be Alphanum or String expression as long as it's a simple string.
+        val validator = ValidationNodes(
             listOf(
-                PairValidationNode(StringValueExpression("a[0]"), AlphanumericValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
-                PairValidationNode(StringValueExpression("a[1]"), AlphanumericValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
+                PairValidationNode(
+                    CallChainExpression(listOf(StringValueExpression("$"), StringValueExpression("a[0]"))),
+                    AlphanumericValueExpression("v1"), emptyMap(), valueExpressionContextFactory
+                ),
+                PairValidationNode(
+                    CallChainExpression(listOf(StringValueExpression("$"), StringValueExpression("a[1]"))),
+                    AlphanumericValueExpression("v2"), emptyMap(), valueExpressionContextFactory
+                ),
             )
         )
 
@@ -258,7 +282,7 @@ class ValidationNodeTest {
         val value = "result"
         val actualResult = mapOf(Pair("a", value.toByteArray()))
 
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
                 GroupedValidationNode(
                     AlphanumericValueExpression("a"),
@@ -276,7 +300,7 @@ class ValidationNodeTest {
     fun testValidateByteArrayWithContains() {
         val actualResult = mapOf(Pair("a", byteArrayOf(1, 2, 3)))
 
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
                 PairValidationNode(
                     CallChainExpression(listOf(AlphanumericValueExpression("a"), FunctionCallExpression("contains", arrayOf(StringValueExpression("2"))))),
@@ -295,11 +319,11 @@ class ValidationNodeTest {
         val actualResult1 = createActualResult()
         val actualResult2 = createAnotherActualResult()
 
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
                 PairValidationNode(
                     FunctionCallExpression("size", emptyArray()),
-                    CallChainExpression(listOf(AlphanumericValueExpression("2"), FunctionCallExpression("toInt", emptyArray()))),
+                    CallChainExpression(listOf(StringValueExpression("2"), FunctionCallExpression("toInt", emptyArray()))),
                     emptyMap(), valueExpressionContextFactory
                 ),
 
@@ -309,17 +333,17 @@ class ValidationNodeTest {
                         listOf(
                             ValidationNodes(
                                 listOf(
-                                    PairValidationNode(AlphanumericValueExpression("k1"), AlphanumericValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
-                                    PairValidationNode(AlphanumericValueExpression("k2"), AlphanumericValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
+                                    PairValidationNode(AlphanumericValueExpression("k1"), StringValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
+                                    PairValidationNode(AlphanumericValueExpression("k2"), StringValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
                                 )
                             ),
                             ValidationNodes(
                                 listOf(
-                                    PairValidationNode(AlphanumericValueExpression("k1"), AlphanumericValueExpression("v3"), emptyMap(), valueExpressionContextFactory),
-                                    PairValidationNode(AlphanumericValueExpression("k2"), AlphanumericValueExpression("v4"), emptyMap(), valueExpressionContextFactory),
+                                    PairValidationNode(AlphanumericValueExpression("k1"), StringValueExpression("v3"), emptyMap(), valueExpressionContextFactory),
+                                    PairValidationNode(AlphanumericValueExpression("k2"), StringValueExpression("v4"), emptyMap(), valueExpressionContextFactory),
                                 )
                             )
-                        )
+                        ), true
                     ),
                     emptyMap(), valueExpressionContextFactory
                 ),
@@ -339,19 +363,19 @@ class ValidationNodeTest {
             Pair("k2", "v6")
         )
 
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
                 ValidationNodes(
                     listOf(
-                        PairValidationNode(AlphanumericValueExpression("k1"), AlphanumericValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
-                        PairValidationNode(AlphanumericValueExpression("k2"), AlphanumericValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
-                    )
+                        PairValidationNode(AlphanumericValueExpression("k1"), StringValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
+                        PairValidationNode(AlphanumericValueExpression("k2"), StringValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
+                    ), true
                 ),
                 ValidationNodes(
                     listOf(
-                        PairValidationNode(AlphanumericValueExpression("k1"), AlphanumericValueExpression("v3"), emptyMap(), valueExpressionContextFactory),
-                        PairValidationNode(AlphanumericValueExpression("k2"), AlphanumericValueExpression("v4"), emptyMap(), valueExpressionContextFactory),
-                    )
+                        PairValidationNode(AlphanumericValueExpression("k1"), StringValueExpression("v3"), emptyMap(), valueExpressionContextFactory),
+                        PairValidationNode(AlphanumericValueExpression("k2"), StringValueExpression("v4"), emptyMap(), valueExpressionContextFactory),
+                    ), true
                 )
             )
         )
@@ -388,17 +412,17 @@ class ValidationNodeTest {
         val actualResult1 = createActualResult()
         val actualResult2 = createAnotherActualResult()
 
-        val validator = RootValidationNodes(
+        val validator = ValidationNodes(
             listOf(
                 ValidationNodes(
                     listOf(
                         ValidationNodes(
                             listOf(
-                                PairValidationNode(AlphanumericValueExpression("k1"), AlphanumericValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
-                                PairValidationNode(AlphanumericValueExpression("k2"), AlphanumericValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
-                            )
+                                PairValidationNode(AlphanumericValueExpression("k1"), StringValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
+                                PairValidationNode(AlphanumericValueExpression("k2"), StringValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
+                            ), true
                         )
-                    )
+                    ), true
                 )
             )
         )

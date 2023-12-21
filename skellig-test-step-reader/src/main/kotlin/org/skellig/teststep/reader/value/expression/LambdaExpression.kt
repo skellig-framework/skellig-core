@@ -7,8 +7,8 @@ class LambdaExpression(private val name: String, private val body: ValueExpressi
     * thus it should return a consumer with lazy execution of evaluate method.
     * */
     override fun evaluate(context: ValueExpressionContext): Any {
-        return {
-            context.setLambdaExpressionParameter(name, context.value)
+        return { item : Any? ->
+            context.setLambdaExpressionParameter(name, item)
             body.evaluate(ValueExpressionContext(context))
         }
     }

@@ -58,13 +58,13 @@ public interface SkelligGrammarListener extends ParseTreeListener {
 	void exitValue(SkelligGrammarParser.ValueContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code values}
-	 * labeled alternative in {@link SkelligGrammarParser}.
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
 	void enterValues(SkelligGrammarParser.ValuesContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code values}
-	 * labeled alternative in {@link SkelligGrammarParser}.
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
 	void exitValues(SkelligGrammarParser.ValuesContext ctx);
@@ -90,88 +90,28 @@ public interface SkelligGrammarListener extends ParseTreeListener {
 	void exitMap(SkelligGrammarParser.MapContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code propertyExpr}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
 	void enterPropertyExpr(SkelligGrammarParser.PropertyExprContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code propertyExpr}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
 	void exitPropertyExpr(SkelligGrammarParser.PropertyExprContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code functionExpr}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
 	void enterFunctionExpr(SkelligGrammarParser.FunctionExprContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code functionExpr}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
 	void exitFunctionExpr(SkelligGrammarParser.FunctionExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code keySymbols}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
-	 * @param ctx the parse tree
-	 */
-	void enterKeySymbols(SkelligGrammarParser.KeySymbolsContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code keySymbols}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
-	 * @param ctx the parse tree
-	 */
-	void exitKeySymbols(SkelligGrammarParser.KeySymbolsContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code stringExpr}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
-	 * @param ctx the parse tree
-	 */
-	void enterStringExpr(SkelligGrammarParser.StringExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code stringExpr}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
-	 * @param ctx the parse tree
-	 */
-	void exitStringExpr(SkelligGrammarParser.StringExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code idExpr}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
-	 * @param ctx the parse tree
-	 */
-	void enterIdExpr(SkelligGrammarParser.IdExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code idExpr}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
-	 * @param ctx the parse tree
-	 */
-	void exitIdExpr(SkelligGrammarParser.IdExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code nameValue}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
-	 * @param ctx the parse tree
-	 */
-	void enterNameValue(SkelligGrammarParser.NameValueContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code nameValue}
-	 * labeled alternative in {@link SkelligGrammarParser#keyExpression}.
-	 * @param ctx the parse tree
-	 */
-	void exitNameValue(SkelligGrammarParser.NameValueContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code valueExpression}
-	 * labeled alternative in {@link SkelligGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterValueExpression(SkelligGrammarParser.ValueExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code valueExpression}
-	 * labeled alternative in {@link SkelligGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitValueExpression(SkelligGrammarParser.ValueExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code parenthesesExpr}
 	 * labeled alternative in {@link SkelligGrammarParser#expression}.
@@ -196,18 +136,6 @@ public interface SkelligGrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSymbols(SkelligGrammarParser.SymbolsContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code colon}
-	 * labeled alternative in {@link SkelligGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterColon(SkelligGrammarParser.ColonContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code colon}
-	 * labeled alternative in {@link SkelligGrammarParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitColon(SkelligGrammarParser.ColonContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code lessThanEquals}
 	 * labeled alternative in {@link SkelligGrammarParser#expression}.
@@ -256,6 +184,54 @@ public interface SkelligGrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitNotEquals(SkelligGrammarParser.NotEqualsContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code keySymbols}
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterKeySymbols(SkelligGrammarParser.KeySymbolsContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code keySymbols}
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitKeySymbols(SkelligGrammarParser.KeySymbolsContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code stringExpr}
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterStringExpr(SkelligGrammarParser.StringExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code stringExpr}
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitStringExpr(SkelligGrammarParser.StringExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code idExpr}
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterIdExpr(SkelligGrammarParser.IdExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code idExpr}
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitIdExpr(SkelligGrammarParser.IdExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code nameValue}
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterNameValue(SkelligGrammarParser.NameValueContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code nameValue}
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitNameValue(SkelligGrammarParser.NameValueContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code numberExpr}
 	 * labeled alternative in {@link SkelligGrammarParser#expression}.

@@ -4,6 +4,7 @@ class CallChainExpression(val callChain: List<ValueExpression?>) : ValueExpressi
 
     override fun evaluate(context: ValueExpressionContext): Any? {
         var result: Any? = context.value
+        result?.let { context.evaluationType = EvaluationType.CALL_CHAIN }
         (callChain.indices step 1)
             .forEach {
                 if (it > 0 && result == null)
