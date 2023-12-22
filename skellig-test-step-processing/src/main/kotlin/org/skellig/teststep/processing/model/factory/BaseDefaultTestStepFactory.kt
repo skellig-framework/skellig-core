@@ -5,13 +5,15 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.validation.factory.ValidationNodeFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
+import org.skellig.teststep.processing.value.converter.TestDataConverter
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     private val testStepRegistry: TestStepRegistry,
-    valueExpressionContextFactory: ValueExpressionContextFactory
+    valueExpressionContextFactory: ValueExpressionContextFactory,
+    private val defaultTestDataConverter: String? = null,
 ) : BaseTestStepFactory<T>(valueExpressionContextFactory) {
 
     companion object {
@@ -29,6 +31,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     }
 
     private var validationDetailsFactory = ValidationNodeFactory(valueExpressionContextFactory)
+    private val testDataContext = valueExpressionContextFactory.create(emptyMap())
 
     init {
         testDataKeywords = setOf(
@@ -115,9 +118,13 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 
     protected open fun extractTestData(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Any? {
         return getTestDataKeywords()!!
-            .filter { rawTestStep.containsKey(it) }
-            .map { convertValue<Any>(rawTestStep[it], parameters) }
-            .firstOrNull()
+            .find { rawTestStep.containsKey(it) }
+            ?.let { convertTestData(rawTestStep[it], defaultTestDataConverter, parameters) }
+    }
+
+    private fun convertTestData(value: ValueExpression?, defaultTestDataConverter: String?, parameters: Map<String, Any?>): Any? {
+        val convertedValue = convertValue<Any?>(value, parameters)
+        return (defaultTestDataConverter?.let { testDataContext.onFunctionCall(it, convertedValue, emptyArray()) } ?: convertedValue)
     }
 
     protected open fun getId(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): String? {
