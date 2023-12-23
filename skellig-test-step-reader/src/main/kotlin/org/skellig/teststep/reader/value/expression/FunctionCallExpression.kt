@@ -1,6 +1,6 @@
 package org.skellig.teststep.reader.value.expression
 
-class FunctionCallExpression(private val name: String, private val args: Array<ValueExpression?>) : ValueExpression {
+class FunctionCallExpression(val name: String, val args: Array<ValueExpression?>) : ValueExpression {
 
     override fun evaluate(context: ValueExpressionContext): Any? {
         context.evaluationType = EvaluationType.DEFAULT
