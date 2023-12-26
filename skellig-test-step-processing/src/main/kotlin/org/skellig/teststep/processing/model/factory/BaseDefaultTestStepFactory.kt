@@ -19,7 +19,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         private val ID = AlphanumericValueExpression("id")
 
         private val PARENT_KEYWORD = AlphanumericValueExpression("parent")
-        private val VARIABLES_KEYWORD = AlphanumericValueExpression("variables")
+        private val VALUES_KEYWORD = AlphanumericValueExpression("values")
         private val EXECUTION_KEYWORD = AlphanumericValueExpression("execution")
         private val TIMEOUT_KEYWORD = AlphanumericValueExpression("timeout")
         private val DELAY_KEYWORD = AlphanumericValueExpression("delay")
@@ -67,7 +67,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
             additionalParameters.putAll(parametersFromTestName)
         }
 
-        val variables = extractVariablesToParameters(rawTestStep, additionalParameters)
+        val variables = extractValuesToParameters(rawTestStep, additionalParameters)
         variables?.let { additionalParameters.putAll(it) }
 
         return createTestStepBuilder(rawTestStep, additionalParameters)
@@ -104,14 +104,20 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         return testDataKeywords
     }
 
-    private fun extractVariablesToParameters(
+    private fun extractValuesToParameters(
         rawTestStep: Map<ValueExpression, ValueExpression?>,
         parameters: MutableMap<String, Any?>
     ): Map<String, Any?>? {
-        val rawVariables = rawTestStep[VARIABLES_KEYWORD]
-        return (rawVariables as MapValueExpression?)?.let {
-            (convertValue<Map<String, Any?>>(it, parameters))
-                ?: throw TestStepCreationException("Variables of the test step must have key-value pair (ex. type: Map<String, Any>)")
+        val rawVariables = rawTestStep[VALUES_KEYWORD]
+        return rawVariables?.let {
+            (rawVariables as? MapValueExpression)?.value?.mapNotNull { entry ->
+                val convertedKey = convertValue<String>(entry.key, parameters)
+                convertedKey?.let {
+                    val convertedVar = convertValue<Any>(entry.value, parameters)
+                    parameters[convertedKey] = convertedVar
+                    convertedKey to convertedVar
+                }
+            }?.toMap() ?: throw TestStepCreationException("Variables of the test step must have key-value pair (ex. type: Map<String, Any>)")
         }
     }
 

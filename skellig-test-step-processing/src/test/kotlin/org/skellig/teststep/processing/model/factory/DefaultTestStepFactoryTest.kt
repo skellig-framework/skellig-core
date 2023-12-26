@@ -2,43 +2,44 @@ package org.skellig.teststep.processing.model.factory
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.mockito.Mockito
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.validation.GroupedValidationNode
+import org.skellig.teststep.processing.model.validation.PairValidationNode
+import org.skellig.teststep.processing.model.validation.ValidationNodes
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.util.CachedPattern
-import org.skellig.teststep.processing.value.chunk.RawValueProcessingVisitor
+import org.skellig.teststep.processing.value.ValueExpressionContextFactory
+import org.skellig.teststep.processing.value.ValueExpressionContextFactoryTest
 import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
+import org.skellig.teststep.reader.value.expression.*
+import java.math.BigDecimal
 import java.util.*
-import java.util.regex.Pattern
 
 @DisplayName("Create Test Step")
 class DefaultTestStepFactoryTest {
 
-   /* private var testStepFactory: TestStepFactory<DefaultTestStep>? = null
-    private var testScenarioState: TestScenarioState? = null
+    private var testStepFactory: TestStepFactory<DefaultTestStep>? = null
+    private var testScenarioState = mock<TestScenarioState>()
     private val testStepRegistry = mock<TestStepRegistry>()
 
     @BeforeEach
     fun setUp() {
-        testScenarioState = Mockito.mock(TestScenarioState::class.java)
         testStepFactory = DefaultTestStepFactory.Builder()
-            .withTestStepValueConverter(
-                TestStepFactoryValueConverter.Builder()
-                    .withValueProcessingVisitor(
-                        RawValueProcessingVisitor(
-                            DefaultFunctionValueExecutor.Builder()
-                                .withTestScenarioState(testScenarioState)
-                                .build(),
-                            DefaultValueExtractor.Builder().build(),
-                            mock(),
-                            DefaultPropertyExtractor(null)
-                        )
-                    )
-                    .build()
+            .withValueExpressionContextFactory(
+                ValueExpressionContextFactory(
+                    DefaultFunctionValueExecutor.Builder()
+                        .withTestScenarioState(testScenarioState)
+                        .withClassLoader(ValueExpressionContextFactoryTest::class.java.classLoader)
+                        .build(),
+                    DefaultValueExtractor.Builder().build(),
+                    DefaultPropertyExtractor(null)
+                )
             )
             .withTestStepRegistry(testStepRegistry)
             .build()
@@ -48,15 +49,21 @@ class DefaultTestStepFactoryTest {
     @DisplayName("With variables And parameters And payload has reference to variable")
     fun testCreateTestStepWithVariablesAndAppliedParameters() {
         val generatedId = "0001"
-        whenever(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
-        val rawTestStep = UnitTestUtils.createMap(
-            "variables",
-            UnitTestUtils.createMap(
-                "id", "get(gen_id)",
-                "names", listOf("n1", "\${name:n2}"),
-                "amount", "\${amt:500}"
+        whenever(testScenarioState.get("gen_id")).thenReturn(generatedId)
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(
+                AlphanumericValueExpression("values"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("id"), FunctionCallExpression("get", arrayOf(AlphanumericValueExpression("gen_id")))),
+                        Pair(AlphanumericValueExpression("names"), ListValueExpression(listOf(AlphanumericValueExpression("n1"), PropertyValueExpression("name", AlphanumericValueExpression("n2"))))),
+                        Pair(
+                            AlphanumericValueExpression("amount"), PropertyValueExpression("amt", NumberValueExpression("500"))
+                        )
+                    )
+                )
             ),
-            "payload", "\${names}"
+            Pair(AlphanumericValueExpression("payload"), PropertyValueExpression("names", null))
         )
         val parameters = Collections.singletonMap("amt", "100")
 
@@ -73,13 +80,15 @@ class DefaultTestStepFactoryTest {
     @Test
     @DisplayName("With parameters in name Then check they are collected correctly")
     fun testCreateTestStepWithParamsInName() {
-        val rawTestStep = mapOf(
-            Pair("name", "Book seats (.+) of the event\\s*(.*)"),
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(AlphanumericValueExpression("name"), StringValueExpression("Book seats (.+) of the event\\s*(.*)")),
             Pair(
-                "variables",
-                mapOf(
-                    Pair("seats", "\${1}"),
-                    Pair("event", "\${2}")
+                AlphanumericValueExpression("values"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("seats"), PropertyValueExpression("1", null)),
+                        Pair(AlphanumericValueExpression("event"), PropertyValueExpression("2", null))
+                    )
                 )
             )
         )
@@ -95,30 +104,52 @@ class DefaultTestStepFactoryTest {
     @DisplayName("When payload is Map with simple fields")
     fun testCreateTestStepWithPayloadAsMap() {
         val generatedId = "0001"
-        whenever(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
+        whenever(testScenarioState.get("gen_id")).thenReturn(generatedId)
 
-        val rawTestStep = UnitTestUtils.createMap(
-            "variables",
-            UnitTestUtils.createMap(
-                "id", generatedId,
-                "rows", listOf(
-                    UnitTestUtils.createMap("c1", "v1", "c2", "v2"),
-                    UnitTestUtils.createMap("c1", "v3", "c2", "v4")
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(
+                AlphanumericValueExpression("values"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("id"), AlphanumericValueExpression(generatedId)),
+                        Pair(
+                            AlphanumericValueExpression("rows"), ListValueExpression(
+                                listOf(
+                                    MapValueExpression(
+                                        mapOf(
+                                            Pair(AlphanumericValueExpression("c1"), AlphanumericValueExpression("v1")),
+                                            Pair(AlphanumericValueExpression("c2"), AlphanumericValueExpression("v2"))
+                                        )
+                                    ),
+                                    MapValueExpression(
+                                        mapOf(
+                                            Pair(AlphanumericValueExpression("c1"), AlphanumericValueExpression("v3")),
+                                            Pair(AlphanumericValueExpression("c2"), AlphanumericValueExpression("v4"))
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
                 )
             ),
-            "payload",
-            UnitTestUtils.createMap(
-                "id", "\${id}",
-                "size", "2",
-                "rows", "\${rows}"
+            Pair(
+                AlphanumericValueExpression("payload"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("id"), PropertyValueExpression("id", null)),
+                        Pair(AlphanumericValueExpression("size"), NumberValueExpression("2")),
+                        Pair(AlphanumericValueExpression("rows"), PropertyValueExpression("rows", null))
+                    )
+                )
             )
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
 
-        Assertions.assertAll(
+        assertAll(
             { assertEquals(generatedId, (testStep.testData as Map<*, *>?)!!["id"]) },
-            { assertEquals("2", (testStep.testData as Map<*, *>?)!!["size"]) },
+            { assertEquals(BigDecimal("2"), (testStep.testData as Map<*, *>?)!!["size"]) },
             { assertEquals("v1", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![0] as Map<*, *>)["c1"]) },
             { assertEquals("v2", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![0] as Map<*, *>)["c2"]) },
             { assertEquals("v3", (((testStep.testData as Map<*, *>?)!!["rows"] as List<*>?)!![1] as Map<*, *>)["c1"]) },
@@ -130,44 +161,60 @@ class DefaultTestStepFactoryTest {
     @DisplayName("With variables And validation details has reference to variable")
     fun testCreateTestStepWithVariablesAndValidationDetails() {
         val generatedId = "0001"
-        whenever(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
+        whenever(testScenarioState.get("gen_id")).thenReturn(generatedId)
 
-        val rawTestStep = UnitTestUtils.createMap(
-            "variables",
-            UnitTestUtils.createMap(
-                "id", generatedId,
-                "row", UnitTestUtils.createMap("c1", "v1")
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(
+                AlphanumericValueExpression("values"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("id"), AlphanumericValueExpression(generatedId)),
+                        Pair(
+                            AlphanumericValueExpression("row"),
+                            MapValueExpression(mapOf(Pair(AlphanumericValueExpression("c1"), AlphanumericValueExpression("v1"))))
+                        )
+                    )
+                )
             ),
-            "validate",
-            UnitTestUtils.createMap(
-                "id", "\${id}",
-                "result", "\${row}"
+            Pair(
+                AlphanumericValueExpression("validate"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("id"), PropertyValueExpression("id", null)),
+                        Pair(AlphanumericValueExpression("result"), PropertyValueExpression("row", null))
+                    )
+                )
             )
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
-        val validationDetails = testStep.validationDetails
+        val validationDetails = (testStep.validationDetails as ValidationNodes).nodes
 
         // check that refs are not applied because they are processed when actual validation happens
-        Assertions.assertAll(
-            { assertEquals("result", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
-            { assertEquals("\${row}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
-            { assertEquals("id", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
-            { assertEquals("\${id}", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult.toString()) }
+        assertAll(
+            { assertEquals(AlphanumericValueExpression("id"), (validationDetails[0] as PairValidationNode).actual) },
+            { assertEquals(PropertyValueExpression("id", null), (validationDetails[0] as PairValidationNode).expected) },
+            { assertEquals(AlphanumericValueExpression("result"), (validationDetails[1] as PairValidationNode).actual) },
+            { assertEquals(PropertyValueExpression("row", null), (validationDetails[1] as PairValidationNode).expected) },
         )
     }
 
     @Test
     @DisplayName("With validation details having many xpaths Then check each is preserved")
     fun testCreateTestStepWithValidationDetailsOfManyXpaths() {
-        val rawTestStep = mapOf(
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
             Pair(
-                "validate",
-                mapOf(
-                    Pair(
-                        "local.toString()", mapOf(
-                            Pair("xpath(/a/b)", "1"),
-                            Pair("xpath(/c/d)", "2")
+                AlphanumericValueExpression("validate"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(
+                            CallChainExpression(listOf(AlphanumericValueExpression("local"), FunctionCallExpression("toString", emptyArray()))),
+                            MapValueExpression(
+                                mapOf(
+                                    Pair(FunctionCallExpression("xpath", arrayOf(StringValueExpression("/a/b"))), NumberValueExpression("1")),
+                                    Pair(FunctionCallExpression("xpath", arrayOf(StringValueExpression("/c/d"))), NumberValueExpression("2"))
+                                )
+                            )
                         )
                     )
                 )
@@ -175,18 +222,23 @@ class DefaultTestStepFactoryTest {
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
-        val validationDetails = testStep.validationDetails
+        val validationDetails = (testStep.validationDetails as ValidationNodes).nodes
 
-        Assertions.assertAll(
-            { assertEquals("local.toString()", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
-            { assertEquals("xpath(/a/b)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 0).property.toString()) },
-            { assertEquals("xpath(/c/d)", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0, 1).property.toString()) },
+        assertAll(
+            { assertEquals("local.toString()", (validationDetails[0] as GroupedValidationNode).actual.toString()) },
+            { assertEquals("xpath(/a/b)", (((validationDetails[0] as GroupedValidationNode).items as ValidationNodes).nodes[0] as PairValidationNode).actual.toString()) },
+            { assertEquals("xpath(/c/d)", (((validationDetails[0] as GroupedValidationNode).items as ValidationNodes).nodes[1] as PairValidationNode).actual.toString()) },
         )
     }
 
     @Test
     fun testWithNestedParameters() {
-        val rawTestStep = UnitTestUtils.createMap("payload", "\${key_1 : \${key_2 : v3}}")
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(
+                AlphanumericValueExpression("payload"),
+                PropertyValueExpression("key_1", PropertyValueExpression("key_2", AlphanumericValueExpression("v3")))
+            )
+        )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("key_2", "v2")))
 
@@ -196,7 +248,7 @@ class DefaultTestStepFactoryTest {
     @Test
     @DisplayName("With test data as simple string")
     fun testCreateTestStepWithTestDataAsEmptyString() {
-        val rawTestStep = UnitTestUtils.createMap("data", "")
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(Pair(AlphanumericValueExpression("data"), StringValueExpression("")))
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf())
 
@@ -208,7 +260,12 @@ class DefaultTestStepFactoryTest {
     fun testFieldWithReferenceToParameter() {
         val fieldName = "field"
         val value = "value"
-        val rawTestStep = mapOf(Pair("data", mapOf(Pair("\${a}", value))))
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(
+                AlphanumericValueExpression("data"),
+                MapValueExpression(mapOf(Pair(PropertyValueExpression("a", null), AlphanumericValueExpression(value))))
+            )
+        )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("a", fieldName)))
 
@@ -218,30 +275,39 @@ class DefaultTestStepFactoryTest {
     @Test
     @DisplayName("With validation of values with special characters")
     fun testCreateTestStepWithValidationOfValueWithSpecialChars() {
-        val rawTestStep = mapOf(
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
             Pair(
-                "assert",
-                mapOf(
-                    Pair("'f.1'.toString()", "'2.0'"),
-                    Pair("a.b.'c.d'.'#[e]'", "'a.b'.toString().regex('([\\\\w.]{3})')")
+                AlphanumericValueExpression("validate"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(
+                            CallChainExpression(listOf(StringValueExpression("f.1"), FunctionCallExpression("toString", emptyArray()))),
+                            StringValueExpression("2.0")
+                        ),
+                        Pair(
+                            CallChainExpression(listOf(AlphanumericValueExpression("a"), AlphanumericValueExpression("b"), StringValueExpression("c.d"), StringValueExpression("e"))),
+                            CallChainExpression(
+                                listOf(
+                                    StringValueExpression("a.b"),
+                                    FunctionCallExpression("toString", emptyArray()),
+                                    FunctionCallExpression("regex", arrayOf(StringValueExpression("([\\w.]{3})")))
+                                )
+                            )
+                        )
+                    )
                 )
             )
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf())
 
-        val validationDetails = testStep.validationDetails
+        val validationDetails = (testStep.validationDetails as ValidationNodes).nodes
 
         assertAll(
-            { assertEquals("f.1.toString()", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).property.toString()) },
-            { assertEquals("2.0", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 0).expectedResult.toString()) },
-            { assertEquals("a.b.c.d.#[e]", UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).property.toString()) },
-            {
-                assertEquals(
-                    "a.b.toString().regex(([\\w.]{3}))",
-                    UnitTestUtils.extractExpectedValue(validationDetails!!.expectedResult, 1).expectedResult.toString()
-                )
-            },
+            { assertEquals("f.1.toString()", (validationDetails[0] as PairValidationNode).actual.toString()) },
+            { assertEquals("2.0", (validationDetails[0] as PairValidationNode).expected.toString()) },
+            { assertEquals("a.b.c.d.e", (validationDetails[1] as PairValidationNode).actual.toString()) },
+            { assertEquals("a.b.toString().regex(([\\w.]{3}))", (validationDetails[1] as PairValidationNode).expected.toString()) }
         )
     }
 
@@ -249,7 +315,12 @@ class DefaultTestStepFactoryTest {
     @DisplayName("With test data as a content conversion function")
     fun testCreateTestStepWithTestDataAsContentConversionFunction() {
         val data = "something"
-        val rawTestStep = mapOf(Pair("data", "$data.toBytes()"))
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(
+                AlphanumericValueExpression("data"),
+                CallChainExpression(listOf(AlphanumericValueExpression(data), FunctionCallExpression("toBytes", emptyArray())))
+            )
+        )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf())
 
@@ -260,21 +331,25 @@ class DefaultTestStepFactoryTest {
     @DisplayName("With variables has reference to other variables")
     fun testCreateTestStepWithVariablesReferenceToOtherVariables() {
         val generatedId = "0001"
-        whenever(testScenarioState!!.get("gen_id")).thenReturn(generatedId)
+        whenever(testScenarioState.get("gen_id")).thenReturn(generatedId)
 
-        val rawTestStep = UnitTestUtils.createMap(
-            "variables",
-            UnitTestUtils.createMap(
-                "f1", "v1",
-                "f2", "\${f1}",
-                "f3", "\${f2}",
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(
+                AlphanumericValueExpression("values"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("f1"), AlphanumericValueExpression("v1")),
+                        Pair(AlphanumericValueExpression("f2"), PropertyValueExpression("f1", null)),
+                        Pair(AlphanumericValueExpression("f3"), PropertyValueExpression("f2", null)),
+                    )
+                )
             )
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
         val variables = testStep.variables!!
 
-        Assertions.assertAll(
+        assertAll(
             { assertEquals("v1", variables["f2"]) },
             { assertEquals(variables["f1"], variables["f2"]) },
             { assertEquals(variables["f1"], variables["f3"]) },
@@ -284,84 +359,116 @@ class DefaultTestStepFactoryTest {
     @Test
     @DisplayName("When has reference to parent test step Then check all data merged")
     fun testCreateTestStepWithRefToParent() {
-        val testStepA = UnitTestUtils.createMap(
-            "id", "stepA",
-            "payload", "parent payload"
+        val id = AlphanumericValueExpression("stepA")
+        val parentPayload = StringValueExpression("parent payload")
+        val testStepA = mapOf<ValueExpression, ValueExpression?>(
+            Pair(AlphanumericValueExpression("id"), id),
+            Pair(AlphanumericValueExpression("payload"), parentPayload)
         )
 
-        whenever(testStepRegistry.getById(testStepA["id"] as String)).thenReturn(testStepA)
+        whenever(testStepRegistry.getById("stepA")).thenReturn(testStepA)
 
-        val rawTestStep = UnitTestUtils.createMap(
-            "parent", testStepA["id"],
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(AlphanumericValueExpression("parent"), id),
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("1", "v2")))
 
-        Assertions.assertAll(
-            { assertEquals(testStepA["id"], testStep.id) },  // id is replaced by the latest parent
-            { assertEquals(testStepA["payload"], testStep.testData) }
+        assertAll(
+            { assertEquals(id.toString(), testStep.id) },  // id is replaced by the latest parent
+            { assertEquals(parentPayload.toString(), testStep.testData) }
         )
     }
 
     @Test
     @DisplayName("When has reference to parent test steps Then check all data merged")
     fun testCreateTestStepWithRefToParents() {
-        val testStepA = UnitTestUtils.createMap(
-            "id", "stepA",
-            "variables", UnitTestUtils.createMap("f1", "v1"),
-            "payload", "to replace by child"
+        val idA = AlphanumericValueExpression("stepA")
+        val testStepA = mapOf<ValueExpression, ValueExpression?>(
+            Pair(AlphanumericValueExpression("id"), idA),
+            Pair(AlphanumericValueExpression("values"), MapValueExpression(mapOf(Pair(AlphanumericValueExpression("f1"), AlphanumericValueExpression("v1"))))),
+            Pair(AlphanumericValueExpression("payload"), StringValueExpression("to replace by child"))
         )
-        val testStepB = UnitTestUtils.createMap(
-            "id", "stepB",
-            "assert", UnitTestUtils.createMap("f4", "v4"),
+        val idB = AlphanumericValueExpression("stepB")
+        val testStepB = mapOf<ValueExpression, ValueExpression?>(
+            Pair(AlphanumericValueExpression("id"), idB),
+            Pair(AlphanumericValueExpression("validate"), MapValueExpression(mapOf(Pair(AlphanumericValueExpression("f4"), AlphanumericValueExpression("v4"))))),
         )
-        whenever(testStepRegistry.getById(testStepA["id"] as String)).thenReturn(testStepA)
-        whenever(testStepRegistry.getById(testStepB["id"] as String)).thenReturn(testStepB)
+        whenever(testStepRegistry.getById("stepA")).thenReturn(testStepA)
+        whenever(testStepRegistry.getById("stepB")).thenReturn(testStepB)
 
-        val rawTestStep = UnitTestUtils.createMap(
-            "parent", listOf(testStepA["id"], testStepB["id"]),
-            "payload",
-            UnitTestUtils.createMap(
-                "new_f1", "\${f1}",  // this reference must be taken from testStepA vars
-                "f2", "\${f2}",
-                "f3", "something",
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(AlphanumericValueExpression("parent"), ListValueExpression(listOf(idA, idB))),
+            Pair(
+                AlphanumericValueExpression("payload"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("new_f1"), PropertyValueExpression("f1", null)),  // this reference must be taken from testStepA vars
+                        Pair(AlphanumericValueExpression("f2"), PropertyValueExpression("f2", null)),
+                        Pair(AlphanumericValueExpression("f3"), AlphanumericValueExpression("something")),
+                    )
+                )
             )
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, mapOf(Pair("f2", "v2")))
+        val validationDetails = (testStep.validationDetails as ValidationNodes).nodes[0]
 
-        Assertions.assertAll(
-            { assertEquals(testStepB["id"], testStep.id) },  // id is replaced by the latest parent
-            { assertEquals(testStepA["variables"], testStep.variables) },
+        assertAll(
+            { assertEquals(idB.toString(), testStep.id) },  // id is replaced by the latest parent
+            { assertEquals("v1", testStep.variables!!["f1"]) },
             { assertEquals("v1", (testStep.testData as Map<*, *>?)!!["new_f1"]) },
             { assertEquals("v2", (testStep.testData as Map<*, *>?)!!["f2"]) },
             { assertEquals("something", (testStep.testData as Map<*, *>?)!!["f3"]) },
-            {
-                assertEquals(
-                    "v4",
-                    ((testStep.validationDetails?.expectedResult?.expectedResult as List<*>)[0] as ExpectedResult).expectedResult.toString()
-                )
-            }
+            { assertEquals("v4", (validationDetails as PairValidationNode).expected.toString()) }
         )
     }
 
     @Test
     @DisplayName("When value has if statement Then check it assigns value correctly")
     fun testCreateTestStepWithIfStatement() {
-        val expectedValue = mapOf(Pair("a", 1), Pair("b", 2))
-        val rawTestStep = mapOf(
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
             Pair(
-                "variables",
-                mapOf(
-                    Pair("f1", "v1"),
-                    Pair("f2", expectedValue),
+                AlphanumericValueExpression("values"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("f1"), AlphanumericValueExpression("v1")),
+                        Pair(
+                            AlphanumericValueExpression("f2"), MapValueExpression(
+                                mapOf<ValueExpression, ValueExpression?>(
+                                    Pair(AlphanumericValueExpression("a"), NumberValueExpression("1")),
+                                    Pair(AlphanumericValueExpression("b"), NumberValueExpression("2"))
+                                )
+                            )
+                        ),
+                    )
                 )
             ),
-            Pair("payload", mapOf(Pair("c", "if(1==1,\${f2}, \${f1}")))
+            Pair(
+                AlphanumericValueExpression("payload"), MapValueExpression(
+                    mapOf(
+                        Pair(
+                            AlphanumericValueExpression("c"),
+                            FunctionCallExpression(
+                                "if", arrayOf(
+                                    ValueComparisonExpression("==", NumberValueExpression("1"), NumberValueExpression("1")),
+                                    PropertyValueExpression("f2", null), PropertyValueExpression("f1", null)
+                                )
+                            )
+                        )
+                    )
+                )
+            )
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap())
 
-        assertEquals(expectedValue, (testStep.testData as Map<*, *>?)!!["c"])
-    }*/
+        assertEquals(
+            mapOf(
+                Pair("a", BigDecimal("1")),
+                Pair("b", BigDecimal("2"))
+            ),
+            (testStep.testData as Map<*, *>?)!!["c"]
+        )
+    }
 }
