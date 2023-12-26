@@ -1,0 +1,39 @@
+name("Simple test step with complex function"){
+    payload
+    {
+        toJson()
+        {
+            command = "go"
+            value = "v 1 2 3"
+        }
+    }
+
+    request
+    {
+        toBytes()
+        {
+            fromTemplate("f1.ftl")
+            {
+                rawData
+                {
+                    toJson()
+                    {
+                        f1 = v1
+                    }
+                }
+            }
+        }
+    }
+
+    body
+    {
+        toJson()
+        [
+        {
+            f1 = "v1"
+        }
+        ]
+
+    }
+
+}

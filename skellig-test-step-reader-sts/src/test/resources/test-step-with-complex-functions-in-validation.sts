@@ -1,0 +1,29 @@
+name("Simple test step with complex function in validation"){
+    validate
+    {
+        toJson()
+        {
+            a = 0
+        }
+
+        values(10)
+        [
+        {
+            a {
+                  toJson()
+                  {
+                      b = 10
+                  }
+              }
+        },
+        {
+            b {
+                  toJson()
+                  {
+                      c = 100
+                  }
+              }
+        }
+        ]
+    }
+}

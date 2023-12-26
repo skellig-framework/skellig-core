@@ -68,7 +68,7 @@ class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
         companion object {
             private const val URL_KEYWORD = "url"
             private const val SERVICE_NAME_KEYWORD = "serviceName"
-            private const val HTTP_CONFIG_KEYWORD = "http.services"
+            private const val HTTP_SERVICES_KEYWORD = "http.services"
         }
 
         private val httpChannelPerService = mutableMapOf<String, HttpChannel>()
@@ -79,9 +79,12 @@ class HttpTestStepProcessor(private val httpServices: Map<String, HttpChannel>,
         }
 
         fun withHttpService(config: Config) = apply {
-            if (config.hasPath(HTTP_CONFIG_KEYWORD)) {
-                (config.getAnyRefList(HTTP_CONFIG_KEYWORD) as List<Map<String, String>>)
-                        .forEach { withHttpService(it[SERVICE_NAME_KEYWORD], it[URL_KEYWORD]) }
+            if (config.hasPath(HTTP_SERVICES_KEYWORD)) {
+                val services = config.getAnyRef(HTTP_SERVICES_KEYWORD)
+                if (services is List<*>) {
+                    services.mapNotNull { it as? Map<*, *> }
+                        .forEach { withHttpService(it[SERVICE_NAME_KEYWORD]?.toString(), it[URL_KEYWORD]?.toString()) }
+                }
             }
         }
 

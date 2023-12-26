@@ -18,7 +18,7 @@ open class DatabaseRequestExecutorFactory(select: DatabaseRequestExecutor,
         var command = databaseRequest.command
         if (isQueryOnlyProvided(databaseRequest, command)) {
             val query: String = databaseRequest.query!!
-            command = databaseRequestExecutors.keys.firstOrNull { item: String -> query.toLowerCase().trim { it <= ' ' }.startsWith(item) }
+            command = databaseRequestExecutors.keys.firstOrNull { item: String -> query.lowercase().trim { it <= ' ' }.startsWith(item) }
         }
         return if (databaseRequestExecutors.containsKey(command)) {
             databaseRequestExecutors[command]

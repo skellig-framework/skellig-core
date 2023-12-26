@@ -9,8 +9,9 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 
 class SimpleMessageTestStepFactory(
     testStepRegistry: TestStepRegistry,
-    valueExpressionContextFactory: ValueExpressionContextFactory
-) : BaseDefaultTestStepFactory<SimpleMessageTestStep>(testStepRegistry, valueExpressionContextFactory) {
+    valueExpressionContextFactory: ValueExpressionContextFactory,
+    defaultTestDataConverter: String? = null
+) : BaseDefaultTestStepFactory<SimpleMessageTestStep>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
         private val RECEIVER = AlphanumericValueExpression("receiver")
@@ -24,7 +25,6 @@ class SimpleMessageTestStepFactory(
     }
 
     override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {
-
         return rawTestStep.containsKey(RECEIVER) || rawTestStep.containsKey(RECEIVE_FROM)
     }
 }

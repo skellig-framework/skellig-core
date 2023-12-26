@@ -1,5 +1,6 @@
 package org.skellig.teststep.processor.rmq.config
 
+import com.typesafe.config.Config
 import org.skellig.teststep.processing.processor.config.ConfiguredTestStepProcessorDetails
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
@@ -9,6 +10,8 @@ import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
 import org.skellig.teststep.processor.rmq.model.factory.RmqConsumableTestStepFactory
 import org.skellig.teststep.processor.rmq.model.factory.RmqTestStepFactory
+
+private const val RMQ_TEST_DATA_CONVERTER = "rmq.testData.converter"
 
 class RmqTestStepProcessorConfig : TestStepProcessorConfig<RmqTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<RmqTestStep>? {
@@ -20,11 +23,14 @@ class RmqTestStepProcessorConfig : TestStepProcessorConfig<RmqTestStep> {
                     .build(),
                 RmqTestStepFactory(
                     details.testStepRegistry,
-                    details.valueExpressionContextFactory
+                    details.valueExpressionContextFactory,
+                    getDefaultTestDataConverter(details.config)
                 )
             )
         else null
     }
+
+
 
 }
 
@@ -38,10 +44,16 @@ class RmqConsumableTestStepProcessorConfig : TestStepProcessorConfig<RmqConsumab
                     .build(),
                 RmqConsumableTestStepFactory(
                     details.testStepRegistry,
-                    details.valueExpressionContextFactory
+                    details.valueExpressionContextFactory,
+                    getDefaultTestDataConverter(details.config)
                 )
             )
         else null
     }
 
+}
+
+private fun getDefaultTestDataConverter(config: Config): String? {
+    return if (config.hasPath(RMQ_TEST_DATA_CONVERTER)) config.getString(RMQ_TEST_DATA_CONVERTER)
+    else null
 }
