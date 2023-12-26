@@ -1,11 +1,14 @@
 package org.skellig.teststep.processor.http.config
 
+import com.typesafe.config.Config
 import org.skellig.teststep.processing.processor.config.ConfiguredTestStepProcessorDetails
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
 import org.skellig.teststep.processor.http.HttpTestStepProcessor
 import org.skellig.teststep.processor.http.model.HttpTestStep
 import org.skellig.teststep.processor.http.model.factory.HttpTestStepFactory
+
+private const val HTTP_TEST_DATA_CONVERTER = "http.testData.converter"
 
 class HttpTestStepProcessorConfig : TestStepProcessorConfig<HttpTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<HttpTestStep>? {
@@ -17,9 +20,15 @@ class HttpTestStepProcessorConfig : TestStepProcessorConfig<HttpTestStep> {
                     .build(),
                 HttpTestStepFactory(
                     details.testStepRegistry,
-                    details.valueExpressionContextFactory
+                    details.valueExpressionContextFactory,
+                    getDefaultTestDataConverter(details.config)
                 )
             )
+        else null
+    }
+
+    private fun getDefaultTestDataConverter(config: Config): String? {
+        return if (config.hasPath(HTTP_TEST_DATA_CONVERTER)) config.getString(HTTP_TEST_DATA_CONVERTER)
         else null
     }
 

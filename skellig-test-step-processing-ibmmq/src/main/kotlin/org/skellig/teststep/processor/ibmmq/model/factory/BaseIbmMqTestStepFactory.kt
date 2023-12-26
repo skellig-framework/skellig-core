@@ -9,8 +9,9 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 
 abstract class BaseIbmMqTestStepFactory<T : DefaultTestStep>(
     testStepRegistry: TestStepRegistry,
-    valueExpressionContextFactory: ValueExpressionContextFactory
-) : BaseDefaultTestStepFactory<T>(testStepRegistry, valueExpressionContextFactory) {
+    valueExpressionContextFactory: ValueExpressionContextFactory,
+    defaultTestDataConverter: String? = null
+) : BaseDefaultTestStepFactory<T>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
         protected val PROTOCOL_KEY_KEYWORD = AlphanumericValueExpression("protocol")

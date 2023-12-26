@@ -31,7 +31,7 @@ ext {
     junitApiVersion = '5.8.1'
     junitPlatformVersion = '1.2.0'
     mockitoJunitVersion = '2.18.0'
-    typesafeConfigVersion = '1.4.0'
+    typesafeConfigVersion = '1.4.3'
     slf4jLogVersion = '2.0.7'
     kotlinVersion = '1.5.0'
 }

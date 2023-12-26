@@ -9,15 +9,27 @@ import java.net.URL
 
 class FromTemplateFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor {
 
+    companion object {
+        private const val FILE = "file"
+        private const val DATA = "data"
+    }
+
     private var templateProvider: TemplateProvider = TemplateProvider(classLoader)
 
-    override fun execute(name: String, args: Array<Any?>): Any? {
+    override fun execute(name: String, args: Array<Any?>): Any {
         return if (args.size == 2) {
             val file = args[0]?.toString()
             val templateDetails = args[1]
             constructFromTemplate(templateProvider.getTemplate(file), templateDetails)
-        } else throw TestDataConversionException("Function `template` can only accept 2 arguments. Found ${args.size}")
-
+        } else if (args.size == 1) {
+            if (args[0] is Map<*,*>) {
+                val file = (args[0] as Map<*, *>)[FILE]?.toString()
+                    ?: throw TestDataConversionException("The argument of the function `${getFunctionName()}` must have property '$FILE' defined")
+                val data = (args[0] as Map<*, *>)[DATA]
+                    ?: throw TestDataConversionException("The argument of the function `${getFunctionName()}` must have property '$DATA' defined")
+                constructFromTemplate(templateProvider.getTemplate(file), data)
+            } else throw TestDataConversionException("Invalid argument for the function `${getFunctionName()}`. Expected Map but found '${args[0]?.javaClass}'")
+        } else throw TestDataConversionException("Function `${getFunctionName()}` can only accept 1 or 2 arguments. Found ${args.size}")
     }
 
     private fun constructFromTemplate(template: Template, dataModel: Any?): Any {

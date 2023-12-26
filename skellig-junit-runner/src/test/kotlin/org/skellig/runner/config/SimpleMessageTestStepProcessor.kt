@@ -57,7 +57,8 @@ class SimpleMessageTestStepProcessorConfig : TestStepProcessorConfig<SimpleMessa
                 .build(),
             SimpleMessageTestStepFactory(
                 details.testStepRegistry,
-                details.valueExpressionContextFactory
+                details.valueExpressionContextFactory,
+                "toCustomFormat"
             )
         )
     }

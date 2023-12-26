@@ -9,8 +9,9 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 
 class RmqTestStepFactory(
     testStepRegistry: TestStepRegistry,
-    valueExpressionContextFactory: ValueExpressionContextFactory
-) : BaseRmqTestStepFactory<RmqTestStep>(testStepRegistry, valueExpressionContextFactory) {
+    valueExpressionContextFactory: ValueExpressionContextFactory,
+    defaultTestDataConverter: String? = null
+) : BaseRmqTestStepFactory<RmqTestStep>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
         private val SEND_TO_KEYWORD = AlphanumericValueExpression("sendTo")

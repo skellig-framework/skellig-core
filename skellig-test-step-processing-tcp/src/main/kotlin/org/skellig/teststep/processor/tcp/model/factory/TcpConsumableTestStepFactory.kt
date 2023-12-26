@@ -8,8 +8,9 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 
 class TcpConsumableTestStepFactory(
     testStepRegistry: TestStepRegistry,
-    valueExpressionContextFactory: ValueExpressionContextFactory
-) : BaseTcpTestStepFactory<TcpConsumableTestStep>(testStepRegistry, valueExpressionContextFactory) {
+    valueExpressionContextFactory: ValueExpressionContextFactory,
+    defaultTestDataConverter: String? = null
+) : BaseTcpTestStepFactory<TcpConsumableTestStep>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     override fun createTestStepBuilder(
         rawTestStep: Map<ValueExpression, ValueExpression?>,

@@ -1,5 +1,6 @@
 package org.skellig.teststep.processor.ibmmq.config
 
+import com.typesafe.config.Config
 import org.skellig.teststep.processing.processor.config.ConfiguredTestStepProcessorDetails
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
@@ -9,6 +10,8 @@ import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 import org.skellig.teststep.processor.ibmmq.model.factory.IbmMqConsumableTestStepFactory
 import org.skellig.teststep.processor.ibmmq.model.factory.IbmMqTestStepFactory
+
+private const val IBMMQ_TEST_DATA_CONVERTER = "ibmmq.testData.converter"
 
 class IbmMqTestStepProcessorConfig : TestStepProcessorConfig<IbmMqTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<IbmMqTestStep>? {
@@ -20,7 +23,8 @@ class IbmMqTestStepProcessorConfig : TestStepProcessorConfig<IbmMqTestStep> {
                     .build(),
                 IbmMqTestStepFactory(
                     details.testStepRegistry,
-                    details.valueExpressionContextFactory
+                    details.valueExpressionContextFactory,
+                    getDefaultTestDataConverter(details.config)
                 )
             )
         else null
@@ -38,9 +42,15 @@ class IbmMqConsumableTestStepProcessorConfig : TestStepProcessorConfig<IbmMqCons
                     .build(),
                 IbmMqConsumableTestStepFactory(
                     details.testStepRegistry,
-                    details.valueExpressionContextFactory
+                    details.valueExpressionContextFactory,
+                    getDefaultTestDataConverter(details.config)
                 )
             )
         else null
     }
+}
+
+private fun getDefaultTestDataConverter(config: Config): String? {
+    return if (config.hasPath(IBMMQ_TEST_DATA_CONVERTER)) config.getString(IBMMQ_TEST_DATA_CONVERTER)
+    else null
 }

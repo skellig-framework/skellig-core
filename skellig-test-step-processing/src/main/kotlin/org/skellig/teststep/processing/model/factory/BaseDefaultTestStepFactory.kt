@@ -5,7 +5,6 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.validation.factory.ValidationNodeFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
-import org.skellig.teststep.processing.value.converter.TestDataConverter
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
@@ -124,7 +123,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 
     private fun convertTestData(value: ValueExpression?, defaultTestDataConverter: String?, parameters: Map<String, Any?>): Any? {
         val convertedValue = convertValue<Any?>(value, parameters)
-        return (defaultTestDataConverter?.let { testDataContext.onFunctionCall(it, convertedValue, emptyArray()) } ?: convertedValue)
+        return (defaultTestDataConverter?.let { testDataContext.onFunctionCall(it, null, arrayOf(convertedValue)) } ?: convertedValue)
     }
 
     protected open fun getId(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): String? {

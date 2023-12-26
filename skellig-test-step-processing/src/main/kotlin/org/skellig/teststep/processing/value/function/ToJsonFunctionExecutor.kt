@@ -16,7 +16,9 @@ class ToJsonFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, args: Array<Any?>): Any? {
         return if (args.size == 1) {
-            jsonSerializer.writeValueAsString(args[0])
+            val value = args[0]
+            if (value !is String) jsonSerializer.writeValueAsString(value)
+            else value
         } else {
             throw TestDataConversionException("Function `${getFunctionName()}` can only accept 1 argument. Found ${args.size}")
         }
