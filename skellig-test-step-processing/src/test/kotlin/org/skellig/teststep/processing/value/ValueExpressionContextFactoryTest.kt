@@ -4,10 +4,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestValueConversionException
-import org.skellig.teststep.processing.exception.ValueExtractionException
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
-import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.value.expression.*
@@ -23,7 +21,6 @@ class ValueExpressionContextFactoryTest {
                 .withClassPaths(listOf("org.skellig.teststep.processing.value"))
                 .withClassLoader(ValueExpressionContextFactoryTest::class.java.classLoader)
                 .build(),
-            DefaultValueExtractor.Builder().build(),
             DefaultPropertyExtractor(null)
         )
 
@@ -127,7 +124,7 @@ class ValueExpressionContextFactoryTest {
     @Test
     fun testWhenNotDefinedFunction() {
         val func = "f()"
-        assertThrows(TestValueConversionException::class.java) { FunctionCallExpression(func, emptyArray()).evaluate(factory.create(emptyMap())) }
+        assertThrows(FunctionExecutionException::class.java) { FunctionCallExpression(func, emptyArray()).evaluate(factory.create(emptyMap())) }
     }
 
     @Test
@@ -253,16 +250,16 @@ class ValueExpressionContextFactoryTest {
         fun testExtractWhenFunctionNotFound() {
             val value = mapOf(Pair("k1", "v1"))
 
-            val ex = assertThrows(ValueExtractionException::class.java) {
+            val ex = assertThrows(FunctionExecutionException::class.java) {
                 CallChainExpression(
                     listOf(
                         PropertyValueExpression("data", null),
-                        FunctionCallExpression("get", emptyArray())
+                        FunctionCallExpression("getAny", emptyArray())
                     ),
                 ).evaluate(factory.create(mapOf(Pair("data", value))))
             }
 
-            assertEquals("No function `get` found in the result `{k1=v1}` with argument pairs ()", ex.message)
+            assertEquals("No function or property `getAny` found in the result `{k1=v1}` with argument pairs ()", ex.message)
         }
     }
 

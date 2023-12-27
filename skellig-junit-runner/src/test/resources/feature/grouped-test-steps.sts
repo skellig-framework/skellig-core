@@ -7,7 +7,7 @@ name("Create user .*") {
 name("Get user name (.*)"){
     id = t1
 
-    variables {
+    values {
         usr = ${1}
     }
 

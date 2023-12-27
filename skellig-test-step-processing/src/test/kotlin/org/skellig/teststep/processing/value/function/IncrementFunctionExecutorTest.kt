@@ -24,7 +24,7 @@ class IncrementFunctionExecutorTest {
     @Test
     @DisplayName("Increment value first time Then verify it returned default value with replaced zeros")
     fun testIncrementSimpleValueFirstTime() {
-        val result = converter!!.execute("inc", arrayOf("id","10"))
+        val result = converter!!.execute("inc", null, arrayOf("id","10"))
 
         Assertions.assertEquals("0000000001", result)
     }
@@ -33,9 +33,9 @@ class IncrementFunctionExecutorTest {
     @DisplayName("Increment value second time Then verify it returned incremented value by 1")
     fun testIncrementSimpleValueSecondTime() {
         val args: Array<Any?> = arrayOf("id", "10")
-        converter!!.execute("inc", args)
+        converter!!.execute("inc", null, args)
 
-        val result = converter!!.execute("inc", args)
+        val result = converter!!.execute("inc", null, args)
 
         Assertions.assertEquals("0000000002", result)
     }
@@ -45,7 +45,7 @@ class IncrementFunctionExecutorTest {
     fun testIncrementSimpleValueSeveralTimes() {
         var result: Any? = null
         for (i in 0..9) {
-            result = converter!!.execute("inc", arrayOf("id","3"))
+            result = converter!!.execute("inc", null, arrayOf("id","3"))
         }
         Assertions.assertEquals("010", result)
     }
@@ -55,7 +55,7 @@ class IncrementFunctionExecutorTest {
     fun testIncrementValueMoreThanLengthOfRegex() {
         var result: Any? = null
         for (i in 0..9) {
-            result = converter!!.execute("inc", arrayOf("id","1"))
+            result = converter!!.execute("inc", null, arrayOf("id","1"))
         }
         Assertions.assertEquals("9", result)
     }
@@ -63,9 +63,9 @@ class IncrementFunctionExecutorTest {
     @Test
     @DisplayName("Increment value with different limits several times Then verify it does not overflow and increment where possible")
     fun testIncrementValueWithDifferentLimits() {
-        converter!!.execute("inc", arrayOf("id","4"))
+        converter!!.execute("inc", null, arrayOf("id","4"))
 
-        val result = converter!!.execute("inc", arrayOf("id"))
+        val result = converter!!.execute("inc", null, arrayOf("id"))
 
         Assertions.assertEquals("0002", result)
     }
@@ -78,9 +78,9 @@ class IncrementFunctionExecutorTest {
         var result3: Any? = null
         for (i in 0..4) {
             val converter = IncrementFunctionExecutor()
-            result1 = converter.execute("inc", arrayOf("id","5"))
-            result2 = converter.execute("inc", arrayOf("3"))
-            result3 = converter.execute("inc", emptyArray())
+            result1 = converter.execute("inc", null, arrayOf("id","5"))
+            result2 = converter.execute("inc", null, arrayOf("3"))
+            result3 = converter.execute("inc", null, emptyArray())
         }
 
         Assertions.assertEquals("00005", result1)

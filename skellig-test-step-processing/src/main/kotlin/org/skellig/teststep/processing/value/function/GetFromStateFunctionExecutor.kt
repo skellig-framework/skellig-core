@@ -1,8 +1,8 @@
 package org.skellig.teststep.processing.value.function
 
 import org.skellig.task.TaskUtils.Companion.runTask
-import org.skellig.teststep.processing.exception.TestDataConversionException
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.math.BigDecimal
 import org.slf4j.LoggerFactory
 
@@ -12,11 +12,11 @@ class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : F
         private val LOGGER = LoggerFactory.getLogger(GetFromStateFunctionExecutor::class.java)
     }
 
-    override fun execute(name: String, args: Array<Any?>): Any? {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
         return when (args.size) {
             1 -> {
                 val key = args[0]?.toString() ?: "null"
-                testScenarioState.get(key) ?: throw TestDataConversionException("No data found in Test Scenario State with key `$key`")
+                testScenarioState.get(key) ?: throw FunctionExecutionException("No data found in Test Scenario State with key `$key`")
             }
             3 -> {
                 val key = args[0]?.toString() ?: "null"
@@ -29,7 +29,7 @@ class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : F
                     { it != null }
                 )
             }
-            else -> throw TestDataConversionException("Function `get` can only accept 1 or 3 arguments. Found ${args.size}")
+            else -> throw FunctionExecutionException("Function `get` can only accept 1 or 3 arguments. Found ${args.size}")
         }
     }
 

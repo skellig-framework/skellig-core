@@ -7,13 +7,13 @@ import org.skellig.teststep.processing.model.validation.ValidationNode
 open class TcpConsumableTestStep protected constructor(id: String?,
                                                        name: String?,
                                                        timeout: Int,
-                                                       variables: Map<String, Any?>?,
+                                                       values: Map<String, Any?>?,
                                                        testData: Any?,
                                                        validationDetails: ValidationNode?,
                                                        val consumeFrom: List<String>,
                                                        val respondTo: List<String>?,
                                                        readBufferSize: Int)
-    : BaseTcpTestStep(id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, variables,
+    : BaseTcpTestStep(id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, values,
                       testData, validationDetails, readBufferSize) {
 
 
@@ -37,7 +37,7 @@ open class TcpConsumableTestStep protected constructor(id: String?,
                 if (consumeChannelsSize != it.size)
                     throw TestStepCreationException("consumeFrom and respondTo must have the same size")
             }
-            return TcpConsumableTestStep(id, name!!, timeout, variables, testData,
+            return TcpConsumableTestStep(id, name!!, timeout, values, testData,
                                          validationDetails, consumeFrom!!, respondTo, readBufferSize)
         }
     }

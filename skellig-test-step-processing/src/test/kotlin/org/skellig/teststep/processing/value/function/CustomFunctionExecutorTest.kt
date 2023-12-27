@@ -2,21 +2,18 @@ package org.skellig.teststep.processing.value.function
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestValueConversionException
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
 class CustomFunctionExecutorTest {
 
-    private val converter = CustomFunctionExecutor(
-        listOf("org.skellig.teststep.processing.value.function"),
-        CustomFunctionExecutorTest::class.java.classLoader
-    )
+    private val converter = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.value.function"))
 
     @Test
     fun testConvertFromCustomFunction() {
-        assertTrue(converter.execute("lessThan", arrayOf("1", "2")) as Boolean)
-        assertFalse(converter.execute("isEmpty", arrayOf("gggg", "")) as Boolean)
-        assertNull(converter.execute("runSomething", emptyArray())) // no return means null
-        assertThrows(TestValueConversionException::class.java) { converter.execute("runNotExisting", emptyArray()) }
+        assertTrue(converter.execute("lessThan", null, arrayOf("1", "2")) as Boolean)
+        assertFalse(converter.execute("isEmpty", null, arrayOf("gggg", "")) as Boolean)
+        assertNull(converter.execute("runSomething", null, emptyArray())) // no return means null
+        assertThrows(FunctionExecutionException::class.java) { converter.execute("runNotExisting", null, emptyArray()) }
     }
 }
 

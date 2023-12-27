@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
-import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.value.expression.*
@@ -19,7 +18,6 @@ class ValidationNodeTest {
     private val valueExpressionContextFactory =
         ValueExpressionContextFactory(
             DefaultFunctionValueExecutor.Builder().withTestScenarioState(DefaultTestScenarioState()).build(),
-            DefaultValueExtractor.Builder().build(),
             DefaultPropertyExtractor(null)
         )
 
@@ -328,7 +326,7 @@ class ValidationNodeTest {
                 ),
 
                 GroupedValidationNode(
-                    FunctionCallExpression("values", emptyArray()),
+                    FunctionCallExpression("getValues", emptyArray()),
                     ValidationNodes(
                         listOf(
                             ValidationNodes(

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
 @Ignore
 @DisplayName("Convert test data from ftl")
@@ -27,7 +27,7 @@ class FromTemplateFunctionExecutorTest {
             Pair("value", "v1")
         )
 
-        val result = fromTemplateFunctionExecutor!!.execute("fromTemplate", arrayOf("template/test.ftl", templateDetails))
+        val result = fromTemplateFunctionExecutor!!.execute("fromTemplate", null, arrayOf("template/test.ftl", templateDetails))
 
         Assertions.assertEquals("""{ "name" : "n1" "value" : "v1"}""", inlineString(result))
     }
@@ -35,8 +35,8 @@ class FromTemplateFunctionExecutorTest {
     @Test
     @DisplayName("When file and csv data model provided without filter Then check first row from csv applied")
     fun testFtlConversionWhenFileNotExist() {
-        Assertions.assertThrows(TestDataConversionException::class.java) {
-            fromTemplateFunctionExecutor!!.execute("fromTemplate", arrayOf("template/invalid.ftl", emptyMap<Any, Any>()))
+        Assertions.assertThrows(FunctionExecutionException::class.java) {
+            fromTemplateFunctionExecutor!!.execute("fromTemplate", null, arrayOf("template/invalid.ftl", emptyMap<Any, Any>()))
         }
     }
 

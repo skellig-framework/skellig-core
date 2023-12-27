@@ -14,7 +14,6 @@ import org.skellig.teststep.processing.model.validation.ValidationNodes
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactoryTest
-import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.value.expression.*
@@ -37,7 +36,6 @@ class DefaultTestStepFactoryTest {
                         .withTestScenarioState(testScenarioState)
                         .withClassLoader(ValueExpressionContextFactoryTest::class.java.classLoader)
                         .build(),
-                    DefaultValueExtractor.Builder().build(),
                     DefaultPropertyExtractor(null)
                 )
             )
@@ -46,8 +44,8 @@ class DefaultTestStepFactoryTest {
     }
 
     @Test
-    @DisplayName("With variables And parameters And payload has reference to variable")
-    fun testCreateTestStepWithVariablesAndAppliedParameters() {
+    @DisplayName("With values And parameters And payload has reference to variable")
+    fun testCreateTestStepWithValuesAndAppliedParameters() {
         val generatedId = "0001"
         whenever(testScenarioState.get("gen_id")).thenReturn(generatedId)
         val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
@@ -71,9 +69,9 @@ class DefaultTestStepFactoryTest {
 
         assertAll(
             { assertTrue((testStep.testData as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
-            { assertEquals(generatedId, testStep.variables!!["id"]) },
-            { assertTrue((testStep.variables!!["names"] as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
-            { assertEquals("100", testStep.variables!!["amount"]) }
+            { assertEquals(generatedId, testStep.values!!["id"]) },
+            { assertTrue((testStep.values!!["names"] as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
+            { assertEquals("100", testStep.values!!["amount"]) }
         )
     }
 
@@ -95,8 +93,8 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("Book seats s1 of the event", rawTestStep, emptyMap())
 
         assertAll(
-            { assertEquals("s1", testStep.variables!!["seats"]) },
-            { assertNull(testStep.variables!!["event"]) },
+            { assertEquals("s1", testStep.values!!["seats"]) },
+            { assertNull(testStep.values!!["event"]) },
         )
     }
 
@@ -158,8 +156,8 @@ class DefaultTestStepFactoryTest {
     }
 
     @Test
-    @DisplayName("With variables And validation details has reference to variable")
-    fun testCreateTestStepWithVariablesAndValidationDetails() {
+    @DisplayName("With values And validation details has reference to variable")
+    fun testCreateTestStepWithValuesAndValidationDetails() {
         val generatedId = "0001"
         whenever(testScenarioState.get("gen_id")).thenReturn(generatedId)
 
@@ -328,8 +326,8 @@ class DefaultTestStepFactoryTest {
     }
 
     @Test
-    @DisplayName("With variables has reference to other variables")
-    fun testCreateTestStepWithVariablesReferenceToOtherVariables() {
+    @DisplayName("With values has reference to other values")
+    fun testCreateTestStepWithValuesReferenceToOtherValues() {
         val generatedId = "0001"
         whenever(testScenarioState.get("gen_id")).thenReturn(generatedId)
 
@@ -347,12 +345,12 @@ class DefaultTestStepFactoryTest {
         )
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
-        val variables = testStep.variables!!
+        val values = testStep.values!!
 
         assertAll(
-            { assertEquals("v1", variables["f2"]) },
-            { assertEquals(variables["f1"], variables["f2"]) },
-            { assertEquals(variables["f1"], variables["f3"]) },
+            { assertEquals("v1", values["f2"]) },
+            { assertEquals(values["f1"], values["f2"]) },
+            { assertEquals(values["f1"], values["f3"]) },
         )
     }
 
@@ -416,7 +414,7 @@ class DefaultTestStepFactoryTest {
 
         assertAll(
             { assertEquals(idB.toString(), testStep.id) },  // id is replaced by the latest parent
-            { assertEquals("v1", testStep.variables!!["f1"]) },
+            { assertEquals("v1", testStep.values!!["f1"]) },
             { assertEquals("v1", (testStep.testData as Map<*, *>?)!!["new_f1"]) },
             { assertEquals("v2", (testStep.testData as Map<*, *>?)!!["f2"]) },
             { assertEquals("something", (testStep.testData as Map<*, *>?)!!["f3"]) },

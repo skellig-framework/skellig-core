@@ -1,0 +1,63 @@
+package org.skellig.teststep.processing.value.function
+
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalQuery
+
+abstract class BaseToDateTimeValueExtractor : FunctionValueExecutor {
+
+    companion object {
+        internal val UTC = ZoneId.of("UTC")
+    }
+
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
+        return if (args.isNotEmpty()) {
+            when (value) {
+                is String -> {
+                    var timezone: String? = null
+                    val pattern = args[0]?.toString()?.trim()
+                    if (args.size == 2) {
+                        timezone = args[1]?.toString()?.trim()
+                    }
+                    pattern?.let {
+                        val dateTimeFormatter = DateTimeFormatter.ofPattern(pattern)
+                            .withZone(timezone?.let { ZoneId.of(timezone) } ?: org.skellig.teststep.processing.value.function.BaseToDateTimeValueExtractor.Companion.UTC)
+                        parseDate(value, dateTimeFormatter, getTemporalQuery())
+                    } ?: throw FunctionExecutionException("Date/Time pattern is mandatory for '${getFunctionName()}' function")
+                }
+                else -> value
+            }
+        } else throw FunctionExecutionException("Function `${getFunctionName()}` can only accept 1 or 2 String arguments. Found ${args.size}")
+    }
+
+    protected abstract fun getTemporalQuery(): TemporalQuery<*>;
+
+    private fun parseDate(value: String?, formatter: DateTimeFormatter, query: TemporalQuery<*>) =
+        try {
+            formatter.parse(value, query)
+        } catch (ex: Exception) {
+            throw FunctionExecutionException("Failed to convert date $value by pattern $formatter");
+        }
+}
+
+class ToDateTimeValueExtractor : org.skellig.teststep.processing.value.function.BaseToDateTimeValueExtractor() {
+
+    override fun getTemporalQuery(): TemporalQuery<*> {
+        return TemporalQuery { LocalDateTime.ofInstant(Instant.from(it), org.skellig.teststep.processing.value.function.BaseToDateTimeValueExtractor.Companion.UTC) }
+    }
+
+    override fun getFunctionName(): String = "toDateTime"
+}
+
+class ToDateValueExtractor : org.skellig.teststep.processing.value.function.BaseToDateTimeValueExtractor() {
+
+    override fun getTemporalQuery(): TemporalQuery<*> {
+        return TemporalQuery { LocalDate.from(it) }
+    }
+
+    override fun getFunctionName(): String = "toDate"
+}

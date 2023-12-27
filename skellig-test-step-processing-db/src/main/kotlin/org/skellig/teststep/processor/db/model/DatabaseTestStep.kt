@@ -10,14 +10,14 @@ open class DatabaseTestStep protected constructor(id: String?,
                                                   timeout: Int,
                                                   delay: Int,
                                                   attempts: Int,
-                                                  variables: Map<String, Any?>?,
+                                                  values: Map<String, Any?>?,
                                                   testData: Any?,
                                                   validationDetails: ValidationNode?,
                                                   val servers: Collection<String>?,
                                                   val command: String?,
                                                   val table: String?,
                                                   val query: String?)
-    : DefaultTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails) {
 
     abstract class Builder<T : DatabaseTestStep> : DefaultTestStep.Builder<T>() {
 

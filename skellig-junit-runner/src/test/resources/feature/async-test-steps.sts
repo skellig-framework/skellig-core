@@ -13,16 +13,16 @@ name ("User .* sends the message to (\w+)") {
     receiver = ${1}
     message {
         toCustomFormat() {
-            id = get(step1).variables.id
-            userName = get(step1).variables.name
-            score = get(step1).variables.score
+            id = get(step1).values.id
+            userName = get(step1).values.name
+            score = get(step1).values.score
         }
     }
 }
 
 name ("User (\w+) received a valid response from (\w+)") {
-    variables {
-        score = get(step1).variables.score
+    values {
+        score = get(step1).values.score
     }
     validate {
         get(step2_result, 50, 100) {

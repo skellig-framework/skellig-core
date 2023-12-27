@@ -12,12 +12,12 @@ open class BaseRmqTestStep protected constructor(id: String?,
                                                  timeout: Int,
                                                  delay: Int,
                                                  attempts: Int,
-                                                 variables: Map<String, Any?>?,
+                                                 values: Map<String, Any?>?,
                                                  testData: Any?,
                                                  validationDetails: ValidationNode?,
                                                  val routingKey: String?,
                                                  val properties: Map<String, Any?>?)
-    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails) {
 
     fun getAmqpProperties(): AMQP.BasicProperties? =
         properties?.let {

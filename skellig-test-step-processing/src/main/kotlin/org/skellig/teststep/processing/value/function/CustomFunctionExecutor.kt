@@ -1,121 +1,71 @@
 package org.skellig.teststep.processing.value.function
 
-import org.skellig.teststep.processing.exception.TestValueConversionException
-import java.io.File
+import io.github.classgraph.ClassGraph
+import io.github.classgraph.ClassInfo
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
+import org.skellig.teststep.processing.value.exception.FunctionRegistryException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
-import java.net.URI
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
-class CustomFunctionExecutor(packages: Collection<String>?, classLoader: ClassLoader?) : FunctionValueExecutor {
+class CustomFunctionExecutor(packages: Collection<String>?) : FunctionValueExecutor {
 
     companion object {
-        private const val CLASS_EXTENSION = ".class"
+        private val LOGGER: Logger = LoggerFactory.getLogger(CustomFunctionExecutor::class.java)
     }
 
-    private var functions: Map<String, CustomFunction> = emptyMap()
+    private var functions: MutableMap<String, CustomFunction> = mutableMapOf()
 
     init {
-        packages?.forEach { resourcePath: String ->
-            val packagePath = resourcePath.replace('.', File.separatorChar)
-            val resource = classLoader?.getResource(packagePath)
-            resource?.let {
-                try {
-                    functions = ClassTestStepsReaderStrategy(packagePath).getFromUri(resource.toURI())
-                } catch (e: Exception) {
-                    throw TestValueConversionException("Can't extract test steps from classes in '$packagePath'", e)
+        packages?.let {
+            ClassGraph().acceptPackages(*packages.toTypedArray())
+                .enableMethodInfo()
+                .enableAnnotationInfo()
+                .scan()
+                .use {
+                    it.allClasses
+                        .forEach { c ->
+                            loadCustomFunctions(c)
+                        }
                 }
-            }
         }
     }
 
-    override fun execute(name: String, args: Array<Any?>): Any? {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
         return functions[name]?.let {
             return if (args.isNotEmpty()) it.method.invoke(it.instance, *args)
             else it.method.invoke(it.instance)
-        } ?: throw TestValueConversionException("Function '$name' was not found")
+        } ?: throw FunctionExecutionException("Function '$name' was not found")
     }
 
     override fun getFunctionName(): String = ""
 
-    //TODO: refactor using ClassGraph
-    private inner class ClassTestStepsReaderStrategy(packageName: String) {
-        private val fileReader = mapOf(
-            Pair("file", ClassFunctionsFromFileReader(packageName)),
-            Pair("jar", ClassFunctionsFromJarFileReader(packageName))
-        )
+    private fun loadCustomFunctions(classInfo: ClassInfo) {
+        var foundClassInstance: Any? = null
+        classInfo.methodInfo
+            .filter { m -> m.hasAnnotation(Function::class.java) }
+            .forEach { m ->
+                LOGGER.debug("Extract test step from method in '${m.name}' of '${classInfo.name}'")
 
-        fun getFromUri(rootUri: URI): Map<String, CustomFunction> {
-            val protocol = rootUri.toURL().protocol
-            return fileReader[protocol]?.getFromUri(rootUri)
-                ?: error(
-                    "File protocol '$protocol' is not supported " +
-                            "when reading test steps from classes on URI '$rootUri'"
-                )
-        }
-    }
-
-    private open inner class ClassFunctionsFromFileReader(val packageName: String) {
-
-        private val classPackageName = packageName.replace(File.separatorChar, '.')
-
-        open fun getFromUri(rootUri: URI): Map<String, CustomFunction> =
-            walkThroughFiles(Paths.get(rootUri)) { it.toString().endsWith(CLASS_EXTENSION) }
-
-        protected fun walkThroughFiles(root: Path, filter: (path: Path) -> Boolean): Map<String, CustomFunction> {
-            val functions = mutableMapOf<String, CustomFunction>()
-            Files.walk(root)
-                .parallel()
-                .filter { filter(it) }
-                .map { readFromFile(it) }
-                .forEach { functions.putAll(it) }
-            return functions
-        }
-
-        private fun readFromFile(file: Path): Map<String, CustomFunction> {
-            val testStepsPerClass = mutableMapOf<String, CustomFunction>()
-            val fileName = file.toString().substringAfter(packageName).replace(File.separatorChar, '.')
-            val className = classPackageName + fileName.substringBeforeLast(CLASS_EXTENSION)
-            val foundClass = Class.forName(className)
-            var foundClassInstance: Any? = null
-
-            foundClass.methods
-                .filter { it.isAnnotationPresent(Function::class.java) }
-                .forEach {
-                    foundClassInstance.let {
-                        try {
-                            foundClassInstance = foundClass.getDeclaredConstructor().newInstance()
-                        } catch (ex: NoSuchMethodException) {
-                            throw TestValueConversionException("Failed to instantiate class '$className'", ex)
-                        }
+                foundClassInstance.let {
+                    try {
+                        foundClassInstance = classInfo.loadClass().getDeclaredConstructor().newInstance()
+                    } catch (ex: NoSuchMethodException) {
+                        throw FunctionRegistryException("Failed to instantiate class '${classInfo.name}'", ex)
                     }
-                    testStepsPerClass[it.name] = CustomFunction(foundClassInstance!!, it)
                 }
-            return testStepsPerClass
-        }
-    }
-
-    private inner class ClassFunctionsFromJarFileReader(packageName: String) :
-        ClassFunctionsFromFileReader(packageName) {
-
-        override fun getFromUri(rootUri: URI): Map<String, CustomFunction> {
-            val testStepsPerClass = mutableMapOf<String, CustomFunction>()
-            FileSystems.newFileSystem(rootUri, emptyMap<String, Any>()).use {
-                val pathMatcher = it.getPathMatcher("regex:.*$packageName.*\\$CLASS_EXTENSION")
-                for (root in it.rootDirectories) {
-                    testStepsPerClass.putAll(walkThroughFiles(root) { path -> pathMatcher.matches(path) })
+                val method = foundClassInstance?.let { i ->
+                    i::class.java.methods.find { method -> method.name == m.name }
+                }
+                method?.let {
+                    functions[it.name] = CustomFunction(foundClassInstance!!, it)
                 }
             }
-            return testStepsPerClass
-        }
     }
 
     private data class CustomFunction(val instance: Any, val method: Method)
-
 }
 
-@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+@Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
 annotation class Function

@@ -20,8 +20,7 @@ class ValidationNodeFactoryTest {
         validationDetailsFactory = ValidationNodeFactory(
             ValueExpressionContextFactory(
                 DefaultFunctionValueExecutor.Builder()
-                    .withTestScenarioState(DefaultTestScenarioState()).build(),
-                mock(), mock()
+                    .withTestScenarioState(DefaultTestScenarioState()).build(), mock()
             )
         )
     }

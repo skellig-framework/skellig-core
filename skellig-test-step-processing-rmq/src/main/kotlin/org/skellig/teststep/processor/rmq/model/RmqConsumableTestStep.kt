@@ -7,14 +7,14 @@ import org.skellig.teststep.processing.model.validation.ValidationNode
 open class RmqConsumableTestStep protected constructor(id: String?,
                                                        name: String?,
                                                        timeout: Int,
-                                                       variables: Map<String, Any?>?,
+                                                       values: Map<String, Any?>?,
                                                        testData: Any?,
                                                        validationDetails: ValidationNode?,
                                                        val consumeFrom: List<String>,
                                                        val respondTo: List<String>?,
                                                        routingKey: String?,
                                                        properties: Map<String, Any?>?)
-    : BaseRmqTestStep(id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, variables,
+    : BaseRmqTestStep(id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, values,
                       testData, validationDetails, routingKey, properties) {
 
 
@@ -42,7 +42,7 @@ open class RmqConsumableTestStep protected constructor(id: String?,
             return RmqConsumableTestStep(id,
                                          name,
                                          timeout,
-                                         variables,
+                                         values,
                                          testData,
                                          validationDetails,
                                          consumeFrom!!,

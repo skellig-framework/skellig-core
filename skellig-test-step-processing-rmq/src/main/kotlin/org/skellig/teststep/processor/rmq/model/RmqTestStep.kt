@@ -9,7 +9,7 @@ open class RmqTestStep protected constructor(id: String?,
                                              timeout: Int,
                                              delay: Int,
                                              attempts: Int,
-                                             variables: Map<String, Any?>?,
+                                             values: Map<String, Any?>?,
                                              testData: Any?,
                                              validationDetails: ValidationNode?,
                                              val sendTo: Set<String>?,
@@ -18,7 +18,7 @@ open class RmqTestStep protected constructor(id: String?,
                                              routingKey: String?,
                                              properties: Map<String, Any?>?)
     : BaseRmqTestStep(id, name!!, execution, timeout, delay, attempts,
-                      variables, testData, validationDetails, routingKey, properties) {
+                      values, testData, validationDetails, routingKey, properties) {
 
 
     class Builder : BaseRmqTestStep.Builder<RmqTestStep>() {
@@ -40,7 +40,7 @@ open class RmqTestStep protected constructor(id: String?,
         }
 
         override fun build(): RmqTestStep {
-            return RmqTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails,
+            return RmqTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
                     sendTo, receiveFrom, respondTo, routingKey, properties)
         }
     }

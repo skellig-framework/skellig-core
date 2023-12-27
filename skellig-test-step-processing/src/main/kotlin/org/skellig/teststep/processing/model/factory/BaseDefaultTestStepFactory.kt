@@ -67,15 +67,15 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
             additionalParameters.putAll(parametersFromTestName)
         }
 
-        val variables = extractValuesToParameters(rawTestStep, additionalParameters)
-        variables?.let { additionalParameters.putAll(it) }
+        val values = extractValuesToParameters(rawTestStep, additionalParameters)
+        values?.let { additionalParameters.putAll(it) }
 
         return createTestStepBuilder(rawTestStep, additionalParameters)
             .withId(getId(rawTestStep, additionalParameters))
             .withName(testStepName)
             .withTestData(extractTestData(rawTestStep, additionalParameters))
             .withValidationDetails(validationDetailsFactory.create(rawTestStep, additionalParameters))
-            .withVariables(variables)
+            .withValues(values)
             .withExecution(getExecutionType(rawTestStep, additionalParameters))
             .withTimeout(getTimeout(rawTestStep, additionalParameters))
             .withDelay(getDelay(rawTestStep, additionalParameters))
@@ -108,16 +108,16 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         rawTestStep: Map<ValueExpression, ValueExpression?>,
         parameters: MutableMap<String, Any?>
     ): Map<String, Any?>? {
-        val rawVariables = rawTestStep[VALUES_KEYWORD]
-        return rawVariables?.let {
-            (rawVariables as? MapValueExpression)?.value?.mapNotNull { entry ->
+        val rawValues = rawTestStep[VALUES_KEYWORD]
+        return rawValues?.let {
+            (rawValues as? MapValueExpression)?.value?.mapNotNull { entry ->
                 val convertedKey = convertValue<String>(entry.key, parameters)
                 convertedKey?.let {
                     val convertedVar = convertValue<Any>(entry.value, parameters)
                     parameters[convertedKey] = convertedVar
                     convertedKey to convertedVar
                 }
-            }?.toMap() ?: throw TestStepCreationException("Variables of the test step must have key-value pair (ex. type: Map<String, Any>)")
+            }?.toMap() ?: throw TestStepCreationException("Values of the test step must have key-value pair (ex. type: Map<String, Any>)")
         }
     }
 

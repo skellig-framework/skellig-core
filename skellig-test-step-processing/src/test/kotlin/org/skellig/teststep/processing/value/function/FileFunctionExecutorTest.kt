@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestValueConversionException
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -25,7 +25,7 @@ class FileFunctionExecutorTest {
 
         val expectedContent = readFromFileExpectedResult("/$filePath")
 
-        Assertions.assertEquals(expectedContent, fileFunctionExecutor!!.execute("fromFile", arrayOf(filePath)))
+        Assertions.assertEquals(expectedContent, fileFunctionExecutor!!.execute("fromFile", null, arrayOf(filePath)))
     }
 
     @Test
@@ -33,8 +33,8 @@ class FileFunctionExecutorTest {
     fun testFilePathIsEmpty() {
         val filePath = "invalid"
 
-        val exception = Assertions.assertThrows(TestValueConversionException::class.java) {
-            fileFunctionExecutor!!.execute("fromFile", arrayOf(filePath))
+        val exception = Assertions.assertThrows(FunctionExecutionException::class.java) {
+            fileFunctionExecutor!!.execute("fromFile", null, arrayOf(filePath))
         }
 
         Assertions.assertEquals("File '$filePath' doesn't exist", exception.message)
