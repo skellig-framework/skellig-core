@@ -8,70 +8,61 @@ import java.lang.reflect.Method
 import java.util.regex.Pattern
 
 
-class ObjectValueExtractor : FunctionValueExecutor {
+class FromObjectFunctionExecutor : FunctionValueExecutor {
 
     companion object {
         private val INDEX_PATTERN = Pattern.compile("(.+)\\[(\\d+)]")
     }
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
-        return if (value != null) {
+        if (value != null) {
             if (name.isNotEmpty()) {
-                executeMethod(name, value, args)
-            } else if (args.isNotEmpty()) {
-                var newValue: Any? = value
-                args.mapNotNull { key -> processKey(key?.toString()) }
-                    .forEach { key ->
-                        var updatedKey = key
-                        var index : Int? = null
-                        val matcher = INDEX_PATTERN.matcher(key)
-                        if (matcher.find()) {
-                             updatedKey = matcher.group(1)
-                             index = matcher.group(2).toInt()
-                        }
+                var updatedKey = name
+                var index: Int? = null
+                val matcher = INDEX_PATTERN.matcher(name)
+                if (matcher.find()) {
+                    updatedKey = matcher.group(1)
+                    index = matcher.group(2).toInt()
+                }
 
-                        if (newValue is Map<*, *>) {
-                            newValue = extractValueFromMap(newValue as Map<*, *>, updatedKey)
-                        } else if (newValue != null) {
-                            newValue = extractValueFromObject(updatedKey, newValue)
-                        }
+                val newValue = if (value is Map<*, *>) {
+                    extractValueFromMap(value, updatedKey, args)
+                } else {
+                    extractValueFromObject(updatedKey, value, args)
+                }
 
-                        index?.let {
-                            newValue = when (newValue) {
-                                is List<*> -> (newValue as List<*>)[index]
-                                is Array<*> -> (newValue as Array<*>)[index]
-                                else -> throw FunctionExecutionException("Cannot get value by index '$index' from non array or list object: $newValue")
-                            }
-                        }
+                index?.let {
+                    return when (newValue) {
+                        is List<*> -> newValue[index]
+                        is Array<*> -> newValue[index]
+                        else -> throw FunctionExecutionException("Cannot get value by index '$index' from non array or list object: $newValue")
                     }
-                newValue
-            } else throw FunctionExecutionException("Invalid number of argument provided for extraction of value. Expected 1, found: ${args.size}")
+                }
+                return newValue
+            } else throw FunctionExecutionException("Name of property or method is mandatory if you need to call it from the value: '$value'")
         } else throw FunctionExecutionException("Cannot extract '${args.firstOrNull() ?: ""}' from null value")
     }
 
-    private fun extractValueFromMap(value: Any, key: String): Any? {
+    private fun extractValueFromMap(value: Any, key: String, args: Array<Any?>): Any? {
         val valueAsMap = value as Map<*, *>
         return if (valueAsMap.containsKey(key)) {
             valueAsMap[key]
         } else {
-            extractValueFromObject(key, value)
+            extractValueFromObject(key, value, args)
         }
     }
 
-    private fun extractValueFromObject(propertyName: String, actualResult: Any?): Any {
-        var result: Any? = null
+    private fun extractValueFromObject(propertyName: String, actualResult: Any?, args: Array<Any?>): Any {
         val propertyGetter = getPropertyGetter(propertyName, actualResult!!.javaClass)
-        if (propertyGetter != null) {
-            result = try {
+        val result = if (propertyGetter != null) {
+            try {
                 propertyGetter.invoke(actualResult)
             } catch (e: IllegalAccessException) {
                 throw FunctionExecutionException("Failed to call property getter `$propertyName` of `$actualResult`", e)
             } catch (e: InvocationTargetException) {
                 throw FunctionExecutionException("Failed to call property getter `$propertyName` of `$actualResult`", e)
             }
-        } /*else {
-            result = executeMethod(propertyName, actualResult)
-        }*/
+        } else executeMethod(propertyName, actualResult, args)
         return result ?: throw FunctionExecutionException("Failed to find property or method `$propertyName` of `${actualResult.javaClass}`")
     }
 
@@ -85,7 +76,7 @@ class ObjectValueExtractor : FunctionValueExecutor {
             } catch (e: InvocationTargetException) {
                 throw FunctionExecutionException("Failed to call function `$methodName` of `$actualResult`", e)
             }
-        } else throw FunctionExecutionException("No function `$methodName` found in the result `$actualResult`")
+        } else throw FunctionExecutionException("No function or property `$methodName` found in the result `$actualResult` with argument pairs (${args.map { it?.javaClass }.joinToString(",")})")
     }
 
     private fun findMethod(name: String, resultClass: Class<*>, paramsTypes: Array<Class<*>>): Method? =
@@ -114,18 +105,6 @@ class ObjectValueExtractor : FunctionValueExecutor {
             throw FunctionExecutionException(String.format("Failed to get property '%s' of '%s'", propertyName, beanClass), e)
         }
         return method
-    }
-
-    private fun processKey(key: String?): String? {
-        return key?.let {
-            return if (key.startsWith('\'') && key.endsWith('\'')) {
-                key.substringAfter('\'').substringBeforeLast('\'')
-            } else if (key.startsWith('\"') && key.endsWith('\"')) {
-                key.substringAfter('\"').substringBeforeLast('\"')
-            } else {
-                key
-            }
-        }
     }
 
     override fun getFunctionName(): String {

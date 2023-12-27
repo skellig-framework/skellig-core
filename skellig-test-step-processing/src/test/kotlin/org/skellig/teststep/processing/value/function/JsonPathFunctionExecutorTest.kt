@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
-internal class JsonPathValueExtractorTest {
+internal class JsonPathFunctionExecutorTest {
 
-    private val extractor = JsonPathValueExtractor()
+    private val extractor = JsonPathFunctionExecutor()
 
     @Test
     fun testExtractFromJson() {

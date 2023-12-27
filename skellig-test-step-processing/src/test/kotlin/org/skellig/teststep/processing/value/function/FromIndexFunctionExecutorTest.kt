@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
-class FromIndexValueExtractorTest {
+class FromIndexFunctionExecutorTest {
 
-    private val extractor = FromIndexValueExtractor()
+    private val extractor = FromIndexFunctionExecutor()
 
     @Test
     fun testFromIndexOfArray() {

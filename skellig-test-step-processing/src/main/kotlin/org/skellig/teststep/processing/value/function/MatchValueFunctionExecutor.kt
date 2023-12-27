@@ -2,7 +2,7 @@ package org.skellig.teststep.processing.value.function
 
 import java.util.regex.Pattern
 
-class MatchValueComparator : FunctionValueExecutor {
+class MatchValueFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Boolean {
        return if (args.size == 1 && args[0] != null && value != null) {

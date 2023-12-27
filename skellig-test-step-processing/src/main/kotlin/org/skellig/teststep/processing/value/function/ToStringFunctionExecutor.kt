@@ -2,7 +2,7 @@ package org.skellig.teststep.processing.value.function
 
 import java.nio.charset.Charset
 
-class ToStringValueExtractor : FunctionValueExecutor {
+class ToStringFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return value?.let {

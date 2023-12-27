@@ -3,13 +3,13 @@ package org.skellig.teststep.processing.value.function
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.math.BigDecimal
 
-abstract class ToNumberTestStepValueExtractor : FunctionValueExecutor {
+abstract class ToNumberFunctionExecutor : FunctionValueExecutor {
 
     protected fun getParseException(value: Any?): FunctionExecutionException =
         FunctionExecutionException("Failed to extract numeric value from type ${value?.javaClass?.simpleName} for value: $value")
 }
 
-class ToIntTestStepValueExtractor : ToNumberTestStepValueExtractor() {
+class ToIntFunctionExecutor : ToNumberFunctionExecutor() {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return (value as? Number)?.toInt() ?: (value as? String ?: throw getParseException(value)).toInt()
@@ -20,7 +20,7 @@ class ToIntTestStepValueExtractor : ToNumberTestStepValueExtractor() {
     }
 }
 
-class ToByteTestStepValueExtractor : ToNumberTestStepValueExtractor() {
+class ToByteFunctionExecutor : ToNumberFunctionExecutor() {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return (value as? Number)?.toByte() ?: (value as? String ?: throw getParseException(value)).toByte()
@@ -31,7 +31,7 @@ class ToByteTestStepValueExtractor : ToNumberTestStepValueExtractor() {
     }
 }
 
-class ToShortTestStepValueExtractor : ToNumberTestStepValueExtractor() {
+class ToShortFunctionExecutor : ToNumberFunctionExecutor() {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return (value as? Number)?.toShort() ?: (value as? String ?: throw getParseException(value)).toShort()
@@ -42,7 +42,7 @@ class ToShortTestStepValueExtractor : ToNumberTestStepValueExtractor() {
     }
 }
 
-class ToLongTestStepValueExtractor : ToNumberTestStepValueExtractor() {
+class ToLongFunctionExecutor : ToNumberFunctionExecutor() {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return (value as? Number)?.toLong() ?: (value as? String ?: throw getParseException(value)).toLong()
@@ -53,7 +53,7 @@ class ToLongTestStepValueExtractor : ToNumberTestStepValueExtractor() {
     }
 }
 
-class ToFloatTestStepValueExtractor : ToNumberTestStepValueExtractor() {
+class ToFloatFunctionExecutor : ToNumberFunctionExecutor() {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return (value as? Number)?.toFloat() ?: (value as? String ?: throw getParseException(value)).toFloat()
@@ -64,7 +64,7 @@ class ToFloatTestStepValueExtractor : ToNumberTestStepValueExtractor() {
     }
 }
 
-class ToDoubleTestStepValueExtractor : ToNumberTestStepValueExtractor() {
+class ToDoubleFunctionExecutor : ToNumberFunctionExecutor() {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return (value as? Number)?.toDouble() ?: (value as? String ?: throw getParseException(value)).toDouble()
@@ -75,7 +75,7 @@ class ToDoubleTestStepValueExtractor : ToNumberTestStepValueExtractor() {
     }
 }
 
-class ToBigDecimalTestStepValueExtractor : ToNumberTestStepValueExtractor() {
+class ToBigDecimalFunctionExecutor : ToNumberFunctionExecutor() {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return when (value) {
@@ -90,7 +90,7 @@ class ToBigDecimalTestStepValueExtractor : ToNumberTestStepValueExtractor() {
     }
 }
 
-class ToBooleanTestStepValueExtractor : ToNumberTestStepValueExtractor() {
+class ToBooleanFunctionExecutor : ToNumberFunctionExecutor() {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return (value as? Boolean)?: (value as? String ?: throw getParseException(value)).toBoolean()

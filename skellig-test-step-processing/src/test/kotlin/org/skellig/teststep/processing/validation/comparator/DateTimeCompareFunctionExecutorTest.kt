@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.skellig.teststep.processing.exception.ValidationException
-import org.skellig.teststep.processing.value.function.DateTimeValueComparator
+import org.skellig.teststep.processing.value.function.DateTimeCompareFunctionExecutor
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -14,9 +14,9 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-class DateTimeValueComparatorTest {
+class DateTimeCompareFunctionExecutorTest {
 
-    private val comparator = DateTimeValueComparator()
+    private val comparator = DateTimeCompareFunctionExecutor()
 
     @Test
     fun testCompareDateAndTime() {

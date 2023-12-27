@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.value.function
 import io.restassured.path.json.JsonPath
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
-class JsonPathValueExtractor : FunctionValueExecutor {
+class JsonPathFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
         if (args.isNotEmpty()) {

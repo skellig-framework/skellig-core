@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.regex.Pattern
 
-class DateTimeValueComparator : FunctionValueExecutor {
+class DateTimeCompareFunctionExecutor : FunctionValueExecutor {
 
     companion object {
         private val UTC = ZoneId.of("UTC")

@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
-class JsonToValueExtractorTest {
+class JsonToFunctionExecutorTest {
 
-    private val jsonToMap = JsonToMapTestStepValueExtractor()
-    private val jsonToList = JsonToListTestStepValueExtractor()
+    private val jsonToMap = JsonToMapTestStepFunctionExecutor()
+    private val jsonToList = JsonToListTestStepFunctionExecutor()
 
     @Test
     fun testFromEmptyJsonToMap() {

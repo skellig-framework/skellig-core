@@ -3,11 +3,11 @@ package org.skellig.teststep.processing.value.function
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class XPathValueExtractorTest {
+class XPathFunctionExecutorTest {
 
     @Test
     fun testSimpleXPath() {
-        val extractor = XPathValueExtractor()
+        val extractor = XPathFunctionExecutor()
         val xml = """
             <Root>
                 <Sample>data</Sample>
@@ -19,7 +19,7 @@ class XPathValueExtractorTest {
 
     @Test
     fun testListXPath() {
-        val extractor = XPathValueExtractor()
+        val extractor = XPathFunctionExecutor()
         val xml = """
             <Root>
                 <Samples>
@@ -34,7 +34,7 @@ class XPathValueExtractorTest {
 
     @Test
     fun testListXPathWithFilteringOfElements() {
-        val extractor = XPathValueExtractor()
+        val extractor = XPathFunctionExecutor()
         val xml = """
             <Root>
                 <Samples>
@@ -59,7 +59,7 @@ class XPathValueExtractorTest {
 
     @Test
     fun testListXPathWithFiltering() {
-        val extractor = XPathValueExtractor()
+        val extractor = XPathFunctionExecutor()
         val xml = """
             <Root>
                 <Samples>

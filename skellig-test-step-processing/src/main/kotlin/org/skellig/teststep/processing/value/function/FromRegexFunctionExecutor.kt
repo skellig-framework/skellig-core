@@ -5,7 +5,7 @@ import java.lang.String.format
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class FromRegexValueExtractor : FunctionValueExecutor {
+class FromRegexFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         if (args.size == 1) {

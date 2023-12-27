@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
 
-class ContainsValueComparator : FunctionValueExecutor {
+class ContainsFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         if (args.isNotEmpty() && value != null) {

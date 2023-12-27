@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.value.function
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.lang.String.format
 
-open class SubStringValueExtractor : FunctionValueExecutor {
+open class SubStringFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
         if (args.size == 1) {

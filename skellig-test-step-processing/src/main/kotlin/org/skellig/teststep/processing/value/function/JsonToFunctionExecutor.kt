@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.value.function
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
-class JsonToMapTestStepValueExtractor : JsonToTestStepValueExtractor() {
+class JsonToMapTestStepFunctionExecutor : JsonToTestStepFunctionExecutor() {
 
     override fun getToClassConversion(): Class<*> = Map::class.java
 
@@ -12,7 +12,7 @@ class JsonToMapTestStepValueExtractor : JsonToTestStepValueExtractor() {
     override fun getFunctionName(): String = "jsonToMap"
 }
 
-class JsonToListTestStepValueExtractor : JsonToTestStepValueExtractor() {
+class JsonToListTestStepFunctionExecutor : JsonToTestStepFunctionExecutor() {
 
     override fun getToClassConversion(): Class<*> = List::class.java
 
@@ -22,7 +22,7 @@ class JsonToListTestStepValueExtractor : JsonToTestStepValueExtractor() {
 
 }
 
-abstract class JsonToTestStepValueExtractor : FunctionValueExecutor {
+abstract class JsonToTestStepFunctionExecutor : FunctionValueExecutor {
 
     private val objectMapper = ObjectMapper()
 

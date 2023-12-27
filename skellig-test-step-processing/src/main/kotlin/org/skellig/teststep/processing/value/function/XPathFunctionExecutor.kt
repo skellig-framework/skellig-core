@@ -8,7 +8,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-class XPathValueExtractor : FunctionValueExecutor {
+class XPathFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
         if (args.size == 1) {
@@ -22,7 +22,7 @@ class XPathValueExtractor : FunctionValueExecutor {
                 } catch (ex: Exception) {
                     return null
                 }
-            } ?: throw FunctionExecutionException("Cannot extract xpath '%s' from null value")
+            } ?: throw FunctionExecutionException("Cannot extract value by xpath '%s' from null value")
         } else throw FunctionExecutionException("Function `xpath` can only accept 1 String argument. Found ${args.size}")
     }
 

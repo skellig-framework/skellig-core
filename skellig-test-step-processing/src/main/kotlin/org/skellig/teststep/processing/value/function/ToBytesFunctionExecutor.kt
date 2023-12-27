@@ -5,7 +5,7 @@ import org.skellig.teststep.processing.value.exception.FunctionExecutionExceptio
 import java.io.Serializable
 import java.nio.charset.StandardCharsets
 
-class ToBytesValueExtractor : FunctionValueExecutor {
+class ToBytesFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
         return when (value) {

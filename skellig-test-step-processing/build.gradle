@@ -7,7 +7,7 @@ sourceSets {
 }
 
 ext.set("project_name", 'skellig-test-step-processing')
-ext.set("project_description", 'Basic and abstract processing classes for Skellig Test Steps, including converters, data extractors, result validators and test scenario state')
+ext.set("project_description", 'Basic and abstract processing classes for Skellig Test Steps, including functions, result validators and test scenario state')
 
 dependencies {
     implementation 'de.siegmar:fastcsv:1.0.3'

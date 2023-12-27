@@ -4,14 +4,14 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
-class FromRegexValueExtractorTest {
+class FromRegexFunctionExecutorTest {
 
-    private var regexValueExtractor = FromRegexValueExtractor()
+    private var functionExecutor = FromRegexFunctionExecutor()
 
     @Test
     fun testExtractByRegexFromNull() {
         Assertions.assertThrows(FunctionExecutionException::class.java) {
-            regexValueExtractor.execute("fromRegex", null, arrayOf("(\\w+)"))
+            functionExecutor.execute("fromRegex", null, arrayOf("(\\w+)"))
         }
     }
 
@@ -21,7 +21,7 @@ class FromRegexValueExtractorTest {
 
         Assertions.assertEquals(
             "NM1100",
-            regexValueExtractor.execute("fromRegex", "log data: id = NM1100, name = event", arrayOf(regexFilter))
+            functionExecutor.execute("fromRegex", "log data: id = NM1100, name = event", arrayOf(regexFilter))
         )
     }
 
@@ -31,7 +31,7 @@ class FromRegexValueExtractorTest {
 
         Assertions.assertEquals(
             "f1=v1",
-            regexValueExtractor.execute("fromRegex", "some data f1=v1 some data", arrayOf(regexFilter))
+            functionExecutor.execute("fromRegex", "some data f1=v1 some data", arrayOf(regexFilter))
         )
     }
 
@@ -41,7 +41,7 @@ class FromRegexValueExtractorTest {
 
         Assertions.assertEquals(
             listOf("v1", "v2"),
-            regexValueExtractor.execute("fromRegex", "some data f1=v1, some data f2=v2", arrayOf(regexFilter))
+            functionExecutor.execute("fromRegex", "some data f1=v1, some data f2=v2", arrayOf(regexFilter))
         )
     }
 
@@ -50,12 +50,12 @@ class FromRegexValueExtractorTest {
         val regexFilter = "data: ([a-z]+)"
         val value = "data: 1000"
 
-        Assertions.assertEquals(value, regexValueExtractor.execute("fromRegex", value, arrayOf(regexFilter)))
+        Assertions.assertEquals(value, functionExecutor.execute("fromRegex", value, arrayOf(regexFilter)))
     }
 
     @Test
     fun testExtractByRegexWithInvalidNumberOfArguments() {
-        val ex = Assertions.assertThrows(FunctionExecutionException::class.java) { regexValueExtractor.execute("fromRegex", "regex", arrayOf("v1", "v2")) }
+        val ex = Assertions.assertThrows(FunctionExecutionException::class.java) { functionExecutor.execute("fromRegex", "regex", arrayOf("v1", "v2")) }
 
         Assertions.assertEquals("Function `regex` can only accept 1 argument. Found 2", ex.message)
     }

@@ -2,7 +2,7 @@ package org.skellig.teststep.processing.value.function
 
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
-class FromIndexValueExtractor : FunctionValueExecutor {
+class FromIndexFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
         value?.let {

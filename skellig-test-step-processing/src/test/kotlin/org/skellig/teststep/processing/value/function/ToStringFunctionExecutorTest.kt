@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.nio.charset.Charset
 
-class ToStringValueExtractorTest {
+class ToStringFunctionExecutorTest {
 
-    private val extractor = ToStringValueExtractor()
+    private val extractor = ToStringFunctionExecutor()
 
     @Test
     fun testToStringByteArray() {
