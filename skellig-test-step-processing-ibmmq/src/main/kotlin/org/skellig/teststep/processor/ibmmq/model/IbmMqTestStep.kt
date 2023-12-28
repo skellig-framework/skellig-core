@@ -10,13 +10,13 @@ open class IbmMqTestStep protected constructor(id: String?,
                                                timeout: Int,
                                                delay: Int,
                                                attempts: Int,
-                                               variables: Map<String, Any?>?,
+                                               values: Map<String, Any?>?,
                                                testData: Any?,
                                                validationDetails: ValidationNode?,
                                                val sendTo: Set<String>?,
                                                val readFrom: Set<String>?,
                                                val respondTo: Set<String>?)
-    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails) {
 
     class Builder : DefaultTestStep.Builder<IbmMqTestStep>() {
         private var sendTo: Set<String>? = null
@@ -36,7 +36,7 @@ open class IbmMqTestStep protected constructor(id: String?,
         }
 
         override fun build(): IbmMqTestStep {
-            return IbmMqTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails,
+            return IbmMqTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
                     sendTo, readFrom, respondTo)
         }
     }

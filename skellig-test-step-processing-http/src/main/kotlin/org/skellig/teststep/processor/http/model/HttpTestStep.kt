@@ -10,7 +10,7 @@ class HttpTestStep(id: String?,
                    timeout: Int,
                    delay: Int,
                    attempts: Int,
-                   variables: Map<String, Any?>?,
+                   values: Map<String, Any?>?,
                    testData: Any?,
                    validationDetails: ValidationNode?,
                    val url: String?,
@@ -21,7 +21,7 @@ class HttpTestStep(id: String?,
                    val headers: Map<String, String?>?,
                    val query: Map<String, String?>?,
                    val form: Map<String, String?>?)
-    : DefaultTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails) {
 
     class Builder : DefaultTestStep.Builder<HttpTestStep>() {
 
@@ -67,7 +67,7 @@ class HttpTestStep(id: String?,
         }
 
         override fun build(): HttpTestStep {
-            return HttpTestStep(id, name!!, execution, timeout, delay, attempts, variables, testData, validationDetails,
+            return HttpTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails,
                     url, services, method, username, password, headers, query, form)
         }
     }

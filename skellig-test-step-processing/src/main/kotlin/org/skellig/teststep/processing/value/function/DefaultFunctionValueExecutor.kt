@@ -1,14 +1,22 @@
 package org.skellig.teststep.processing.value.function
 
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.value.extractor.ValueExtractor
+import org.skellig.teststep.processing.value.function.collection.*
 import java.util.*
 
-class DefaultFunctionValueExecutor private constructor(private val functions: Map<String, FunctionValueExecutor>) : FunctionValueExecutor {
+class DefaultFunctionValueExecutor private constructor(
+    private val functions: Map<String, FunctionValueExecutor>,
+    private val customFunctionExecutor: FunctionValueExecutor,
+    private val objectValueFunctionExecutor: FunctionValueExecutor,
+) : FunctionValueExecutor {
 
-    override fun execute(name: String, args: Array<Any?>): Any? {
-        return if (functions.containsKey(name)) functions[name]?.execute(name, args)
-        else functions[""]?.execute(name, args) // if no function found, then try the custom one if registered.
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
+        val executor = if (functions.containsKey(name)) functions[name]
+        else if (value != null) objectValueFunctionExecutor
+        // if no function found, then try the custom one if registered.
+        else customFunctionExecutor
+
+        return executor?.execute(name, value, args)
     }
 
     override fun getFunctionName(): String = ""
@@ -33,29 +41,60 @@ class DefaultFunctionValueExecutor private constructor(private val functions: Ma
         fun build(): FunctionValueExecutor {
             Objects.requireNonNull(testScenarioState, "Test Scenario State must be provided")
 
-            val defaultFunctionValueExecutor = DefaultFunctionValueExecutor(functions)
-
+            this.withFunctionValueExecutor(JsonPathFunctionExecutor())
+            this.withFunctionValueExecutor(JsonToMapTestStepFunctionExecutor())
+            this.withFunctionValueExecutor(JsonToListTestStepFunctionExecutor())
+            this.withFunctionValueExecutor(XPathFunctionExecutor())
+            this.withFunctionValueExecutor(GetValuesFunctionExecutor())
+            this.withFunctionValueExecutor(FromIndexFunctionExecutor())
+            this.withFunctionValueExecutor(ToStringFunctionExecutor())
+            this.withFunctionValueExecutor(SubStringFunctionExecutor())
+            this.withFunctionValueExecutor(SubStringLastFunctionExecutor())
+            this.withFunctionValueExecutor(ToIntFunctionExecutor())
+            this.withFunctionValueExecutor(ToLongFunctionExecutor())
+            this.withFunctionValueExecutor(FromRegexFunctionExecutor())
+            this.withFunctionValueExecutor(ToByteFunctionExecutor())
+            this.withFunctionValueExecutor(ToShortFunctionExecutor())
+            this.withFunctionValueExecutor(ToFloatFunctionExecutor())
+            this.withFunctionValueExecutor(ToDoubleFunctionExecutor())
+            this.withFunctionValueExecutor(ToBooleanFunctionExecutor())
+            this.withFunctionValueExecutor(ToBigDecimalFunctionExecutor())
+            this.withFunctionValueExecutor(ToDateTimeFunctionExecutor())
+            this.withFunctionValueExecutor(ToDateFunctionExecutor())
+            this.withFunctionValueExecutor(ToBytesFunctionExecutor())
+            this.withFunctionValueExecutor(SizeFunctionExecutor())
+            this.withFunctionValueExecutor(AllFunctionExecutor())
+            this.withFunctionValueExecutor(AnyFunctionExecutor())
+            this.withFunctionValueExecutor(NoneFunctionExecutor())
+            this.withFunctionValueExecutor(CountFunctionExecutor())
+            this.withFunctionValueExecutor(FindAllFunctionExecutor())
+            this.withFunctionValueExecutor(FindFunctionExecutor())
+            this.withFunctionValueExecutor(FindLastFunctionExecutor())
+            this.withFunctionValueExecutor(GroupByFunctionExecutor())
+            this.withFunctionValueExecutor(MapFunctionExecutor())
+            this.withFunctionValueExecutor(MinOfFunctionExecutor())
+            this.withFunctionValueExecutor(MaxOfFunctionExecutor())
+            this.withFunctionValueExecutor(SortFunctionExecutor())
+            this.withFunctionValueExecutor(SumOfFunctionExecutor())
             this.withFunctionValueExecutor(IfFunctionExecutor())
             this.withFunctionValueExecutor(GetFromStateFunctionExecutor(testScenarioState!!))
-            classLoader?.let {
-                this.withFunctionValueExecutor(FileFunctionExecutor(it))
-            }
-
             this.withFunctionValueExecutor(RandomFunctionExecutor())
             this.withFunctionValueExecutor(IncrementFunctionExecutor())
             this.withFunctionValueExecutor(CurrentDateTimeFunctionExecutor())
-            this.withFunctionValueExecutor(ToDateTimeFunctionExecutor())
             this.withFunctionValueExecutor(ListOfFunctionExecutor())
             this.withFunctionValueExecutor(ToJsonFunctionExecutor())
+            this.withFunctionValueExecutor(ContainsFunctionExecutor())
+            this.withFunctionValueExecutor(MatchValueFunctionExecutor())
+            this.withFunctionValueExecutor(DateTimeCompareFunctionExecutor())
             classLoader?.let {
                 val fromCsvFunctionExecutor = FromCsvFunctionExecutor(it)
                 this.withFunctionValueExecutor(fromCsvFunctionExecutor)
+                this.withFunctionValueExecutor(FileFunctionExecutor(it))
                 this.withFunctionValueExecutor(FromCsvFunctionExecutor(it))
                 this.withFunctionValueExecutor(FromTemplateFunctionExecutor(it))
-                this.withFunctionValueExecutor(CustomFunctionExecutor(classPaths, it))
             }
 
-            return defaultFunctionValueExecutor
+            return DefaultFunctionValueExecutor(functions, CustomFunctionExecutor(classPaths), FromObjectFunctionExecutor())
         }
     }
 }

@@ -3,8 +3,8 @@ package org.skellig.runner.junit.report
 import freemarker.cache.URLTemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.Template
+import org.skellig.runner.exception.SkelligReportException
 import org.skellig.runner.junit.report.model.FeatureReportDetails
-import org.skellig.teststep.processing.exception.TestDataConversionException
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -72,7 +72,7 @@ class SkelligReportGenerator : ReportGenerator {
         try {
             FileWriter(reportFile).use { outMessage -> template.process(dataModel, outMessage) }
         } catch (e: Exception) {
-            throw TestDataConversionException("Can't process template file", e)
+            throw SkelligReportException("Can't process template file", e)
         }
     }
 
@@ -88,7 +88,7 @@ class SkelligReportGenerator : ReportGenerator {
             configuration.defaultEncoding = "UTF-8"
             configuration.getTemplate("")
         } catch (e: Exception) {
-            throw TestDataConversionException(String.format("Failed to load template file '%s'", "report/index.ftl"), e)
+            throw SkelligReportException(String.format("Failed to load template file '%s'", "report/index.ftl"), e)
         }
     }
 

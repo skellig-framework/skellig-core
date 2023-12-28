@@ -1,7 +1,5 @@
 package org.skellig.teststep.processing.value
 
-import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator
-import org.skellig.teststep.processing.value.extractor.ValueExtractor
 import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 import org.skellig.teststep.processing.value.property.PropertyExtractor
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression.Companion.THIS
@@ -10,14 +8,11 @@ import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 
 class ValueExpressionContextFactory(
     private val functionExecutor: FunctionValueExecutor,
-    private val valueExtractor: ValueExtractor,
     private val referenceExtractor: PropertyExtractor
 ) {
 
-    private val comparator = DefaultValueComparator.Builder().build()
-
     private val onFunctionCall = { name: String, ownerValue: Any?, args: Array<Any?> ->
-        ownerValue?.let { valueExtractor.extractFrom(name, it, args) } ?: functionExecutor.execute(name, args)
+        functionExecutor.execute(name, ownerValue, args)
     }
 
     fun create(parameters: Map<String, Any?>): ValueExpressionContext = ValueExpressionContext(EvaluationType.DEFAULT, onFunctionCall, createOnGetReferenceValue(parameters))
@@ -52,9 +47,6 @@ class ValueExpressionContextFactory(
     private fun createOnFunctionCallForValidation(parentValue: Any?) =
         { name: String, ownerValue: Any?, args: Array<Any?> ->
             if (name == THIS) parentValue
-            else ownerValue?.let {
-                if (comparator.isApplicable(name)) comparator.compare(name, args, it)
-                else valueExtractor.extractFrom(name, it, args)
-            } ?: functionExecutor.execute(name, args)
+            else functionExecutor.execute(name, ownerValue, args)
         }
 }

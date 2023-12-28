@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.value.function
 import de.siegmar.fastcsv.reader.CsvContainer
 import de.siegmar.fastcsv.reader.CsvReader
 import de.siegmar.fastcsv.reader.CsvRow
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -15,12 +15,13 @@ import java.util.stream.Collectors
 
 class FromCsvFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor {
 
-    override fun execute(name: String, args: Array<Any?>): Any? {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
+        if (value != null) throw FunctionExecutionException("Function `${getFunctionName()}` cannot be called from another value")
         return if (args.isNotEmpty()) {
             val csvFile = args[0] as String
             val filter = if (args.size == 2 && args[1] is Map<*, *>) args[1] as Map<String, Any?> else null
             readCsvFile(csvFile, getRowFilter(filter))
-        } else throw TestDataConversionException("Function `csv` can only accept 1 or 2 arguments. Found ${args.size}")
+        } else throw FunctionExecutionException("Function `csv` can only accept 1 or 2 arguments. Found ${args.size}")
     }
 
     private fun getRowFilter(rowFilter: Map<String, Any?>?): Predicate<Map<String, String>> {
@@ -50,7 +51,7 @@ class FromCsvFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecu
                     })
                 }
         } else {
-            throw TestDataConversionException(String.format("File %s does not exist", fileName))
+            throw FunctionExecutionException(String.format("File %s does not exist", fileName))
         }
         return result
     }
@@ -58,12 +59,12 @@ class FromCsvFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecu
     private fun getPathToFile(fileName: String?): Path {
         val url = classLoader.getResource(fileName)
         return if (url == null) {
-            throw TestDataConversionException(String.format("File '%s' was not found in resources", fileName))
+            throw FunctionExecutionException(String.format("File '%s' was not found in resources", fileName))
         } else {
             try {
                 Paths.get(url.toURI())
             } catch (e: URISyntaxException) {
-                throw TestDataConversionException(String.format("Failed to get path to '%s'", fileName), e)
+                throw FunctionExecutionException(String.format("Failed to get path to '%s'", fileName), e)
             }
         }
     }

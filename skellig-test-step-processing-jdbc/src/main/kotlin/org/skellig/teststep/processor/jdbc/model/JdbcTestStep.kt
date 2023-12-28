@@ -10,20 +10,20 @@ open class JdbcTestStep protected constructor(id: String?,
                                               timeout: Int,
                                               delay: Int,
                                               attempts: Int,
-                                              variables: Map<String, Any?>?,
+                                              values: Map<String, Any?>?,
                                               testData: Any?,
                                               validationDetails: ValidationNode?,
                                               servers: Collection<String>?,
                                               command: String?,
                                               table: String?,
                                               query: String?)
-    : DatabaseTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails,
+    : DatabaseTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
         servers, command, table, query) {
 
     class Builder : DatabaseTestStep.Builder<JdbcTestStep>() {
         override fun build(): JdbcTestStep {
             return JdbcTestStep(id, name!!, execution, timeout,
-                    delay, attempts, variables, testData,
+                    delay, attempts, values, testData,
                     validationDetails, servers, command, table, query)
         }
     }

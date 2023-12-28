@@ -10,11 +10,11 @@ abstract class BaseTcpTestStep protected constructor(id: String?,
                                                      timeout: Int,
                                                      delay: Int,
                                                      attempts: Int,
-                                                     variables: Map<String, Any?>?,
+                                                     values: Map<String, Any?>?,
                                                      testData: Any?,
                                                      validationDetails: ValidationNode?,
                                                      val readBufferSize: Int)
-    : DefaultTestStep(id, name, execution, timeout, delay, attempts, variables, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails) {
 
     abstract class Builder<T : BaseTcpTestStep> : DefaultTestStep.Builder<T>() {
 

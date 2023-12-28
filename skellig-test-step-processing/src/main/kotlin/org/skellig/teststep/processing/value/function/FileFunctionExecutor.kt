@@ -1,18 +1,17 @@
 package org.skellig.teststep.processing.value.function
 
-import org.skellig.teststep.processing.exception.TestDataConversionException
-import org.skellig.teststep.processing.exception.TestValueConversionException
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
 
 class FileFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor {
 
-    override fun execute(name: String, args: Array<Any?>): Any =
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any =
         if (args.size == 1) {
             readFileContentFromFilePath(args[0]?.toString() ?: "")
         } else {
-            throw TestDataConversionException("Function `fromFile` can only accept 1 String argument. Found ${args.size}")
+            throw FunctionExecutionException("Function `fromFile` can only accept 1 String argument. Found ${args.size}")
         }
 
     private fun readFileContentFromFilePath(pathToFile: String): String {
@@ -21,10 +20,10 @@ class FileFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor
             try {
                 String(Files.readAllBytes(Paths.get(resource.toURI())), StandardCharsets.UTF_8)
             } catch (e: Exception) {
-                throw TestValueConversionException(String.format("Failed to read file '%s'", pathToFile), e)
+                throw FunctionExecutionException(String.format("Failed to read file '%s'", pathToFile), e)
             }
         } else {
-            throw TestValueConversionException(String.format("File '%s' doesn't exist", pathToFile))
+            throw FunctionExecutionException(String.format("File '%s' doesn't exist", pathToFile))
         }
     }
 

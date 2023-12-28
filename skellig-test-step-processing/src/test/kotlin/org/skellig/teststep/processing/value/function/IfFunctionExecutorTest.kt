@@ -17,31 +17,31 @@ class IfFunctionExecutorTest {
 
     @Test
     fun testSimpleConditionWhenFalse() {
-        Assertions.assertEquals("false", converter!!.execute("if", arrayOf(false, "true", "false")))
+        Assertions.assertEquals("false", converter!!.execute("if", null, arrayOf(false, "true", "false")))
     }
 
     @Test
     fun testSimpleConditionWhenTrue() {
-        Assertions.assertEquals("true", converter!!.execute("if", arrayOf(true, "true", "false")))
+        Assertions.assertEquals("true", converter!!.execute("if", null, arrayOf(true, "true", "false")))
     }
 
     @Test
     fun testConditionWhenThenNotProvided() {
-        val ex = Assertions.assertThrows(IllegalStateException::class.java) { converter!!.execute("if", arrayOf(true, null)) }
+        val ex = Assertions.assertThrows(IllegalStateException::class.java) { converter!!.execute("if", null, arrayOf(true, null)) }
 
         Assertions.assertEquals("'then' is mandatory in 'if' statement", ex.message)
     }
 
     @Test
     fun testWhenConditionNotProvided() {
-        val ex = Assertions.assertThrows(IllegalStateException::class.java) { converter!!.execute("if", arrayOf(null, "a", "")) }
+        val ex = Assertions.assertThrows(IllegalStateException::class.java) { converter!!.execute("if", null, arrayOf(null, "a", "")) }
 
         Assertions.assertEquals("'condition' is mandatory in 'if' statement", ex.message)
     }
 
     @Test
     fun testWhenConditionIsNotBoolean() {
-        Assertions.assertThrows(ClassCastException::class.java) { converter!!.execute("if", arrayOf("true", "a", "")) }
+        Assertions.assertThrows(ClassCastException::class.java) { converter!!.execute("if", null, arrayOf("true", "a", "")) }
     }
 
     @Test
@@ -51,6 +51,6 @@ class IfFunctionExecutorTest {
             Pair("b", mapOf(Pair("c", "success")))
         )
 
-        Assertions.assertEquals(data, converter!!.execute("if", arrayOf(true, data)))
+        Assertions.assertEquals(data, converter!!.execute("if", null, arrayOf(true, data)))
     }
 }

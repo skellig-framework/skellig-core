@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.random.Random
@@ -11,7 +11,9 @@ class RandomFunctionExecutor : FunctionValueExecutor {
 
     private val random = Random(System.currentTimeMillis())
 
-    override fun execute(name: String, args: Array<Any?>): Any {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
+        if (value != null) throw FunctionExecutionException("Function `${getFunctionName()}` cannot be called from another value")
+
         if (args.size >= 2) {
             val min = if (args[0]?.toString()?.isEmpty() == true) "0" else args[0].toString()
             val max = args[1]?.toString() ?: "0"
@@ -23,7 +25,7 @@ class RandomFunctionExecutor : FunctionValueExecutor {
                 else -> random.nextLong(min.toLong(), max.toLong())
             }
         } else {
-            throw TestDataConversionException("Function `rand` can only accept between 2 and 3 String arguments. Found ${args.size}")
+            throw FunctionExecutionException("Function `${getFunctionName()}` can only accept between 2 and 3 String arguments. Found ${args.size}")
         }
     }
 

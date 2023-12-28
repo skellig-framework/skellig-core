@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
 import org.apache.commons.lang3.StringUtils
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -17,7 +18,9 @@ class IncrementFunctionExecutor : FunctionValueExecutor {
         const val FILE_NAME = "skellig-inc.tmp"
     }
 
-    override fun execute(name: String, args: Array<Any?>): Any {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
+        if (value != null) throw FunctionExecutionException("Function `${getFunctionName()}` cannot be called from another value")
+
         var maxLength = 1
         var key: String? = null
         if (args.size == 2) {

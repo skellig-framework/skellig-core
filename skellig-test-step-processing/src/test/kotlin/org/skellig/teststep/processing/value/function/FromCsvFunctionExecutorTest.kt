@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.exception.TestDataConversionException
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
 @DisplayName("Convert csv test data")
 class FromCsvFunctionExecutorTest {
@@ -19,7 +19,7 @@ class FromCsvFunctionExecutorTest {
     @Test
     @DisplayName("Without row filter Then check all raws read")
     fun testConvertFromCsvFile() {
-        val result = fromCsvFunctionExecutor!!.execute("fromCsv", arrayOf("csv/test-file.csv"))
+        val result = fromCsvFunctionExecutor!!.execute("fromCsv", null, arrayOf("csv/test-file.csv"))
 
         Assertions.assertAll(
             { Assertions.assertEquals("1", ((result as List<*>?)!![0] as Map<*, *>)["id"]) },
@@ -39,7 +39,7 @@ class FromCsvFunctionExecutorTest {
     fun testConvertFromCsvFileWithFiltering() {
 
         val result = fromCsvFunctionExecutor!!.execute(
-            "fromCsv",
+            "fromCsv", null,
             arrayOf("csv/test-file.csv", mapOf(Pair("id", "2"), Pair("name", "n2")))
         )
 
@@ -54,8 +54,8 @@ class FromCsvFunctionExecutorTest {
     @Test
     @DisplayName("When file does not exist Then throw exception")
     fun testConvertWhenFileNotExist() {
-        Assertions.assertThrows(TestDataConversionException::class.java) {
-            fromCsvFunctionExecutor!!.execute("fromCsv", arrayOf("csv/missing.csv"))
+        Assertions.assertThrows(FunctionExecutionException::class.java) {
+            fromCsvFunctionExecutor!!.execute("fromCsv", null, arrayOf("csv/missing.csv"))
         }
     }
 }

@@ -16,24 +16,24 @@ internal class ListOfFunctionExecutorTest {
 
     @Test
     fun testEmptyList() {
-        assertTrue((valueConverter!!.execute("listOf", emptyArray()) as List<*>).isEmpty())
+        assertTrue((valueConverter!!.execute("listOf", null, emptyArray()) as List<*>).isEmpty())
     }
 
     @Test
     fun testListWithOneElement() {
         val elements = "abc"
-        assertTrue((valueConverter!!.execute("listOf", arrayOf(elements)) as List<*>).contains(elements))
+        assertTrue((valueConverter!!.execute("listOf", null, arrayOf(elements)) as List<*>).contains(elements))
     }
 
     @Test
     fun testListWithOneElementCommaSeparated() {
         val elements = "a,b,c"
-        assertTrue((valueConverter!!.execute("listOf", arrayOf(elements)) as List<*>).containsAll(elements.split(",").toList()))
+        assertTrue((valueConverter!!.execute("listOf", null, arrayOf(elements)) as List<*>).containsAll(elements.split(",").toList()))
     }
 
     @Test
     fun testListWithFewElements() {
-        val list = valueConverter!!.execute("listOf", arrayOf("a", "b", "c")) as List<*>
+        val list = valueConverter!!.execute("listOf", null, arrayOf("a", "b", "c")) as List<*>
 
         assertAll(
             { assertTrue(list.contains("a")) },

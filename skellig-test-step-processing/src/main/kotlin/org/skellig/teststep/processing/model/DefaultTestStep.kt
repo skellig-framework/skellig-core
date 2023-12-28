@@ -13,7 +13,7 @@ import org.skellig.teststep.processing.model.validation.ValidationNode
  * @param delay delay time in milliseconds used in conjunction with `attempts` property, indicating a delay time
  * between execution attempts of the test step.
  * @param attempts defines max attempts for running the test step before it fails.
- * @param variables a list of variables of the test step. Value of a variable can be referenced withing the test step
+ * @param values a list of values of the test step. Value of a variable can be referenced withing the test step
  * by using `${ }` notation.
  * @param testData can be any type of data representing a message or a request used when processing the test step.
  * @param validationDetails defines a structure to validate the processing result of the test step or another test step.
@@ -25,7 +25,7 @@ open class DefaultTestStep(
     val timeout: Int = 0,
     val delay: Int = 0,
     val attempts: Int = 0,
-    val variables: Map<String, Any?>? = null,
+    val values: Map<String, Any?>? = null,
     val testData: Any? = null,
     val validationDetails: ValidationNode? = null
 ) : TestStep {
@@ -37,7 +37,7 @@ open class DefaultTestStep(
         override fun build(): DefaultTestStep {
             return DefaultTestStep(
                 id, name ?: error("Name of the Test Step must be set"),
-                execution, timeout, delay, 0, variables, testData, validationDetails
+                execution, timeout, delay, 0, values, testData, validationDetails
             )
         }
     }
@@ -45,7 +45,7 @@ open class DefaultTestStep(
     abstract class Builder<T>(
         protected var id: String? = null,
         protected var name: String? = null,
-        protected var variables: Map<String, Any?>? = null,
+        protected var values: Map<String, Any?>? = null,
         protected var testData: Any? = null,
         protected var validationDetails: ValidationNode? = null,
         protected var execution: TestStepExecutionType? = null,
@@ -62,7 +62,7 @@ open class DefaultTestStep(
 
         fun withValidationDetails(validationDetails: ValidationNode?) = apply { this.validationDetails = validationDetails }
 
-        fun withVariables(variables: Map<String, Any?>?) = apply { this.variables = variables }
+        fun withValues(values: Map<String, Any?>?) = apply { this.values = values }
 
         fun withExecution(execution: TestStepExecutionType?) = apply { this.execution = execution }
 

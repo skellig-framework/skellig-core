@@ -12,15 +12,9 @@ import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.skellig.teststep.processing.validation.comparator.DefaultValueComparator
-import org.skellig.teststep.processing.validation.comparator.ValueComparator
-import org.skellig.teststep.processing.validation.comparator.config.ComparatorConfig
-import org.skellig.teststep.processing.validation.comparator.config.ComparatorConfigDetails
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.config.FunctionsConfig
 import org.skellig.teststep.processing.value.config.FunctionsConfigDetails
-import org.skellig.teststep.processing.value.extractor.DefaultValueExtractor
-import org.skellig.teststep.processing.value.extractor.ValueExtractor
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
@@ -68,15 +62,12 @@ open class SkelligTestContext : Closeable {
         testScenarioState = createTestScenarioState()
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepReader = createTestStepReader()
-        val valueExtractor = createValueExtractor(testScenarioState)
-        val valueComparator = createValueComparator()
         val functionExecutor = createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths)
 
         testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths)
 
         valueExpressionContextFactory = ValueExpressionContextFactory(
             functionExecutor,
-            valueExtractor,
             DefaultPropertyExtractor(propertyExtractorFunction)
         )
 
@@ -195,20 +186,6 @@ open class SkelligTestContext : Closeable {
         testStepsRegistry
             ?: error("TestStepRegistry must be initialized first. Did you forget to call 'initialize'?")
 
-
-    private fun createValueComparator(): ValueComparator {
-        val valueComparatorBuilder = DefaultValueComparator.Builder()
-        extractFromConfig(getPackageToScan(), ComparatorConfig::class.java) { functionsConfig ->
-            functionsConfig.configComparators(ComparatorConfigDetails(testScenarioState!!, config!!))
-        }.flatten()
-            .forEach {
-                valueComparatorBuilder.withValueComparator(it)
-                injectTestContextIfRequired(it)
-            }
-
-        return valueComparatorBuilder.build()
-    }
-
     private fun createFunctionExecutor(
         classLoader: ClassLoader,
         testScenarioState: TestScenarioState?,
@@ -229,22 +206,6 @@ open class SkelligTestContext : Closeable {
             .withClassPaths(testStepClassPaths)
             .withTestScenarioState(testScenarioState)
             .build()
-    }
-
-    private fun createValueExtractor(
-        testScenarioState: TestScenarioState?,
-    ): ValueExtractor {
-        val valueExtractorBuilder = DefaultValueExtractor.Builder()
-
-        extractFromConfig(getPackageToScan(), FunctionsConfig::class.java) { functionsConfig ->
-            functionsConfig.configValueExtractors(FunctionsConfigDetails(testScenarioState!!, config!!))
-        }.flatten()
-            .forEach {
-                valueExtractorBuilder.withValueExtractor(it)
-                injectTestContextIfRequired(it)
-            }
-
-        return valueExtractorBuilder.build()
     }
 
     protected open fun createTestStepReader(): TestStepReader {

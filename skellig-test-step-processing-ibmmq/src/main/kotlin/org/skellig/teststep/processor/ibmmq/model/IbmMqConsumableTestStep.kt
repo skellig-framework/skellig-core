@@ -8,12 +8,12 @@ import org.skellig.teststep.processing.model.validation.ValidationNode
 open class IbmMqConsumableTestStep protected constructor(id: String?,
                                                          name: String?,
                                                          timeout: Int,
-                                                         variables: Map<String, Any?>?,
+                                                         values: Map<String, Any?>?,
                                                          testData: Any?,
                                                          validationDetails: ValidationNode?,
                                                          val consumeFrom: List<String>,
                                                          val respondTo: List<String>?)
-    : DefaultTestStep(id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, variables,
+    : DefaultTestStep(id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, values,
                       testData, validationDetails) {
 
 
@@ -37,7 +37,7 @@ open class IbmMqConsumableTestStep protected constructor(id: String?,
                 if (consumeChannelsSize != it.size)
                     throw TestStepCreationException("consumeFrom and respondTo must have the same size")
             }
-            return IbmMqConsumableTestStep(id, name!!, timeout, variables, testData,
+            return IbmMqConsumableTestStep(id, name!!, timeout, values, testData,
                                            validationDetails, consumeFrom!!, respondTo)
         }
     }
