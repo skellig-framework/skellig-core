@@ -24,9 +24,7 @@ abstract class BaseToDateTimeFunctionExecutor : FunctionValueExecutor {
                         timezone = args[1]?.toString()?.trim()
                     }
                     pattern?.let {
-                        val dateTimeFormatter = DateTimeFormatter.ofPattern(pattern)
-                            .withZone(timezone?.let { ZoneId.of(timezone) } ?: UTC)
-                        parseDate(value, dateTimeFormatter, getTemporalQuery())
+                        parseDate(value, timezone, pattern, getTemporalQuery())
                     } ?: throw FunctionExecutionException("Date/Time pattern is mandatory for '${getFunctionName()}' function")
                 }
                 else -> value
@@ -36,11 +34,13 @@ abstract class BaseToDateTimeFunctionExecutor : FunctionValueExecutor {
 
     protected abstract fun getTemporalQuery(): TemporalQuery<*>;
 
-    private fun parseDate(value: String?, formatter: DateTimeFormatter, query: TemporalQuery<*>) =
+    private fun parseDate(value: String?, timezone: String?, pattern: String, query: TemporalQuery<*>) =
         try {
-            formatter.parse(value, query)
+            val dateTimeFormatter = DateTimeFormatter.ofPattern(pattern)
+                .withZone(timezone?.let { ZoneId.of(timezone) } ?: UTC)
+            dateTimeFormatter.parse(value, query)
         } catch (ex: Exception) {
-            throw FunctionExecutionException("Failed to convert date $value by pattern $formatter");
+            throw FunctionExecutionException("Failed to convert date $value by pattern $pattern");
         }
 }
 

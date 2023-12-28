@@ -12,22 +12,22 @@ class ToDateFunctionExecutorTest {
 
     @Test
     fun testConvertToDate() {
-        val date = converter.execute("toDate", null, arrayOf("05-12-2001"))
+        val date = converter.execute("toDate", "05-12-2001", arrayOf("dd-MM-yyyy"))
 
         assertEquals(LocalDate.of(2001, 12, 5), date)
     }
 
     @Test
     fun testConvertToDateWithInvalidFormat() {
-        val ex = assertThrows(FunctionExecutionException::class.java) { converter.execute("toDate", null, arrayOf("77-77-2001")) }
+        val ex = assertThrows(FunctionExecutionException::class.java) { converter.execute("toDate", "77-77-2001", arrayOf("dd-MM-yyyy")) }
 
         assertEquals("Failed to convert date 77-77-2001 by pattern dd-MM-yyyy", ex.message)
     }
 
     @Test
     fun testConvertToDateWithInvalidNumberOfArguments() {
-        val ex = assertThrows(FunctionExecutionException::class.java) { converter.execute("toDate", null, arrayOf("01-01-2001", "UTC")) }
+        val ex = assertThrows(FunctionExecutionException::class.java) { converter.execute("toDate", "01-01-2001", emptyArray()) }
 
-        assertEquals("Function `toDate` can only accept 1 argument. Found 2", ex.message)
+        assertEquals("Function `toDate` can only accept 1 or 2 String arguments. Found 0", ex.message)
     }
 }
