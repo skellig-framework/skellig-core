@@ -1,7 +1,8 @@
 package org.skellig.teststep.processor.rmq.model
 
+import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 
 open class RmqTestStep protected constructor(id: String?,
                                              name: String?,
@@ -12,13 +13,14 @@ open class RmqTestStep protected constructor(id: String?,
                                              values: Map<String, Any?>?,
                                              testData: Any?,
                                              validationDetails: ValidationNode?,
+                                             scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                              val sendTo: Set<String>?,
                                              val receiveFrom: Set<String>?,
                                              val respondTo: Set<String>?,
                                              routingKey: String?,
                                              properties: Map<String, Any?>?)
     : BaseRmqTestStep(id, name!!, execution, timeout, delay, attempts,
-                      values, testData, validationDetails, routingKey, properties) {
+                      values, testData, validationDetails, scenarioStateUpdaters, routingKey, properties) {
 
 
     class Builder : BaseRmqTestStep.Builder<RmqTestStep>() {
@@ -41,7 +43,7 @@ open class RmqTestStep protected constructor(id: String?,
 
         override fun build(): RmqTestStep {
             return RmqTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
-                    sendTo, receiveFrom, respondTo, routingKey, properties)
+                scenarioStateUpdaters, sendTo, receiveFrom, respondTo, routingKey, properties)
         }
     }
 }

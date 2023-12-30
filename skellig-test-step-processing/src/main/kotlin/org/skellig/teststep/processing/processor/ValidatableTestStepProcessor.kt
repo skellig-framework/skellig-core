@@ -1,9 +1,8 @@
 package org.skellig.teststep.processing.processor
 
-import org.skellig.task.TaskUtils.Companion.runTask
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.state.TestScenarioState
 
 /**
@@ -62,16 +61,4 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(protected val t
         }
     }
 
-    /**
-     * Gets the result from a test step by its id.
-     * Delay and timeout is needed in case if the state hasn't yet received the result
-     * at the time this method is called.
-     */
-    private fun getLatestResultOfTestStep(testStepId: String, delay: Int, timeout: Int): Any? {
-        return runTask(
-            { testScenarioState.get(testStepId + TestStepProcessor.RESULT_SAVE_SUFFIX) },
-            { it != null },
-            delay, timeout
-        )
-    }
 }

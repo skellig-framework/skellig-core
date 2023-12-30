@@ -1,22 +1,25 @@
 package org.skellig.teststep.processor.tcp.model
 
+import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 
-open class TcpTestStep protected constructor(id: String?,
-                                             name: String,
-                                             execution: TestStepExecutionType?,
-                                             timeout: Int,
-                                             delay: Int,
-                                             attempts: Int,
-                                             values: Map<String, Any?>?,
-                                             testData: Any?,
-                                             validationDetails: ValidationNode?,
-                                             val sendTo: Set<String>?,
-                                             val readFrom: Set<String>?,
-                                             val respondTo: Set<String>?,
-                                             readBufferSize: Int)
-    : BaseTcpTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, readBufferSize) {
+open class TcpTestStep protected constructor(
+    id: String?,
+    name: String,
+    execution: TestStepExecutionType?,
+    timeout: Int,
+    delay: Int,
+    attempts: Int,
+    values: Map<String, Any?>?,
+    testData: Any?,
+    validationDetails: ValidationNode?,
+    scenarioStateUpdaters: List<ScenarioStateUpdater>?,
+    val sendTo: Set<String>?,
+    val readFrom: Set<String>?,
+    val respondTo: Set<String>?,
+    readBufferSize: Int
+) : BaseTcpTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, readBufferSize) {
 
     class Builder : BaseTcpTestStep.Builder<TcpTestStep>() {
 
@@ -37,8 +40,10 @@ open class TcpTestStep protected constructor(id: String?,
         }
 
         override fun build(): TcpTestStep {
-            return TcpTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails,
-                               sendTo, readFrom, respondTo, readBufferSize)
+            return TcpTestStep(
+                id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails,
+                scenarioStateUpdaters, sendTo, readFrom, respondTo, readBufferSize
+            )
         }
     }
 }

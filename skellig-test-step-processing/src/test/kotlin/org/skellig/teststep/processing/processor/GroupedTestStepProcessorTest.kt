@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.GroupedTestStep
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 
 class GroupedTestStepProcessorTest {
 

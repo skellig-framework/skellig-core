@@ -9,12 +9,17 @@ class AlphanumericValueExpression(private val value: String) : ValueExpression {
          * usually used in validation
          */
         const val THIS = "$"
+        /**
+         * Special character for the alphanum expression indicating a reference to the result of a test step execution,
+         * usually used in direct data extraction from the result to the scenario state
+         */
+        const val RESULT = "\$result"
+        private val setOfSpecialNames = setOf(THIS, RESULT)
     }
 
     override fun evaluate(context: ValueExpressionContext): Any? {
-        return if (context.hasLambdaParameterWithName(value))
-            context.getLambdaExpressionParameter(value)
-        else if (context.evaluationType == EvaluationType.CALL_CHAIN || value == THIS)
+        return if (context.hasLambdaParameterWithName(value)) context.getLambdaExpressionParameter(value)
+        else if (context.evaluationType == EvaluationType.CALL_CHAIN || setOfSpecialNames.contains(value))
             context.onFunctionCall(value, context.value, emptyArray())
         else value
     }

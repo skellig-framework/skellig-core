@@ -8,9 +8,9 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.validation.GroupedValidationNode
-import org.skellig.teststep.processing.model.validation.PairValidationNode
-import org.skellig.teststep.processing.model.validation.ValidationNodes
+import org.skellig.teststep.processing.model.GroupedValidationNode
+import org.skellig.teststep.processing.model.PairValidationNode
+import org.skellig.teststep.processing.model.ValidationNodes
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactoryTest
@@ -467,6 +467,29 @@ class DefaultTestStepFactoryTest {
                 Pair("b", BigDecimal("2"))
             ),
             (testStep.testData as Map<*, *>?)!!["c"]
+        )
+    }
+
+    @Test
+    @DisplayName("With state update details")
+    fun testCreateTestStepWithStateUpdate() {
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(
+                AlphanumericValueExpression("state"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("a"), CallChainExpression(listOf(PropertyValueExpression("amt", null), FunctionCallExpression("toBigDecimal", emptyArray())))),
+                        Pair(AlphanumericValueExpression("b"), MathOperationExpression("+", FunctionCallExpression("get", arrayOf(AlphanumericValueExpression("a"))), NumberValueExpression("500"))),
+                    )
+                )
+            )
+        )
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap())
+
+        assertAll(
+            { assertEquals("a = \${amt}.toBigDecimal()", testStep.scenarioStateUpdaters!![0].toString(0)) },
+            { assertEquals("b = get(a) + 500", testStep.scenarioStateUpdaters!![1].toString(0)) },
         )
     }
 }

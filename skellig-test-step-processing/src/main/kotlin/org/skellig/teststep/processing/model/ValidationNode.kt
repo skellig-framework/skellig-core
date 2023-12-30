@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.model.validation
+package org.skellig.teststep.processing.model
 
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory

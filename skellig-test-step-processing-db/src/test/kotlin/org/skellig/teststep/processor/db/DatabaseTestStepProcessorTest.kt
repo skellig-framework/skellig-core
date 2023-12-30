@@ -118,6 +118,6 @@ class DatabaseTestStepProcessorTest {
                                              command: String?,
                                              table: String?,
                                              query: String?)
-        : DatabaseTestStep("", name, TestStepExecutionType.SYNC, 0, 0, 0, null, null, null,
+        : DatabaseTestStep("", name, TestStepExecutionType.SYNC, 0, 0, 0, null, null, null, null,
             servers, command, table, query)
 }

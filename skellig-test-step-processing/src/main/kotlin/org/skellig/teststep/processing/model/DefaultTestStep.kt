@@ -1,7 +1,5 @@
 package org.skellig.teststep.processing.model
 
-import org.skellig.teststep.processing.model.validation.ValidationNode
-
 /**
  * A basic test step with common properties and validation details for a result.
  *
@@ -17,6 +15,7 @@ import org.skellig.teststep.processing.model.validation.ValidationNode
  * by using `${ }` notation.
  * @param testData can be any type of data representing a message or a request used when processing the test step.
  * @param validationDetails defines a structure to validate the processing result of the test step or another test step.
+ * @param scenarioStateUpdaters defines a structure to validate the processing result of the test step or another test step.
  */
 open class DefaultTestStep(
     val id: String? = null,
@@ -27,7 +26,8 @@ open class DefaultTestStep(
     val attempts: Int = 0,
     val values: Map<String, Any?>? = null,
     val testData: Any? = null,
-    val validationDetails: ValidationNode? = null
+    val validationDetails: ValidationNode? = null,
+    val scenarioStateUpdaters: List<ScenarioStateUpdater>? = null
 ) : TestStep {
 
     val getId: String? = id
@@ -37,7 +37,7 @@ open class DefaultTestStep(
         override fun build(): DefaultTestStep {
             return DefaultTestStep(
                 id, name ?: error("Name of the Test Step must be set"),
-                execution, timeout, delay, 0, values, testData, validationDetails
+                execution, timeout, delay, 0, values, testData, validationDetails, scenarioStateUpdaters
             )
         }
     }
@@ -51,7 +51,8 @@ open class DefaultTestStep(
         protected var execution: TestStepExecutionType? = null,
         protected var timeout: Int = 0,
         protected var delay: Int = 0,
-        protected var attempts: Int = 0
+        protected var attempts: Int = 0,
+        protected var scenarioStateUpdaters: List<ScenarioStateUpdater>? = null
     ) {
 
         fun withId(id: String?) = apply { this.id = id }
@@ -71,6 +72,8 @@ open class DefaultTestStep(
         fun withDelay(delay: Int) = apply { this.delay = delay }
 
         fun withAttempts(attempts: Int) = apply { this.attempts = attempts }
+
+        fun withScenarioStateUpdater(scenarioStateUpdaters: List<ScenarioStateUpdater>?) = apply { this.scenarioStateUpdaters = scenarioStateUpdaters }
 
         abstract fun build(): T
     }

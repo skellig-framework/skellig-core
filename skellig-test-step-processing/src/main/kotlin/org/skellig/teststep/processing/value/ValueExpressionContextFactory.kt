@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.value
 
 import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 import org.skellig.teststep.processing.value.property.PropertyExtractor
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression.Companion.RESULT
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression.Companion.THIS
 import org.skellig.teststep.reader.value.expression.EvaluationType
 import org.skellig.teststep.reader.value.expression.ValueExpressionContext
@@ -16,6 +17,13 @@ class ValueExpressionContextFactory(
     }
 
     fun create(parameters: Map<String, Any?>): ValueExpressionContext = ValueExpressionContext(EvaluationType.DEFAULT, onFunctionCall, createOnGetReferenceValue(parameters))
+
+    fun create(result: Any?, parameters: Map<String, Any?>): ValueExpressionContext =
+        ValueExpressionContext(
+            EvaluationType.DEFAULT,
+            createOnFunctionCallForResult(result),
+            createOnGetReferenceValue(parameters)
+        )
 
     fun createEmpty() = ValueExpressionContext()
 
@@ -47,6 +55,12 @@ class ValueExpressionContextFactory(
     private fun createOnFunctionCallForValidation(parentValue: Any?) =
         { name: String, ownerValue: Any?, args: Array<Any?> ->
             if (name == THIS) parentValue
+            else functionExecutor.execute(name, ownerValue, args)
+        }
+
+    private fun createOnFunctionCallForResult(parentValue: Any?) =
+        { name: String, ownerValue: Any?, args: Array<Any?> ->
+            if (name == RESULT) parentValue
             else functionExecutor.execute(name, ownerValue, args)
         }
 }

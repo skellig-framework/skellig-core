@@ -2,8 +2,9 @@ package org.skellig.teststep.processor.ibmmq.model
 
 import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 
 open class IbmMqConsumableTestStep protected constructor(id: String?,
                                                          name: String?,
@@ -11,10 +12,11 @@ open class IbmMqConsumableTestStep protected constructor(id: String?,
                                                          values: Map<String, Any?>?,
                                                          testData: Any?,
                                                          validationDetails: ValidationNode?,
+                                                         scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                                          val consumeFrom: List<String>,
                                                          val respondTo: List<String>?)
     : DefaultTestStep(id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, values,
-                      testData, validationDetails) {
+                      testData, validationDetails, scenarioStateUpdaters) {
 
 
     class Builder : DefaultTestStep.Builder<IbmMqConsumableTestStep>() {
@@ -38,7 +40,7 @@ open class IbmMqConsumableTestStep protected constructor(id: String?,
                     throw TestStepCreationException("consumeFrom and respondTo must have the same size")
             }
             return IbmMqConsumableTestStep(id, name!!, timeout, values, testData,
-                                           validationDetails, consumeFrom!!, respondTo)
+                                           validationDetails, scenarioStateUpdaters, consumeFrom!!, respondTo)
         }
     }
 }

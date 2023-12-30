@@ -3,7 +3,6 @@ package org.skellig.teststep.processing.model.factory
 import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.factory.ValidationNodeFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
@@ -30,6 +29,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     }
 
     private var validationDetailsFactory = ValidationNodeFactory(valueExpressionContextFactory)
+    private var stateUpdaterFactory = StateUpdaterFactory(valueExpressionContextFactory)
     private val testDataContext = valueExpressionContextFactory.create(emptyMap())
 
     init {
@@ -80,6 +80,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
             .withTimeout(getTimeout(rawTestStep, additionalParameters))
             .withDelay(getDelay(rawTestStep, additionalParameters))
             .withAttempts(getAttempts(rawTestStep, additionalParameters))
+            .withScenarioStateUpdater(stateUpdaterFactory.create(rawTestStep, additionalParameters))
             .build()
     }
 
