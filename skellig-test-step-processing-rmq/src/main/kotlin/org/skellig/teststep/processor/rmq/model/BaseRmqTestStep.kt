@@ -2,8 +2,9 @@ package org.skellig.teststep.processor.rmq.model
 
 import com.rabbitmq.client.AMQP
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 import java.util.*
 
 open class BaseRmqTestStep protected constructor(id: String?,
@@ -15,9 +16,10 @@ open class BaseRmqTestStep protected constructor(id: String?,
                                                  values: Map<String, Any?>?,
                                                  testData: Any?,
                                                  validationDetails: ValidationNode?,
+                                                 scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                                  val routingKey: String?,
                                                  val properties: Map<String, Any?>?)
-    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
 
     fun getAmqpProperties(): AMQP.BasicProperties? =
         properties?.let {

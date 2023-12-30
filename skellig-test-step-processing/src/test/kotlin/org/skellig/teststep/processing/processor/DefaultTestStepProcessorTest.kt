@@ -5,7 +5,7 @@ import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 
 class DefaultTestStepProcessorTest {

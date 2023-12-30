@@ -1,8 +1,9 @@
 package org.skellig.teststep.processor.tcp.model
 
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 
 abstract class BaseTcpTestStep protected constructor(id: String?,
                                                      name: String,
@@ -13,8 +14,9 @@ abstract class BaseTcpTestStep protected constructor(id: String?,
                                                      values: Map<String, Any?>?,
                                                      testData: Any?,
                                                      validationDetails: ValidationNode?,
+                                                     scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                                      val readBufferSize: Int)
-    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
 
     abstract class Builder<T : BaseTcpTestStep> : DefaultTestStep.Builder<T>() {
 

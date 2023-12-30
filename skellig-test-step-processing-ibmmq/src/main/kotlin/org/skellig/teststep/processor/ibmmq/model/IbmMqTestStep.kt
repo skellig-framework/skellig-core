@@ -1,8 +1,9 @@
 package org.skellig.teststep.processor.ibmmq.model
 
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 
 open class IbmMqTestStep protected constructor(id: String?,
                                                name: String?,
@@ -13,10 +14,11 @@ open class IbmMqTestStep protected constructor(id: String?,
                                                values: Map<String, Any?>?,
                                                testData: Any?,
                                                validationDetails: ValidationNode?,
+                                               scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                                val sendTo: Set<String>?,
                                                val readFrom: Set<String>?,
                                                val respondTo: Set<String>?)
-    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
 
     class Builder : DefaultTestStep.Builder<IbmMqTestStep>() {
         private var sendTo: Set<String>? = null
@@ -37,7 +39,7 @@ open class IbmMqTestStep protected constructor(id: String?,
 
         override fun build(): IbmMqTestStep {
             return IbmMqTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
-                    sendTo, readFrom, respondTo)
+                scenarioStateUpdaters, sendTo, readFrom, respondTo)
         }
     }
 }

@@ -1,8 +1,9 @@
 package org.skellig.runner.config
 
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 
 class SimpleMessageTestStep private constructor(id: String?,
                                                 name: String?,
@@ -13,9 +14,10 @@ class SimpleMessageTestStep private constructor(id: String?,
                                                 values: Map<String, Any?>?,
                                                 testData: Any?,
                                                 validationDetails: ValidationNode?,
+                                                scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                                 val receiver: String?,
                                                 val receiveFrom: String?)
-    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails) {
+    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
 
     class Builder : DefaultTestStep.Builder<SimpleMessageTestStep>() {
 
@@ -32,7 +34,7 @@ class SimpleMessageTestStep private constructor(id: String?,
 
         override fun build(): SimpleMessageTestStep {
             return SimpleMessageTestStep(id, name, execution, timeout, delay, attempts, values, testData,
-                    validationDetails, receiver, receiveFrom)
+                    validationDetails, scenarioStateUpdaters, receiver, receiveFrom)
         }
     }
 }

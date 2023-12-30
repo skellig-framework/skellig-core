@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.model.validation
+package org.skellig.teststep.processing.model
 
 import org.junit.Ignore
 import org.junit.jupiter.api.Assertions

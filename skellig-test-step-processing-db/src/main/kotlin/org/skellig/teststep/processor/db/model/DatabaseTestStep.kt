@@ -1,8 +1,9 @@
 package org.skellig.teststep.processor.db.model
 
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 
 open class DatabaseTestStep protected constructor(id: String?,
                                                   name: String,
@@ -13,6 +14,7 @@ open class DatabaseTestStep protected constructor(id: String?,
                                                   values: Map<String, Any?>?,
                                                   testData: Any?,
                                                   validationDetails: ValidationNode?,
+                                                  scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                                   val servers: Collection<String>?,
                                                   val command: String?,
                                                   val table: String?,

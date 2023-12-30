@@ -1,11 +1,16 @@
-package org.skellig.teststep.processing.model.validation.factory
+package org.skellig.teststep.processing.model.factory
 
 import com.nhaarman.mockitokotlin2.mock
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.teststep.processing.model.validation.*
+import org.skellig.teststep.processing.model.*
+import org.skellig.teststep.processing.model.GroupedValidationNode
+import org.skellig.teststep.processing.model.PairValidationNode
+import org.skellig.teststep.processing.model.SingleValidationNode
+import org.skellig.teststep.processing.model.ValidationNodes
+import org.skellig.teststep.processing.model.factory.ValidationNodeFactory
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor

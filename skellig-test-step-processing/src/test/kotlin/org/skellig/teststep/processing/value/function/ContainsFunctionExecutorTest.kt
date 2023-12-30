@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.validation.comparator
+package org.skellig.teststep.processing.value.function
 
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

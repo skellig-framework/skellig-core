@@ -1,27 +1,30 @@
 package org.skellig.teststep.processor.http.model
 
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 
-class HttpTestStep(id: String?,
-                   name: String,
-                   execution: TestStepExecutionType?,
-                   timeout: Int,
-                   delay: Int,
-                   attempts: Int,
-                   values: Map<String, Any?>?,
-                   testData: Any?,
-                   validationDetails: ValidationNode?,
-                   val url: String?,
-                   val services: Collection<String>?,
-                   val method: String?,
-                   val username: String?,
-                   val password: String?,
-                   val headers: Map<String, String?>?,
-                   val query: Map<String, String?>?,
-                   val form: Map<String, String?>?)
-    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails) {
+class HttpTestStep(
+    id: String?,
+    name: String,
+    execution: TestStepExecutionType?,
+    timeout: Int,
+    delay: Int,
+    attempts: Int,
+    values: Map<String, Any?>?,
+    testData: Any?,
+    validationDetails: ValidationNode?,
+    scenarioStateUpdaters: List<ScenarioStateUpdater>?,
+    val url: String?,
+    val services: Collection<String>?,
+    val method: String?,
+    val username: String?,
+    val password: String?,
+    val headers: Map<String, String?>?,
+    val query: Map<String, String?>?,
+    val form: Map<String, String?>?
+) : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
 
     class Builder : DefaultTestStep.Builder<HttpTestStep>() {
 
@@ -67,8 +70,10 @@ class HttpTestStep(id: String?,
         }
 
         override fun build(): HttpTestStep {
-            return HttpTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails,
-                    url, services, method, username, password, headers, query, form)
+            return HttpTestStep(
+                id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails,
+                scenarioStateUpdaters, url, services, method, username, password, headers, query, form
+            )
         }
     }
 }

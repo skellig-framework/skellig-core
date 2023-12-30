@@ -4,7 +4,7 @@ import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.*
 import org.mockito.ArgumentMatchers.anyInt
 import org.skellig.teststep.processing.exception.ValidationException
-import org.skellig.teststep.processing.model.validation.ValidationNode
+import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep

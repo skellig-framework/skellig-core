@@ -1,10 +1,15 @@
-package org.skellig.teststep.processing.model.validation.factory
+package org.skellig.teststep.processing.model.factory
 
-import org.skellig.teststep.processing.model.validation.*
+import org.skellig.teststep.processing.model.*
+import org.skellig.teststep.processing.model.BaseValidationNode
+import org.skellig.teststep.processing.model.GroupedValidationNode
+import org.skellig.teststep.processing.model.PairValidationNode
+import org.skellig.teststep.processing.model.SingleValidationNode
+import org.skellig.teststep.processing.model.ValidationNodes
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.*
 
-class ValidationNodeFactory(private val valueExpressionContextFactory: ValueExpressionContextFactory) {
+internal class ValidationNodeFactory(private val valueExpressionContextFactory: ValueExpressionContextFactory) {
 
     companion object {
         private val VALIDATE = AlphanumericValueExpression("validate")
