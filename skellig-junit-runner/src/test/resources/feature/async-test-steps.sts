@@ -39,4 +39,3 @@ name ("User (\w+) received a valid response from (\w+)") {
         }
     }
 }
-
