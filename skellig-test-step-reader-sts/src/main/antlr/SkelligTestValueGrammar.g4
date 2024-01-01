@@ -1,4 +1,4 @@
-grammar ValueExpression;
+grammar SkelligTestValueGrammar;
 
 // Starting rule
 start: logicalExpression EOF | expression EOF;
@@ -6,8 +6,8 @@ start: logicalExpression EOF | expression EOF;
 logicalExpression
     : logicalExpression AND logicalExpression   # andExpr
     | logicalExpression OR logicalExpression    # orExpr
-    | NOT logicalExpression                     # notExpr
     | '(' logicalExpression ')'                 # parenthesesLogicalExpr
+    | NOT (BOOL | functionCall | propertyExpression | callChain | '(' logicalExpression ')')              # notExpr
     | comparison                                # comparisonExpr
     ;
 
@@ -18,29 +18,36 @@ expression
     | expression DIV expression                 # divisionExpr
     | expression ADD expression                 # additionExpr
     | expression SUB expression                 # subtractionExpr
-    | propertyInvocation                        # propertyExpr
-    | functionInvocation                        # functionExpr
+    | arrayValueAccessor                        # arrayValueAccessorExp
+    | functionCall                              # functionCallExp
+    | propertyExpression                        # propertyExpr
     | '(' expression ')'                        # parenthesesExpr
     | STRING                                    # stringExpr
     | number                                    # numberExpr
     | ID                                        # idExpr
+    | BOOL                                      # boolExpr
+    | callChain                                 # callChainExp
     ;
 
-functionInvocation: functionBase ('.' functionBase)*;
+callChain: (functionBase | propertyExpression) (DOT functionBase)*;
 
 functionBase
     : functionCall
-    | ID;
+    | arrayValueAccessor
+    | ID
+    | STRING;
 
-functionCall: ID '(' (arg (',' arg)*)? ')';
+functionCall: ID '(' (arg (COMMA arg)*)? (')'|'):');
 
 arg: expression | logicalExpression | comparison | lambdaExpression;
 
-lambdaExpression: ID '->' logicalExpression | expression;
+lambdaExpression: ID LAMBDA (logicalExpression | expression);
 
-propertyInvocation: propertyExpression ('.' functionBase)*;
+propertyExpression: '${' propertyKey (COMMA expression)? '}';
 
-propertyExpression: '${' ID (':' expression)? '}';
+propertyKey: ID | INT | STRING;
+
+arrayValueAccessor: ID '[' INT ']';
 
 number: FLOAT | INT;
 
@@ -62,6 +69,10 @@ SUB: '-';
 AND: '&&';
 OR: '||';
 NOT: '!';
-ID: [a-zA-Z][a-zA-Z0-9-]*;  // Identifiers supporting dashes and numbers
-STRING: '"' (~["\r\n])* '"';  // Strings enclosed in double quotes, excluding newline characters
+COMMA: ',';
+DOT: '.';
+LAMBDA: '->';
+BOOL: 'true'|'false';  // Boolean values
+ID: [a-zA-Z0-9_:;$]+;  // Identifiers supporting dashes and numbers
+STRING: '"' (~["] | '\\"')* '"';  // Strings enclosed in double quotes, excluding newline characters
 WS: [ \t\n\r]+ -> skip;  // Whitespace
