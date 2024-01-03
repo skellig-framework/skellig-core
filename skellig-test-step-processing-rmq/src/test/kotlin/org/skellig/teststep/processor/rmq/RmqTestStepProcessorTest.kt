@@ -56,7 +56,7 @@ class RmqTestStepProcessorTest {
     @DisplayName("Read data from non-registered channel Then verify exception is captured")
     fun testReadFromNotRegisteredChannel() {
         val testStep = RmqTestStep.Builder()
-            .receiveFrom(setOf("host3"))
+            .readFrom(setOf("host3"))
             .withTestData("hi")
             .withName("n1")
             .build()
@@ -90,7 +90,7 @@ class RmqTestStepProcessorTest {
             val response = "yo"
             val testStep = RmqTestStep.Builder()
                 .sendTo(setOf(CHANNEL_NAME))
-                .receiveFrom(setOf(CHANNEL_NAME))
+                .readFrom(setOf(CHANNEL_NAME))
                 .withTestData("hi")
                 .withName("n1")
                 .build()
@@ -117,7 +117,7 @@ class RmqTestStepProcessorTest {
         fun testReceiveAndRespondToDifferentChannel() {
             val testStep: RmqTestStep = RmqTestStep.Builder()
                 .respondTo(setOf(CHANNEL_NAME_2))
-                .receiveFrom(setOf(CHANNEL_NAME))
+                .readFrom(setOf(CHANNEL_NAME))
                 .withTestData("hi")
                 .withName("n1")
                 .build()
@@ -135,7 +135,7 @@ class RmqTestStepProcessorTest {
             val expectedResult = mock<ValidationNode>()
             val testStep: RmqTestStep = RmqTestStep.Builder()
                 .respondTo(setOf(CHANNEL_NAME))
-                .receiveFrom(setOf(CHANNEL_NAME))
+                .readFrom(setOf(CHANNEL_NAME))
                 .withTestData("hi")
                 .withName("n1")
                 .withValidationDetails(expectedResult)

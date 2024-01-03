@@ -14,12 +14,12 @@ abstract class BaseRmqTestStepFactory<T : BaseRmqTestStep>(
 ) : BaseDefaultTestStepFactory<T>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
-        internal val PROTOCOL_KEY_KEYWORD = AlphanumericValueExpression("protocol")
-        internal val ROUTING_KEY_KEYWORD = AlphanumericValueExpression("routingKey")
-        internal val RESPOND_TO_KEYWORD = AlphanumericValueExpression("respondTo")
-        internal val CONSUME_FROM_KEYWORD = AlphanumericValueExpression("consumeFrom")
-        internal val RMQ_PROPERTIES_KEYWORD = AlphanumericValueExpression("properties")
-        internal val RMQ = "rmq"
+        internal val PROTOCOL_KEY_KEYWORD = fromProperty("protocol")
+        internal val ROUTING_KEY_KEYWORD = fromProperty("routingKey")
+        internal val RESPOND_TO_KEYWORD = fromProperty("respondTo")
+        internal val CONSUME_FROM_KEYWORD = fromProperty("consumeFrom")
+        internal val RMQ_PROPERTIES_KEYWORD = fromProperty("properties")
+        internal val RMQ = fromProperty("rmq")
     }
 
     protected fun getRoutingKey(rawTestStep: Map<ValueExpression, ValueExpression?>): ValueExpression? =

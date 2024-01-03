@@ -14,8 +14,8 @@ class SimpleMessageTestStepFactory(
 ) : BaseDefaultTestStepFactory<SimpleMessageTestStep>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
-        private val RECEIVER = AlphanumericValueExpression("receiver")
-        private val RECEIVE_FROM = AlphanumericValueExpression("receiveFrom")
+        private val RECEIVER = fromProperty("receiver")
+        private val RECEIVE_FROM = fromProperty("receiveFrom")
     }
 
     override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<SimpleMessageTestStep> {

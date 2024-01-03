@@ -46,6 +46,7 @@ class DefaultFunctionValueExecutor private constructor(
             this.withFunctionValueExecutor(JsonToListTestStepFunctionExecutor())
             this.withFunctionValueExecutor(XPathFunctionExecutor())
             this.withFunctionValueExecutor(GetValuesFunctionExecutor())
+            this.withFunctionValueExecutor(FirstFunctionExecutor())
             this.withFunctionValueExecutor(FromIndexFunctionExecutor())
             this.withFunctionValueExecutor(ToStringFunctionExecutor())
             this.withFunctionValueExecutor(SubStringFunctionExecutor())

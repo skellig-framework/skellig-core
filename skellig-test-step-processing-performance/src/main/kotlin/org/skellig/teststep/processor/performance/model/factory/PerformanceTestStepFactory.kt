@@ -19,11 +19,11 @@ class PerformanceTestStepFactory(
 ) : BaseTestStepFactory<PerformanceTestStep>(valueExpressionContextFactory) {
 
     companion object {
-        private val RPS = AlphanumericValueExpression("rps")
-        private val TIME_TO_RUN = AlphanumericValueExpression("timeToRun")
-        private val BEFORE = AlphanumericValueExpression("before")
-        private val AFTER = AlphanumericValueExpression("after")
-        private val RUN = AlphanumericValueExpression("run")
+        private val RPS = fromProperty("rps")
+        private val TIME_TO_RUN = fromProperty("timeToRun")
+        private val BEFORE = fromProperty("before")
+        private val AFTER = fromProperty("after")
+        private val RUN = fromProperty("run")
         private val TIME_PATTERN = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 

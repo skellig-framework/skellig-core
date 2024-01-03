@@ -4,7 +4,6 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
-import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 class TcpTestStepFactory(
@@ -14,8 +13,8 @@ class TcpTestStepFactory(
 ) : BaseTcpTestStepFactory<TcpTestStep>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
-        private val SEND_TO_KEYWORD = AlphanumericValueExpression("sendTo")
-        private val RECEIVE_FROM_KEYWORD = AlphanumericValueExpression("receiveFrom")
+        private val SEND_TO_KEYWORD = fromProperty("sendTo")
+        private val READ_FROM_KEYWORD = fromProperty("readFrom")
         private const val DEFAULT_DELAY = 250
         private const val DEFAULT_ATTEMPTS = 20
     }
@@ -37,7 +36,7 @@ class TcpTestStepFactory(
         toSet(convertValue<Any>(rawTestStep[SEND_TO_KEYWORD], parameters))
 
     private fun getReadFromChannels(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Set<String>? =
-        toSet(convertValue<Any>(rawTestStep[RECEIVE_FROM_KEYWORD], parameters))
+        toSet(convertValue<Any>(rawTestStep[READ_FROM_KEYWORD], parameters))
 
     private fun toSet(channel: Any?): Set<String>? {
         return when (channel) {

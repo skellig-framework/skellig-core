@@ -4,9 +4,9 @@ import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
-import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
+import java.math.BigDecimal
 
 abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
     private val testStepRegistry: TestStepRegistry,
@@ -15,14 +15,14 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 ) : BaseTestStepFactory<T>(valueExpressionContextFactory) {
 
     companion object {
-        private val ID = AlphanumericValueExpression("id")
+        private val ID = fromProperty("id")
 
-        private val PARENT_KEYWORD = AlphanumericValueExpression("parent")
-        private val VALUES_KEYWORD = AlphanumericValueExpression("values")
-        private val EXECUTION_KEYWORD = AlphanumericValueExpression("execution")
-        private val TIMEOUT_KEYWORD = AlphanumericValueExpression("timeout")
-        private val DELAY_KEYWORD = AlphanumericValueExpression("delay")
-        private val ATTEMPTS_KEYWORD = AlphanumericValueExpression("attempts")
+        private val PARENT_KEYWORD = fromProperty("parent")
+        private val VALUES_KEYWORD = fromProperty("values")
+        private val EXECUTION_KEYWORD = fromProperty("execution")
+        private val TIMEOUT_KEYWORD = fromProperty("timeout")
+        private val DELAY_KEYWORD = fromProperty("delay")
+        private val ATTEMPTS_KEYWORD = fromProperty("attempts")
         private const val DEFAULT_TIMEOUT = 30000
 
         private var testDataKeywords: Set<ValueExpression>? = null
@@ -34,12 +34,12 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 
     init {
         testDataKeywords = setOf(
-            AlphanumericValueExpression("data"),
-            AlphanumericValueExpression("payload"),
-            AlphanumericValueExpression("body"),
-            AlphanumericValueExpression("request"),
-            AlphanumericValueExpression("response"),
-            AlphanumericValueExpression("message")
+            fromProperty("data"),
+            fromProperty("payload"),
+            fromProperty("body"),
+            fromProperty("request"),
+            fromProperty("response"),
+            fromProperty("message")
         )
     }
 
@@ -163,7 +163,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         if (rawTestStep.containsKey(keywordName)) {
             val rawTimeout = convertValue<Any>(rawTestStep[keywordName], parameters)
             try {
-                value = rawTimeout.toString().toInt()
+                value = rawTimeout?.toString()?.toInt() ?: defaultValue
             } catch (ignore: NumberFormatException) {
             }
         }

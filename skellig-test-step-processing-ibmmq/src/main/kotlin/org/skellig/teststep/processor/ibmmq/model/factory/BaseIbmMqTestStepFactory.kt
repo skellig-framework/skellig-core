@@ -14,10 +14,10 @@ abstract class BaseIbmMqTestStepFactory<T : DefaultTestStep>(
 ) : BaseDefaultTestStepFactory<T>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
-        protected val PROTOCOL_KEY_KEYWORD = AlphanumericValueExpression("protocol")
-        internal val RESPOND_TO_KEYWORD = AlphanumericValueExpression("respondTo")
-        protected val CONSUME_FROM_KEYWORD = AlphanumericValueExpression("consumeFrom")
-        protected const val IBMMQ = "ibmmq"
+        protected val PROTOCOL_KEY_KEYWORD = fromProperty("protocol")
+        internal val RESPOND_TO_KEYWORD = fromProperty("respondTo")
+        protected val CONSUME_FROM_KEYWORD = fromProperty("consumeFrom")
+        protected val IBMMQ = fromProperty("ibmmq")
 
     }
 

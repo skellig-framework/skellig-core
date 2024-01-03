@@ -13,7 +13,7 @@ class SimpleTestStepFactory(
 ) : BaseDefaultTestStepFactory<SimpleTestStepFactory.SimpleTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
     companion object {
-        private val CAPTURE_DATA = AlphanumericValueExpression("captureData")
+        private val CAPTURE_DATA = fromProperty("captureData")
     }
 
     override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {
