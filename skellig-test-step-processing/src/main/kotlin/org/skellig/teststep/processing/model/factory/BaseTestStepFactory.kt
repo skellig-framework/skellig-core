@@ -9,7 +9,9 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 abstract class BaseTestStepFactory<T : TestStep>(val valueExpressionContextFactory: ValueExpressionContextFactory) : TestStepFactory<T> {
 
     companion object {
-        protected val TEST_STEP_NAME_KEYWORD = AlphanumericValueExpression("name")
+        @JvmStatic
+        protected fun fromProperty(property: String) : AlphanumericValueExpression = AlphanumericValueExpression(property)
+        protected val TEST_STEP_NAME_KEYWORD = fromProperty("name")
     }
 
     protected open fun <T> convertValue(value: ValueExpression?, parameters: Map<String, Any?>): T? {
@@ -35,4 +37,6 @@ abstract class BaseTestStepFactory<T : TestStep>(val valueExpressionContextFacto
         // No need to evaluate as it is always the value from toString
         return rawTestStep[TEST_STEP_NAME_KEYWORD].toString()
     }
+
+
 }

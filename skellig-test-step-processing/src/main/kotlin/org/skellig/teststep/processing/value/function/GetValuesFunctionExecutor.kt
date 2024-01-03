@@ -4,7 +4,7 @@ import org.skellig.teststep.processing.value.exception.FunctionExecutionExceptio
 
 class GetValuesFunctionExecutor : FunctionValueExecutor {
 
-    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         value?.let {
             return when(value) {
                 is Collection<*>, is Array<*> -> value

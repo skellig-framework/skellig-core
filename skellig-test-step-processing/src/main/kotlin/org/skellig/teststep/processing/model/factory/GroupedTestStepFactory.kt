@@ -14,9 +14,9 @@ internal class GroupedTestStepFactory(
 ) : BaseTestStepFactory<GroupedTestStep>(valueExpressionContextFactory) {
 
     companion object {
-        private val TEST = AlphanumericValueExpression("test")
-        private val PASSED = AlphanumericValueExpression("passed")
-        private val FAILED = AlphanumericValueExpression("failed")
+        private val TEST = fromProperty("test")
+        private val PASSED = fromProperty("passed")
+        private val FAILED = fromProperty("failed")
     }
 
     override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): GroupedTestStep {

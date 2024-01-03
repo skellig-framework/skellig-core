@@ -14,11 +14,11 @@ abstract class BaseTcpTestStepFactory<T : BaseTcpTestStep>(
 ) : BaseDefaultTestStepFactory<T>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
-        internal val RESPOND_TO_KEYWORD = AlphanumericValueExpression("respondTo")
-        internal val PROTOCOL_KEY_KEYWORD = AlphanumericValueExpression("protocol")
-        internal val CONSUME_FROM_KEYWORD = AlphanumericValueExpression("consumeFrom")
-        internal val BUFFER_SIZE_KEYWORD = AlphanumericValueExpression("bufferSize")
-        internal const val TCP = "tcp"
+        internal val RESPOND_TO_KEYWORD = fromProperty("respondTo")
+        internal val PROTOCOL_KEY_KEYWORD = fromProperty("protocol")
+        internal val CONSUME_FROM_KEYWORD = fromProperty("consumeFrom")
+        internal val BUFFER_SIZE_KEYWORD = fromProperty("bufferSize")
+        internal val TCP = fromProperty("tcp")
     }
 
     protected fun getReadBufferSize(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Int? {

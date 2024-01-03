@@ -15,19 +15,19 @@ abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(
 ) : BaseDefaultTestStepFactory<TS>(testStepRegistry, valueExpressionContextFactory) {
 
     companion object {
-        private val SERVERS_KEYWORD = AlphanumericValueExpression("servers")
-        private val TABLE_KEYWORD = AlphanumericValueExpression("table")
-        private val COMMAND_KEYWORD = AlphanumericValueExpression("command")
-        private val QUERY_KEYWORD = AlphanumericValueExpression("query")
-        private val WHERE_KEYWORD = AlphanumericValueExpression("where")
-        private val VALUES_KEYWORD = AlphanumericValueExpression("values")
-        val PROPERTY_PROVIDER_KEYWORD = AlphanumericValueExpression("provider")
+        private val SERVERS_KEYWORD = fromProperty("servers")
+        private val TABLE_KEYWORD = fromProperty("table")
+        private val COMMAND_KEYWORD = fromProperty("command")
+        private val QUERY_KEYWORD = fromProperty("query")
+        private val WHERE_KEYWORD = fromProperty("where")
+        private val DATA_KEYWORD = fromProperty("data")
+        val PROPERTY_PROVIDER_KEYWORD = fromProperty("provider")
         private const val DEFAULT_DELAY = 300
 
         private const val DEFAULT_ATTEMPTS = 10
         private var DB_TEST_DATA_KEYWORDS = setOf(
             WHERE_KEYWORD,
-            VALUES_KEYWORD
+            DATA_KEYWORD
         )
     }
 

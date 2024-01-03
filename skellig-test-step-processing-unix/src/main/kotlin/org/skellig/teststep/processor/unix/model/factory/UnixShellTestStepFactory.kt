@@ -14,9 +14,9 @@ class UnixShellTestStepFactory(
 ) : BaseDefaultTestStepFactory<UnixShellTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
     companion object {
-        private val HOSTS_KEYWORD = AlphanumericValueExpression("hosts")
-        private val COMMAND_KEYWORD = AlphanumericValueExpression("command")
-        private val ARGS_KEYWORD = AlphanumericValueExpression("args")
+        private val HOSTS_KEYWORD = fromProperty("hosts")
+        private val COMMAND_KEYWORD = fromProperty("command")
+        private val ARGS_KEYWORD = fromProperty("args")
     }
 
     override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<UnixShellTestStep> {

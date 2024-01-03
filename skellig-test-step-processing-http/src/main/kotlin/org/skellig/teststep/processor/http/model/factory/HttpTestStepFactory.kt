@@ -15,14 +15,14 @@ class HttpTestStepFactory(
 ) : BaseDefaultTestStepFactory<HttpTestStep>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
-        private val SERVICE_KEYWORD = AlphanumericValueExpression("services")
-        private val URL_KEYWORD = AlphanumericValueExpression("url")
-        private val METHOD_KEYWORD = AlphanumericValueExpression("http_method")
-        private val HEADERS_KEYWORD = AlphanumericValueExpression("http_headers")
-        private val QUERY_KEYWORD = AlphanumericValueExpression("http_query")
-        private val FORM_KEYWORD = AlphanumericValueExpression("form")
-        private val USER_KEYWORD = AlphanumericValueExpression("username")
-        private val PASSWORD_KEYWORD = AlphanumericValueExpression("password")
+        private val SERVICE_KEYWORD = fromProperty("services")
+        private val URL_KEYWORD = fromProperty("url")
+        private val METHOD_KEYWORD = fromProperty("http_method")
+        private val HEADERS_KEYWORD = fromProperty("http_headers")
+        private val QUERY_KEYWORD = fromProperty("http_query")
+        private val FORM_KEYWORD = fromProperty("form")
+        private val USER_KEYWORD = fromProperty("username")
+        private val PASSWORD_KEYWORD = fromProperty("password")
     }
 
     override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<HttpTestStep> {
@@ -30,7 +30,7 @@ class HttpTestStepFactory(
         return HttpTestStep.Builder()
             .withService(services)
             .withUrl(convertValue<String>(rawTestStep[URL_KEYWORD], parameters))
-            .withMethod(rawTestStep[METHOD_KEYWORD] as String?)
+            .withMethod(convertValue<String>(rawTestStep[METHOD_KEYWORD], parameters))
             .withHeaders(getHttpHeaders(rawTestStep, parameters))
             .withQuery(getHttpQuery(rawTestStep, parameters))
             .withForm(getForm(rawTestStep, parameters))

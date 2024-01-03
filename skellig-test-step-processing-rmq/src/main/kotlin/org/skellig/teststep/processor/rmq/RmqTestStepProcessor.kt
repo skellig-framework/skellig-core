@@ -15,14 +15,14 @@ open class RmqTestStepProcessor(
     override fun processTestStep(testStep: RmqTestStep): Any? {
         var response: Map<*, Any?>? = null
         val sendTo = testStep.sendTo
-        val receiveFrom = testStep.receiveFrom
+        val readFrom = testStep.readFrom
         val routingKey = testStep.routingKey
         sendTo?.let { send(testStep.testData, it, routingKey, testStep.getAmqpProperties()) }
 
-        receiveFrom?.let {
+        readFrom?.let {
             val respondTo = testStep.respondTo
             val responseTestData = testStep.testData
-            response = read(testStep, receiveFrom, if (respondTo != null) null else responseTestData)
+            response = read(testStep, readFrom, if (respondTo != null) null else responseTestData)
             respondTo?.let {
                 if (isValid(testStep, response)) send(responseTestData, respondTo, routingKey, testStep.getAmqpProperties())
             }

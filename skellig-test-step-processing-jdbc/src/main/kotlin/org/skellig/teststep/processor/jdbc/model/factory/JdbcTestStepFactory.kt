@@ -14,7 +14,7 @@ class JdbcTestStepFactory(
 ) : DatabaseTestStepFactory<JdbcTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
     companion object {
-        private val JDBC = AlphanumericValueExpression("jdbc")
+        private val JDBC = fromProperty("jdbc")
     }
 
     override fun createDatabaseTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>):

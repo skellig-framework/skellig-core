@@ -14,7 +14,7 @@ class CassandraTestStepFactory(
 ) : DatabaseTestStepFactory<CassandraTestStep>(testStepRegistry, valueExpressionContextFactory) {
 
     companion object {
-        private val CASSANDRA = AlphanumericValueExpression("cassandra")
+        private val CASSANDRA = fromProperty("cassandra")
     }
 
     override fun createDatabaseTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>):

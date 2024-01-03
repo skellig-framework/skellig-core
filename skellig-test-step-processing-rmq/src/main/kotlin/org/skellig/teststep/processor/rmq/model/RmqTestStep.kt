@@ -15,7 +15,7 @@ open class RmqTestStep protected constructor(id: String?,
                                              validationDetails: ValidationNode?,
                                              scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                              val sendTo: Set<String>?,
-                                             val receiveFrom: Set<String>?,
+                                             val readFrom: Set<String>?,
                                              val respondTo: Set<String>?,
                                              routingKey: String?,
                                              properties: Map<String, Any?>?)
@@ -26,15 +26,15 @@ open class RmqTestStep protected constructor(id: String?,
     class Builder : BaseRmqTestStep.Builder<RmqTestStep>() {
 
         private var sendTo: Set<String>? = null
-        private var receiveFrom: Set<String>? = null
+        private var readFrom: Set<String>? = null
         private var respondTo: Set<String>? = null
 
         fun sendTo(sendTo: Set<String>?) = apply {
             this.sendTo = sendTo
         }
 
-        fun receiveFrom(receiveFrom: Set<String>?) = apply {
-            this.receiveFrom = receiveFrom
+        fun readFrom(readFrom: Set<String>?) = apply {
+            this.readFrom = readFrom
         }
 
         fun respondTo(respondTo: Set<String>?) = apply {
@@ -43,7 +43,7 @@ open class RmqTestStep protected constructor(id: String?,
 
         override fun build(): RmqTestStep {
             return RmqTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
-                scenarioStateUpdaters, sendTo, receiveFrom, respondTo, routingKey, properties)
+                scenarioStateUpdaters, sendTo, readFrom, respondTo, routingKey, properties)
         }
     }
 }
