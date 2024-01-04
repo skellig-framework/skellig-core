@@ -3,10 +3,7 @@ package org.skellig.runner.junit.report.model
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.GroupedTestStep
 import org.skellig.teststep.processing.model.TestStep
-import java.beans.Introspector
-import java.beans.PropertyDescriptor
-import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
+import org.skellig.teststep.processing.util.PropertyFormatUtils
 
 open class TestStepReportDetails<T>(
     val name: String,
@@ -30,41 +27,13 @@ open class TestStepReportDetails<T>(
 
     fun getProperties(): String {
         if (originalTestStep != null && originalTestStep.javaClass != TestStep::class.java && originalTestStep is TestStep) {
-
-            val properties = getPropertyGettersOfTestStep(originalTestStep.javaClass)
-            return properties.entries
-                .filter { it.value != null }
-                .map { getPropertyWithValue(it) }
-                .joinToString("\n")
+            return originalTestStep.toString()
         }
         return ""
     }
 
     fun getResult(): String {
-        return result?.toString() ?: ""
-    }
-
-    private fun getPropertyWithValue(propertyGetterPair: Map.Entry<String, Method?>): String? {
-        return try {
-            propertyGetterPair.value?.invoke(originalTestStep)
-                ?.let { propertyGetterPair.key + ": " + it }
-                ?: ""
-        } catch (e: IllegalAccessException) {
-            e.message
-        } catch (e: InvocationTargetException) {
-            e.message
-        }
-    }
-
-    private fun getPropertyGettersOfTestStep(beanClass: Class<*>): Map<String, Method?> {
-        return beanClass.declaredFields
-            .map {
-                it.name to Introspector.getBeanInfo(beanClass).propertyDescriptors
-                    .filter { pd: PropertyDescriptor -> pd.readMethod != null && it.name == pd.name }
-                    .map { obj: PropertyDescriptor -> obj.readMethod }
-                    .firstOrNull()
-            }
-            .toMap()
+        return PropertyFormatUtils.toString(result, 0)
     }
 
     class Builder {
@@ -113,7 +82,7 @@ class DefaultTestStepReportDetails(
 ) : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog, logRecords) {
 
     override fun getTestData(): String {
-        return originalTestStep?.testData?.toString() ?: ""
+        return PropertyFormatUtils.toString(originalTestStep?.testData?.toString() ?: "", 0)
     }
 
     override fun getValidationDetails(): String {

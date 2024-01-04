@@ -19,6 +19,11 @@ open class IbmMqConsumableTestStep protected constructor(id: String?,
                       testData, validationDetails, scenarioStateUpdaters) {
 
 
+    override fun toString(): String {
+        return super.toString() + "consumeFrom = $consumeFrom\n" +
+                (respondTo?.let { "respondTo = $respondTo\n" } ?: "")
+    }
+
     class Builder : DefaultTestStep.Builder<IbmMqConsumableTestStep>() {
 
         private var consumeFrom: List<String>? = null

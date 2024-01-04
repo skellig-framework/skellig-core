@@ -4,6 +4,7 @@ import org.junit.Ignore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
@@ -449,5 +450,60 @@ class ValidationNodeTest {
             Pair("k1", "v3"),
             Pair("k2", "v4")
         )
+    }
+
+    @Nested
+    inner class ValidationNodeToStringTest {
+        @Test
+        @DisplayName("When toString is called Then verify the correct transformation")
+        fun testToString() {
+            val validator = ValidationNodes(
+                listOf(
+                    PairValidationNode(
+                        FunctionCallExpression("size", emptyArray()),
+                        CallChainExpression(listOf(StringValueExpression("2"), FunctionCallExpression("toInt", emptyArray()))),
+                        emptyMap(), valueExpressionContextFactory
+                    ),
+
+                    GroupedValidationNode(
+                        FunctionCallExpression("getValues", emptyArray()),
+                        ValidationNodes(
+                            listOf(
+                                ValidationNodes(
+                                    listOf(
+                                        PairValidationNode(AlphanumericValueExpression("k1"), StringValueExpression("v1"), emptyMap(), valueExpressionContextFactory),
+                                        PairValidationNode(AlphanumericValueExpression("k2"), StringValueExpression("v2"), emptyMap(), valueExpressionContextFactory),
+                                    )
+                                ),
+                                ValidationNodes(
+                                    listOf(
+                                        PairValidationNode(AlphanumericValueExpression("k1"), StringValueExpression("v3"), emptyMap(), valueExpressionContextFactory),
+                                        PairValidationNode(AlphanumericValueExpression("k2"), StringValueExpression("v4"), emptyMap(), valueExpressionContextFactory),
+                                    )
+                                )
+                            ), true
+                        ),
+                        emptyMap(), valueExpressionContextFactory
+                    ),
+                )
+            )
+
+            assertEquals("{\n" +
+                    "  size() = 2.toInt()\n" +
+                    "  getValues():   {\n" +
+                    "    {\n" +
+                    "      k1 = v1\n" +
+                    "      k2 = v2\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    {\n" +
+                    "      k1 = v3\n" +
+                    "      k2 = v4\n" +
+                    "    }\n" +
+                    "\n" +
+                    "  }\n" +
+                    "\n" +
+                    "}\n", validator.toString())
+        }
     }
 }

@@ -19,7 +19,12 @@ open class DatabaseTestStep protected constructor(id: String?,
                                                   val command: String?,
                                                   val table: String?,
                                                   val query: String?)
-    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails) {
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+
+    override fun toString(): String {
+        return super.toString() + (query?.let { "servers = $servers\nquery=$query" }
+            ?: "servers = $servers\ncommand = $command\ntable = $table\n")
+    }
 
     abstract class Builder<T : DatabaseTestStep> : DefaultTestStep.Builder<T>() {
 

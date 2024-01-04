@@ -18,6 +18,10 @@ abstract class BaseTcpTestStep protected constructor(id: String?,
                                                      val readBufferSize: Int)
     : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
 
+    override fun toString(): String {
+        return super.toString() + "readBufferSize = $readBufferSize\n"
+    }
+
     abstract class Builder<T : BaseTcpTestStep> : DefaultTestStep.Builder<T>() {
 
         protected var readBufferSize = 1024 * 1024

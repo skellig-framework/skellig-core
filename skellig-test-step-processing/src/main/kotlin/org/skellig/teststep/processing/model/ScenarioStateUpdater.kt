@@ -15,13 +15,13 @@ open class ScenarioStateUpdater(
         val contextForProperty = valueExpressionContextFactory.create(parameters)
         val contextForValue = valueExpressionContextFactory.create(result, parameters)
 
-        val actualEvaluated = property.evaluate(contextForProperty)
-        val expectedEvaluated = value?.evaluate(contextForValue)
+        val propertyEvaluated = property.evaluate(contextForProperty)
+        val valueEvaluated = value?.evaluate(contextForValue)
 
-        state.set(actualEvaluated?.toString(), expectedEvaluated)
+        state.set(propertyEvaluated?.toString(), valueEvaluated)
     }
 
-    fun toString(indent: Int): String {
-        return "${"\t".repeat(indent)}$property = $value"
+    override fun toString(): String {
+        return "$property = $value"
     }
 }

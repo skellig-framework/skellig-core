@@ -21,4 +21,8 @@ class GroupedTestStep(
      * at the point where it goes to its appropriate processor.
      */
     class TestStepRun(val testStepLazy: () -> TestStep, val passed: TestStepRun?, val failed: TestStepRun?)
+
+    override fun toString(): String {
+        return ""
+    }
 }
