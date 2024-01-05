@@ -24,6 +24,10 @@ class FeatureReportDetails(val name: String?,
         return totalPassedTestSteps
     }
 
+    fun isPassed(): Boolean {
+        return testScenarioReportDetails?.any { it.isPassed() } == true
+    }
+
     fun getTotalPassedPercentage(): Float {
         return getTotalPassedTestSteps().toFloat() / getTotalTestSteps() * 100
     }

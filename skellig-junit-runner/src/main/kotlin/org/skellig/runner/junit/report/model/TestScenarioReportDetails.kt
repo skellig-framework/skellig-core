@@ -13,11 +13,21 @@ class TestScenarioReportDetails(
         return testStepReportDetails?.any { it.isPassed() } ?: true
     }
 
+    fun getTotalTestSteps(): Int {
+        return testStepReportDetails?.size ?: 0
+    }
+
     fun getTotalFailedTestSteps(): Int {
         return (testStepReportDetails?.size ?: 0) - getTotalPassedTestSteps()
     }
 
     fun getScenarioDuration(): Long {
         return testStepReportDetails?.sumOf { it.duration } ?: 0
+    }
+
+    fun getTotalPassedPercentage(): Float {
+        return if (testStepReportDetails?.isNotEmpty() == true)
+            getTotalPassedTestSteps().toFloat() / testStepReportDetails.size * 100
+        else 0f
     }
 }
