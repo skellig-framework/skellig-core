@@ -1,12 +1,12 @@
 package org.skellig.runner.junit.report.model
 
-class TestScenarioReportDetails(val name: String?,
-                                val testStepReportDetails: List<TestStepReportDetails<*>>?) {
+class TestScenarioReportDetails(
+    val name: String?,
+    val testStepReportDetails: List<TestStepReportDetails<*>>?
+) {
 
     fun getTotalPassedTestSteps(): Int {
-        return testStepReportDetails
-                ?.filter { it.isPassed() }
-                ?.count() ?: 0
+        return testStepReportDetails?.count { it.isPassed() } ?: 0
     }
 
     fun isPassed(): Boolean {
@@ -14,6 +14,10 @@ class TestScenarioReportDetails(val name: String?,
     }
 
     fun getTotalFailedTestSteps(): Int {
-        return testStepReportDetails?.size ?: 0 - getTotalPassedTestSteps()
+        return (testStepReportDetails?.size ?: 0) - getTotalPassedTestSteps()
+    }
+
+    fun getScenarioDuration(): Long {
+        return testStepReportDetails?.sumOf { it.duration } ?: 0
     }
 }

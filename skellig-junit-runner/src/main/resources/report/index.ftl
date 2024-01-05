@@ -44,7 +44,10 @@
                                    aria-controls="testStepsPanel${i}"
                                    class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
                                     ${tsrd.name}
-                                    <i class="tim-icons icon-minimal-down"></i>
+                                    <div class="duration">
+                                        ${tsrd.scenarioDuration} ms
+                                        <i class="tim-icons icon-minimal-down"></i>
+                                    </div>
                                 </a>
                             </div>
 
@@ -61,7 +64,10 @@
                                                    aria-controls="testStepsPanel${si}"
                                                    class="collapsed <#if step.ignored>ignored-color<#elseif step.passed>passed-color<#else>failed-color</#if>">
                                                     ${step.name}
-                                                    <i class="tim-icons icon-minimal-down"></i>
+                                                    <div class="duration">
+                                                        ${step.duration} ms
+                                                        <i class="tim-icons icon-minimal-down"></i>
+                                                    </div>
                                                 </a>
                                             </div>
                                             <div id="testStepPanel${si}" class="collapse" role="tabpanel"

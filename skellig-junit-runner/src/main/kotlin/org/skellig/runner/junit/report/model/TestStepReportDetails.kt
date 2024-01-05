@@ -10,7 +10,8 @@ open class TestStepReportDetails<T>(
     val originalTestStep: T?,
     val result: Any?,
     val errorLog: String?,
-    val logRecords: List<String>?
+    val logRecords: List<String>?,
+    var duration: Long
 ) {
 
     fun isPassed(): Boolean {
@@ -42,6 +43,7 @@ open class TestStepReportDetails<T>(
         private var result: Any? = null
         private var errorLog: String? = null
         private var logRecords: List<String>? = null
+        private var duration: Long = 0
 
         fun withName(name: String?) = apply {
             this.name = name
@@ -63,11 +65,15 @@ open class TestStepReportDetails<T>(
             this.logRecords = logRecords
         }
 
+        fun withDuration(duration: Long) = apply {
+            this.duration = duration
+        }
+
         fun build(): TestStepReportDetails<*> {
             return when (originalTestStep) {
-                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog, logRecords)
-                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog, logRecords)
-                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog, logRecords)
+                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog, logRecords, duration)
+                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog, logRecords, duration)
+                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog, logRecords, duration)
             }
         }
     }
@@ -78,8 +84,9 @@ class DefaultTestStepReportDetails(
     originalTestStep: DefaultTestStep?,
     result: Any?,
     errorLog: String?,
-    logRecords: List<String>?
-) : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog, logRecords) {
+    logRecords: List<String>?,
+    duration: Long
+) : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog, logRecords, duration) {
 
     override fun getTestData(): String {
         return PropertyFormatUtils.toString(originalTestStep?.testData?.toString() ?: "", 0)
@@ -96,5 +103,6 @@ class GroupedTestStepReportDetails(
     originalTestStep: GroupedTestStep?,
     result: Any?,
     errorLog: String?,
-    logRecords: List<String>?
-) : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords)
+    logRecords: List<String>?,
+    duration: Long
+) : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords, duration)

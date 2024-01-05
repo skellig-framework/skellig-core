@@ -127,8 +127,17 @@ a, a:hover {
     text-transform: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    margin: 0 0 0 10px;
 }
 
 .icon-minimal-down::before {
     content: "\ea33";
+}
+
+.duration {
+    float: right;
+    position: relative;
+    top: 1px;
+    font-size: 18px;
+    color: #08cd95;
 }
