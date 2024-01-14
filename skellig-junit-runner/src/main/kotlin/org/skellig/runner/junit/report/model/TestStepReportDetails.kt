@@ -1,5 +1,6 @@
 package org.skellig.runner.junit.report.model
 
+import org.apache.commons.lang3.time.DurationFormatUtils
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.GroupedTestStep
 import org.skellig.teststep.processing.model.TestStep
@@ -25,6 +26,10 @@ open class TestStepReportDetails<T>(
     open fun getTestData(): String = ""
 
     open fun getValidationDetails(): String = ""
+
+    fun getDurationFormatted(): String {
+        return getFormattedDuration(duration)
+    }
 
     fun getProperties(): String {
         if (originalTestStep != null && originalTestStep.javaClass != TestStep::class.java && originalTestStep is TestStep) {
@@ -106,3 +111,11 @@ class GroupedTestStepReportDetails(
     logRecords: List<String>?,
     duration: Long
 ) : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords, duration)
+
+fun getFormattedDuration(duration: Long): String {
+    return if (duration > 60000) {
+        DurationFormatUtils.formatDuration(duration, "mm.ss.SSS") + " min."
+    } else if (duration >= 1000) {
+        DurationFormatUtils.formatDuration(duration, "ss.SSS") + " sec."
+    } else DurationFormatUtils.formatDuration(duration, "SSS") + " ms."
+}

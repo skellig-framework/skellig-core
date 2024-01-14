@@ -22,7 +22,12 @@
         <div class="card">
             <div class="card-header">
                 <h5 class="card-category">${featureTitle}</h5>
-                <h3 class="card-title">${feature.name}</h3>
+                <h3 class="card-title">
+                    ${feature.name}
+                    <div class="duration">
+                        ${feature.totalDuration}
+                    </div>
+                </h3>
                 <div class="test-step-progress">
                     <div class="test-step-progress-bar" role="progressbar"
                          style="width: ${feature.totalPassedPercentage}%"
@@ -44,7 +49,7 @@
                                class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
                                 ${tsrd.name}
                                 <div class="duration">
-                                    ${tsrd.scenarioDuration} ms
+                                    ${tsrd.scenarioDurationFormatted}
                                     <i class="tim-icons icon-minimal-down"></i>
                                 </div>
                             </a>
@@ -64,7 +69,7 @@
                                                class="collapsed <#if step.ignored>ignored-color<#elseif step.passed>passed-color<#else>failed-color</#if>">
                                                 ${step.name}
                                                 <div class="duration">
-                                                    ${step.duration} ms
+                                                    ${step.durationFormatted}
                                                     <i class="tim-icons icon-minimal-down"></i>
                                                 </div>
                                             </a>

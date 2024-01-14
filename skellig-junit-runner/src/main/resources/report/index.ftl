@@ -25,7 +25,11 @@
                     <h5 class="card-category">${featureTitle}</h5>
                     <a href="feature-reports/${frd.name}.html"
                        <#if frd.passed>passed-color<#else>failed-color</#if>>
-                        <h3 class="card-title">${frd.name}</h3>
+                        <h3 class="card-title">${frd.name}
+                            <div class="duration">
+                                ${frd.totalDuration}
+                            </div>
+                        </h3>
                     </a>
                     <div class="test-step-progress">
                         <div class="test-step-progress-bar" role="progressbar"

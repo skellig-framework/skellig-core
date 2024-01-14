@@ -25,6 +25,10 @@ class TestScenarioReportDetails(
         return testStepReportDetails?.sumOf { it.duration } ?: 0
     }
 
+    fun getScenarioDurationFormatted(): String {
+        return getFormattedDuration(testStepReportDetails?.sumOf { it.duration } ?: 0)
+    }
+
     fun getTotalPassedPercentage(): Float {
         return if (testStepReportDetails?.isNotEmpty() == true)
             getTotalPassedTestSteps().toFloat() / testStepReportDetails.size * 100
