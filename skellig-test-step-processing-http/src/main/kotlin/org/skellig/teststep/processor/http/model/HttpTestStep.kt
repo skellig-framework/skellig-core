@@ -4,6 +4,8 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.util.PropertyFormatUtils
+import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.createIndent
 
 class HttpTestStep(
     id: String?,
@@ -25,6 +27,18 @@ class HttpTestStep(
     val query: Map<String, String?>?,
     val form: Map<String, String?>?
 ) : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+
+    override fun toString(): String {
+        return super.toString() +
+                "services = $services\n" +
+                "url = $url\n" +
+                "method = $method\n" +
+                (username?.let { "username = $username\n" } ?: "") +
+                (password?.let { "password = $password\n" } ?: "") +
+                headers?.let { it.entries.joinToString("\n", "headers {\n", "\n}\n") { n -> "${createIndent(1)}$n" } } +
+                query?.let { it.entries.joinToString("\n", "query {\n", "\n}\n") { n -> "${createIndent(1)}$n" } } +
+                form?.let { it.entries.joinToString("\n", "form {\n", "\n}\n") { n -> "${createIndent(1)}$n" } }
+    }
 
     class Builder : DefaultTestStep.Builder<HttpTestStep>() {
 

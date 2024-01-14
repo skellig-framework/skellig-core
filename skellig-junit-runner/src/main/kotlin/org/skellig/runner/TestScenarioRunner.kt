@@ -97,6 +97,7 @@ open class TestScenarioRunner protected constructor(
             notifier.fireTestStarted(childDescription)
             testStepLogger.clear()
             try {
+                val startTime = System.currentTimeMillis()
                 val parameters = child.parameters ?: emptyMap()
                 val runResult = testStepRunner!!.run(child.name, parameters)
                 testStepRunResults!!.add(runResult)
@@ -107,7 +108,9 @@ open class TestScenarioRunner protected constructor(
                 // subscribe for result from test step. Usually needed for async test step
                 // however if it's sync, then the function will be called anyway.
                 runResult.subscribe { t, r, e ->
-                    testStepReportBuilder.withOriginalTestStep(t).withResult(r)
+                    testStepReportBuilder.withOriginalTestStep(t)
+                        .withResult(r)
+                        .withDuration((System.currentTimeMillis() - startTime))
                     if (e != null) {
                         /*
                           if test step is sync, then the thrown exception will be caught in runChild

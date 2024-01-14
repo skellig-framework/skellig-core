@@ -1,19 +1,18 @@
 package org.skellig.runner.junit.report.model
 
+import org.apache.commons.lang3.time.DurationFormatUtils
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.GroupedTestStep
 import org.skellig.teststep.processing.model.TestStep
-import java.beans.Introspector
-import java.beans.PropertyDescriptor
-import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
+import org.skellig.teststep.processing.util.PropertyFormatUtils
 
 open class TestStepReportDetails<T>(
     val name: String,
     val originalTestStep: T?,
     val result: Any?,
     val errorLog: String?,
-    val logRecords: List<String>?
+    val logRecords: List<String>?,
+    var duration: Long
 ) {
 
     fun isPassed(): Boolean {
@@ -28,43 +27,19 @@ open class TestStepReportDetails<T>(
 
     open fun getValidationDetails(): String = ""
 
+    fun getDurationFormatted(): String {
+        return getFormattedDuration(duration)
+    }
+
     fun getProperties(): String {
         if (originalTestStep != null && originalTestStep.javaClass != TestStep::class.java && originalTestStep is TestStep) {
-
-            val properties = getPropertyGettersOfTestStep(originalTestStep.javaClass)
-            return properties.entries
-                .filter { it.value != null }
-                .map { getPropertyWithValue(it) }
-                .joinToString("\n")
+            return originalTestStep.toString()
         }
         return ""
     }
 
     fun getResult(): String {
-        return result?.toString() ?: ""
-    }
-
-    private fun getPropertyWithValue(propertyGetterPair: Map.Entry<String, Method?>): String? {
-        return try {
-            propertyGetterPair.value?.invoke(originalTestStep)
-                ?.let { propertyGetterPair.key + ": " + it }
-                ?: ""
-        } catch (e: IllegalAccessException) {
-            e.message
-        } catch (e: InvocationTargetException) {
-            e.message
-        }
-    }
-
-    private fun getPropertyGettersOfTestStep(beanClass: Class<*>): Map<String, Method?> {
-        return beanClass.declaredFields
-            .map {
-                it.name to Introspector.getBeanInfo(beanClass).propertyDescriptors
-                    .filter { pd: PropertyDescriptor -> pd.readMethod != null && it.name == pd.name }
-                    .map { obj: PropertyDescriptor -> obj.readMethod }
-                    .firstOrNull()
-            }
-            .toMap()
+        return PropertyFormatUtils.toString(result, 0)
     }
 
     class Builder {
@@ -73,6 +48,7 @@ open class TestStepReportDetails<T>(
         private var result: Any? = null
         private var errorLog: String? = null
         private var logRecords: List<String>? = null
+        private var duration: Long = 0
 
         fun withName(name: String?) = apply {
             this.name = name
@@ -94,11 +70,15 @@ open class TestStepReportDetails<T>(
             this.logRecords = logRecords
         }
 
+        fun withDuration(duration: Long) = apply {
+            this.duration = duration
+        }
+
         fun build(): TestStepReportDetails<*> {
             return when (originalTestStep) {
-                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog, logRecords)
-                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog, logRecords)
-                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog, logRecords)
+                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog, logRecords, duration)
+                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog, logRecords, duration)
+                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog, logRecords, duration)
             }
         }
     }
@@ -109,11 +89,12 @@ class DefaultTestStepReportDetails(
     originalTestStep: DefaultTestStep?,
     result: Any?,
     errorLog: String?,
-    logRecords: List<String>?
-) : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog, logRecords) {
+    logRecords: List<String>?,
+    duration: Long
+) : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog, logRecords, duration) {
 
     override fun getTestData(): String {
-        return originalTestStep?.testData?.toString() ?: ""
+        return PropertyFormatUtils.toString(originalTestStep?.testData?.toString() ?: "", 0)
     }
 
     override fun getValidationDetails(): String {
@@ -127,5 +108,14 @@ class GroupedTestStepReportDetails(
     originalTestStep: GroupedTestStep?,
     result: Any?,
     errorLog: String?,
-    logRecords: List<String>?
-) : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords)
+    logRecords: List<String>?,
+    duration: Long
+) : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords, duration)
+
+fun getFormattedDuration(duration: Long): String {
+    return if (duration > 60000) {
+        DurationFormatUtils.formatDuration(duration, "mm.ss.SSS") + " min."
+    } else if (duration >= 1000) {
+        DurationFormatUtils.formatDuration(duration, "ss.SSS") + " sec."
+    } else DurationFormatUtils.formatDuration(duration, "SSS") + " ms."
+}

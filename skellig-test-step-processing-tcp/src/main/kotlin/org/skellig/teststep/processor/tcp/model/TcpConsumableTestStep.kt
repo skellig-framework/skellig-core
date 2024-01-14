@@ -18,6 +18,10 @@ open class TcpConsumableTestStep protected constructor(id: String?,
     : BaseTcpTestStep(id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, values,
                       testData, validationDetails, scenarioStateUpdaters, readBufferSize) {
 
+    override fun toString(): String {
+        return super.toString() + "consumeFrom = $consumeFrom\n" +
+                (respondTo?.let { "respondTo = $respondTo\n" } ?: "")
+    }
 
     class Builder : BaseTcpTestStep.Builder<TcpConsumableTestStep>() {
 

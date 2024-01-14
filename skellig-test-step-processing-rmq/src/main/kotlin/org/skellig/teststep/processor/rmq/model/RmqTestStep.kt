@@ -22,6 +22,12 @@ open class RmqTestStep protected constructor(id: String?,
     : BaseRmqTestStep(id, name!!, execution, timeout, delay, attempts,
                       values, testData, validationDetails, scenarioStateUpdaters, routingKey, properties) {
 
+    override fun toString(): String {
+        return super.toString() +
+                (sendTo?.let { "sendTo = $sendTo\n" } ?: "") +
+                (readFrom?.let { "readFrom = $readFrom\n" } ?: "") +
+                (respondTo?.let { "respondTo = $respondTo\n" } ?: "")
+    }
 
     class Builder : BaseRmqTestStep.Builder<RmqTestStep>() {
 

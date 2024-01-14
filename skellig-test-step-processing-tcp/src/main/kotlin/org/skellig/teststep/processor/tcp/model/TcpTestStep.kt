@@ -21,6 +21,13 @@ open class TcpTestStep protected constructor(
     readBufferSize: Int
 ) : BaseTcpTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, readBufferSize) {
 
+    override fun toString(): String {
+        return super.toString() +
+                (sendTo?.let { "sendTo = $sendTo\n" } ?: "") +
+                (readFrom?.let { "readFrom = $readFrom\n" } ?: "") +
+                (respondTo?.let { "respondTo = $respondTo\n" } ?: "")
+    }
+
     class Builder : BaseTcpTestStep.Builder<TcpTestStep>() {
 
         private var sendTo: Set<String>? = null

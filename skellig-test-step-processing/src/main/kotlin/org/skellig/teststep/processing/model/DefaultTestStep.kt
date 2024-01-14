@@ -1,5 +1,7 @@
 package org.skellig.teststep.processing.model
 
+import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStringCollection
+
 /**
  * A basic test step with common properties and validation details for a result.
  *
@@ -42,6 +44,16 @@ open class DefaultTestStep(
         }
     }
 
+    override fun toString(): String {
+        return (id?.let { "id = $id\n" } ?: "") + "name = $name\n" +
+                (if (execution == TestStepExecutionType.ASYNC) "execution = $execution\n" else "") +
+                (if (timeout != 0) "timeout = $timeout\n" else "") +
+                (if (delay != 0) "delay = $delay\n" else "") +
+                (if (attempts != 0) "attempts = $attempts\n" else "") +
+                (values?.let { toStringCollection(it.entries, "values {", "}", 0) } ?: "") +
+                (scenarioStateUpdaters?.let { toStringCollection(it, "state {", "}", 0) } ?: "")
+    }
+
     abstract class Builder<T>(
         protected var id: String? = null,
         protected var name: String? = null,
@@ -74,7 +86,6 @@ open class DefaultTestStep(
         fun withAttempts(attempts: Int) = apply { this.attempts = attempts }
 
         fun withScenarioStateUpdater(scenarioStateUpdaters: List<ScenarioStateUpdater>?) = apply { this.scenarioStateUpdaters = scenarioStateUpdaters }
-
         abstract fun build(): T
     }
 }

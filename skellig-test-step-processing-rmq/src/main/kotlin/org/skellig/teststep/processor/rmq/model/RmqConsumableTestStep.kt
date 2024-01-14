@@ -22,6 +22,10 @@ open class RmqConsumableTestStep protected constructor(
     testData, validationDetails, scenarioStateUpdaters, routingKey, properties
 ) {
 
+    override fun toString(): String {
+        return super.toString() + "consumeFrom = $consumeFrom\n" +
+                (respondTo?.let { "respondTo = $respondTo\n" } ?: "")
+    }
 
     class Builder : BaseRmqTestStep.Builder<RmqConsumableTestStep>() {
 

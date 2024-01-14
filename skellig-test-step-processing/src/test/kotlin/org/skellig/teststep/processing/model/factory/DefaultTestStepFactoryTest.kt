@@ -488,8 +488,8 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap())
 
         assertAll(
-            { assertEquals("a = \${amt}.toBigDecimal()", testStep.scenarioStateUpdaters!![0].toString(0)) },
-            { assertEquals("b = get(a) + 500", testStep.scenarioStateUpdaters!![1].toString(0)) },
+            { assertEquals("a = \${amt}.toBigDecimal()", testStep.scenarioStateUpdaters!![0].toString()) },
+            { assertEquals("b = get(a) + 500", testStep.scenarioStateUpdaters!![1].toString()) },
         )
     }
 }

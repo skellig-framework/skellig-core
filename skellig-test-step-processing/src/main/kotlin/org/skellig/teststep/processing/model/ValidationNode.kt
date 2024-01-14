@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.model
 
 import org.skellig.teststep.processing.exception.ValidationException
+import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.createIndent
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.*
 
@@ -9,9 +10,12 @@ interface ValidationNode {
 }
 
 internal abstract class BaseValidationNode : ValidationNode {
-    abstract fun toString(indent: Int): String
 
-    protected fun createIndent(indent: Int): String = "\t".repeat(indent)
+    override fun toString(): String {
+        return toString(0)
+    }
+
+    abstract fun toString(indent: Int): String
 
     protected fun createContext(
         valueExpression: ValueExpression?,
@@ -21,7 +25,8 @@ internal abstract class BaseValidationNode : ValidationNode {
     ): ValueExpressionContext {
         return if (valueExpression?.javaClass == AlphanumericValueExpression::class.java ||
             valueExpression?.javaClass == CallChainExpression::class.java ||
-            valueExpression?.javaClass == FunctionCallExpression::class.java)
+            valueExpression?.javaClass == FunctionCallExpression::class.java
+        )
             valueExpressionContextFactory.createForValidationAsCallChain(value, parameters)
         else valueExpressionContextFactory.createForValidation(value, parameters, true)
     }
@@ -35,8 +40,10 @@ internal abstract class BaseValidationNode : ValidationNode {
     }
 }
 
-internal open class ValidationNodes(val nodes: List<ValidationNode>,
-                                    private val isMatchPerItem: Boolean = false) : BaseValidationNode() {
+internal open class ValidationNodes(
+    val nodes: List<ValidationNode>,
+    private val isMatchPerItem: Boolean = false
+) : BaseValidationNode() {
 
     override fun validate(value: Any?) {
         if (isMatchPerItem && value is Collection<*>) {
@@ -56,9 +63,8 @@ internal open class ValidationNodes(val nodes: List<ValidationNode>,
     }
 
     override fun toString(indent: Int): String {
-        return nodes.joinToString("\n", "${createIndent(indent)}[", "${createIndent(indent)}]", transform = { n -> (n as BaseValidationNode).toString(indent + 1) })
+        return nodes.joinToString("\n", "${createIndent(indent)}{\n", "\n${createIndent(indent)}}\n", transform = { n -> (n as BaseValidationNode).toString(indent + 1) })
     }
-
 }
 
 internal class GroupedValidationNode(
@@ -74,7 +80,7 @@ internal class GroupedValidationNode(
     }
 
     override fun toString(indent: Int): String {
-        return "\n${createIndent(indent)}$actual: ${items.toString(indent + 1)}"
+        return "${createIndent(indent)}$actual: ${items.toString(indent)}"
     }
 }
 
@@ -132,6 +138,6 @@ internal class SingleValidationNode(
     }
 
     override fun toString(indent: Int): String {
-        return expected?.toString() ?: "null"
+        return "${createIndent(indent)}${expected?.toString() ?: "null"}"
     }
 }
