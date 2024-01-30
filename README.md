@@ -39,69 +39,69 @@ Feature: Booking events
 
 File bookings.sts
 ```java
-name('Add event with available seats (.+)') {
+name("Add event with available seats (.+)") {
     id = addEventTest
     protocol = rmq
-    sendTo ['\'event.changed\'']
+    sendTo ["event.changed"]
     properties { content_type = application/json }
 
-    variables {
+    values {
         // if parameter 'newEventCode' not provided, 
         // then use the standard function inc(event,5) to increment 5 digits every run for key 'event' 
         // and attach it to 'evt1_'
-        eventCode = ${newEventCode:evt1_inc(event,5)}
+        eventCode = ${newEventCode,evt1_inc(event,5)}
     }
 
     message {
         // convert data to json
         json {
             code = ${eventCode}
-            name = 'event 1'
+            name = "event 1"
             // use standard function toDateTime(...) which returns LocalDateTime object
-            date = toDateTime(01-01-2020 10:30:00) 
+            date = toDateTime("01-01-2020 10:30:00") 
             location = somewhere
             pricePerSeats [ ${1} ]  // set data from captured first parameter taken from test name
-            takenSeats [${takenSeats:}]
+            takenSeats [${takenSeats,}]
        }
     }
 }
 
-name('Book seats (.+) of the event\s*(.*)') {
-    url = '/booking/request'
-    http_method = POST
-    http_headers { Content-type = 'application/json'}
+name("Book seats (.+) of the event\s*(.*)") {
+    url = "/booking/request"
+    method = POST
+    headers { Content-type = "application/json"}
 
-    variables {
+    values {
         // set second parameter captured from the test name to 'eventCode' var
         // otherwise get 'eventCode' from test with id 'addEventTest'
-        eventCode = '${2:${get(addEventTest).variables.eventCode}}'
+        eventCode = ${2,${get(addEventTest).values.eventCode}}
      }
 
     payload {
         json {
-            eventCode = ${eventCode}  // get 'eventCode' from the variables
+            eventCode = ${eventCode}  // get 'eventCode' from the values
             seats = listOf(${1})  // just another way of setting list, instead of [...]
         }
     }
 
     validate {
-        statusCode = int(200)  // convert to int as by default all values are String
+        statusCode = "200".toInt()  // convert to int
         // extract body from the response and convert to string, then validate some fields.
         // Because it's json, we extract these fields by jsonPath'
-        'body.toString()' {
+        body.toString() {
                jsonPath(eventCode) = ${eventCode}
                jsonPath(success) = true
          }
     }
 }
 
-name('Seats (.+) have been booked successfully for the event') {
+name("Seats (.+) have been booked successfully for the event") {
      servers [skellig-db]
      table = event
      command = select
 
      where {
-        code = get(addEventTest).variables.eventCode
+        code = get(addEventTest).values.eventCode
      }
 
     validate {
@@ -117,13 +117,12 @@ SkelligDemoTestRunner class
 @SkelligOptions(
         features = {"tests/"},
         testSteps = {"tests", "org.skellig.demo"},
-        context = SkelligDemoContext.class,
         config = "skellig-demo-local.conf")
 public class SkelligDemoTestRunner {
 }
 ```
 For more information please refer [this guide](https://github.com/skellig-framework/skellig-core/wiki/Skellig-Quickstart-Guide)
 
-Or for complete source code of the [demo project](https://github.com/skellig-framework/skellig-demo)
+Or for complete source code of the [demo project](https://github.com/skellig-framework/skellig-demo) with the latest updates
 
 IntelliJ plugin [page](https://plugins.jetbrains.com/plugin/20299-skellig-framework)
