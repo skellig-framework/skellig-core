@@ -17,9 +17,9 @@ class HttpTestStepFactory(
     companion object {
         private val SERVICE_KEYWORD = fromProperty("services")
         private val URL_KEYWORD = fromProperty("url")
-        private val METHOD_KEYWORD = fromProperty("http_method")
-        private val HEADERS_KEYWORD = fromProperty("http_headers")
-        private val QUERY_KEYWORD = fromProperty("http_query")
+        private val METHOD_KEYWORD = fromProperty("method")
+        private val HEADERS_KEYWORD = fromProperty("headers")
+        private val QUERY_KEYWORD = fromProperty("query")
         private val FORM_KEYWORD = fromProperty("form")
         private val USER_KEYWORD = fromProperty("username")
         private val PASSWORD_KEYWORD = fromProperty("password")
