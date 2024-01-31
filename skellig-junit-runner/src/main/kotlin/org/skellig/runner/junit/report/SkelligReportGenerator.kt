@@ -50,6 +50,7 @@ class SkelligReportGenerator : ReportGenerator {
         val dataModel = mutableMapOf<String, Any?>()
         dataModel["feature"] = featureReportDetails
         dataModel["featureTitle"] = "Feature"
+        dataModel["parametersTitle"] = "Parameters"
         dataModel["propertiesTitle"] = "Properties"
         dataModel["testDataTitle"] = "Test data"
         dataModel["validationTitle"] = "Expected response"

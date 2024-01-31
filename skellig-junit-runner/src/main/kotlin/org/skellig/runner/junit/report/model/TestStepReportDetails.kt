@@ -8,6 +8,7 @@ import org.skellig.teststep.processing.util.PropertyFormatUtils
 
 open class TestStepReportDetails<T>(
     val name: String,
+    val parameters: Map<String, Any?>?,
     val originalTestStep: T?,
     val result: Any?,
     val errorLog: String?,
@@ -31,6 +32,10 @@ open class TestStepReportDetails<T>(
         return getFormattedDuration(duration)
     }
 
+    fun getParameters(): String {
+        return parameters?.map { "${it.key} = ${it.value}" }?.joinToString("\n") ?: ""
+    }
+
     fun getProperties(): String {
         if (originalTestStep != null && originalTestStep.javaClass != TestStep::class.java && originalTestStep is TestStep) {
             return originalTestStep.toString()
@@ -49,6 +54,7 @@ open class TestStepReportDetails<T>(
         private var errorLog: String? = null
         private var logRecords: List<String>? = null
         private var duration: Long = 0
+        private var parameters: Map<String, Any?>? = null
 
         fun withName(name: String?) = apply {
             this.name = name
@@ -74,11 +80,15 @@ open class TestStepReportDetails<T>(
             this.duration = duration
         }
 
+        fun withParameters(parameters: Map<String, Any?>?) = apply {
+            this.parameters = parameters
+        }
+
         fun build(): TestStepReportDetails<*> {
             return when (originalTestStep) {
-                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, originalTestStep as DefaultTestStep, result, errorLog, logRecords, duration)
-                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, originalTestStep as GroupedTestStep, result, errorLog, logRecords, duration)
-                else -> TestStepReportDetails(name!!, originalTestStep, result, errorLog, logRecords, duration)
+                is DefaultTestStep -> DefaultTestStepReportDetails(name!!, parameters, originalTestStep as DefaultTestStep, result, errorLog, logRecords, duration)
+                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, parameters, originalTestStep as GroupedTestStep, result, errorLog, logRecords, duration)
+                else -> TestStepReportDetails(name!!, parameters, originalTestStep, result, errorLog, logRecords, duration)
             }
         }
     }
@@ -86,12 +96,13 @@ open class TestStepReportDetails<T>(
 
 class DefaultTestStepReportDetails(
     name: String,
+    parameters: Map<String, Any?>?,
     originalTestStep: DefaultTestStep?,
     result: Any?,
     errorLog: String?,
     logRecords: List<String>?,
     duration: Long
-) : TestStepReportDetails<DefaultTestStep>(name, originalTestStep, result, errorLog, logRecords, duration) {
+) : TestStepReportDetails<DefaultTestStep>(name, parameters, originalTestStep, result, errorLog, logRecords, duration) {
 
     override fun getTestData(): String {
         return PropertyFormatUtils.toString(originalTestStep?.testData?.toString() ?: "", 0)
@@ -105,12 +116,13 @@ class DefaultTestStepReportDetails(
 
 class GroupedTestStepReportDetails(
     name: String,
+    parameters: Map<String, Any?>?,
     originalTestStep: GroupedTestStep?,
     result: Any?,
     errorLog: String?,
     logRecords: List<String>?,
     duration: Long
-) : TestStepReportDetails<GroupedTestStep>(name, originalTestStep, result, errorLog, logRecords, duration)
+) : TestStepReportDetails<GroupedTestStep>(name, parameters, originalTestStep, result, errorLog, logRecords, duration)
 
 fun getFormattedDuration(duration: Long): String {
     return if (duration > 60000) {

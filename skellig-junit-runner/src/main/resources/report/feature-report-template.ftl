@@ -50,7 +50,6 @@
                                 ${tsrd.name}
                                 <div class="duration">
                                     ${tsrd.scenarioDurationFormatted}
-                                    <i class="tim-icons icon-minimal-down"></i>
                                 </div>
                             </a>
                         </div>
@@ -70,12 +69,18 @@
                                                 ${step.name}
                                                 <div class="duration">
                                                     ${step.durationFormatted}
-                                                    <i class="tim-icons icon-minimal-down"></i>
                                                 </div>
                                             </a>
                                         </div>
                                         <div id="testStepPanel${si}" class="collapse" role="tabpanel"
                                              aria-labelledby="testStepHeader${si}">
+                                            <#assign parameters = step.parameters?html?trim />
+                                            <#if parameters?? && parameters?has_content>
+                                                <div class="medium-text-panel">
+                                                    ${parametersTitle}
+                                                </div>
+                                                <pre class="small-text-panel">${parameters?html?trim}</pre>
+                                            </#if>
                                             <#assign testStepDetails = step.properties?html?trim />
                                             <#if testStepDetails?? && testStepDetails?has_content>
                                                 <div class="medium-text-panel">
@@ -114,7 +119,6 @@
                                                        aria-controls="logPanel${si}"
                                                        class="collapsed passed-color">
                                                         ${logTitle}
-                                                        <i class="tim-icons icon-minimal-down"></i>
                                                     </a>
                                                 </div>
                                                 <div class="small-text-panel">
