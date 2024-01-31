@@ -15,7 +15,7 @@ class TestStepDefs : SkelligTestContextAware {
 
     private var context: SkelligTestContext? = null
 
-    @TestStep(name = "Log (.*)", id = "log1")
+    @TestStep(name = "Log (.+)", id = "log1")
     fun logResult(value: String?, parameters: Map<String, String?>): String {
         Assertions.assertNotNull(value)
         Assertions.assertEquals(1, parameters.size)
@@ -45,7 +45,7 @@ class TestStepDefs : SkelligTestContextAware {
         Assertions.assertEquals(size!!.toInt(), parameters.size)
     }
 
-    @TestStep(name = "Run (.+) with (.*)\\s*parameters")
+    @TestStep("Run (.+) with (.*)\\s*parameters")
     fun testTestStepWithManyParameters(value: String?, size: String?, notSupplied: Any?, parameters: Map<String, String?>) {
         Assertions.assertNull(notSupplied)
         Assertions.assertNotNull(value)

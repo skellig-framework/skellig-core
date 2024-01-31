@@ -89,7 +89,10 @@ open class TestScenarioRunner protected constructor(
 
     override fun runChild(child: TestStep, notifier: RunNotifier) {
         val childDescription = describeChild(child)
-        val testStepReportBuilder = TestStepReportDetails.Builder().withName(child.name)
+        val testStepReportBuilder =
+            TestStepReportDetails.Builder()
+                .withName(child.name)
+                .withParameters(child.parameters)
         if (isChildFailed) {
             notifier.fireTestIgnored(childDescription)
             testStepsDataReport.add(testStepReportBuilder)
