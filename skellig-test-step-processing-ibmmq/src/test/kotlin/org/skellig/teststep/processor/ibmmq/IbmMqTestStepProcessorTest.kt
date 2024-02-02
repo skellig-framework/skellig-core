@@ -1,8 +1,8 @@
 package org.skellig.teststep.processor.ibmmq
 
-import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.*
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.kotlin.*
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.processor.TestStepProcessor

@@ -13,7 +13,7 @@ class CassandraRequestExecutor(cassandraDetails: CassandraDetails) : DatabaseReq
     init {
         val sessionBuilder = CqlSession.builder().withLocalDatacenter(cassandraDetails.datacenter ?: "datacenter1").addContactPoints(cassandraDetails.nodes)
         cassandraDetails.userName?.let {
-            sessionBuilder.withAuthCredentials(cassandraDetails.userName, cassandraDetails.password ?: "")
+            sessionBuilder.withAuthCredentials(it, cassandraDetails.password ?: "")
         }
         session = sessionBuilder.build();
         factory = CassandraRequestExecutorFactory(session)

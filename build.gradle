@@ -27,13 +27,13 @@ nexusPublishing {
 ext {
     group_id = 'org.skelligframework'
     version = '2.1.1-RC'
-    mockitoVersion = '4.0.0'
-    junitApiVersion = '5.8.1'
-    junitPlatformVersion = '1.2.0'
-    mockitoJunitVersion = '2.18.0'
+    mockitoVersion = '5.10.0'
+    junitApiVersion = '5.10.1'
+    junitPlatformVersion = '1.10.1'
     typesafeConfigVersion = '1.4.3'
-    slf4jLogVersion = '2.0.7'
-    kotlinVersion = '1.5.0'
+    slf4jLogVersion = '2.0.11'
+    kotlinVersion = '1.9.22'
+    ktMockitoVersion = '5.2.1'
 }
 
 allprojects {
@@ -155,31 +155,35 @@ subprojects {
         options.encoding = 'UTF-8'
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+
 
     dependencyManagement {
         dependencies {
             dependency group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jLogVersion}"
             dependency group: 'org.slf4j', name: 'slf4j-reload4j', version: "${slf4jLogVersion}"
-            dependency group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.20.0'
+            dependency group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.1'
             dependency group: 'com.typesafe', name: 'config', version: "${typesafeConfigVersion}"
-            dependency group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-            dependency group: 'org.freemarker', name: 'freemarker', version: "2.3.30"
+            dependency group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
+            dependency group: 'org.freemarker', name: 'freemarker', version: "2.3.32"
 
-            dependency group: 'org.mockito', name: 'mockito-core', version: "${mockitoVersion}"
+            dependency group: 'org.mockito.kotlin', name: 'mockito-kotlin', version: "${ktMockitoVersion}"
             dependency group: 'com.nhaarman', name: 'mockito-kotlin', version: '1.6.0'
-            dependency group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin', version: '2.2.0'
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "${junitApiVersion}"
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitApiVersion}"
             dependency group: 'org.junit.platform', name: 'junit-platform-runner', version: "${junitPlatformVersion}"
             dependency group: 'org.junit.platform', name: 'junit-platform-launcher', version: "${junitPlatformVersion}"
-            dependency group: 'org.mockito', name: 'mockito-junit-jupiter', version: "${mockitoJunitVersion}"
+            dependency group: 'org.mockito', name: 'mockito-junit-jupiter', version: "${mockitoVersion}"
             dependency group: 'org.jetbrains', name: 'kotlin:kotlin-reflect', version: "${kotlinVersion}"
+            dependency group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.16.1'
+            dependency group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.16.1'
         }
     }
 
     java {
+
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
         withSourcesJar()
         withJavadocJar()
     }

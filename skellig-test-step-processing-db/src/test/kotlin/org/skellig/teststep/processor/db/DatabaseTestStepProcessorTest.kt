@@ -1,13 +1,12 @@
 package org.skellig.teststep.processor.db
 
-import com.nhaarman.mockitokotlin2.argThat
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
@@ -31,7 +30,7 @@ class DatabaseTestStepProcessorTest {
                 Pair("srv2", dbRequestExecutor2))
 
         databaseTestStepProcessor = object : DatabaseTestStepProcessor<DatabaseRequestExecutor, TestDatabaseTestStep>(
-                dbServers, mock(TestScenarioState::class.java)
+                dbServers, mock<TestScenarioState>()
         ) {
             override fun getTestStepClass(): Class<*> = TestDatabaseTestStep::class.java
         }

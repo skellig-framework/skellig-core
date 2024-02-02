@@ -1,10 +1,10 @@
 package org.skellig.teststep.processor.http
 
-import com.nhaarman.mockitokotlin2.anyOrNull
-import com.nhaarman.mockitokotlin2.argThat
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.mock
 import org.junit.jupiter.api.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processor.http.model.HttpResponse
 import org.skellig.teststep.processor.http.model.HttpTestStep
@@ -41,7 +41,7 @@ class HttpTestStepProcessorTest {
                 .build()
 
             val response1 = HttpResponse.Builder().build()
-            whenever(httpChannel.send(argThat { r -> r.url == "/a/b/c" })).thenReturn(response1)
+            whenever(httpChannel.send(argThat { r -> r!!.url == "/a/b/c" })).thenReturn(response1)
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
@@ -62,7 +62,7 @@ class HttpTestStepProcessorTest {
                 .withName("n1")
                 .build()
 
-            whenever(httpChannel.send(anyOrNull())).thenReturn(HttpResponse.Builder().build())
+            whenever(httpChannel.send(any())).thenReturn(HttpResponse.Builder().build())
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
@@ -99,8 +99,8 @@ class HttpTestStepProcessorTest {
             val response1 = HttpResponse.Builder().build()
             val response2 = HttpResponse.Builder().build()
 
-            whenever(httpChannel.send(anyOrNull())).thenReturn(response1)
-            whenever(httpChannel2.send(anyOrNull())).thenReturn(response2)
+            whenever(httpChannel.send(any())).thenReturn(response1)
+            whenever(httpChannel2.send(any())).thenReturn(response2)
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
@@ -122,8 +122,8 @@ class HttpTestStepProcessorTest {
                 .withName("n1")
                 .build()
 
-            whenever(httpChannel.send(anyOrNull())).thenReturn(HttpResponse.Builder().build())
-            whenever(httpChannel2.send(anyOrNull())).thenThrow(IllegalArgumentException("Failed to send request"))
+            whenever(httpChannel.send(any())).thenReturn(HttpResponse.Builder().build())
+            whenever(httpChannel2.send(any())).thenThrow(IllegalArgumentException("Failed to send request"))
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)

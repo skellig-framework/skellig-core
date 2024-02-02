@@ -1,10 +1,10 @@
 package org.skellig.runner
 
-import com.nhaarman.mockitokotlin2.argThat
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Test
 import org.junit.runner.notification.RunNotifier
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.mock
+import org.mockito.Mockito.verify
 import org.skellig.feature.Feature
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
