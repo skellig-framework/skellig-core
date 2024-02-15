@@ -46,7 +46,7 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
             val msg = channel!!.basicGet(rmqDetails.queue.name, true)
             if (msg != null) {
                 response = msg.body
-                LOGGER.debug("Received message from RMQ '$rmqDetails': $response")
+                LOGGER.debug("Received message from RMQ '{}': {}", rmqDetails, response)
 
                 acknowledgeResponse?.let { sendResponse(msg.props, it) }
                     ?: channel!!.basicAck(msg.envelope.deliveryTag, true)
@@ -135,7 +135,7 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
             channel!!.close()
             conn!!.close()
         } catch (e: Exception) {
-            LOGGER.error("Could not safely close RMQ channel '$rmqDetails'", e)
+            LOGGER.warn("Could not manually close RMQ channel '$rmqDetails'. Reason: ${e.message}")
         }
     }
 }

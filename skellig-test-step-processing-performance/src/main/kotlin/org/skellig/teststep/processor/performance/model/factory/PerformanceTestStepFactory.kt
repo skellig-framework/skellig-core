@@ -7,9 +7,8 @@ import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.performance.model.PerformanceTestStep
-import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
-import org.skellig.teststep.reader.value.expression.MapValueExpression
-import org.skellig.teststep.reader.value.expression.ValueExpression
+import org.skellig.teststep.reader.value.expression.*
+import java.math.BigDecimal
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -30,13 +29,13 @@ class PerformanceTestStepFactory(
     override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): PerformanceTestStep {
         val rps = getRps(rawTestStep, parameters)
         val timeToRun = getTimeToRun(rawTestStep, parameters)
-        val before = rawTestStep[BEFORE] as List<*>?
-        val after = rawTestStep[AFTER] as List<*>?
-        val run = rawTestStep[RUN] as List<*>
+        val before = rawTestStep[BEFORE] as ListValueExpression?
+        val after = rawTestStep[AFTER] as ListValueExpression?
+        val run = rawTestStep[RUN] as ListValueExpression
 
-        val beforeList = toListOfTestStepsToRun(before, testStepName, parameters, BEFORE)
-        val afterList = toListOfTestStepsToRun(after, testStepName, parameters, AFTER)
-        val runList = toListOfTestStepsToRun(run, testStepName, parameters, RUN)
+        val beforeList = toListOfTestStepsToRun(before?.value, testStepName, parameters, BEFORE)
+        val afterList = toListOfTestStepsToRun(after?.value, testStepName, parameters, AFTER)
+        val runList = toListOfTestStepsToRun(run.value, testStepName, parameters, RUN)
 
         return PerformanceTestStep(testStepName, rps, timeToRun, beforeList, afterList, runList)
     }
@@ -50,7 +49,7 @@ class PerformanceTestStepFactory(
             rawListOfTestSteps.map {
                 when (it) {
                     is MapValueExpression -> createAsTestStepDelegate(getName(it.value), parameters)
-                    is String -> createAsTestStepDelegate(it, emptyMap())
+                    is StringValueExpression -> createAsTestStepDelegate(it.toString(), emptyMap())
                     else -> throw TestStepCreationException(
                         "Invalid data type of '${propertyName}' in test step '${testStepName}'. " +
                                 "Must have a list of test steps to run with parameters or without"
@@ -61,7 +60,7 @@ class PerformanceTestStepFactory(
 
     private fun getRps(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): Int {
         val rps = rawTestStep[RPS]
-        return convertValue<String>(rps, parameters)?.toInt()
+        return convertValue<BigDecimal>(rps, parameters)?.toInt()
             ?: error("Invalid RPS value '$rps' for the test '${getName(rawTestStep)}'. The value must be Int")
     }
 
