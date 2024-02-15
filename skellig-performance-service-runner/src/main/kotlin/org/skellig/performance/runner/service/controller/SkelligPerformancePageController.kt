@@ -2,6 +2,7 @@ package org.skellig.performance.runner.service.controller
 
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ListValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.skellig.teststep.runner.context.SkelligTestContext
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +20,7 @@ import java.util.regex.Pattern
 class SkelligPerformancePageController {
 
     companion object {
-        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_]+)(\\s*:\\s*(.+))?}")
+        private val PARAMETER_REGEX = Pattern.compile("\\$\\{([\\w-_]+)(\\s*,\\s*(.+))?}")
         private val RPS = AlphanumericValueExpression("rps")
         private val TIME_TO_RUN = AlphanumericValueExpression("timeToRun")
         private val BEFORE = AlphanumericValueExpression("before")
@@ -90,13 +91,13 @@ class SkelligPerformancePageController {
     private fun findAllParameters(rawTestStep: Map<ValueExpression, ValueExpression?>): Collection<Parameter> {
         val rawTestSteps = mutableListOf<String>()
         val testStepRegistry = skelligTestContext!!.getTestStepRegistry()
-        (rawTestStep[BEFORE] as List<*>?)?.forEach {
+        (rawTestStep[BEFORE] as ListValueExpression?)?.value?.forEach {
             rawTestSteps.add(it.toString())
         }
-        (rawTestStep[AFTER] as List<*>?)?.forEach {
+        (rawTestStep[AFTER] as ListValueExpression?)?.value?.forEach {
             rawTestSteps.add(it.toString())
         }
-        (rawTestStep[RUN] as List<*>?)?.forEach {
+        (rawTestStep[RUN] as ListValueExpression?)?.value?.forEach {
             rawTestSteps.add(it.toString())
         }
         return rawTestSteps.flatMap {
