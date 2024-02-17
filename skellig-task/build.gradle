@@ -10,7 +10,7 @@ ext.set("project_name", 'skellig-task')
 ext.set("project_description", 'Utility component of Skellig Framework providing static methods for running tasks in coroutines or threads')
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0-RC")
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core'
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'

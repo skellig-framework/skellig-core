@@ -1,67 +1,52 @@
 package org.skellig.teststep.processor.http
 
-import org.apache.http.HttpEntityEnclosingRequest
-import org.apache.http.NameValuePair
-import org.apache.http.client.config.RequestConfig
-import org.apache.http.client.entity.UrlEncodedFormEntity
-import org.apache.http.client.methods.*
-import org.apache.http.client.utils.URLEncodedUtils
-import org.apache.http.entity.StringEntity
-import org.apache.http.message.BasicNameValuePair
-import org.skellig.teststep.processing.exception.TestStepProcessingException
+import okhttp3.Credentials
+import okhttp3.FormBody
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.skellig.teststep.processor.http.model.HttpMethodName
 import org.skellig.teststep.processor.http.model.HttpRequestDetails
-import java.io.UnsupportedEncodingException
-import java.nio.charset.StandardCharsets
+
 
 class HttpRequestFactory(private val baseUrl: String?) {
 
-    fun createRequest(httpRequestDetails: HttpRequestDetails): HttpUriRequest {
-        val request: HttpRequestBase
-        try {
-            request = createHttpRequest(httpRequestDetails, baseUrl + createUrl(httpRequestDetails))
-            request.config = RequestConfig.custom()
-                    .setSocketTimeout(httpRequestDetails.timeout)
-                    .setConnectTimeout(httpRequestDetails.timeout)
-                    .setConnectionRequestTimeout(httpRequestDetails.timeout)
-                    .build()
-            httpRequestDetails.headers.forEach { request.addHeader(it.key, it.value) }
-        } catch (e: UnsupportedEncodingException) {
-            throw TestStepProcessingException(e.message)
+    fun createRequest(httpRequestDetails: HttpRequestDetails): Request {
+        val builder = Request.Builder()
+            .url(createUrl(httpRequestDetails))
+            .method(httpRequestDetails.verb.toString(), getRequestBody(httpRequestDetails))
+
+        if (httpRequestDetails.formParams.isNotEmpty()) {
+            val formBody = FormBody.Builder()
+            httpRequestDetails.formParams.forEach { formBody.add(it.key, it.value ?: "") }
+            builder.post(formBody.build())
         }
-        return request
+
+        httpRequestDetails.username?.let {
+            builder.header("Authorization", Credentials.basic(httpRequestDetails.username, httpRequestDetails.password ?: ""))
+        }
+        httpRequestDetails.headers.forEach { builder.header(it.key, it.value ?: "") }
+
+        return builder.build()
     }
 
-    @Throws(UnsupportedEncodingException::class)
-    private fun createHttpRequest(httpRequestDetails: HttpRequestDetails, url: String): HttpRequestBase {
-        return when (httpRequestDetails.verb) {
-            HttpMethodName.GET -> HttpGet(url)
-            HttpMethodName.DELETE -> HttpDelete(url)
-            HttpMethodName.POST -> createRequestWithEntity(httpRequestDetails, HttpPost(url))
-            HttpMethodName.PUT -> createRequestWithEntity(httpRequestDetails, HttpPut(url))
-        }
+    private fun getRequestBody(httpRequestDetails: HttpRequestDetails): RequestBody? {
+        val mediaType = (httpRequestDetails.headers["Content-Type"] ?: "application/json").toMediaType()
+        val requestBody = httpRequestDetails.body?.toRequestBody(mediaType)
+        return if (httpRequestDetails.verb == HttpMethodName.POST) requestBody ?: "".toRequestBody(mediaType)
+        else requestBody
     }
 
     private fun createUrl(httpRequest: HttpRequestDetails): String {
-        return if (httpRequest.queryParams.isEmpty()) {
-            httpRequest.url
-        } else {
-            val parameters = httpRequest.queryParams.entries
-                    .map { BasicNameValuePair(it.key, it.value) }
-                    .toList()
-            httpRequest.url + "?" + URLEncodedUtils.format(parameters, StandardCharsets.UTF_8)
-        }
-    }
+        val urlBuilder = (baseUrl + httpRequest.url).toHttpUrl().newBuilder()
 
-    @Throws(UnsupportedEncodingException::class)
-    private fun createRequestWithEntity(httpRequestDetails: HttpRequestDetails, request: HttpEntityEnclosingRequest): HttpRequestBase {
-        if (httpRequestDetails.body != null) {
-            request.entity = StringEntity(httpRequestDetails.body)
-        } else if (httpRequestDetails.formParams.isNotEmpty()) {
-            val params = mutableListOf<NameValuePair>()
-            httpRequestDetails.formParams.forEach { params.add(BasicNameValuePair(it.key, it.value)) }
-            request.entity = UrlEncodedFormEntity(params)
+        return if (httpRequest.queryParams.isEmpty()) {
+            urlBuilder.build().toString()
+        } else {
+            httpRequest.queryParams.entries.forEach { urlBuilder.addQueryParameter(it.key, it.value) }
+            return urlBuilder.build().toString()
         }
-        return request as HttpRequestBase
     }
 }

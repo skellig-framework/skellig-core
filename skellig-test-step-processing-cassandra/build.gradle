@@ -10,7 +10,7 @@ ext.set("project_name", 'skellig-test-step-processing-cassandra')
 ext.set("project_description", 'Processing functionality for Cassandra-based Skellig Test Step')
 
 dependencies {
-    implementation group: 'com.datastax.oss', name: 'java-driver-core', version: '4.13.0'
+    implementation group: 'com.datastax.oss', name: 'java-driver-core', version: '4.17.0'
 
     api project(':skellig-test-step-processing-db')
 
@@ -20,7 +20,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 
-    testImplementation 'org.testcontainers:testcontainers:1.15.0'
-    testImplementation "org.testcontainers:junit-jupiter:1.15.0"
-    testImplementation "org.testcontainers:cassandra:1.15.0"
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation "org.testcontainers:junit-jupiter"
+    testImplementation "org.testcontainers:cassandra:1.19.4"
 }

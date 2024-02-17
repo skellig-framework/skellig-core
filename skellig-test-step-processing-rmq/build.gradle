@@ -13,7 +13,7 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api'
     implementation group: 'com.typesafe', name: 'config'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
-    implementation 'com.rabbitmq:amqp-client:3.6.6'
+    implementation 'com.rabbitmq:amqp-client:5.20.0'
 
     api project(':skellig-test-step-processing')
 
@@ -22,7 +22,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 
-    testImplementation 'org.testcontainers:testcontainers:1.15.0'
-    testImplementation "org.testcontainers:junit-jupiter:1.15.0"
-    testImplementation "org.testcontainers:rabbitmq:1.15.0"
+    testImplementation group: 'org.testcontainers', name: 'testcontainers'
+    testImplementation group: 'org.testcontainers', name: 'junit-jupiter'
+    testImplementation group: 'org.testcontainers', name: 'postgresql'
 }

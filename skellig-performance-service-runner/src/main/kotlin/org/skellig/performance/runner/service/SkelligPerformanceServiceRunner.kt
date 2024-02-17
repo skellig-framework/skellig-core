@@ -1,10 +1,7 @@
 package org.skellig.performance.runner.service
 
-import io.prometheus.client.exporter.MetricsServlet
 import org.skellig.teststep.runner.context.SkelligTestContext
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.web.servlet.ServletRegistrationBean
 import org.springframework.context.annotation.Bean
 
 
@@ -38,8 +35,4 @@ abstract class SkelligPerformanceServiceRunner {
         return getConfigName(getConfigFileName())
     }
 
-    @Bean
-    open fun servletRegistrationBean(): ServletRegistrationBean<MetricsServlet> {
-        return ServletRegistrationBean(MetricsServlet(), true, "/metrics")
-    }
 }

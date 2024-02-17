@@ -67,7 +67,7 @@ class DefaultSshClient private constructor(private val host: String,
 
     @Throws(IOException::class)
     private fun createAndConnectSshClient() {
-        addHostKeyVerifier { _, _, _ -> true }
+        addHostKeyVerifier("")
         connect(host, port)
 
         privateSshKeyPath?.let {
