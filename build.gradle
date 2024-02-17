@@ -28,7 +28,7 @@ nexusPublishing {
 
 ext {
     group_id = 'org.skelligframework'
-    version = '2.1.1'
+    projectVersion = '2.1.1'
     mockitoVersion = '5.10.0'
     junitApiVersion = '5.10.1'
     junitPlatformVersion = '1.10.1'
@@ -49,7 +49,7 @@ allprojects {
     apply plugin: 'jacoco'
     apply plugin: 'maven-publish'
     group 'org.skelligframework'
-    version "${version}"
+    version "${projectVersion}"
 
     repositories {
         mavenLocal()
@@ -64,7 +64,7 @@ subprojects {
     apply plugin: 'signing'
     apply plugin: 'io.spring.dependency-management'
 
-    version = "${version}"
+    version = "${projectVersion}"
 
     ext {
         project_name = 'Skellig Framework'
@@ -115,7 +115,7 @@ subprojects {
 
                 release(MavenPublication) {
                     groupId = 'org.skelligframework'
-                    version = "${version}"
+                    version = "${projectVersion}"
                     afterEvaluate {
                         artifactId = jar.baseName
                     }
