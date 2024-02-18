@@ -1,8 +1,8 @@
 package org.skellig.runner.tagextractor
 
-import org.skellig.feature.TestPreRequisites
+import org.skellig.feature.metadata.TestMetadata
 
 interface TagExtractor {
 
-    fun <T> extract(tagClass: Class<T>, testPreRequisites: Collection<TestPreRequisites<*>>): T?
+    fun <T> extract(tagClass: Class<T>, testMetadata: Collection<TestMetadata<*>>): T?
 }

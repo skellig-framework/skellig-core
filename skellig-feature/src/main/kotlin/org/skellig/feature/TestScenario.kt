@@ -1,36 +1,43 @@
 package org.skellig.feature
 
-class TestScenario protected constructor(val name: String, val steps: List<TestStep>?, val tags: Set<String>?) {
+open class TestScenario protected constructor(val name: String, val steps: List<TestStep>?, val tags: Set<String>?) {
 
     class Builder {
         private var name: String? = null
         private var tags: Set<String>? = null
         private val stepBuilders = mutableListOf<TestStep.Builder>()
-        private var data: MutableList<Map<String, String>>? = null
+        private var data: MutableList<Pair<Set<String>?, MutableList<Map<String, String>>?>>? = null
 
         fun withName(name: String) = apply { this.name = name.trim { it <= ' ' } }
 
         fun withStep(stepBuilder: TestStep.Builder) = apply { stepBuilders.add(stepBuilder) }
 
-        /**
-         * NOTE: tags are not supported yet.
-         */
-        fun withTags(tags: Set<String>?) = apply { this.tags = tags }
+        fun withTags(tags: Set<String>?) = apply {
+            if (this.tags == null) this.tags = tags
+            else if (tags != null) this.tags = this.tags!!.union(tags)
+        }
 
-        fun withDataRow(dataRow: Map<String, String>) = apply {
+        fun withData(tags: Set<String>?) = apply {
             if (data == null) {
                 data = mutableListOf()
             }
-            data!!.add(dataRow)
+            data?.add(Pair(tags, mutableListOf()))
+        }
+
+        fun withDataRow(dataRow: Map<String, String>) = apply {
+            data?.last()?.second?.add(dataRow) ?: error("Failed to add a data row for the scenario '$name' because the data table is not initialised")
         }
 
         fun build(): List<TestScenario> {
-            return data?.let {
-                return data!!.map {
-                    TestScenario(ParametersUtils.replaceParametersIfFound(name!!, it),
-                            getTestStepsWithAppliedTestData(it), tags)
+           return data?.flatMap { dataTable ->
+                tags = if (dataTable.first != null) dataTable.first!!.union(tags ?: emptySet()) else tags
+                dataTable.second!!.map { dataRow ->
+                    TestScenario(
+                        ParametersUtils.replaceParametersIfFound(name!!, dataRow),
+                        getTestStepsWithAppliedTestData(dataRow), tags
+                    )
                 }.toList()
-            } ?: run {
+            }?.toList() ?: run {
                 val steps = stepBuilders.map { it.build() }.toList()
                 return listOf(TestScenario(name!!, steps, tags))
             }
@@ -38,8 +45,8 @@ class TestScenario protected constructor(val name: String, val steps: List<TestS
 
         private fun getTestStepsWithAppliedTestData(testDataRow: Map<String, String>): List<TestStep> {
             return stepBuilders
-                    .map { it.buildAndApplyTestData(testDataRow) }
-                    .toList()
+                .map { it.buildAndApplyTestData(testDataRow) }
+                .toList()
         }
 
     }

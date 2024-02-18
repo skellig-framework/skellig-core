@@ -2,24 +2,31 @@
 @User
 Feature: Sign in user
 
-   //@E2E-light
-   Scenario: Sign in user <user> with valid credentials
-   * User <user> exist in system
-   * User <user> requests to sign in with <password> password
-   * User <user> successfully signed in
-   Examples:
-     | user | password |
-     | usr_1| 12345    |
-     | usr_2| pswd1    |
+    @E2E-light-1
+    Scenario: Sign in user <user> with valid credentials
+        * User <user> exist in system
+        * User <user> requests to sign in with <password> password
+        * User <user> successfully signed in
+        @Additional
+        Examples:
+            | user  | password |
+            | usr_1 | 12345    |
+            | usr_2 | pswd1    |
 
-   //@Init(id = default)
    //@Data
-   Scenario: Sign in user with invalid credentials
-   * User <user> exist in system
-       | p1 | v1                 |
-       | p2 | pass: <password> |
-   * User <user> requests to sign in with <password> password
-   * User <user> received error <error>
-   Examples:
-     | user | password | error          |
-     | usr_2| 54321    | "can't log in" |
+    Scenario: Sign in user with invalid credentials
+        * User <user> exist in system
+            | p1 | v1               |
+            | p2 | pass: <password> |
+        * User <user> requests to sign in with <password> password
+        * User <user> received error <error>
+        @Ignore
+        * Error is logged in file
+        Examples:
+            | user  | password | error          |
+            | usr_2 | 54321    | "can't log in" |
+            | usr_3 | 88888    | "can't log in" |
+        @Extra_data
+        Examples:
+            | user  | password | error          |
+            | usr_1 | 00000    | "can't log in" |
