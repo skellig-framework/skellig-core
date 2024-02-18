@@ -12,23 +12,26 @@ ext.set("project_description", 'Web-service (Spring-Boot) runner for Skellig per
 configurations.all {
     exclude group: "ch.qos.logback", module: "logback-classic"
     exclude group: "ch.qos.logback", module: "logback-core"
+    exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
 }
 
 ext {
-    springThimeleafVersion = '3.0.12.RELEASE'
-    springBootVersion = '2.4.2'
-    freemarkerVersion = '2.3.30'
-    prometheusVersion = '0.11.0'
+    springThimeleafVersion = '3.1.2.RELEASE'
+    springBootVersion = '3.2.2'
+    prometheusVersion = '0.16.0'
 }
 
 dependencies {
-    api group: 'org.thymeleaf', name: 'thymeleaf', version: "${springThimeleafVersion}"
+    api group: 'org.thymeleaf', name: 'thymeleaf-spring6', version: "${springThimeleafVersion}"
     api group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: "${springBootVersion}"
-    api group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.3'
+    api group: 'com.squareup.okhttp3', name: 'okhttp'
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect'
     api group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: "${springBootVersion}"
-    implementation group: 'io.prometheus', name: 'simpleclient_servlet', version: "${prometheusVersion}"
-    implementation group: 'org.freemarker', name: 'freemarker', version: "${freemarkerVersion}"
+
+    // Spring Boot Actuator for metrics
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: "${springBootVersion}"
+    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.12.3'
+    implementation group: 'org.freemarker', name: 'freemarker'
 
     api project(':skellig-test-step-processing-performance')
     api project(':skellig-test-step-runner')

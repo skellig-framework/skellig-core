@@ -10,8 +10,6 @@ ext.set("project_name", 'skellig-test-step-reader')
 ext.set("project_description", 'Interface for a reader of Skellig Test Step files')
 
 dependencies {
-    implementation group: 'io.rest-assured', name: 'json-path', version: '4.3.0'
-
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }

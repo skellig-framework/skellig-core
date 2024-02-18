@@ -4,13 +4,12 @@ import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.core.cql.ResultSet
 import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.driver.api.core.cql.SimpleStatement
-import com.nhaarman.mockitokotlin2.doAnswer
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.*
 import org.mockito.invocation.InvocationOnMock
+import org.mockito.kotlin.whenever
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.util.function.Consumer
 

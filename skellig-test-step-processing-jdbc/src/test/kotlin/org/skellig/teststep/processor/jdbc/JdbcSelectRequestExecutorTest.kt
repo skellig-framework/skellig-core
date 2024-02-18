@@ -1,11 +1,12 @@
 package org.skellig.teststep.processor.jdbc
 
-import com.nhaarman.mockitokotlin2.*
+
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.mockito.kotlin.*
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.sql.*
 import java.time.LocalDate

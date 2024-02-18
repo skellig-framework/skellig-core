@@ -16,7 +16,7 @@ internal class RmqChannelCT {
 
     @Container
     private val rabbitMqContainer =
-            GenericContainer<GenericContainer<*>>(DockerImageName.parse("rabbitmq:latest"))
+            GenericContainer(DockerImageName.parse("rabbitmq:latest"))
                     .withExposedPorts(5672)
 
     @AfterEach

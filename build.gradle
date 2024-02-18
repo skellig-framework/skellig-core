@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 buildscript {
     dependencies {
         classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
@@ -26,21 +28,28 @@ nexusPublishing {
 
 ext {
     group_id = 'org.skelligframework'
-    version = '2.1.1-RC'
-    mockitoVersion = '4.0.0'
-    junitApiVersion = '5.8.1'
-    junitPlatformVersion = '1.2.0'
-    mockitoJunitVersion = '2.18.0'
+    projectVersion = '2.1.1'
+    mockitoVersion = '5.10.0'
+    junitApiVersion = '5.10.1'
+    junitPlatformVersion = '1.10.1'
     typesafeConfigVersion = '1.4.3'
-    slf4jLogVersion = '2.0.7'
-    kotlinVersion = '1.5.0'
+    slf4jLogVersion = '2.0.12'
+    log4jLogVersion = '2.22.1'
+    kotlinVersion = '1.9.22'
+    kotlinCoroutinesVersion = '1.8.0'
+    ktMockitoVersion = '5.2.1'
+    freemarkerVersion = '2.3.32'
+    testContainerVersion = '1.19.4'
+    okHttpVersion = '4.12.0'
+    jacksonVersion = '2.16.1'
+    apacheCommonsVersion = '3.14.0'
 }
 
 allprojects {
     apply plugin: 'jacoco'
     apply plugin: 'maven-publish'
     group 'org.skelligframework'
-    version "${version}"
+    version "${projectVersion}"
 
     repositories {
         mavenLocal()
@@ -55,7 +64,7 @@ subprojects {
     apply plugin: 'signing'
     apply plugin: 'io.spring.dependency-management'
 
-    version = '2.1.1-RC'
+    version = "${projectVersion}"
 
     ext {
         project_name = 'Skellig Framework'
@@ -86,7 +95,7 @@ subprojects {
                     "Manifest-Version": "1.0",
                     "Implementation-Title": "${project.name}",
                     "Implementation-Version": "${project.version}",
-                    'Implementation-Date': new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date()),
+                    'Implementation-Date': new SimpleDateFormat("yyyy-MM-dd").format(new Date()),
                     'Created-By': "Gradle ${gradle.gradleVersion}",
                     'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
             )
@@ -106,7 +115,7 @@ subprojects {
 
                 release(MavenPublication) {
                     groupId = 'org.skelligframework'
-                    version = "${version}"
+                    version = "${projectVersion}"
                     afterEvaluate {
                         artifactId = jar.baseName
                     }
@@ -155,31 +164,36 @@ subprojects {
         options.encoding = 'UTF-8'
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-
     dependencyManagement {
         dependencies {
             dependency group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jLogVersion}"
             dependency group: 'org.slf4j', name: 'slf4j-reload4j', version: "${slf4jLogVersion}"
-            dependency group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.20.0'
+            dependency group: 'org.apache.logging.log4j', name: 'log4j-core', version: "${log4jLogVersion}"
             dependency group: 'com.typesafe', name: 'config', version: "${typesafeConfigVersion}"
-            dependency group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-            dependency group: 'org.freemarker', name: 'freemarker', version: "2.3.30"
-
-            dependency group: 'org.mockito', name: 'mockito-core', version: "${mockitoVersion}"
-            dependency group: 'com.nhaarman', name: 'mockito-kotlin', version: '1.6.0'
-            dependency group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin', version: '2.2.0'
+            dependency group: 'org.apache.commons', name: 'commons-lang3', version: "${apacheCommonsVersion}"
+            dependency group: 'org.freemarker', name: 'freemarker', version: "${freemarkerVersion}"
+            dependency group: 'org.mockito.kotlin', name: 'mockito-kotlin', version: "${ktMockitoVersion}"
+            dependency group: 'org.junit.jupiter', name: 'junit-jupiter', version: "${junitApiVersion}"
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "${junitApiVersion}"
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitApiVersion}"
             dependency group: 'org.junit.platform', name: 'junit-platform-runner', version: "${junitPlatformVersion}"
             dependency group: 'org.junit.platform', name: 'junit-platform-launcher', version: "${junitPlatformVersion}"
-            dependency group: 'org.mockito', name: 'mockito-junit-jupiter', version: "${mockitoJunitVersion}"
+            dependency group: 'org.mockito', name: 'mockito-junit-jupiter', version: "${mockitoVersion}"
             dependency group: 'org.jetbrains', name: 'kotlin:kotlin-reflect', version: "${kotlinVersion}"
+            dependency group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: "${kotlinCoroutinesVersion}"
+            dependency group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "${jacksonVersion}"
+            dependency group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: "${jacksonVersion}"
+            dependency group: 'org.testcontainers', name: 'testcontainers', version: "${testContainerVersion}"
+            dependency group: 'org.testcontainers', name: 'junit-jupiter', version: "${testContainerVersion}"
+            dependency group: 'org.testcontainers', name: 'postgresql', version: "${testContainerVersion}"
+            dependency group: 'com.squareup.okhttp3', name: 'okhttp', version: "${okHttpVersion}"
         }
     }
 
     java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
         withSourcesJar()
         withJavadocJar()
     }

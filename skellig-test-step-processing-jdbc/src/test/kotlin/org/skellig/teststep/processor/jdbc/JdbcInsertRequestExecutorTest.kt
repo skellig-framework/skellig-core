@@ -1,12 +1,13 @@
 package org.skellig.teststep.processor.jdbc
 
-import com.nhaarman.mockitokotlin2.*
+
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
 import org.mockito.Mockito
+import org.mockito.kotlin.*
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.sql.*

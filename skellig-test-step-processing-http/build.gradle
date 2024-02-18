@@ -13,12 +13,12 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api'
     api group: 'com.typesafe', name: 'config'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
-    implementation 'org.apache.httpcomponents:httpclient:4.5.6'
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp'
 
     api project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito.kotlin', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }

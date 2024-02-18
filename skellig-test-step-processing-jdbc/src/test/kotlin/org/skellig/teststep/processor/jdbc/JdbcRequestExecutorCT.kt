@@ -22,7 +22,7 @@ internal class JdbcRequestExecutorCT {
     }
 
     @Container
-    private val mysqlContainer = PostgreSQLContainer<PostgreSQLContainer<*>>("postgres:13.1")
+    private val mysqlContainer = PostgreSQLContainer("postgres:13.1")
             .withDatabaseName("skellig")
             .withUsername(USER_NAME)
             .withPassword(PASSWORD)

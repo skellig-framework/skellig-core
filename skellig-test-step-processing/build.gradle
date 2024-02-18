@@ -12,11 +12,11 @@ ext.set("project_description", 'Basic and abstract processing classes for Skelli
 dependencies {
     implementation 'de.siegmar:fastcsv:1.0.3'
     implementation 'org.freemarker:freemarker:2.3.30'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.0'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
-    implementation group: 'io.rest-assured', name: 'json-path', version: '4.3.0'
+    implementation group: 'io.rest-assured', name: 'json-path', version: '5.4.0'
     implementation group: 'org.graalvm.js', name: 'js', version: '21.3.0'
     implementation group: 'org.graalvm.js', name: 'js-scriptengine', version: '21.3.0'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core'
@@ -28,7 +28,7 @@ dependencies {
     api project(':skellig-test-step-reader-sts')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito.kotlin', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }

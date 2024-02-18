@@ -13,14 +13,14 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core'
     implementation 'org.slf4j:slf4j-reload4j'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
-    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.157'
+    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.165'
 
     api group: 'com.typesafe', name: 'config'
 
     api project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito.kotlin', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }

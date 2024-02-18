@@ -13,14 +13,14 @@ dependencies {
     implementation 'org.slf4j:slf4j-reload4j'
     implementation group: 'com.typesafe', name: 'config'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
-    implementation 'com.ibm.mq:com.ibm.mq.allclient:9.0.4.0'
+    implementation group: 'com.ibm.mq', name: 'com.ibm.mq.allclient', version: '9.3.4.1'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
 
     api project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
-    testImplementation group: 'org.mockito', name: 'mockito-core'
+    testImplementation group: 'org.mockito.kotlin', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito.kotlin', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }

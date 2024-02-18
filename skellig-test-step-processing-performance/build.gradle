@@ -11,17 +11,16 @@ ext.set("project_description", 'Processing functionality for Performance-based S
 
 dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api'
-    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
-    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0-RC"
-    implementation group: 'io.prometheus', name: 'simpleclient', version: '0.11.0'
-    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.7.1'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core'
+    implementation group: 'org.junit.jupiter', name: 'junit-jupiter'
+    implementation group: 'io.prometheus', name: 'simpleclient', version: '0.16.0'
+    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.12.2'
 
     api project(':skellig-test-step-processing')
 
     testImplementation group: 'org.junit.platform', name: 'junit-platform-runner'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
-    testImplementation group: 'com.nhaarman.mockitokotlin2', name: 'mockito-kotlin'
+    testImplementation group: 'org.mockito.kotlin', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 }

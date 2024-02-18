@@ -1,11 +1,12 @@
 package org.skellig.teststep.processor.rmq
 
-import com.nhaarman.mockitokotlin2.*
+
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.kotlin.*
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.processor.TestStepProcessor

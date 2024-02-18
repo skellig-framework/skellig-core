@@ -3,3 +3,10 @@ server:
 spring:
   main:
     web-application-type: servlet
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      path-mapping:
+        prometheus: metrics

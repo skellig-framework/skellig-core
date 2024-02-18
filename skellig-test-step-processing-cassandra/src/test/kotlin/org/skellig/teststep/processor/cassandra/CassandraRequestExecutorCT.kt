@@ -22,7 +22,7 @@ internal class CassandraRequestExecutorCT {
     }
 
     @Container
-    private val cassandraContainer = CassandraContainer<CassandraContainer<*>>("cassandra:4.0")
+    private val cassandraContainer = CassandraContainer("cassandra:4.0")
             .withExposedPorts(9042)
 
     @AfterEach
