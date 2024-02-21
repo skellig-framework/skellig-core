@@ -37,7 +37,7 @@ class DefaultTestScenarioStateTest {
         val iterator = scenarioState.iterator()
 
 
-        assertEquals("value1", iterator.next())
-        assertEquals("value2", iterator.next())
+        assertEquals(Pair("key1", "value1"), iterator.next())
+        assertEquals(Pair("key2", "value2"), iterator.next())
     }
 }
