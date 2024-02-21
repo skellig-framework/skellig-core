@@ -43,6 +43,7 @@ open class FeatureRunner(
     fun getFeatureReportDetails(): FeatureReportDetails {
         return FeatureReportDetails(
             name,
+            feature.tags,
             children?.map { it.getTestScenarioReportDetails() }?.toList() ?: emptyList()
         )
     }

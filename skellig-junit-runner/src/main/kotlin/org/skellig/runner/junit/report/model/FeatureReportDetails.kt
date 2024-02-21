@@ -1,6 +1,7 @@
 package org.skellig.runner.junit.report.model
 
 class FeatureReportDetails(val name: String?,
+                           val tags: Set<String>?,
                            val testScenarioReportDetails: List<TestScenarioReportDetails>?) {
 
     private var totalTestSteps = -1
@@ -34,5 +35,9 @@ class FeatureReportDetails(val name: String?,
 
     fun getTotalPassedPercentage(): Float {
         return getTotalPassedTestSteps().toFloat() / getTotalTestSteps() * 100
+    }
+
+    fun getTagsLine(): String? {
+        return tags?.joinToString(", ") { "@$it" }
     }
 }
