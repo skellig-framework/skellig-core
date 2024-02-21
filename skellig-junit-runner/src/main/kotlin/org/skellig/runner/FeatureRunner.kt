@@ -7,26 +7,29 @@ import org.junit.runner.notification.RunNotifier
 import org.junit.runners.ParentRunner
 import org.junit.runners.model.InitializationError
 import org.skellig.feature.Feature
+import org.skellig.feature.metadata.TagsFilter
 import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.runner.junit.report.model.FeatureReportDetails
-import org.skellig.runner.tagextractor.RequestedTagExtractor
-import org.skellig.runner.tagextractor.TagExtractor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.runner.TestStepRunner
 
 open class FeatureRunner(
-    protected val feature: Feature,
+    val feature: Feature,
     protected val testStepRunner: TestStepRunner?,
     protected val testScenarioState: TestScenarioState?,
-    config: Config?
+    config: Config?,
+    protected val tagsFilter: TagsFilter
 ) : ParentRunner<TestScenarioRunner>(feature.javaClass) {
 
-    private val tagExtractor: TagExtractor = RequestedTagExtractor()
     private var description: Description? = null
     private var testScenarioRunners: List<TestScenarioRunner>? = null
 
     init {
-        testScenarioRunners = feature.scenarios?.map { TestScenarioRunner.create(it, testStepRunner, config) }?.toList() ?: emptyList()
+        testScenarioRunners =
+            feature.scenarios
+                ?.filter { tagsFilter.checkTagsAreIncluded(it.tags) }
+                ?.map { TestScenarioRunner.create(it, testStepRunner, config) }
+                ?.toList() ?: emptyList()
     }
 
     override fun getDescription(): Description? {
@@ -38,8 +41,11 @@ open class FeatureRunner(
     }
 
     fun getFeatureReportDetails(): FeatureReportDetails {
-        return FeatureReportDetails(name,
-                children?.map { it.getTestScenarioReportDetails() }?.toList() ?: emptyList())
+        return FeatureReportDetails(
+            name,
+            feature.tags,
+            children?.map { it.getTestScenarioReportDetails() }?.toList() ?: emptyList()
+        )
     }
 
     override fun getName(): String {
@@ -68,19 +74,16 @@ open class FeatureRunner(
         }
     }
 
-    private fun <T> extractTagFromFeature(tagClass: Class<T>): T? {
-        return tagExtractor.extract(tagClass, feature.testPreRequisites ?: emptyList())
-    }
-
     companion object {
         fun create(
             feature: Feature,
             testStepRunner: TestStepRunner?,
             testScenarioState: TestScenarioState?,
-            config: Config?
+            config: Config?,
+            tagsFilter: TagsFilter
         ): FeatureRunner {
             return try {
-                FeatureRunner(feature, testStepRunner, testScenarioState, config)
+                FeatureRunner(feature, testStepRunner, testScenarioState, config, tagsFilter)
             } catch (e: InitializationError) {
                 throw FeatureRunnerException(e.message, e)
             }

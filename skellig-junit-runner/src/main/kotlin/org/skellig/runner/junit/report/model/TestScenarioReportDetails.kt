@@ -2,6 +2,7 @@ package org.skellig.runner.junit.report.model
 
 class TestScenarioReportDetails(
     val name: String?,
+    val tags: Set<String>?,
     val testStepReportDetails: List<TestStepReportDetails<*>>?
 ) {
 
@@ -11,6 +12,10 @@ class TestScenarioReportDetails(
 
     fun isPassed(): Boolean {
         return testStepReportDetails?.any { it.isPassed() } ?: true
+    }
+
+    fun getTagsLine(): String? {
+        return tags?.joinToString(", ") { "@$it" }
     }
 
     fun getTotalTestSteps(): Int {

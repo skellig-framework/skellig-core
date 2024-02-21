@@ -22,9 +22,9 @@ import java.io.StringWriter
 
 
 open class TestScenarioRunner protected constructor(
-    private val testScenario: TestScenario,
-    private val testStepRunner: TestStepRunner?,
-    config: Config?
+    val testScenario: TestScenario,
+    protected val testStepRunner: TestStepRunner?,
+    config: Config?,
 ) : ParentRunner<TestStep>(testScenario.javaClass) {
 
     companion object {
@@ -139,7 +139,7 @@ open class TestScenarioRunner protected constructor(
         val testStepReportDetails = testStepsDataReport
             .map { it.build() }
             .toList()
-        return TestScenarioReportDetails(name, testStepReportDetails)
+        return TestScenarioReportDetails(name, testScenario.tags, testStepReportDetails)
     }
 
 

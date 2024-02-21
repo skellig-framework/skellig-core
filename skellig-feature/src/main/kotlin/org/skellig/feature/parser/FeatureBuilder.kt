@@ -3,6 +3,7 @@ package org.skellig.feature.parser
 import org.skellig.feature.Feature
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
+import org.skellig.feature.metadata.DefaultTestMetadataExtractor
 import java.util.regex.Pattern
 
 internal class FeatureBuilder {
@@ -27,7 +28,7 @@ internal class FeatureBuilder {
     private var featureBuilder = Feature.Builder()
     private var testScenarioBuilder: TestScenario.Builder? = null
     private var testStepBuilder: TestStep.Builder? = null
-    private var testPreRequisitesExtractor = DefaultTestPreRequisitesExtractor()
+    private var testPreRequisitesExtractor = DefaultTestMetadataExtractor()
 
     /**
      * Read line and handle it according to what information it contains
@@ -57,7 +58,7 @@ internal class FeatureBuilder {
         val featureName = line.substring(FEATURE_NAME_PREFIX.length)
         val tags = buffer.toString()
         featureBuilder.withName(featureName)
-                .withTestPreRequisites(testPreRequisitesExtractor.extractFrom(tags))
+            .withTags(testPreRequisitesExtractor.extractTags(tags))
         resetBuffer()
     }
 
@@ -68,9 +69,9 @@ internal class FeatureBuilder {
         // add previous test scenario if it was created
         addLatestTestScenarioIfExist()
         testScenarioBuilder = TestScenario.Builder()
-        // append scenario name
-        testScenarioBuilder!!.withName(line.substring(SCENARIO_PREFIX.length))
-                .withTags(testPreRequisitesExtractor.extractTags(buffer.toString()))
+        testScenarioBuilder!!
+            .withName(line.substring(SCENARIO_PREFIX.length))
+            .withTags(testPreRequisitesExtractor.extractTags(buffer.toString()))
         resetBuffer()
     }
 
@@ -108,6 +109,7 @@ internal class FeatureBuilder {
                 }
 
                 testStepBuilder!!.withName(newLine)
+                resetBuffer()
             }
         }
     }
@@ -120,8 +122,8 @@ internal class FeatureBuilder {
             handleScenarioExamplesLine(line)
         } else {
             val rawParameters = PARAMETER_SEPARATOR_PATTERN.split(line).toList()
-                    .filter { it.isNotEmpty() }
-                    .toTypedArray()
+                .filter { it.isNotEmpty() }
+                .toTypedArray()
             testStepBuilder!!.withParameter(rawParameters[0], rawParameters[1])
         }
     }
@@ -133,6 +135,7 @@ internal class FeatureBuilder {
         if (testScenarioBuilder != null) {
             // Before reading test data section we need to add the last test step of the test scenario
             addLatestTestStepIfExist()
+            testScenarioBuilder!!.withData(testPreRequisitesExtractor.extractTags(buffer.toString()))
             resetBuffer()
             isReadingTestScenarioData = true
             testScenarioDataColumns = null
@@ -166,7 +169,7 @@ internal class FeatureBuilder {
     private fun addLatestTestScenarioIfExist() {
         if (testScenarioBuilder != null) {
             addLatestTestStepIfExist()
-            featureBuilder.withScenarios(testScenarioBuilder!!.build())
+            testScenarioBuilder?.let { featureBuilder.withScenarios(it) }
             isReadingTestScenarioData = false
         }
     }

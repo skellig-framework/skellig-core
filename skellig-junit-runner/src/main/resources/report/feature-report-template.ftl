@@ -35,6 +35,11 @@
                         ${feature.totalPassedTestSteps}/${feature.totalTestSteps}
                     </div>
                 </div>
+                <#if feature.tagsLine?? && feature.tagsLine?trim?has_content>
+                <div class="tags-text-panel">
+                    ${feature.tagsLine}
+                </div>
+                </#if>
             </div>
 
             <#list feature.testScenarioReportDetails as tsrd>
@@ -57,6 +62,13 @@
                         <div id="testStepsPanel${i}" role="tablist" aria-multiselectable="true"
                              class="collapse"
                              aria-labelledby="testScenarioHeader${i}">
+                            <#if tsrd.tagsLine?? && tsrd.tagsLine?trim?has_content>
+                            <div class="card-body">
+                                <div class="tags-text-panel">
+                                    ${tsrd.tagsLine}
+                                </div>
+                            </div>
+                             </#if>
                             <div class="card-body">
                                 <#list tsrd.testStepReportDetails as step>
                                     <#assign si = i +"_"+step?index />

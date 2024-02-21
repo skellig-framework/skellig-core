@@ -28,8 +28,8 @@ class TestStep private constructor(val name: String, val parameters: Map<String,
 
         private fun getParametersWithAppliedTestData(dataRow: Map<String, String>): Map<String, String?>? {
             return parameters
-                    ?.map { it.key to it.value?.let { v -> ParametersUtils.replaceParametersIfFound(v, dataRow)} }
-                    ?.toMap()
+                ?.map { it.key to it.value?.let { v -> ParametersUtils.replaceParametersIfFound(v, dataRow) } }
+                ?.toMap()
         }
     }
 }

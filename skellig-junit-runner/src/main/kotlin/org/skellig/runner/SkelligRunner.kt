@@ -5,6 +5,7 @@ import org.junit.runner.notification.RunNotifier
 import org.junit.runners.ParentRunner
 import org.junit.runners.model.Statement
 import org.skellig.feature.Feature
+import org.skellig.feature.metadata.TagsFilter
 import org.skellig.feature.parser.DefaultFeatureParser
 import org.skellig.runner.annotation.SkelligOptions
 import org.skellig.runner.exception.FeatureRunnerException
@@ -32,6 +33,10 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         val testScenarioState = skelligTestContext!!.getTestScenarioState()
         val featureParser = DefaultFeatureParser()
 
+        val includeTags = System.getProperty("skellig.includeTags")?.split(",")?.map { it.trim() }?.toSet() ?: skelligOptions.includeTags.toSet()
+        val excludeTags = System.getProperty("skellig.excludeTags")?.split(",")?.map { it.trim() }?.toSet() ?: skelligOptions.excludeTags.toSet()
+        val tagsFilter = TagsFilter(includeTags, excludeTags)
+
         skelligOptions.features
             .forEach { featureResourcePath: String ->
                 try {
@@ -39,12 +44,17 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
                     featuresResource?.let {
                         val pathToFeatures = Paths.get(featuresResource.toURI())
                         featureParser.parse(pathToFeatures.toString())
+                            ?.filter {
+                                tagsFilter.checkTagsAreIncluded(it.tags) ||
+                                        it.scenarios?.any { testScenario -> tagsFilter.checkTagsAreIncluded(testScenario.tags)  } == true
+                            }
                             ?.map { feature: Feature ->
                                 FeatureRunner.create(
                                     feature,
                                     testStepRunner,
                                     testScenarioState,
-                                    skelligTestContext?.config
+                                    skelligTestContext?.config,
+                                    tagsFilter
                                 )
                             }
                             ?.toCollection(children)

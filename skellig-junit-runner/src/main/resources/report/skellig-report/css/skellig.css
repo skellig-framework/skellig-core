@@ -50,6 +50,15 @@ p {
     color: #ffffff8f;
 }
 
+.tags-text-panel {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    min-height: 1px;
+    padding: 1.25rem;
+    font-size: 18px;
+    color: #93852f;
+}
+
 .card-collapse .card {
     margin-bottom: 0;
     background: transparent;
