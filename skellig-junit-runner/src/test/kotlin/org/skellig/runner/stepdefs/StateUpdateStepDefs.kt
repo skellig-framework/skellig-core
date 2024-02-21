@@ -9,7 +9,7 @@ class StateUpdateStepDefs : SkelligTestContextAware {
     private var context: SkelligTestContext? = null
 
     @TestStep(name = "The state has a default test value")
-    fun checkResultAfterLog(expectedResult: String?) {
+    fun checkResultAfterLog(notUsed: String?) {
         val testScenarioState = context?.getTestScenarioState()
 
         val values = listOf(

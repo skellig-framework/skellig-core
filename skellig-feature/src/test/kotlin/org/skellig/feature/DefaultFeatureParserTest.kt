@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.feature.metadata.TagDetails
-import org.skellig.feature.metadata.TestMetadata
 import org.skellig.feature.parser.DefaultFeatureParser
 import java.net.URISyntaxException
 import java.nio.file.Paths
@@ -27,7 +25,7 @@ class DefaultFeatureParserTest {
         val feature = features!![0]
         Assertions.assertAll(
             { Assertions.assertEquals("Simple feature", feature.name) },
-            { Assertions.assertNull(feature.testPreRequisites) },
+            { Assertions.assertNull(feature.tags) },
             { Assertions.assertEquals(1, feature.scenarios!!.size) }
         )
         val firstTestScenario = feature.scenarios!![0]
@@ -49,13 +47,12 @@ class DefaultFeatureParserTest {
     fun testParseComplexFeatureFile() {
         val features = defaultFeatureParser!!.parse(getPathToSampleFile("/test-feature.sf"))
         val feature = features!![0]
+        val featureTags = setOf("E2E", "SmokeTest", "User")
         Assertions.assertAll(
             { Assertions.assertEquals("Sign in user", feature.name) },
-            { Assertions.assertNotNull(feature.testPreRequisites) },
+            { Assertions.assertNotNull(feature.tags) },
             {
-                Assertions.assertTrue(feature.testPreRequisites!!.stream()
-                    .filter { item: TestMetadata<*> -> item.getDetails() is TagDetails }
-                    .allMatch { item: TestMetadata<*> -> (item as TagDetails).tags!!.containsAll(setOf("E2E", "SmokeTest", "User")) })
+                Assertions.assertTrue(feature.tags!!.containsAll(featureTags))
             },
             { Assertions.assertEquals(5, feature.scenarios!!.size) }
         )
@@ -75,12 +72,7 @@ class DefaultFeatureParserTest {
                 )
             },
             { Assertions.assertEquals("User usr_1 successfully signed in", firstTestScenario.steps!![2].name) },
-            {
-                Assertions.assertTrue(
-                    firstTestScenario.tags!!.contains("E2E-light-1") && firstTestScenario.tags!!.contains("Additional"),
-                    "Invalid set of tags. Expected: E2E-light-1, Additional, got: " + firstTestScenario.tags!!
-                )
-            }
+            { Assertions.assertEquals(featureTags.union(setOf("E2E-light-1", "Additional")), firstTestScenario.tags) }
         )
         Assertions.assertAll(
             { Assertions.assertEquals("Sign in user usr_2 with valid credentials", secondTestScenario.name) },
@@ -93,12 +85,7 @@ class DefaultFeatureParserTest {
                 )
             },
             { Assertions.assertEquals("User usr_2 successfully signed in", secondTestScenario.steps!![2].name) },
-            {
-                Assertions.assertTrue(
-                    secondTestScenario.tags!!.contains("E2E-light-1") && secondTestScenario.tags!!.contains("Additional"),
-                    "Invalid set of tags. Expected: E2E-light-1, Additional, got: " + secondTestScenario.tags!!
-                )
-            }
+            { Assertions.assertEquals(featureTags.union(setOf("E2E-light-1", "Additional")), secondTestScenario.tags) }
         )
         Assertions.assertAll(
             { Assertions.assertEquals("Sign in user with invalid credentials", thirdTestScenario.name) },
@@ -112,25 +99,10 @@ class DefaultFeatureParserTest {
                 )
             },
             { Assertions.assertEquals("User usr_2 received error \"can't log in\"", thirdTestScenario.steps!![2].name) },
-            { Assertions.assertEquals("Error is logged in file", thirdTestScenario.steps!![3].name) },
-            {
-                Assertions.assertTrue(
-                    thirdTestScenario.steps!![3].tags!!.contains("Ignore"),
-                    "Invalid set of tags. Expected: Ignore, got: " + thirdTestScenario.steps!![3].tags!!
-                )
-            },
-            {
-                Assertions.assertNull(
-                    thirdTestScenario.tags,
-                    "Invalid set of tags. Expected null, got: " + thirdTestScenario.tags
-                )
-            }
+            {  Assertions.assertEquals(featureTags, thirdTestScenario.tags) }
         )
 
-        Assertions.assertNull(
-            forthTestScenario.tags,
-            "Invalid set of tags. Expected null, got: " + forthTestScenario.tags
-        )
+        Assertions.assertEquals(featureTags, forthTestScenario.tags)
 
         Assertions.assertAll(
             { Assertions.assertEquals("Sign in user with invalid credentials", fifthTestScenario.name) },
@@ -144,18 +116,7 @@ class DefaultFeatureParserTest {
                 )
             },
             { Assertions.assertEquals("User usr_1 received error \"can't log in\"", fifthTestScenario.steps!![2].name) },
-            {
-                Assertions.assertTrue(
-                    fifthTestScenario.steps!![3].tags!!.contains("Ignore"),
-                    "Invalid set of tags. Expected: Ignore, got: " + fifthTestScenario.steps!![3].tags!!
-                )
-            },
-            {
-                Assertions.assertTrue(
-                    fifthTestScenario.tags!!.contains("Extra_data"),
-                    "Invalid set of tags. Expected: Extra_data, got: " + fifthTestScenario.tags
-                )
-            }
+            { Assertions.assertEquals(featureTags.union(setOf("Extra_data")), fifthTestScenario.tags) }
         )
     }
 

@@ -20,8 +20,6 @@ Feature: Sign in user
             | p2 | pass: <password> |
         * User <user> requests to sign in with <password> password
         * User <user> received error <error>
-        @Ignore
-        * Error is logged in file
         Examples:
             | user  | password | error          |
             | usr_2 | 54321    | "can't log in" |

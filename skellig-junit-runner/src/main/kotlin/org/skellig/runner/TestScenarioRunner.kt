@@ -9,6 +9,7 @@ import org.junit.runners.ParentRunner
 import org.junit.runners.model.InitializationError
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
+import org.skellig.feature.metadata.TagsFilter
 import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.runner.junit.report.CustomAppender
 import org.skellig.runner.junit.report.DefaultTestStepLogger
@@ -22,9 +23,9 @@ import java.io.StringWriter
 
 
 open class TestScenarioRunner protected constructor(
-    private val testScenario: TestScenario,
-    private val testStepRunner: TestStepRunner?,
-    config: Config?
+    val testScenario: TestScenario,
+    protected val testStepRunner: TestStepRunner?,
+    config: Config?,
 ) : ParentRunner<TestStep>(testScenario.javaClass) {
 
     companion object {

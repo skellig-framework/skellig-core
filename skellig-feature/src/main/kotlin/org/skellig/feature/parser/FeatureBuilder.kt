@@ -58,7 +58,7 @@ internal class FeatureBuilder {
         val featureName = line.substring(FEATURE_NAME_PREFIX.length)
         val tags = buffer.toString()
         featureBuilder.withName(featureName)
-            .withTestPreRequisites(testPreRequisitesExtractor.extractFrom(tags))
+            .withTags(testPreRequisitesExtractor.extractTags(tags))
         resetBuffer()
     }
 
@@ -108,9 +108,7 @@ internal class FeatureBuilder {
                     else -> line
                 }
 
-                testStepBuilder!!
-                    .withName(newLine)
-                    .withTags(testPreRequisitesExtractor.extractTags(buffer.toString()))
+                testStepBuilder!!.withName(newLine)
                 resetBuffer()
             }
         }
@@ -171,7 +169,7 @@ internal class FeatureBuilder {
     private fun addLatestTestScenarioIfExist() {
         if (testScenarioBuilder != null) {
             addLatestTestStepIfExist()
-            featureBuilder.withScenarios(testScenarioBuilder!!.build())
+            testScenarioBuilder?.let { featureBuilder.withScenarios(it) }
             isReadingTestScenarioData = false
         }
     }

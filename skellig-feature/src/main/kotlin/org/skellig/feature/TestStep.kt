@@ -1,15 +1,12 @@
 package org.skellig.feature
 
-class TestStep private constructor(val name: String, val parameters: Map<String, String?>?, val tags: Set<String>?) {
+class TestStep private constructor(val name: String, val parameters: Map<String, String?>?) {
 
     class Builder {
         private var name: String? = null
-        private var tags: Set<String>? = null
         private var parameters: MutableMap<String, String?>? = null
 
         fun withName(name: String) = apply { this.name = name.trim { it <= ' ' } }
-
-        fun withTags(tags: Set<String>?) = apply { this.tags = tags }
 
         fun withParameters(parameters: MutableMap<String, String?>) = apply { this.parameters = parameters }
 
@@ -21,12 +18,12 @@ class TestStep private constructor(val name: String, val parameters: Map<String,
         }
 
         fun build(): TestStep {
-            return TestStep(name!!, parameters, tags)
+            return TestStep(name!!, parameters)
         }
 
         fun buildAndApplyTestData(testData: Map<String, String>): TestStep {
             val newParameters = getParametersWithAppliedTestData(testData)
-            return TestStep(ParametersUtils.replaceParametersIfFound(name!!, testData), newParameters, tags)
+            return TestStep(ParametersUtils.replaceParametersIfFound(name!!, testData), newParameters)
         }
 
         private fun getParametersWithAppliedTestData(dataRow: Map<String, String>): Map<String, String?>? {
