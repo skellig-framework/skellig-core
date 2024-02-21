@@ -16,15 +16,7 @@ class SkelligRunnerTest {
         val skelligRunner = SkelligRunner(SkelligRunnerWithTagsTest::class.java)
         val features = mutableListOf<FeatureRunner>()
         val testScenarios = mutableListOf<TestScenarioRunner>()
-        val sorter = object : Sorter(mock()) {
-            override fun apply(target: Any?) {
-                if(target is FeatureRunner) {
-                    features.add(target)
-                }else if (target is TestScenarioRunner){
-                    testScenarios.add(target)
-                }
-            }
-        }
+        val sorter = createTestSorter(features, testScenarios)
 
         skelligRunner.sort(sorter)
         assertEquals(1, features.size)
@@ -41,7 +33,18 @@ class SkelligRunnerTest {
         val skelligRunner = SkelligRunner(SkelligRunnerWithTagsTest::class.java)
         val features = mutableListOf<FeatureRunner>()
         val testScenarios = mutableListOf<TestScenarioRunner>()
-        val sorter = object : Sorter(mock()) {
+        val sorter = createTestSorter(features, testScenarios)
+        skelligRunner.sort(sorter)
+
+        assertEquals(1, features.size)
+        features[0].sort(sorter)
+        assertEquals(1, testScenarios.size)
+        assertEquals("Another test scenario", testScenarios[0].testScenario.name)
+        assertTrue(testScenarios[0].testScenario.tags?.contains("Extra") == false)
+    }
+
+    private fun createTestSorter(features: MutableList<FeatureRunner>, testScenarios: MutableList<TestScenarioRunner>):Sorter {
+        return object : Sorter(mock()) {
             override fun apply(target: Any?) {
                 if(target is FeatureRunner) {
                     features.add(target)
@@ -50,13 +53,6 @@ class SkelligRunnerTest {
                 }
             }
         }
-        skelligRunner.sort(sorter)
-
-        assertEquals(1, features.size)
-        features[0].sort(sorter)
-        assertEquals(1, testScenarios.size)
-        assertEquals("Another test scenario", testScenarios[0].testScenario.name)
-        assertTrue(testScenarios[0].testScenario.tags?.contains("Extra") == false)
     }
 
     @RunWith(SkelligRunner::class)
