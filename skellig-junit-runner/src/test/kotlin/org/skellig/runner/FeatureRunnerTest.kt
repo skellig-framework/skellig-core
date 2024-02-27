@@ -17,7 +17,7 @@ class FeatureRunnerTest {
     fun testRun() {
         val testScenarioState = mock<TestScenarioState>()
         val feature = createFeature()
-        val featureRunner = FeatureRunner(feature, mock(), testScenarioState, mock(), TagsFilter(emptySet(), emptySet()))
+        val featureRunner = FeatureRunner(feature, mock(), testScenarioState, TagsFilter(emptySet(), emptySet()), mock(), mock())
 
         val notifier = mock<RunNotifier>()
         featureRunner.run(notifier)

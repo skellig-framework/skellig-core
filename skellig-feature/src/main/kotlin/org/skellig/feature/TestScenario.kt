@@ -1,6 +1,10 @@
 package org.skellig.feature
 
-open class TestScenario protected constructor(val name: String, val steps: List<TestStep>?, val tags: Set<String>?) {
+open class TestScenario protected constructor(val name: String, val steps: List<TestStep>?, val tags: Set<String>?) : SkelligTestEntity {
+
+    override fun getEntityName(): String = name
+
+    override fun getEntityTags(): Set<String>? = tags
 
     class Builder {
         private var name: String? = null
@@ -29,7 +33,7 @@ open class TestScenario protected constructor(val name: String, val steps: List<
         }
 
         fun build(): List<TestScenario> {
-           return data?.flatMap { dataTable ->
+            return data?.flatMap { dataTable ->
                 tags = if (dataTable.first != null) dataTable.first!!.union(tags ?: emptySet()) else tags
                 dataTable.second!!.map { dataRow ->
                     TestScenario(
@@ -50,4 +54,5 @@ open class TestScenario protected constructor(val name: String, val steps: List<
         }
 
     }
+
 }

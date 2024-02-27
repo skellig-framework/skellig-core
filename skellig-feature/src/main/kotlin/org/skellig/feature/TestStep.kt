@@ -1,6 +1,8 @@
 package org.skellig.feature
 
-class TestStep private constructor(val name: String, val parameters: Map<String, String?>?) {
+class TestStep private constructor(val name: String, val parameters: Map<String, String?>?) : SkelligTestEntity {
+
+    override fun getEntityName(): String = name
 
     class Builder {
         private var name: String? = null

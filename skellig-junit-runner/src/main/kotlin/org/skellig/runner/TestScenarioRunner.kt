@@ -1,17 +1,15 @@
 package org.skellig.runner
 
-import com.typesafe.config.Config
-import org.apache.log4j.BasicConfigurator
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
 import org.junit.runner.notification.RunNotifier
-import org.junit.runners.ParentRunner
 import org.junit.runners.model.InitializationError
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
+import org.skellig.feature.hook.SkelligHookRunner
+import org.skellig.feature.hook.annotation.AfterTestScenario
+import org.skellig.feature.hook.annotation.BeforeTestScenario
 import org.skellig.runner.exception.FeatureRunnerException
-import org.skellig.runner.junit.report.CustomAppender
-import org.skellig.runner.junit.report.DefaultTestStepLogger
 import org.skellig.runner.junit.report.TestStepLogger
 import org.skellig.runner.junit.report.model.TestScenarioReportDetails
 import org.skellig.runner.junit.report.model.TestStepReportDetails
@@ -22,46 +20,40 @@ import java.io.StringWriter
 
 
 open class TestScenarioRunner protected constructor(
-    val testScenario: TestScenario,
+    testScenario: TestScenario,
     protected val testStepRunner: TestStepRunner?,
-    config: Config?,
-) : ParentRunner<TestStep>(testScenario.javaClass) {
+    hookRunner: SkelligHookRunner,
+    testStepLogger: TestStepLogger
+) : BaseSkelligTestEntityRunner<TestStep>(
+    testScenario, hookRunner, testStepLogger,
+    BeforeTestScenario::class.java, AfterTestScenario::class.java
+) {
 
     companion object {
-        private const val REPORT_LOG_ENABLED = "report.log.enabled"
-        fun create(testScenario: TestScenario, testStepRunner: TestStepRunner?, config: Config?): TestScenarioRunner {
+        fun create(
+            testScenario: TestScenario, testStepRunner: TestStepRunner?,
+            hookRunner: SkelligHookRunner, testStepLogger: TestStepLogger
+        ): TestScenarioRunner {
             return try {
-                TestScenarioRunner(testScenario, testStepRunner, config)
+                TestScenarioRunner(testScenario, testStepRunner, hookRunner, testStepLogger)
             } catch (e: InitializationError) {
                 throw FeatureRunnerException(e.message, e)
             }
         }
     }
 
-    private val testStepLogger: TestStepLogger = DefaultTestStepLogger()
     private var stepDescriptions = hashMapOf<Any, Description>()
     private var testStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
     private var testStepRunResults: MutableList<TestStepRunResult>? = mutableListOf()
     private var isChildFailed = false
 
-    init {
-        config?.let {
-            if (it.hasPath(REPORT_LOG_ENABLED) && it.getBoolean(REPORT_LOG_ENABLED))
-                BasicConfigurator.configure(CustomAppender(testStepLogger))
-        }
-    }
-
     override fun getChildren(): List<TestStep>? {
-        return testScenario.steps
-    }
-
-    override fun getName(): String {
-        return testScenario.name
+        return (testEntity as TestScenario).steps
     }
 
     override fun getDescription(): Description {
         return stepDescriptions.computeIfAbsent(this) {
-            val description = Description.createSuiteDescription(name, testScenario.name)
+            val description = Description.createSuiteDescription(name, name)
             children?.forEach { step: TestStep -> description.addChild(describeChild(step)) }
             description
         }
@@ -73,6 +65,7 @@ open class TestScenarioRunner protected constructor(
 
     override fun run(notifier: RunNotifier) {
         try {
+            runBeforeHooks()
             super.run(notifier)
         } finally {
             try {
@@ -82,6 +75,7 @@ open class TestScenarioRunner protected constructor(
             } catch (ex: Exception) {
                 fireFailureEvent(notifier, description, ex)
             } finally {
+                runAfterHooks()
                 testStepRunResults = null
             }
         }
@@ -139,9 +133,11 @@ open class TestScenarioRunner protected constructor(
         val testStepReportDetails = testStepsDataReport
             .map { it.build() }
             .toList()
-        return TestScenarioReportDetails(name, testScenario.tags, testStepReportDetails)
+        return TestScenarioReportDetails(
+            name, getEntityTags(), beforeHookReportDetails,
+            afterHookReportDetails, testStepReportDetails
+        )
     }
-
 
     private fun attachStackTrace(e: Throwable): String {
         try {

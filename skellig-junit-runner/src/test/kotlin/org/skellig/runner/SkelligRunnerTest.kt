@@ -22,9 +22,9 @@ class SkelligRunnerTest {
         assertEquals(1, features.size)
         features[0].sort(sorter)
         assertEquals(2, testScenarios.size)
-        assertEquals("Test scenario", testScenarios[0].testScenario.name)
-        assertEquals("Another test scenario", testScenarios[1].testScenario.name)
-        assertTrue(testScenarios[1].testScenario.tags?.contains("Extra") == false)
+        assertEquals("Test scenario", testScenarios[0].getEntityName())
+        assertEquals("Another test scenario", testScenarios[1].getEntityName())
+        assertTrue(testScenarios[1].getEntityTags()?.contains("Extra") == false)
     }
 
     @Test
@@ -39,8 +39,8 @@ class SkelligRunnerTest {
         assertEquals(1, features.size)
         features[0].sort(sorter)
         assertEquals(1, testScenarios.size)
-        assertEquals("Another test scenario", testScenarios[0].testScenario.name)
-        assertTrue(testScenarios[0].testScenario.tags?.contains("Extra") == false)
+        assertEquals("Another test scenario", testScenarios[0].getEntityName())
+        assertTrue(testScenarios[0].getEntityTags()?.contains("Extra") == false)
     }
 
     private fun createTestSorter(features: MutableList<FeatureRunner>, testScenarios: MutableList<TestScenarioRunner>):Sorter {
