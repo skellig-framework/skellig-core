@@ -2,7 +2,6 @@ package org.skellig.teststep.runner.context
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigValue
 import io.github.classgraph.ClassGraph
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.CompositeTestStepFactory
@@ -33,7 +32,7 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.net.URI
 import java.net.URISyntaxException
-import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 
 private const val DEFAULT_PACKAGE_TO_SCAN = "org.skellig.teststep.processor"
@@ -42,7 +41,6 @@ open class SkelligTestContext : Closeable {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(SkelligTestContext::class.java)
-        private const val TEST_STEP_KEYWORD = "test.step.keyword"
     }
 
     private var valueExpressionContextFactory: ValueExpressionContextFactory? = null
@@ -51,7 +49,10 @@ open class SkelligTestContext : Closeable {
     private var rootTestStepFactory: CompositeTestStepFactory? = null
     private var testStepsRegistry: TestStepRegistry? = null
 
-    fun initialize(classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null): TestStepRunner {
+    fun initialize(
+        classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null,
+        classInstanceRegistry: MutableMap<Class<*>, Any>? = null
+    ): TestStepRunner {
         LOGGER.info(
             ("Initializing Skellig Context with test steps in '$testStepPaths'" +
                     configPath?.let { "and config file '$it'" })
@@ -64,7 +65,7 @@ open class SkelligTestContext : Closeable {
         val testStepReader = createTestStepReader()
         val functionExecutor = createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths)
 
-        testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths)
+        testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths, classInstanceRegistry)
 
         valueExpressionContextFactory = ValueExpressionContextFactory(
             functionExecutor,
@@ -120,13 +121,16 @@ open class SkelligTestContext : Closeable {
         testStepPaths: List<String>,
         classLoader: ClassLoader,
         testStepReader: TestStepReader,
-        testStepClassPaths: Collection<String>
+        testStepClassPaths: Collection<String>,
+        classInstanceRegistry: MutableMap<Class<*>, Any>?
     ): CachedTestStepsRegistry {
         val paths = extractTestStepPaths(testStepPaths, classLoader)
         val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader)
         testStepsRegistry.registerFoundTestStepsInPath(paths)
 
-        val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths)
+        val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths,
+            classInstanceRegistry?: ConcurrentHashMap<Class<*>, Any>()
+        )
         classTestStepsRegistry.getTestSteps().forEach { testStep ->
             testStep.values
                 .mapNotNull { it?.evaluate(ValueExpressionContext.EMPTY) }
@@ -161,17 +165,7 @@ open class SkelligTestContext : Closeable {
             if (classLoader.getResource(configPath) == null) {
                 throw IllegalArgumentException("Path to config file $configPath does not exist")
             }
-            val config = ConfigFactory.load(classLoader, configPath)
-            config?.let {
-                if (it.hasPath(TEST_STEP_KEYWORD)) {
-                    testStepKeywordsProperties = Properties()
-                    it.getObject(TEST_STEP_KEYWORD)
-                        .forEach { key: String, value: ConfigValue ->
-                            testStepKeywordsProperties!!.setProperty("$TEST_STEP_KEYWORD.$key", value.toString())
-                        }
-                }
-            }
-            config
+            ConfigFactory.load(classLoader, configPath)
         }
     }
 
@@ -218,10 +212,6 @@ open class SkelligTestContext : Closeable {
 
     protected open val propertyExtractorFunction: ((String) -> Any?)?
         get() = { key -> if (config?.hasPath(key) == true) config?.getAnyRef(key) else null }
-
-    open var testStepKeywordsProperties: Properties? = null
-        get() = null
-        protected set
 
     var config: Config? = null
         get() = field

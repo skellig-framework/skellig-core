@@ -8,9 +8,11 @@ import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.regex.Pattern
 
-internal class ClassTestStepsRegistry(packages: Collection<String>) : TestStepRegistry {
+internal class ClassTestStepsRegistry(
+    packages: Collection<String>,
+    private val classInstanceRegistry: MutableMap<Class<*>, Any>
+) : TestStepRegistry {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(ClassTestStepsRegistry::class.java)
@@ -44,39 +46,35 @@ internal class ClassTestStepsRegistry(packages: Collection<String>) : TestStepRe
     override fun getTestSteps(): Collection<Map<ValueExpression, ValueExpression?>> = testStepsPerClass
 
     private fun loadStepDefsMethods(classInfo: ClassInfo) {
-        var foundClassInstance: Any? = null
         classInfo.methodInfo
             .filter { m -> m.hasAnnotation(TestStep::class.java) }
             .forEach { m ->
                 LOGGER.debug("Extract test step from method in '${m.name}' of '${classInfo.name}'")
 
-                foundClassInstance.let {
+                val instance = classInstanceRegistry.computeIfAbsent(classInfo.loadClass()) { type ->
                     try {
-                        foundClassInstance = classInfo.loadClass().getDeclaredConstructor().newInstance()
+                        type.getDeclaredConstructor().newInstance()
                     } catch (ex: NoSuchMethodException) {
-                        throw TestStepRegistryException(
-                            "Failed to instantiate class '${classInfo.name}'",
-                            ex
-                        )
+                        throw TestStepRegistryException("Failed to instantiate class '${type.name}'", ex)
                     }
                 }
-                val method = foundClassInstance?.let { i ->
-                    i::class.java.methods.find { method -> method.name == m.name }
-                }
-                method?.let { methodInstance ->
-                    val testStepAnnotation = methodInstance.getAnnotation(TestStep::class.java)
-                    val testStepNameId = testStepAnnotation.id
-                    val testStepNamePattern = PatternValueExpression(testStepAnnotation.name)
 
-                    testStepsPerClass.add(
-                        mapOf(
-                            Pair(ID, StringValueExpression(testStepNameId)),
-                            Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
-                            Pair(TEST_STEP_DEF_INSTANCE, AnyValueExpression(foundClassInstance!!)),
-                            Pair(TEST_STEP_METHOD, AnyValueExpression(methodInstance))
+                instance::class.java.methods
+                    .find { method -> method.name == m.name }
+                    ?.let { methodInstance ->
+                        val testStepAnnotation = methodInstance.getAnnotation(TestStep::class.java)
+                        val testStepNameId = testStepAnnotation.id
+                        val testStepNamePattern = PatternValueExpression(testStepAnnotation.name)
+
+                        testStepsPerClass.add(
+                            mapOf(
+                                Pair(ID, StringValueExpression(testStepNameId)),
+                                Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
+                                Pair(TEST_STEP_DEF_INSTANCE, AnyValueExpression(instance)),
+                                Pair(TEST_STEP_METHOD, AnyValueExpression(methodInstance))
+                            )
                         )
-                    )
-                }
+                    }
             }
     }
 }

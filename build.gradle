@@ -43,6 +43,7 @@ ext {
     okHttpVersion = '4.12.0'
     jacksonVersion = '2.16.1'
     apacheCommonsVersion = '3.14.0'
+    classGraphVersion = '4.8.165'
 }
 
 allprojects {
@@ -187,6 +188,7 @@ subprojects {
             dependency group: 'org.testcontainers', name: 'junit-jupiter', version: "${testContainerVersion}"
             dependency group: 'org.testcontainers', name: 'postgresql', version: "${testContainerVersion}"
             dependency group: 'com.squareup.okhttp3', name: 'okhttp', version: "${okHttpVersion}"
+            dependency group: 'io.github.classgraph', name: 'classgraph', version: "${classGraphVersion}"
         }
     }
 

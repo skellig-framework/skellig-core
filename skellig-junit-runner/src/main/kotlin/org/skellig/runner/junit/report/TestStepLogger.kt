@@ -1,6 +1,6 @@
 package org.skellig.runner.junit.report
 
-internal interface TestStepLogger {
+interface TestStepLogger {
 
     /**
      * Add a log record
@@ -18,7 +18,7 @@ internal interface TestStepLogger {
     fun clear();
 }
 
-internal class DefaultTestStepLogger : TestStepLogger {
+class DefaultTestStepLogger : TestStepLogger {
 
     private var logRecords = mutableListOf<String>()
 

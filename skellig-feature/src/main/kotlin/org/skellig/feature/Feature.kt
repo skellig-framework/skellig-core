@@ -5,7 +5,11 @@ open class Feature protected constructor(
     val name: String,
     val scenarios: List<TestScenario>?,
     val tags: Set<String>?
-) {
+) : SkelligTestEntity {
+
+    override fun getEntityName(): String = name
+
+    override fun getEntityTags(): Set<String>? = tags
 
     class Builder {
 

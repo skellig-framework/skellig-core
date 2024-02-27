@@ -1,25 +1,31 @@
 package org.skellig.runner
 
-import com.typesafe.config.Config
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
 import org.junit.runner.notification.RunNotifier
-import org.junit.runners.ParentRunner
 import org.junit.runners.model.InitializationError
 import org.skellig.feature.Feature
+import org.skellig.feature.hook.SkelligHookRunner
+import org.skellig.feature.hook.annotation.AfterAll
+import org.skellig.feature.hook.annotation.BeforeAll
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.runner.exception.FeatureRunnerException
+import org.skellig.runner.junit.report.TestStepLogger
 import org.skellig.runner.junit.report.model.FeatureReportDetails
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.runner.TestStepRunner
 
 open class FeatureRunner(
-    val feature: Feature,
+    feature: Feature,
     protected val testStepRunner: TestStepRunner?,
     protected val testScenarioState: TestScenarioState?,
-    config: Config?,
-    protected val tagsFilter: TagsFilter
-) : ParentRunner<TestScenarioRunner>(feature.javaClass) {
+    protected val tagsFilter: TagsFilter,
+    hookRunner: SkelligHookRunner,
+    testStepLogger: TestStepLogger
+) : BaseSkelligTestEntityRunner<TestScenarioRunner>(
+    feature, hookRunner, testStepLogger,
+    BeforeAll::class.java, AfterAll::class.java
+) {
 
     private var description: Description? = null
     private var testScenarioRunners: List<TestScenarioRunner>? = null
@@ -28,28 +34,27 @@ open class FeatureRunner(
         testScenarioRunners =
             feature.scenarios
                 ?.filter { tagsFilter.checkTagsAreIncluded(it.tags) }
-                ?.map { TestScenarioRunner.create(it, testStepRunner, config) }
+                ?.map { TestScenarioRunner.create(it, testStepRunner, hookRunner, testStepLogger) }
                 ?.toList() ?: emptyList()
     }
 
     override fun getDescription(): Description? {
         if (description == null) {
-            description = Description.createSuiteDescription(name, feature.name)
+            description = Description.createSuiteDescription(name, name)
             children?.forEach { description!!.addChild(describeChild(it)) }
         }
         return description
     }
 
     fun getFeatureReportDetails(): FeatureReportDetails {
-        return FeatureReportDetails(
+        val featureReportDetails = FeatureReportDetails(
             name,
-            feature.tags,
+            getEntityTags(),
+            beforeHookReportDetails,
+            afterHookReportDetails,
             children?.map { it.getTestScenarioReportDetails() }?.toList() ?: emptyList()
         )
-    }
-
-    override fun getName(): String {
-        return feature.name
+        return featureReportDetails
     }
 
     override fun getChildren(): List<TestScenarioRunner>? {
@@ -67,10 +72,9 @@ open class FeatureRunner(
             child.run(notifier)
         } catch (e: Throwable) {
             notifier.fireTestFailure(Failure(childDescription, e))
-            notifier.pleaseStop()
         } finally {
             notifier.fireTestFinished(childDescription)
-            testScenarioState!!.clean()
+            testScenarioState?.clean()
         }
     }
 
@@ -79,11 +83,12 @@ open class FeatureRunner(
             feature: Feature,
             testStepRunner: TestStepRunner?,
             testScenarioState: TestScenarioState?,
-            config: Config?,
+            testStepLogger: TestStepLogger,
+            hookRunner: SkelligHookRunner,
             tagsFilter: TagsFilter
         ): FeatureRunner {
             return try {
-                FeatureRunner(feature, testStepRunner, testScenarioState, config, tagsFilter)
+                FeatureRunner(feature, testStepRunner, testScenarioState, tagsFilter, hookRunner, testStepLogger)
             } catch (e: InitializationError) {
                 throw FeatureRunnerException(e.message, e)
             }
