@@ -8,5 +8,5 @@ package org.skellig.feature.hook.annotation
 @Target(AnnotationTarget.FUNCTION)
 annotation class BeforeTestScenario(
     val tags: Array<String> = [],
-    val order: Int = 0
+    val order: Int = Int.MAX_VALUE
 )
