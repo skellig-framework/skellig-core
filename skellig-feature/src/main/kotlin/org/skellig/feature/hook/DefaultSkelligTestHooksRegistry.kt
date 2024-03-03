@@ -3,9 +3,9 @@ package org.skellig.feature.hook
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.skellig.feature.exception.SkelligClassInstanceRegistryException
-import org.skellig.feature.hook.annotation.AfterAll
+import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.AfterTestScenario
-import org.skellig.feature.hook.annotation.BeforeAll
+import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestScenario
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -30,8 +30,8 @@ class DefaultSkelligTestHooksRegistry(
                     listOf(
                         BeforeTestScenario::class.java,
                         AfterTestScenario::class.java,
-                        BeforeAll::class.java,
-                        AfterAll::class.java,
+                        BeforeTestFeature::class.java,
+                        AfterTestFeature::class.java,
                     ).forEach { hookType -> loadStepDefsMethods(c, hookType) }
                 }
             }
@@ -75,8 +75,8 @@ class DefaultSkelligTestHooksRegistry(
         val tags = when (annotation) {
             is BeforeTestScenario -> annotation.tags
             is AfterTestScenario -> annotation.tags
-            is BeforeAll -> annotation.tags
-            is AfterAll -> annotation.tags
+            is BeforeTestFeature -> annotation.tags
+            is AfterTestFeature -> annotation.tags
             else -> throw IllegalArgumentException(
                 "Unexpected hook annotation provided. " +
                         "Wanted: BeforeTestScenario, AfterTestScenario, BeforeAll or AfterAll], " +
@@ -90,8 +90,8 @@ class DefaultSkelligTestHooksRegistry(
         return when (annotation) {
             is BeforeTestScenario -> annotation.order
             is AfterTestScenario -> annotation.order
-            is BeforeAll -> annotation.order
-            is AfterAll -> annotation.order
+            is BeforeTestFeature -> annotation.order
+            is AfterTestFeature -> annotation.order
             else -> throw IllegalArgumentException(
                 "Unexpected hook annotation provided. " +
                         "Wanted: BeforeTestScenario, AfterTestScenario, BeforeAll or AfterAll], " +
