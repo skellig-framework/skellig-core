@@ -8,5 +8,5 @@ package org.skellig.feature.hook.annotation
 @Target(AnnotationTarget.FUNCTION)
 annotation class BeforeAll(
     val tags: Array<String> = [],
-    val order: Int = 0
+    val order: Int = Int.MAX_VALUE
 )

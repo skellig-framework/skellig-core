@@ -40,8 +40,8 @@ class DefaultSkelligTestHooksRegistry(
     override fun getByTags(hookType: Class<*>, tags: Set<String>?): Collection<SkelligHook> {
         return hooks.filter { h ->
             h.type == hookType &&
-                    tags?.let { h.tags?.intersect(tags)?.isNotEmpty() == true } ?: (h.tags == null)
-        }.toList()
+                    tags?.let { (h.tags?.intersect(tags)?.isNotEmpty()) ?: true } ?: (h.tags == null)
+        }
     }
 
     override fun getHooks(): Collection<SkelligHook> = hooks
@@ -56,7 +56,8 @@ class DefaultSkelligTestHooksRegistry(
                     try {
                         type.getDeclaredConstructor().newInstance()
                     } catch (ex: NoSuchMethodException) {
-                        throw SkelligClassInstanceRegistryException("Failed to instantiate class '${type.name}'", ex)
+                        throw SkelligClassInstanceRegistryException("Failed to instantiate class '${type.name}'." +
+                                " The hook class must have default constructor.", ex)
                     }
                 }
 
@@ -64,13 +65,14 @@ class DefaultSkelligTestHooksRegistry(
                 method?.let { methodInstance ->
                     val annotation = methodInstance.getAnnotation(hookType)
                     val tags = extractTagsFromHookAnnotation(annotation)
-                    hooks.add(SkelligHook(tags, methodInstance, instance, 0, hookType))
+                    val order = extractOrderFromHookAnnotation(annotation)
+                    hooks.add(SkelligHook(tags, methodInstance, instance, order, hookType))
                 }
             }
     }
 
-    private fun extractTagsFromHookAnnotation(annotation: Annotation): Set<String> {
-        return (when (annotation) {
+    private fun extractTagsFromHookAnnotation(annotation: Annotation): Set<String>? {
+        val tags = when (annotation) {
             is BeforeTestScenario -> annotation.tags
             is AfterTestScenario -> annotation.tags
             is BeforeAll -> annotation.tags
@@ -80,7 +82,22 @@ class DefaultSkelligTestHooksRegistry(
                         "Wanted: BeforeTestScenario, AfterTestScenario, BeforeAll or AfterAll], " +
                         "but was: ${annotation::class.java}"
             )
-        }).toSet()
+        }
+        return if(tags.isEmpty()) null else tags.toSet()
+    }
+
+    private fun extractOrderFromHookAnnotation(annotation: Annotation): Int {
+        return when (annotation) {
+            is BeforeTestScenario -> annotation.order
+            is AfterTestScenario -> annotation.order
+            is BeforeAll -> annotation.order
+            is AfterAll -> annotation.order
+            else -> throw IllegalArgumentException(
+                "Unexpected hook annotation provided. " +
+                        "Wanted: BeforeTestScenario, AfterTestScenario, BeforeAll or AfterAll], " +
+                        "but was: ${annotation::class.java}"
+            )
+        }
     }
 
 }
