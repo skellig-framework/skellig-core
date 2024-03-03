@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.skellig.feature.hook.annotation.AfterTestScenario
-import org.skellig.feature.hook.annotation.BeforeAll
+import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestScenario
 
 class DefaultSkelligHookRunnerTest {
@@ -15,7 +15,7 @@ class DefaultSkelligHookRunnerTest {
 
         var fullName = ""
         var error: Throwable? = null
-        runner.run(setOf("T4"), BeforeAll::class.java) { n, e, _ ->
+        runner.run(setOf("T4"), BeforeTestFeature::class.java) { n, e, _ ->
             fullName = n
             error = e
         }

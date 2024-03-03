@@ -6,8 +6,8 @@ import org.junit.runner.notification.RunNotifier
 import org.junit.runners.model.InitializationError
 import org.skellig.feature.Feature
 import org.skellig.feature.hook.SkelligHookRunner
-import org.skellig.feature.hook.annotation.AfterAll
-import org.skellig.feature.hook.annotation.BeforeAll
+import org.skellig.feature.hook.annotation.AfterTestFeature
+import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.runner.junit.report.TestStepLogger
@@ -24,7 +24,7 @@ open class FeatureRunner(
     testStepLogger: TestStepLogger
 ) : BaseSkelligTestEntityRunner<TestScenarioRunner>(
     feature, hookRunner, testStepLogger,
-    BeforeAll::class.java, AfterAll::class.java
+    BeforeTestFeature::class.java, AfterTestFeature::class.java
 ) {
 
     private var description: Description? = null

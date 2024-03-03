@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.skellig.feature.exception.SkelligClassInstanceRegistryException
-import org.skellig.feature.hook.annotation.AfterAll
+import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.AfterTestScenario
-import org.skellig.feature.hook.annotation.BeforeAll
+import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestScenario
 
 class DefaultSkelligTestHooksRegistryTest {
@@ -21,8 +21,8 @@ class DefaultSkelligTestHooksRegistryTest {
         val hooks = registry.getHooks()
         val beforeScenarioHooks = hooks.filter { it.type == BeforeTestScenario::class.java }
         val afterScenarioHook = hooks.find { it.type == AfterTestScenario::class.java }
-        val beforeAllHook = hooks.find { it.type == BeforeAll::class.java }
-        val afterAllHook = hooks.find { it.type == AfterAll::class.java }
+        val beforeTestFeatureHook = hooks.find { it.type == BeforeTestFeature::class.java }
+        val afterTestFeatureHook = hooks.find { it.type == AfterTestFeature::class.java }
 
         val methods = HookClass::class.java.methods
         val instance = classInstanceRegistry[HookClass::class.java]
@@ -37,15 +37,15 @@ class DefaultSkelligTestHooksRegistryTest {
             { assertEquals(2, afterScenarioHook?.order) },
             { assertEquals(setOf("T3"), afterScenarioHook?.tags) },
 
-            { assertEquals(methods.find { it.name == "beforeAll" }, beforeAllHook?.method) },
-            { assertEquals(instance, beforeAllHook?.instance) },
-            { assertEquals(3, beforeAllHook?.order) },
-            { assertEquals(setOf("T4"), beforeAllHook?.tags) },
+            { assertEquals(methods.find { it.name == "beforeAll" }, beforeTestFeatureHook?.method) },
+            { assertEquals(instance, beforeTestFeatureHook?.instance) },
+            { assertEquals(3, beforeTestFeatureHook?.order) },
+            { assertEquals(setOf("T4"), beforeTestFeatureHook?.tags) },
 
-            { assertEquals(methods.find { it.name == "afterAll" }, afterAllHook?.method) },
-            { assertEquals(instance, afterAllHook?.instance) },
-            { assertEquals(4, afterAllHook?.order) },
-            { assertEquals(setOf("T5"), afterAllHook?.tags) },
+            { assertEquals(methods.find { it.name == "afterAll" }, afterTestFeatureHook?.method) },
+            { assertEquals(instance, afterTestFeatureHook?.instance) },
+            { assertEquals(4, afterTestFeatureHook?.order) },
+            { assertEquals(setOf("T5"), afterTestFeatureHook?.tags) },
         )
     }
 
@@ -75,8 +75,8 @@ class DefaultSkelligTestHooksRegistryTest {
         assertEquals(1, registry.getByTags(BeforeTestScenario::class.java, null).size)
         assertEquals("beforeScenario2", registry.getByTags(BeforeTestScenario::class.java, null).first().method.name)
 
-        assertEquals(0, registry.getByTags(AfterAll::class.java, emptySet()).size)
-        assertEquals(0, registry.getByTags(AfterAll::class.java, null).size)
+        assertEquals(0, registry.getByTags(AfterTestFeature::class.java, emptySet()).size)
+        assertEquals(0, registry.getByTags(AfterTestFeature::class.java, null).size)
     }
 
     @Test
@@ -98,12 +98,12 @@ class DefaultSkelligTestHooksRegistryTest {
     }
 
     class HookClass {
-        @BeforeAll(tags = ["T4"], order = 3)
+        @BeforeTestFeature(tags = ["T4"], order = 3)
         fun beforeAll() {
 
         }
 
-        @AfterAll(tags = ["T5"], order = 4)
+        @AfterTestFeature(tags = ["T5"], order = 4)
         fun afterAll() {
 
         }
