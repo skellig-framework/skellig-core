@@ -10,7 +10,7 @@ class TestStep private constructor(val name: String, val parameters: Map<String,
 
         fun withName(name: String) = apply { this.name = name.trim { it <= ' ' } }
 
-        fun withParameters(parameters: MutableMap<String, String?>) = apply { this.parameters = parameters }
+        fun withParameters(parameters: MutableMap<String, String?>?) = apply { this.parameters = parameters }
 
         fun withParameter(name: String, value: String?) = apply {
             if (parameters == null) {

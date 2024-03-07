@@ -2,6 +2,12 @@
 @User
 Feature: Sign in user
 
+    Before Feature:
+        * User <user> exist in system
+
+    Before Test Scenario:
+        * User <user> exist in system
+
     @E2E-light-1
     Scenario: Sign in user <user> with valid credentials
         * User <user> exist in system

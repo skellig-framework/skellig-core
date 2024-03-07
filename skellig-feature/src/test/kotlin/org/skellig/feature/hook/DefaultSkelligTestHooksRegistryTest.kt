@@ -35,17 +35,17 @@ class DefaultSkelligTestHooksRegistryTest {
             { assertEquals(methods.find { it.name == "afterScenario" }, afterScenarioHook?.method) },
             { assertEquals(instance, afterScenarioHook?.instance) },
             { assertEquals(2, afterScenarioHook?.order) },
-            { assertEquals(setOf("T3"), afterScenarioHook?.tags) },
+            { assertEquals(setOf("@T3"), afterScenarioHook?.tags) },
 
             { assertEquals(methods.find { it.name == "beforeAll" }, beforeTestFeatureHook?.method) },
             { assertEquals(instance, beforeTestFeatureHook?.instance) },
             { assertEquals(3, beforeTestFeatureHook?.order) },
-            { assertEquals(setOf("T4"), beforeTestFeatureHook?.tags) },
+            { assertEquals(setOf("@T4"), beforeTestFeatureHook?.tags) },
 
             { assertEquals(methods.find { it.name == "afterAll" }, afterTestFeatureHook?.method) },
             { assertEquals(instance, afterTestFeatureHook?.instance) },
             { assertEquals(4, afterTestFeatureHook?.order) },
-            { assertEquals(setOf("T5"), afterTestFeatureHook?.tags) },
+            { assertEquals(setOf("@T5"), afterTestFeatureHook?.tags) },
         )
     }
 
@@ -53,8 +53,8 @@ class DefaultSkelligTestHooksRegistryTest {
     fun testRegisterHooksAndGetByTags() {
         val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"), mutableMapOf())
 
-        val beforeHooks = registry.getByTags(BeforeTestScenario::class.java, setOf("T0", "T2"))
-        val afterHooks = registry.getByTags(AfterTestScenario::class.java, setOf("T1", "T2", "T3", "T6", "T10"))
+        val beforeHooks = registry.getByTags(BeforeTestScenario::class.java, setOf("@T0", "@T2"))
+        val afterHooks = registry.getByTags(AfterTestScenario::class.java, setOf("@T1", "@T2", "@T3", "@T6", "@T10"))
 
         assertAll(
             { assertEquals(2, beforeHooks.size) },
@@ -98,17 +98,17 @@ class DefaultSkelligTestHooksRegistryTest {
     }
 
     class HookClass {
-        @BeforeTestFeature(tags = ["T4"], order = 3)
+        @BeforeTestFeature(tags = ["@T4"], order = 3)
         fun beforeAll() {
 
         }
 
-        @AfterTestFeature(tags = ["T5"], order = 4)
+        @AfterTestFeature(tags = ["@T5"], order = 4)
         fun afterAll() {
 
         }
 
-        @AfterTestScenario(tags = ["T3"], order = 2)
+        @AfterTestScenario(tags = ["@T3"], order = 2)
         fun afterScenario() {
 
         }
@@ -118,12 +118,12 @@ class DefaultSkelligTestHooksRegistryTest {
 
         }
 
-        @BeforeTestScenario(tags = ["T1", "T2"], order = 1)
+        @BeforeTestScenario(tags = ["@T1", "@T2"], order = 1)
         fun beforeScenario() {
 
         }
 
-        @AfterTestScenario(tags = ["T6"])
+        @AfterTestScenario(tags = ["@T6"])
         fun afterScenario2() {
             throw RuntimeException("unexpected error")
         }
