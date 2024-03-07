@@ -32,6 +32,10 @@ open class TestScenario protected constructor(val name: String, val steps: List<
             data?.last()?.second?.add(dataRow) ?: error("Failed to add a data row for the scenario '$name' because the data table is not initialised")
         }
 
+        fun withDataRows(dataRow: List<Map<String, String>>) = apply {
+            data?.last()?.second?.addAll(dataRow) ?: error("Failed to add a data row for the scenario '$name' because the data table is not initialised")
+        }
+
         fun build(): List<TestScenario> {
             return data?.flatMap { dataTable ->
                 tags = if (dataTable.first != null) dataTable.first!!.union(tags ?: emptySet()) else tags

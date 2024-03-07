@@ -14,6 +14,10 @@ internal class FeatureBuilder {
         private const val EXAMPLES_PREFIX = "Examples:"
         private const val SCENARIO_PREFIX = "Scenario:"
         private const val FEATURE_NAME_PREFIX = "Feature:"
+        private const val BEFORE_FEATURE_PREFIX = "Before Feature:"
+        private const val BEFORE_TEST_SCENARIO_PREFIX = "Before Test Scenario:"
+        private const val AFTER_FEATURE_PREFIX = "After Feature:"
+        private const val AFTER_TEST_SCENARIO_PREFIX = "After Test Scenario:"
         private const val STAR = "*"
         private const val GIVEN = "Given"
         private const val WHEN = "When"
@@ -36,6 +40,7 @@ internal class FeatureBuilder {
     fun withLine(line: String) {
         val newLine = line.trim { it <= ' ' }
         when {
+            newLine.startsWith(BEFORE_FEATURE_PREFIX) -> handleBeforeFeatureLine(newLine)
             newLine.startsWith(FEATURE_NAME_PREFIX) -> handleFeatureLine(newLine)
             newLine.startsWith(SCENARIO_PREFIX) -> handleTestScenarioLine(newLine)
             newLine.startsWith(EXAMPLES_PREFIX) -> handleScenarioExamplesLine()
@@ -49,6 +54,10 @@ internal class FeatureBuilder {
     fun build(): Feature {
         addLatestTestScenarioIfExist()
         return featureBuilder.build()
+    }
+
+    private fun handleBeforeFeatureLine(newLine: String) {
+        resetBuffer()
     }
 
     /**

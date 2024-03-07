@@ -33,11 +33,10 @@ class DefaultFeatureParserTest {
             { Assertions.assertNull(firstTestScenario.tags) },
             { Assertions.assertEquals("Simple scenario", firstTestScenario.name) },
             { Assertions.assertNull(firstTestScenario.steps!![0].parameters) },
-            { Assertions.assertEquals(4, firstTestScenario.steps!!.size) },
+            { Assertions.assertEquals(3, firstTestScenario.steps!!.size) },
             { Assertions.assertEquals("something", firstTestScenario.steps!![0].name) },
             { Assertions.assertEquals("Run it", firstTestScenario.steps!![1].name) },
             { Assertions.assertEquals("Check result", firstTestScenario.steps!![2].name) },
-            { Assertions.assertEquals("Run cleanup", firstTestScenario.steps!![3].name) }
         )
     }
 
@@ -47,7 +46,7 @@ class DefaultFeatureParserTest {
     fun testParseComplexFeatureFile() {
         val features = defaultFeatureParser!!.parse(getPathToSampleFile("/test-feature.sf"))
         val feature = features!![0]
-        val featureTags = setOf("E2E", "SmokeTest", "User")
+        val featureTags = setOf("@E2E", "@SmokeTest", "@User")
         Assertions.assertAll(
             { Assertions.assertEquals("Sign in user", feature.name) },
             { Assertions.assertNotNull(feature.tags) },
@@ -72,7 +71,7 @@ class DefaultFeatureParserTest {
                 )
             },
             { Assertions.assertEquals("User usr_1 successfully signed in", firstTestScenario.steps!![2].name) },
-            { Assertions.assertEquals(featureTags.union(setOf("E2E-light-1", "Additional")), firstTestScenario.tags) }
+            { Assertions.assertEquals(featureTags.union(setOf("@E2E-light-1", "@Additional")), firstTestScenario.tags) }
         )
         Assertions.assertAll(
             { Assertions.assertEquals("Sign in user usr_2 with valid credentials", secondTestScenario.name) },
@@ -85,7 +84,7 @@ class DefaultFeatureParserTest {
                 )
             },
             { Assertions.assertEquals("User usr_2 successfully signed in", secondTestScenario.steps!![2].name) },
-            { Assertions.assertEquals(featureTags.union(setOf("E2E-light-1", "Additional")), secondTestScenario.tags) }
+            { Assertions.assertEquals(featureTags.union(setOf("@E2E-light-1", "@Additional")), secondTestScenario.tags) }
         )
         Assertions.assertAll(
             { Assertions.assertEquals("Sign in user with invalid credentials", thirdTestScenario.name) },
@@ -116,7 +115,7 @@ class DefaultFeatureParserTest {
                 )
             },
             { Assertions.assertEquals("User usr_1 received error \"can't log in\"", fifthTestScenario.steps!![2].name) },
-            { Assertions.assertEquals(featureTags.union(setOf("Extra_data")), fifthTestScenario.tags) }
+            { Assertions.assertEquals(featureTags.union(setOf("@Extra_data")), fifthTestScenario.tags) }
         )
     }
 
