@@ -60,11 +60,7 @@ class DefaultFeatureParser : FeatureParser {
                             .withTags(parseTags(scenarioContext))
 
                     scenarioContext.step().forEach { testStep ->
-                        testScenarioBuilder.withStep(
-                            TestStep.Builder()
-                                .withName(getTitle(testStep.title()))
-                                .withParameters(testStep.parametersTable()?.let { extractParameters(it) })
-                        )
+                        testScenarioBuilder.withStep(createTestStepBuilder(testStep))
                     }
 
                     scenarioContext.examples()
@@ -76,12 +72,37 @@ class DefaultFeatureParser : FeatureParser {
                         }
 
                     featureBuilder.withScenarios(testScenarioBuilder)
+                } else if (tree.getChild(c) is BeforeFeatureContext) {
+                    val context = tree.getChild(c) as BeforeFeatureContext
+                    context.step().forEach { testStep ->
+                        featureBuilder.withBeforeFeatureStep(createTestStepBuilder(testStep))
+                    }
+                } else if (tree.getChild(c) is BeforeTestScenarioContext) {
+                    val context = tree.getChild(c) as BeforeTestScenarioContext
+                    context.step().forEach { testStep ->
+                        featureBuilder.withBeforeTestScenarioStep(createTestStepBuilder(testStep))
+                    }
+                } else if (tree.getChild(c) is AfterFeatureContext) {
+                    val context = tree.getChild(c) as AfterFeatureContext
+                    context.step().forEach { testStep ->
+                        featureBuilder.withAfterFeatureStep(createTestStepBuilder(testStep))
+                    }
+                } else if (tree.getChild(c) is AfterTestScenarioContext) {
+                    val context = tree.getChild(c) as AfterTestScenarioContext
+                    context.step().forEach { testStep ->
+                        featureBuilder.withAfterTestScenarioStep(createTestStepBuilder(testStep))
+                    }
                 }
                 c++
             }
         }
         return featureBuilder.build()
     }
+
+    private fun createTestStepBuilder(testStep: StepContext) =
+        TestStep.Builder()
+            .withName(getTitle(testStep.title()))
+            .withParameters(testStep.parametersTable()?.let { extractParameters(it) })
 
     private fun getTitle(titleContext: TitleContext): String =
         titleContext.TEXT().joinToString(" ")

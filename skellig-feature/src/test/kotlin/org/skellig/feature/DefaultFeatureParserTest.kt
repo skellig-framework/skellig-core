@@ -53,8 +53,22 @@ class DefaultFeatureParserTest {
             {
                 Assertions.assertTrue(feature.tags!!.containsAll(featureTags))
             },
-            { Assertions.assertEquals(5, feature.scenarios!!.size) }
+            { Assertions.assertEquals(5, feature.scenarios!!.size) },
+            { Assertions.assertEquals(1, feature.beforeFeatureSteps?.size) },
+            { Assertions.assertEquals("populate data", feature.beforeFeatureSteps?.first()?.name) },
+
+            { Assertions.assertEquals(2, feature.beforeTestScenarioSteps?.size) },
+            { Assertions.assertEquals("prepare cache", feature.beforeTestScenarioSteps?.get(0)?.name) },
+            { Assertions.assertEquals("prepare user sign in", feature.beforeTestScenarioSteps?.get(1)?.name) },
+            { Assertions.assertEquals("v1", feature.beforeTestScenarioSteps?.get(1)?.parameters?.get("p1")) },
+
+            { Assertions.assertEquals(1, feature.afterFeatureSteps?.size) },
+            { Assertions.assertEquals("clear data", feature.afterFeatureSteps?.first()?.name) },
+
+            { Assertions.assertEquals(1, feature.afterTestScenarioSteps?.size) },
+            { Assertions.assertEquals("clear cache", feature.afterTestScenarioSteps?.first()?.name) },
         )
+
         val firstTestScenario = feature.scenarios!![0]
         val secondTestScenario = feature.scenarios!![1]
         val thirdTestScenario = feature.scenarios!![2]
