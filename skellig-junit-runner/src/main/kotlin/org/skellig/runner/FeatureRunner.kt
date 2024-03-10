@@ -17,14 +17,15 @@ import org.skellig.teststep.runner.TestStepRunner
 
 open class FeatureRunner(
     feature: Feature,
-    protected val testStepRunner: TestStepRunner?,
     protected val testScenarioState: TestScenarioState?,
     protected val tagsFilter: TagsFilter,
     hookRunner: SkelligHookRunner,
+    testStepRunner: TestStepRunner?,
     testStepLogger: TestStepLogger
 ) : BaseSkelligTestEntityRunner<TestScenarioRunner>(
-    feature, hookRunner, testStepLogger,
-    BeforeTestFeature::class.java, AfterTestFeature::class.java
+    feature, hookRunner, testStepRunner, testStepLogger,
+    BeforeTestFeature::class.java, AfterTestFeature::class.java,
+    feature.beforeSteps, feature.afterSteps
 ) {
 
     private var description: Description? = null
@@ -38,23 +39,12 @@ open class FeatureRunner(
                 ?.toList() ?: emptyList()
     }
 
-    override fun getDescription(): Description? {
+    override fun getDescription(): Description {
         if (description == null) {
             description = Description.createSuiteDescription(name, name)
             children?.forEach { description!!.addChild(describeChild(it)) }
         }
-        return description
-    }
-
-    fun getFeatureReportDetails(): FeatureReportDetails {
-        val featureReportDetails = FeatureReportDetails(
-            name,
-            getEntityTags(),
-            beforeHookReportDetails,
-            afterHookReportDetails,
-            children?.map { it.getTestScenarioReportDetails() }?.toList() ?: emptyList()
-        )
-        return featureReportDetails
+        return description ?: error("Failed to create description of feature: " + testEntity.getEntityName())
     }
 
     override fun getChildren(): List<TestScenarioRunner>? {
@@ -78,6 +68,19 @@ open class FeatureRunner(
         }
     }
 
+    fun getFeatureReportDetails(): FeatureReportDetails {
+        val featureReportDetails = FeatureReportDetails(
+            name,
+            getEntityTags(),
+            beforeHookReportDetails,
+            afterHookReportDetails,
+            beforeTestStepsDataReport.map { it.build() }.toList(),
+            afterTestStepsDataReport.map { it.build() }.toList(),
+            children?.map { it.getTestScenarioReportDetails() }?.toList() ?: emptyList()
+        )
+        return featureReportDetails
+    }
+
     companion object {
         fun create(
             feature: Feature,
@@ -88,7 +91,7 @@ open class FeatureRunner(
             tagsFilter: TagsFilter
         ): FeatureRunner {
             return try {
-                FeatureRunner(feature, testStepRunner, testScenarioState, tagsFilter, hookRunner, testStepLogger)
+                FeatureRunner(feature, testScenarioState, tagsFilter, hookRunner, testStepRunner, testStepLogger)
             } catch (e: InitializationError) {
                 throw FeatureRunnerException(e.message, e)
             }

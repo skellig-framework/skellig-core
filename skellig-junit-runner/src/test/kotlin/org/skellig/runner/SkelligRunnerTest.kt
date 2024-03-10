@@ -29,7 +29,7 @@ class SkelligRunnerTest {
 
     @Test
     fun testOverriddenTags() {
-        System.setProperty("skellig.includeTags", "T2")
+        System.setProperty("skellig.includeTags", "@T2")
         val skelligRunner = SkelligRunner(SkelligRunnerWithTagsTest::class.java)
         val features = mutableListOf<FeatureRunner>()
         val testScenarios = mutableListOf<TestScenarioRunner>()
@@ -59,8 +59,8 @@ class SkelligRunnerTest {
     @SkelligOptions(features = ["tags-tests", "feature"],
         testSteps = ["feature", "org.skellig.runner.stepdefs"],
         config = "test.conf",
-        includeTags = ["SmokeTestGroup"],
-        excludeTags = ["Extra"]
+        includeTags = ["@SmokeTestGroup"],
+        excludeTags = ["@Extra"]
     )
     class SkelligRunnerWithTagsTest
 

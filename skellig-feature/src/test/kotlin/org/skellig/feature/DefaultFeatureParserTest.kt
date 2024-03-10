@@ -54,19 +54,11 @@ class DefaultFeatureParserTest {
                 Assertions.assertTrue(feature.tags!!.containsAll(featureTags))
             },
             { Assertions.assertEquals(5, feature.scenarios!!.size) },
-            { Assertions.assertEquals(1, feature.beforeFeatureSteps?.size) },
-            { Assertions.assertEquals("populate data", feature.beforeFeatureSteps?.first()?.name) },
+            { Assertions.assertEquals(1, feature.beforeSteps?.size) },
+            { Assertions.assertEquals("populate data", feature.beforeSteps?.first()?.name) },
 
-            { Assertions.assertEquals(2, feature.beforeTestScenarioSteps?.size) },
-            { Assertions.assertEquals("prepare cache", feature.beforeTestScenarioSteps?.get(0)?.name) },
-            { Assertions.assertEquals("prepare user sign in", feature.beforeTestScenarioSteps?.get(1)?.name) },
-            { Assertions.assertEquals("v1", feature.beforeTestScenarioSteps?.get(1)?.parameters?.get("p1")) },
-
-            { Assertions.assertEquals(1, feature.afterFeatureSteps?.size) },
-            { Assertions.assertEquals("clear data", feature.afterFeatureSteps?.first()?.name) },
-
-            { Assertions.assertEquals(1, feature.afterTestScenarioSteps?.size) },
-            { Assertions.assertEquals("clear cache", feature.afterTestScenarioSteps?.first()?.name) },
+            { Assertions.assertEquals(1, feature.afterSteps?.size) },
+            { Assertions.assertEquals("clear data", feature.afterSteps?.first()?.name) },
         )
 
         val firstTestScenario = feature.scenarios!![0]
@@ -85,7 +77,16 @@ class DefaultFeatureParserTest {
                 )
             },
             { Assertions.assertEquals("User usr_1 successfully signed in", firstTestScenario.steps!![2].name) },
-            { Assertions.assertEquals(featureTags.union(setOf("@E2E-light-1", "@Additional")), firstTestScenario.tags) }
+            { Assertions.assertEquals(featureTags.union(setOf("@E2E-light-1", "@Additional")), firstTestScenario.tags) },
+            { Assertions.assertEquals(featureTags.union(setOf("@E2E-light-1", "@Additional")), firstTestScenario.tags) },
+
+            { Assertions.assertEquals(2, firstTestScenario.beforeSteps?.size) },
+            { Assertions.assertEquals("prepare cache", firstTestScenario.beforeSteps?.get(0)?.name) },
+            { Assertions.assertEquals("prepare user sign in", firstTestScenario.beforeSteps?.get(1)?.name) },
+            { Assertions.assertEquals("v1", firstTestScenario.beforeSteps?.get(1)?.parameters?.get("p1")) },
+
+            { Assertions.assertEquals(1, firstTestScenario.afterSteps?.size) },
+            { Assertions.assertEquals("clear cache", firstTestScenario.afterSteps?.first()?.name) },
         )
         Assertions.assertAll(
             { Assertions.assertEquals("Sign in user usr_2 with valid credentials", secondTestScenario.name) },

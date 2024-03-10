@@ -4,10 +4,8 @@ package org.skellig.feature
 open class Feature protected constructor(
     val name: String,
     val scenarios: List<TestScenario>?,
-    val beforeFeatureSteps: List<TestStep>?,
-    val beforeTestScenarioSteps: List<TestStep>?,
-    val afterFeatureSteps: List<TestStep>?,
-    val afterTestScenarioSteps: List<TestStep>?,
+    val beforeSteps: List<TestStep>?,
+    val afterSteps: List<TestStep>?,
     val tags: Set<String>?
 ) : SkelligTestEntity {
 
@@ -18,7 +16,7 @@ open class Feature protected constructor(
     class Builder {
 
         private var name: String? = null
-        private val scenarios = mutableListOf<TestScenario>()
+        private val testScenarioBuilders = mutableListOf<TestScenario.Builder>()
         private var beforeFeatureStepsBuilder: MutableList<TestStep.Builder>? = null
         private var beforeTestScenarioStepsBuilder: MutableList<TestStep.Builder>? = null
         private var afterFeatureStepsBuilder: MutableList<TestStep.Builder>? = null
@@ -27,9 +25,9 @@ open class Feature protected constructor(
 
         fun withName(name: String) = apply { this.name = name.trim { it <= ' ' } }
 
-        fun withScenarios(scenarioBuilder: TestScenario.Builder) = apply {
+        fun withTestScenario(scenarioBuilder: TestScenario.Builder) = apply {
             tags?.let { scenarioBuilder.withTags(it) }
-            this.scenarios.addAll(scenarioBuilder.build())
+            this.testScenarioBuilders.add(scenarioBuilder)
         }
 
         fun withBeforeFeatureStep(stepBuilder: TestStep.Builder) = apply {
@@ -55,13 +53,19 @@ open class Feature protected constructor(
         fun withTags(tags: Set<String>?) = apply { this.tags = tags }
 
         fun build(): Feature {
+            val beforeTestScenarioSteps = beforeTestScenarioStepsBuilder?.map { it.build() }?.toList()
+            val afterTestScenarioSteps = afterTestScenarioStepsBuilder?.map { it.build() }?.toList()
+            val testScenarios = testScenarioBuilders.flatMap {
+                it.withBeforeSteps(beforeTestScenarioSteps)
+                    .withAfterSteps(afterTestScenarioSteps)
+                    .build()
+            }.toList()
+
             return Feature(
-                name ?: error("Feature cannot have empty name"),
-                scenarios,
+                name ?: error("Feature cannot have an empty name"),
+                testScenarios,
                 beforeFeatureStepsBuilder?.map { it.build() }?.toList(),
-                beforeTestScenarioStepsBuilder?.map { it.build() }?.toList(),
                 afterFeatureStepsBuilder?.map { it.build() }?.toList(),
-                afterTestScenarioStepsBuilder?.map { it.build() }?.toList(),
                 tags
             )
         }

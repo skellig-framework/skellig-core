@@ -1,9 +1,13 @@
 package org.skellig.runner.junit.report.model
 
+import org.skellig.feature.TestStep
+
 class FeatureReportDetails(val name: String?,
                            val tags: Set<String>?,
                            val beforeHooksReportDetails: List<HookReportDetails>?,
                            val afterHooksReportDetails: List<HookReportDetails>?,
+                           val beforeReportDetails: List<TestStepReportDetails<*>>?,
+                           val afterReportDetails: List<TestStepReportDetails<*>>?,
                            val testScenarioReportDetails: List<TestScenarioReportDetails>?) {
 
     private var totalTestSteps = -1

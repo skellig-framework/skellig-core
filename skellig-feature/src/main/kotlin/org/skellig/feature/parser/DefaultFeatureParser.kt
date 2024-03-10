@@ -71,7 +71,7 @@ class DefaultFeatureParser : FeatureParser {
                             testScenarioBuilder.withDataRows(exampleRows)
                         }
 
-                    featureBuilder.withScenarios(testScenarioBuilder)
+                    featureBuilder.withTestScenario(testScenarioBuilder)
                 } else if (tree.getChild(c) is BeforeFeatureContext) {
                     val context = tree.getChild(c) as BeforeFeatureContext
                     context.step().forEach { testStep ->
@@ -101,7 +101,7 @@ class DefaultFeatureParser : FeatureParser {
 
     private fun createTestStepBuilder(testStep: StepContext) =
         TestStep.Builder()
-            .withName(getTitle(testStep.title()))
+            .withName(testStep.title().TEXT().drop(1).joinToString(" "))
             .withParameters(testStep.parametersTable()?.let { extractParameters(it) })
 
     private fun getTitle(titleContext: TitleContext): String =

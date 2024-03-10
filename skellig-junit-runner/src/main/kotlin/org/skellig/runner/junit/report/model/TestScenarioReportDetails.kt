@@ -5,6 +5,8 @@ class TestScenarioReportDetails(
     val tags: Set<String>?,
     val beforeHooksReportDetails: List<HookReportDetails>?,
     val afterHooksReportDetails: List<HookReportDetails>?,
+    val beforeReportDetails: List<TestStepReportDetails<*>>?,
+    val afterReportDetails: List<TestStepReportDetails<*>>?,
     val testStepReportDetails: List<TestStepReportDetails<*>>?
 ) {
 
