@@ -178,7 +178,7 @@ internal class FeatureBuilder {
     private fun addLatestTestScenarioIfExist() {
         if (testScenarioBuilder != null) {
             addLatestTestStepIfExist()
-            testScenarioBuilder?.let { featureBuilder.withScenarios(it) }
+            testScenarioBuilder?.let { featureBuilder.withTestScenario(it) }
             isReadingTestScenarioData = false
         }
     }
