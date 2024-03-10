@@ -2,13 +2,11 @@ package org.skellig.runner
 
 import org.junit.runner.Description
 import org.junit.runner.notification.RunNotifier
-import org.junit.runners.model.InitializationError
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
 import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestScenario
-import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.runner.junit.report.TestStepLogger
 import org.skellig.runner.junit.report.model.TestScenarioReportDetails
 import org.skellig.runner.junit.report.model.TestStepReportDetails
@@ -32,16 +30,11 @@ open class TestScenarioRunner protected constructor(
             testScenario: TestScenario, testStepRunner: TestStepRunner?,
             hookRunner: SkelligHookRunner, testStepLogger: TestStepLogger
         ): TestScenarioRunner {
-            return try {
-                TestScenarioRunner(testScenario, testStepRunner, hookRunner, testStepLogger)
-            } catch (e: InitializationError) {
-                throw FeatureRunnerException(e.message, e)
-            }
+            return TestScenarioRunner(testScenario, testStepRunner, hookRunner, testStepLogger)
         }
     }
 
     private var description: Description? = null
-    private var stepDescriptions = hashMapOf<Any, Description>()
     protected var testStepRunResults: MutableList<TestStepRunResult>? = mutableListOf()
     protected var testStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
 
@@ -50,20 +43,15 @@ open class TestScenarioRunner protected constructor(
     }
 
     override fun getDescription(): Description {
-      /*  return stepDescriptions.computeIfAbsent(this) {
-            val description = Description.createSuiteDescription(name, name)
-            children?.forEach { step: TestStep -> description.addChild(describeChild(step)) }
-            description
-        } */
         if (description == null) {
             description = Description.createSuiteDescription(name, name)
             children?.forEach { step: TestStep -> description?.addChild(describeChild(step)) }
         }
-       return description?: error("Failed to create description of test scenario: " + testEntity.getEntityName())
+        return description ?: error("Failed to create description of test scenario: " + testEntity.getEntityName())
     }
 
     override fun describeChild(step: TestStep): Description {
-        return stepDescriptions.computeIfAbsent(step) { Description.createTestDescription(name, step.name, step.name) }
+        return describeTestStep(step)
     }
 
     override fun runChild(child: TestStep, notifier: RunNotifier) {

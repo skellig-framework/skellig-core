@@ -3,13 +3,11 @@ package org.skellig.runner
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
 import org.junit.runner.notification.RunNotifier
-import org.junit.runners.model.InitializationError
 import org.skellig.feature.Feature
 import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.metadata.TagsFilter
-import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.runner.junit.report.TestStepLogger
 import org.skellig.runner.junit.report.model.FeatureReportDetails
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -90,11 +88,7 @@ open class FeatureRunner(
             hookRunner: SkelligHookRunner,
             tagsFilter: TagsFilter
         ): FeatureRunner {
-            return try {
-                FeatureRunner(feature, testScenarioState, tagsFilter, hookRunner, testStepRunner, testStepLogger)
-            } catch (e: InitializationError) {
-                throw FeatureRunnerException(e.message, e)
-            }
+            return FeatureRunner(feature, testScenarioState, tagsFilter, hookRunner, testStepRunner, testStepLogger)
         }
     }
 }

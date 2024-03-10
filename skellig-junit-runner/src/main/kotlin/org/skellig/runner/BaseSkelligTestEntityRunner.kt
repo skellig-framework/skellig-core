@@ -30,7 +30,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     protected val afterHookReportDetails = mutableListOf<HookReportDetails>()
     protected var beforeTestStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
     protected var afterTestStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
-    private var beforeTestStepRunResults: MutableList<TestStepProcessor.TestStepRunResult>? = mutableListOf()
+    private var testStepHooksRunResults: MutableList<TestStepProcessor.TestStepRunResult>? = mutableListOf()
     private var isTestFailed = false
 
     override fun getEntityName(): String = testEntity.getEntityName()
@@ -41,28 +41,30 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
 
     override fun run(notifier: RunNotifier) {
         try {
-//            runBeforeHooks(notifier)
+            runBeforeHooks(notifier)
             super.run(notifier)
         } finally {
-//            runAfterHooks(notifier)
+            runAfterHooks(notifier)
         }
     }
 
     protected open fun runBeforeHooks(notifier: RunNotifier) {
         runTestSteps(beforeSteps, notifier, beforeTestStepsDataReport)
             ?.filterNotNull()
-            ?.forEach { result -> beforeTestStepRunResults?.add(result) }
-        hookRunner.run(testEntity.getEntityTags(), afterHookType) { name, e, duration ->
+            ?.forEach { result -> testStepHooksRunResults?.add(result) }
+        hookRunner.run(testEntity.getEntityTags(), beforeHookType) { name, e, duration ->
             beforeHookReportDetails.add(createHookReportDetails(name, e, duration))
         }
     }
 
     protected open fun runAfterHooks(notifier: RunNotifier) {
         runTestSteps(afterSteps, notifier, afterTestStepsDataReport)
-        hookRunner.run(testEntity.getEntityTags(), beforeHookType) { name, e, duration ->
+            ?.filterNotNull()
+            ?.forEach { result -> testStepHooksRunResults?.add(result) }
+        hookRunner.run(testEntity.getEntityTags(), afterHookType) { name, e, duration ->
             afterHookReportDetails.add(createHookReportDetails(name, e, duration))
         }
-        awaitForTestStepRunResults(beforeTestStepRunResults, notifier)
+        awaitForTestStepRunResults(testStepHooksRunResults, notifier)
     }
 
     protected fun runTestStep(
@@ -119,12 +121,19 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
         return runResult
     }
 
-    private fun runTestSteps(testSteps: List<TestStep>?,
-                               notifier: RunNotifier,
-                               testStepsDataReport: MutableList<TestStepReportDetails.Builder>): List<TestStepProcessor.TestStepRunResult?>? {
-        return testSteps?.map { testStep ->
-            runTestStep(testStep, description, notifier, testStepsDataReport)
-        }?.toList()
+    private fun runTestSteps(
+        testSteps: List<TestStep>?,
+        notifier: RunNotifier,
+        testStepsDataReport: MutableList<TestStepReportDetails.Builder>
+    ): List<TestStepProcessor.TestStepRunResult?>? {
+        return testSteps
+            ?.map { testStep ->
+                runTestStep(testStep, describeTestStep(testStep), notifier, testStepsDataReport)
+            }?.toList()
+    }
+
+    protected fun describeTestStep(step: TestStep): Description {
+        return Description.createTestDescription(name, step.name, step.name)
     }
 
     private fun createHookReportDetails(name: String, e: Throwable?, duration: Long) =
@@ -134,27 +143,19 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
         try {
             // if there are any async test step running, then wait until they're finished
             // within set timeout. Cleanup results as they are no longer needed.
-            testStepRunResults?.forEach { it.awaitResult() }
-        } catch (ex: Exception) {
-            fireFailureEvent(notifier, description, ex)
+            testStepRunResults?.forEach {
+                try {
+                    it.awaitResult()
+                } catch (ex: Exception) {
+                    fireFailureEvent(notifier, description, ex)
+                }
+            }
         } finally {
             testStepRunResults?.clear()
         }
     }
 
-    private fun attachStackTrace(e: Throwable): String {
-        try {
-            StringWriter().use { stringWriter ->
-                PrintWriter(stringWriter).use { stackTraceWriter ->
-                    stackTraceWriter.append("\n")
-                    e.printStackTrace(stackTraceWriter)
-                    return stringWriter.toString()
-                }
-            }
-        } catch (ioException: Exception) {
-            return ""
-        }
-    }
+    private fun attachStackTrace(e: Throwable): String = e.stackTraceToString()
 
     private fun fireFailureEvent(notifier: RunNotifier, childDescription: Description, e: Throwable) {
         notifier.fireTestFailure(Failure(childDescription, e))
