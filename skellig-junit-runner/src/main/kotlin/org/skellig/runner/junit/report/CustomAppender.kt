@@ -11,7 +11,7 @@ import java.util.*
 internal class CustomAppender(private val testStepLogger: TestStepLogger) : AppenderSkeleton() {
 
     companion object {
-        private val DATE_TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS")
+        internal val DATE_TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS")
     }
 
     override fun append(event: LoggingEvent) {
