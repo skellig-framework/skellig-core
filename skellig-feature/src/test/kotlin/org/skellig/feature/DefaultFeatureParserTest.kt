@@ -152,12 +152,14 @@ class DefaultFeatureParserTest {
     @DisplayName("Parse simple valid feature file Then validate parsing is correct")
     fun testParseFeatureFileWithInvalidScenarioName() {
         val ex = assertThrows<FeatureParseException> { defaultFeatureParser!!.parse(getPathToSampleFile("/test-invalid-feature-2.sf")) }
-        assertEquals(
-            "line 3 in Feature: Invalid feature\n" +
-                    "\n" +
-                    "    Scenario:\n" +
-                    "    Invalid scenario\n" +
-                    ": 13 extraneous input '\\r\\n' expecting TEXT", ex.message?.replace("\r\n", "\n")
+        val errorMessage = "line 3 in Feature: Invalid feature\n" +
+                "\n" +
+                "    Scenario:\n" +
+                "    Invalid scenario\n" +
+                ": 13 extraneous input '\\r\\n' expecting TEXT"
+        assertTrue(
+            errorMessage == ex.message?.replace("\r\n", "\n") ||
+                    errorMessage.replace("\\r\\n", "\\n") == ex.message?.replace("\r\n", "\n")
         )
     }
 
