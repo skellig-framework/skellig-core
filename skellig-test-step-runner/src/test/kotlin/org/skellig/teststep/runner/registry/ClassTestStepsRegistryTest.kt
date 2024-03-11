@@ -14,14 +14,14 @@ class ClassTestStepsRegistryTest {
 
     @Test
     fun testExtractTestStepsNonExistingPath() {
-        val registry = ClassTestStepsRegistry(listOf("invalid.package"))
+        val registry = ClassTestStepsRegistry(listOf("invalid.package"), mutableMapOf())
 
         assertEquals(0, registry.getTestSteps().size)
     }
 
     @Test
     fun testExtractTestStepsFromClasses() {
-        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.registry"))
+        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.registry"), mutableMapOf())
 
         val testSteps = registry.getTestSteps()
         val firstStep = testSteps.first() as Map<*,*>
