@@ -3,8 +3,8 @@ package org.skellig.runner.junit.report
 import freemarker.cache.URLTemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.Template
-import org.skellig.runner.exception.SkelligReportException
 import org.skellig.runner.junit.report.model.FeatureReportDetails
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -16,6 +16,8 @@ import java.nio.file.attribute.BasicFileAttributes
 class SkelligReportGenerator : ReportGenerator {
 
     companion object {
+        private val LOGGER = LoggerFactory.getLogger(SkelligReportGenerator::class.java)
+
         private const val JAR_URL_TYPE = "jar"
         private const val TARGET_FOLDER = "target"
         private const val OUT_FOLDER = "out"
@@ -40,8 +42,7 @@ class SkelligReportGenerator : ReportGenerator {
                 generateFeatureReports(it)
             }
         } catch (e: Exception) {
-            //log later
-            e.printStackTrace()
+            LOGGER.error("Failed to generate a Skellig Report", e)
         }
     }
 
@@ -83,33 +84,23 @@ class SkelligReportGenerator : ReportGenerator {
     }
 
     private fun constructFromTemplate(template: Template, dataModel: Map<String, *>, reportFile: File) {
-        try {
-            FileWriter(reportFile).use { outMessage -> template.process(dataModel, outMessage) }
-        } catch (e: Exception) {
-            throw SkelligReportException("Can't process template file", e)
-        }
+        FileWriter(reportFile).use { outMessage -> template.process(dataModel, outMessage) }
     }
 
     private fun loadFtlTemplate(reportFtlFile: String): Template {
-        return try {
-            val url = getUrl(reportFtlFile)
-            val configuration = Configuration(Configuration.VERSION_2_3_30)
-            configuration.templateLoader = object : URLTemplateLoader() {
-                override fun getURL(s: String): URL {
-                    return url
-                }
+        val url = getUrl(reportFtlFile)
+        val configuration = Configuration(Configuration.VERSION_2_3_30)
+        configuration.templateLoader = object : URLTemplateLoader() {
+            override fun getURL(s: String): URL {
+                return url
             }
-            configuration.defaultEncoding = "UTF-8"
-            configuration.getTemplate("")
-        } catch (e: Exception) {
-            throw SkelligReportException(String.format("Failed to load template file '%s'", "report/index.ftl"), e)
         }
+        configuration.defaultEncoding = "UTF-8"
+        return configuration.getTemplate("")
     }
 
     private fun getReportFolderPath(path: Path): Path {
-        return if (path.endsWith(TARGET_FOLDER) || path.endsWith(BUILD_FOLDER)
-            || path.endsWith(OUT_FOLDER)
-        ) {
+        return if (path.endsWith(TARGET_FOLDER) || path.endsWith(BUILD_FOLDER) || path.endsWith(OUT_FOLDER)) {
             path
         } else if (path.endsWith(SRC_FOLDER)) {
             path.parent

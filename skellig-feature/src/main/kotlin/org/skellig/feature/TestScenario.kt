@@ -36,10 +36,6 @@ open class TestScenario protected constructor(
             data?.add(Pair(tags, mutableListOf()))
         }
 
-        fun withDataRow(dataRow: Map<String, String>) = apply {
-            data?.last()?.second?.add(dataRow) ?: error("Failed to add a data row for the scenario '$name' because the data table is not initialised")
-        }
-
         fun withDataRows(dataRow: List<Map<String, String>>) = apply {
             data?.last()?.second?.addAll(dataRow) ?: error("Failed to add a data row for the scenario '$name' because the data table is not initialised")
         }

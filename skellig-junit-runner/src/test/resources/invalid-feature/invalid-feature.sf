@@ -1,0 +1,9 @@
+Feature: Invalid feature
+
+    Scenario: Invalid test scenario
+        * Validate result is <expected>
+        @T2
+        Examples:
+            | value | expected |
+            | v1    |
+

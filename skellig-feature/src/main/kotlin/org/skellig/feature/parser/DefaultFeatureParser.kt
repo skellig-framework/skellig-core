@@ -18,14 +18,14 @@ class DefaultFeatureParser : FeatureParser {
         private val FEATURE_FILE_EXTENSION = setOf("sf", "skellig", "sfeature")
     }
 
-    override fun parse(path: String?): List<Feature>? {
+    override fun parse(path: String?): List<Feature> {
         return path?.let {
             File(path).walk()
                 .filter { it.isFile }
                 .filter { FEATURE_FILE_EXTENSION.contains(it.extension) }
                 .map { parseFeature(it.inputStream()) }
                 .toList()
-        }
+        } ?: emptyList()
     }
 
     fun parseFeature(content: InputStream): Feature {

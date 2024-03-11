@@ -12,13 +12,6 @@ class TestStep private constructor(val name: String, val parameters: Map<String,
 
         fun withParameters(parameters: MutableMap<String, String?>?) = apply { this.parameters = parameters }
 
-        fun withParameter(name: String, value: String?) = apply {
-            if (parameters == null) {
-                parameters = mutableMapOf()
-            }
-            parameters!![name.trim { it <= ' ' }] = value?.trim { it <= ' ' }
-        }
-
         fun build(): TestStep {
             return TestStep(name!!, parameters)
         }

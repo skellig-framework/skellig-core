@@ -1,0 +1,7 @@
+Feature: Invalid feature
+
+    Scenario: Invalid scenario
+        Given something
+        Examples:
+            |a|b|
+            |1|
