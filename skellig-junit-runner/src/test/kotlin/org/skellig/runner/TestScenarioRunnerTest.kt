@@ -74,14 +74,14 @@ class TestScenarioRunnerTest {
             .withName("f1")
             .withBeforeSteps(
                 listOf(
-                    TestStep.Builder().withName(testStepBeforeName1).build(),
-                    TestStep.Builder().withName(testStepBeforeName2).build()
+                    TestStep.Builder().withName(testStepBeforeName1),
+                    TestStep.Builder().withName(testStepBeforeName2)
                 )
             )
             .withAfterSteps(
                 listOf(
-                    TestStep.Builder().withName(testStepAfterName1).build(),
-                    TestStep.Builder().withName(testStepAfterName2).build()
+                    TestStep.Builder().withName(testStepAfterName1),
+                    TestStep.Builder().withName(testStepAfterName2)
                 )
             )
             .withStep(TestStep.Builder().withName("t1"))

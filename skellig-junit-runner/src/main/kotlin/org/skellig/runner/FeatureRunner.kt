@@ -4,6 +4,7 @@ import org.junit.runner.Description
 import org.junit.runner.notification.Failure
 import org.junit.runner.notification.RunNotifier
 import org.skellig.feature.Feature
+import org.skellig.feature.SkelligTestEntity
 import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
@@ -39,7 +40,7 @@ open class FeatureRunner(
 
     override fun getDescription(): Description {
         if (description == null) {
-            description = Description.createSuiteDescription(name, name)
+            description = Description.createSuiteDescription(name, getId())
             children?.forEach { description!!.addChild(describeChild(it)) }
         }
         return description ?: error("Failed to create description of feature: " + testEntity.getEntityName())
@@ -54,16 +55,7 @@ open class FeatureRunner(
     }
 
     override fun runChild(child: TestScenarioRunner, notifier: RunNotifier) {
-        val childDescription = describeChild(child)
-        notifier.fireTestStarted(childDescription)
-        try {
-            child.run(notifier)
-        } catch (e: Throwable) {
-            notifier.fireTestFailure(Failure(childDescription, e))
-        } finally {
-            notifier.fireTestFinished(childDescription)
-            testScenarioState?.clean()
-        }
+        child.run(notifier)
     }
 
     fun getFeatureReportDetails(): FeatureReportDetails {

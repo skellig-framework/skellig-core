@@ -39,12 +39,23 @@ open class TestScenarioRunner protected constructor(
     protected var testStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
 
     override fun getChildren(): List<TestStep>? {
-        return (testEntity as TestScenario).steps
+        val testScenario = testEntity as TestScenario
+        var testSteps: List<TestStep>? = null
+        testScenario.beforeSteps?.let {
+            testSteps = it
+        }
+        testScenario.steps?.let {
+            testSteps = testSteps?.plus(it) ?: it
+        }
+        testScenario.afterSteps?.let {
+            testSteps = testSteps?.plus(it) ?: testSteps
+        }
+        return testSteps
     }
 
     override fun getDescription(): Description {
         if (description == null) {
-            description = Description.createSuiteDescription(name, name)
+            description = Description.createSuiteDescription(name, getId())
             children?.forEach { step: TestStep -> description?.addChild(describeChild(step)) }
         }
         return description ?: error("Failed to create description of test scenario: " + testEntity.getEntityName())

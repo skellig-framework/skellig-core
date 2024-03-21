@@ -36,9 +36,71 @@
                     </div>
                 </div>
                 <#if feature.tagsLine?? && feature.tagsLine?trim?has_content>
-                <div class="tags-text-panel">
-                    ${feature.tagsLine}
-                </div>
+                    <div class="tags-text-panel">
+                        ${feature.tagsLine}
+                    </div>
+                </#if>
+
+                <#if feature.hooksReportDetails?? && feature.hooksReportDetails?has_content>
+                    <div id="hooksParentPanel" role="tablist" aria-multiselectable="true"
+                         class="card-collapse">
+                        <div class="card card-plain">
+                            <div class="card-header" id="hooksHeader">
+                                <a data-toggle="collapse"
+                                   href="#hooksPanel" aria-expanded="false"
+                                   aria-controls="testStepsPanel" data-parent="#hooksParentPanel"
+                                   class="collapsed <#if feature.passed>passed-color<#else>failed-color</#if>">
+                                    ${hooksTitle}
+                                    <div class="duration">
+                                        ${feature.hooksDurationFormatted}
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div id="hooksPanel" role="tablist" aria-multiselectable="true"
+                                 class="collapse" aria-labelledby="hooksHeader">
+                                <div class="card-body">
+                                    <#list feature.hooksReportDetails as hook>
+                                        <#assign i = hook?index />
+                                        <div class="card card-plain">
+                                            <div class="card-header" id="hookHeader${i}">
+                                                <a data-toggle="collapse" data-parent="#hookPanel${i}"
+                                                   href="#hookPanel${i}" aria-expanded="false"
+                                                   aria-controls="hookPanel${i}"
+                                                   class="collapsed <#if hook.passed>passed-color<#else>failed-color</#if>">
+                                                    ${hook.methodName}
+                                                    <div class="duration">
+                                                        ${hook.durationFormatted}
+                                                    </div>
+                                                </a>
+                                            </div>
+                                            <div id="hookPanel${i}" class="collapse" role="tabpanel"
+                                                 aria-labelledby="hookHeader${i}">
+                                                <#if !hook.passed>
+                                                    <div class="medium-text-panel failed-content-color">
+                                                        ${errorTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel failed-content-color">${hook.errorLog?html?trim}</pre>
+                                                </#if>
+                                                <#if hook.logRecords?? && hook.logRecords?has_content>
+                                                    <div class="card card-body">
+                                                    <pre class="small-text-panel">
+                                                        <#list hook.logRecords as log>
+                                                            <p>${log?html?trim}</p>
+                                                        </#list>
+                                                    </pre>
+                                                    </div>
+                                                </#if>
+                                            </div>
+                                        </div>
+                                    </#list>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
                 </#if>
             </div>
 
@@ -63,12 +125,12 @@
                              class="collapse"
                              aria-labelledby="testScenarioHeader${i}">
                             <#if tsrd.tagsLine?? && tsrd.tagsLine?trim?has_content>
-                            <div class="card-body">
-                                <div class="tags-text-panel">
-                                    ${tsrd.tagsLine}
+                                <div class="card-body">
+                                    <div class="tags-text-panel">
+                                        ${tsrd.tagsLine}
+                                    </div>
                                 </div>
-                            </div>
-                             </#if>
+                            </#if>
                             <div class="card-body">
                                 <#list tsrd.testStepReportDetails as step>
                                     <#assign si = i +"_"+step?index />

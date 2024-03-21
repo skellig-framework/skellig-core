@@ -23,12 +23,12 @@ class DefaultFeatureParser : FeatureParser {
             File(path).walk()
                 .filter { it.isFile }
                 .filter { FEATURE_FILE_EXTENSION.contains(it.extension) }
-                .map { parseFeature(it.inputStream()) }
+                .map { parseFeature(it.inputStream(), it.path) }
                 .toList()
         } ?: emptyList()
     }
 
-    fun parseFeature(content: InputStream): Feature {
+    fun parseFeature(content: InputStream, filePath: String): Feature {
         return content.use {
             val skelligGrammarLexer = SkelligFeatureLexer(CharStreams.fromStream(it))
             val input = CommonTokenStream(skelligGrammarLexer)
@@ -37,12 +37,12 @@ class DefaultFeatureParser : FeatureParser {
             parser.addErrorListener(SkelligFeatureParserErrorListener.INSTANCE)
             val tree: ParseTree = parser.featureFile()
 
-            parseFeature(tree)
+            parseFeature(tree, filePath)
         }
     }
 
-    private fun parseFeature(tree: ParseTree?): Feature {
-        val featureBuilder = Feature.Builder();
+    private fun parseFeature(tree: ParseTree?, filePath: String): Feature {
+        val featureBuilder = Feature.Builder().withFilePath(filePath)
 
         if (tree != null) {
             var c = 0

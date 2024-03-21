@@ -1,6 +1,5 @@
 package org.skellig.runner.stepdefs
 
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.fail
 import org.skellig.feature.hook.annotation.AfterTestFeature
@@ -45,7 +44,9 @@ class TestStepDefs : SkelligTestContextAware {
         assertEquals("afterScenario", hookRunRegistry[2])
         assertEquals("beforeScenario", hookRunRegistry[3])
         assertEquals("afterScenario", hookRunRegistry[4])
-        assertEquals("afterFeature", hookRunRegistry[5])
+        assertEquals("beforeScenario", hookRunRegistry[5])
+        assertEquals("afterScenario", hookRunRegistry[6])
+        assertEquals("afterFeature", hookRunRegistry[7])
     }
 
     @TestStep(name = "Log (.+)", id = "log1")

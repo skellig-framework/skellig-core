@@ -4,6 +4,7 @@ import org.apache.log4j.BasicConfigurator
 import org.junit.runner.Description
 import org.junit.runner.notification.RunNotifier
 import org.junit.runners.ParentRunner
+import org.junit.runners.model.RunnerScheduler
 import org.junit.runners.model.Statement
 import org.skellig.feature.Feature
 import org.skellig.feature.hook.DefaultSkelligHookRunner
@@ -85,7 +86,11 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
             }
     }
 
-    override fun run(notifier: RunNotifier?) {
+    override fun runChild(child: FeatureRunner, notifier: RunNotifier) {
+        child.run(notifier)
+    }
+
+    override fun run(notifier: RunNotifier) {
         try {
             super.run(notifier)
         } finally {
@@ -102,13 +107,31 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         return child.description
     }
 
-    override fun runChild(child: FeatureRunner, notifier: RunNotifier) {
-        child.run(notifier)
-    }
+    /*override fun runChild(child: FeatureRunner, notifier: RunNotifier) {
+//        child.run(notifier)
+        val childDescription = describeChild(child)
+        try {
+//            notifier.fireTestSuiteStarted(childDescription)
+            child.runBeforeHooks(notifier)
+            child.run(notifier)
+        } catch (e: Throwable) {
+            notifier.fireTestFailure(Failure(childDescription, e))
+        } finally {
+            child.runAfterHooks(notifier)
+//            notifier.fireTestSuiteFinished(childDescription)
+        }
+    }*/
 
-    override fun childrenInvoker(notifier: RunNotifier?): Statement? {
-        val runFeatures = super.childrenInvoker(notifier)
-        return RunSkellig(runFeatures)
+    override fun childrenInvoker(notifier: RunNotifier): Statement? {
+        return object : Statement() {
+            override fun evaluate() {
+                try {
+                    getChildren().forEach { feature -> scheduler.schedule { runChild(feature, notifier) } }
+                } catch (ex: Exception) {
+                    scheduler.finished()
+                }
+            }
+        }
     }
 
     protected fun getConfig(config: String): String {
@@ -119,6 +142,16 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
 
     private fun throwNoFeaturesFoundError(featureResourcePath: String) {
         error("No Skellig Feature files found in '$featureResourcePath'")
+    }
+
+    private val scheduler = object : RunnerScheduler {
+        override fun schedule(childStatement: Runnable?) {
+            childStatement?.run()
+        }
+
+        override fun finished() {
+
+        }
     }
 
     private class RunSkellig(private val runFeatures: Statement) : Statement() {

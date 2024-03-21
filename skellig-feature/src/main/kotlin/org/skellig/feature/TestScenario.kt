@@ -1,6 +1,7 @@
 package org.skellig.feature
 
 open class TestScenario protected constructor(
+    val path: String,
     val name: String,
     val steps: List<TestStep>?,
     val tags: Set<String>?,
@@ -12,13 +13,26 @@ open class TestScenario protected constructor(
 
     override fun getEntityTags(): Set<String>? = tags
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TestScenario
+
+        return path == other.path
+    }
+
+    override fun hashCode(): Int = path.hashCode()
+
     class Builder {
         private var name: String? = null
+        private var parent: String? = null
+        private var position = 0
         private var tags: Set<String>? = null
         private val stepBuilders = mutableListOf<TestStep.Builder>()
         private var data: MutableList<Pair<Set<String>?, MutableList<Map<String, String>>?>>? = null
-        private var beforeSteps: List<TestStep>? = null
-        private var afterSteps: List<TestStep>? = null
+        private var beforeSteps: List<TestStep.Builder>? = null
+        private var afterSteps: List<TestStep.Builder>? = null
 
         fun withName(name: String) = apply { this.name = name.trim { it <= ' ' } }
 
@@ -40,28 +54,62 @@ open class TestScenario protected constructor(
             data?.last()?.second?.addAll(dataRow) ?: error("Failed to add a data row for the scenario '$name' because the data table is not initialised")
         }
 
-        fun withBeforeSteps(beforeSteps: List<TestStep>?) = apply { this.beforeSteps = beforeSteps }
+        fun withBeforeSteps(beforeSteps: List<TestStep.Builder>?) = apply { this.beforeSteps = beforeSteps }
 
-        fun withAfterSteps(afterSteps: List<TestStep>?) = apply { this.afterSteps = afterSteps }
+        fun withAfterSteps(afterSteps: List<TestStep.Builder>?) = apply { this.afterSteps = afterSteps }
+
+        fun withParent(parent: String) = apply { this.parent = parent }
+
+        fun withPosition(position: Int) = apply { this.position = position }
 
         fun build(): List<TestScenario> {
-            return data?.flatMap { dataTable ->
+
+            return data?.flatMapIndexed { i, dataTable ->
                 tags = if (dataTable.first != null) dataTable.first!!.union(tags ?: emptySet()) else tags
-                dataTable.second!!.map { dataRow ->
+                dataTable.second!!.mapIndexed { j, dataRow ->
+                    val testScenarioName = ParametersUtils.replaceParametersIfFound(name!!, dataRow)
+                    val path = "$parent:$testScenarioName:$i:$j"
+                    val (beforeTestSteps, afterTestSteps) = buildBeforeAndAfterTestSteps(path)
                     TestScenario(
-                        ParametersUtils.replaceParametersIfFound(name!!, dataRow),
-                        getTestStepsWithAppliedTestData(dataRow), tags, beforeSteps, afterSteps
+                        path, testScenarioName,
+                        getTestStepsWithAppliedTestData(dataRow, path), tags, beforeTestSteps, afterTestSteps
                     )
                 }.toList()
             }?.toList() ?: run {
-                val steps = stepBuilders.map { it.build() }.toList()
-                return listOf(TestScenario(name!!, steps, tags, beforeSteps, afterSteps))
+                val path = "$parent:$name"
+                val (beforeTestSteps, afterTestSteps) = buildBeforeAndAfterTestSteps(path)
+                val steps = stepBuilders
+                    .mapIndexed { i, builder ->
+                        builder
+                            .withParent(path)
+                            .withPosition(i)
+                            .build()
+                    }
+                    .toList()
+                return listOf(TestScenario(path, name!!, steps, tags, beforeTestSteps, afterTestSteps))
             }
         }
 
-        private fun getTestStepsWithAppliedTestData(testDataRow: Map<String, String>): List<TestStep> {
+        private fun buildBeforeAndAfterTestSteps(parentPath: String): Pair<List<TestStep>?, List<TestStep>?> {
+            var beforeAfterStepsCounter = 0
+            return Pair(
+                beforeSteps?.map {
+                    it.withParent(parentPath).withPosition(beforeAfterStepsCounter++).build()
+                }?.toList(),
+                afterSteps?.map {
+                    it.withParent(parentPath).withPosition(beforeAfterStepsCounter++).build()
+                }?.toList()
+            )
+        }
+
+        private fun getTestStepsWithAppliedTestData(testDataRow: Map<String, String>, parentPath: String): List<TestStep> {
             return stepBuilders
-                .map { it.buildAndApplyTestData(testDataRow) }
+                .mapIndexed { i, builder ->
+                    builder
+                        .withPosition(i)
+                        .withParent(parentPath)
+                        .buildAndApplyTestData(testDataRow)
+                }
                 .toList()
         }
 

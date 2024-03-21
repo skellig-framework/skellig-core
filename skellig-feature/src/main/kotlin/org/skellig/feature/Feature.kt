@@ -2,6 +2,7 @@ package org.skellig.feature
 
 
 open class Feature protected constructor(
+    val filePath: String,
     val name: String,
     val scenarios: List<TestScenario>?,
     val beforeSteps: List<TestStep>?,
@@ -13,9 +14,21 @@ open class Feature protected constructor(
 
     override fun getEntityTags(): Set<String>? = tags
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Feature
+
+        return filePath == other.filePath
+    }
+
+    override fun hashCode(): Int = filePath.hashCode()
+
     class Builder {
 
         private var name: String? = null
+        private var filePath: String? = null
         private val testScenarioBuilders = mutableListOf<TestScenario.Builder>()
         private var beforeFeatureStepsBuilder: MutableList<TestStep.Builder>? = null
         private var beforeTestScenarioStepsBuilder: MutableList<TestStep.Builder>? = null
@@ -52,20 +65,32 @@ open class Feature protected constructor(
 
         fun withTags(tags: Set<String>?) = apply { this.tags = tags }
 
-        fun build(): Feature {
-            val beforeTestScenarioSteps = beforeTestScenarioStepsBuilder?.map { it.build() }?.toList()
-            val afterTestScenarioSteps = afterTestScenarioStepsBuilder?.map { it.build() }?.toList()
-            val testScenarios = testScenarioBuilders.flatMap {
-                it.withBeforeSteps(beforeTestScenarioSteps)
-                    .withAfterSteps(afterTestScenarioSteps)
-                    .build()
-            }.toList()
+        fun withFilePath(filePath: String) = apply { this.filePath = filePath }
 
+        fun build(): Feature {
+            val filePath = filePath ?: error("Feature cannot have an empty file path")
+
+            val testScenarios =
+                testScenarioBuilders.flatMapIndexed { i, builder ->
+                    builder
+                        .withPosition(i)
+                        .withParent(filePath)
+                        .withBeforeSteps(beforeTestScenarioStepsBuilder)
+                        .withAfterSteps(afterTestScenarioStepsBuilder)
+                        .build()
+                }.toList()
+
+            var beforeAfterStepsCounter = 0
             return Feature(
+                filePath,
                 name ?: error("Feature cannot have an empty name"),
                 testScenarios,
-                beforeFeatureStepsBuilder?.map { it.build() }?.toList(),
-                afterFeatureStepsBuilder?.map { it.build() }?.toList(),
+                beforeFeatureStepsBuilder?.map { builder ->
+                    builder.withParent(filePath).withPosition(beforeAfterStepsCounter++).build()
+                }?.toList(),
+                afterFeatureStepsBuilder?.map { builder ->
+                    builder.withParent(filePath).withPosition(beforeAfterStepsCounter++).build()
+                }?.toList(),
                 tags
             )
         }

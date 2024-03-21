@@ -19,7 +19,7 @@ class TestScenarioReportDetails(
     }
 
     fun getTagsLine(): String? {
-        return tags?.joinToString(", ") { "@$it" }
+        return tags?.joinToString(" ")
     }
 
     fun getTotalTestSteps(): Int {
