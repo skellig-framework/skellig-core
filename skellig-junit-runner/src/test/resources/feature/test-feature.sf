@@ -1,6 +1,9 @@
 @Tag_A
 Feature: Test feature
 
+    Before Feature:
+     * Run something
+
     Scenario: Test scenario
         * Given something
         * Run something
@@ -48,3 +51,6 @@ Feature: Test feature
     @Tag_B
     Scenario: Verify hooks
         * Verify scenario run counter
+
+    After Feature:
+        * Validate something
