@@ -33,7 +33,6 @@ open class TestScenarioRunner protected constructor(
     }
 
     private var description: Description? = null
-    protected var testStepRunResults: MutableList<TestStepRunResult>? = mutableListOf()
     protected var testStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
 
     override fun getChildren(): List<TestStepWrapper>? {
@@ -69,14 +68,7 @@ open class TestScenarioRunner protected constructor(
             TestStepRunnerType.AFTER -> afterTestStepsDataReport
             else -> testStepsDataReport
         }
-        runTestStep(child, describeChild(child), notifier, report)?.let {
-            testStepRunResults?.add(it)
-        }
-    }
-
-    override fun runAfterHooks(notifier: RunNotifier) {
-        super.runAfterHooks(notifier)
-        awaitForTestStepRunResults(testStepRunResults, notifier)
+        runTestStep(child, describeChild(child), notifier, report)
     }
 
     fun getTestScenarioReportDetails(): TestScenarioReportDetails {

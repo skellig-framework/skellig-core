@@ -38,8 +38,8 @@ class FeatureRunnerTest {
         featureRunner.run(notifier)
 
         assertAll(
-            { verify(notifier).fireTestStarted(argThat { o -> o.displayName == feature.scenarios!![0].name }) },
-            { verify(notifier).fireTestFinished(argThat { o -> o.displayName == feature.scenarios!![0].name }) },
+            { verify(notifier).fireTestSuiteStarted(argThat { o -> o.displayName == feature.scenarios!![0].name }) },
+            { verify(notifier).fireTestSuiteFinished(argThat { o -> o.displayName == feature.scenarios!![0].name }) },
             { verify(testScenarioState).clean() }
         )
     }
@@ -168,7 +168,7 @@ class FeatureRunnerTest {
     }
 
     @Test
-    fun testRunWhenHookFailedThenVerifyFailureNotification() {
+    fun testRunWhenBeforeFeatureHookFailedThenVerifyFailureNotification() {
         doAnswer {
             it.getArgument<(String, Throwable?, Long) -> Unit>(2).invoke("m1", RuntimeException("error"), 0)
         }.whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestFeature::class.java), argThat { true })
@@ -179,8 +179,17 @@ class FeatureRunnerTest {
         val beforeHooksReportDetails = featureRunner.getFeatureReportDetails().beforeHooksReportDetails!!
 
         assertEquals("error", beforeHooksReportDetails[0].errorLog)
+        verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == feature.name })
+    }
 
-        doThrow(RuntimeException("error")).whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestScenario::class.java), argThat { true })
+    @Test
+    fun testRunWhenBeforeScenarioHookFailedThenVerifyFailureNotification() {
+        val notifier = mock<RunNotifier>()
+        featureRunner.run(notifier)
+
+        doThrow(RuntimeException("scenario error"))
+            .whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestScenario::class.java), argThat { true })
+
         featureRunner.run(notifier)
 
         verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == feature.scenarios!![0].name })
@@ -206,10 +215,10 @@ class FeatureRunnerTest {
         featureRunner.run(notifier)
 
         val orderVerifier = Mockito.inOrder(notifier)
-        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.beforeSteps!![0].name}(${feature.name})" })
-        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.beforeSteps!![1].name}(${feature.name})" })
-        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.afterSteps!![0].name}(${feature.name})" })
-        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.afterSteps!![1].name}(${feature.name})" })
+        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.beforeSteps!![0].name}(${feature.name}:Before Feature)" })
+        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.beforeSteps!![1].name}(${feature.name}:Before Feature)" })
+        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.afterSteps!![0].name}(${feature.name}:After Feature)" })
+        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.afterSteps!![1].name}(${feature.name}:After Feature)" })
 
         assertAll(
             { verify(result1).subscribe(argThat { true }) },
@@ -251,7 +260,8 @@ class FeatureRunnerTest {
             { verify(result2).awaitResult() },
             { verify(result3).awaitResult() },
             { verify(result4).awaitResult() },
-            { verify(notifier, times(2)).fireTestFailure(argThat { i -> i.description.displayName == feature.name }) },
+            { verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == "${feature.name}:Before Feature" }) },
+            { verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == "${feature.name}:After Feature" }) },
             { verify(notifier).fireTestFailure(argThat { i -> i.message == "internal error" }) },
             { verify(notifier).fireTestFailure(argThat { i -> i.message == "internal error 2" }) }
         )
@@ -265,6 +275,7 @@ class FeatureRunnerTest {
 
         return Feature.Builder()
             .withName("f1")
+            .withFilePath("/path/f1.sf")
             .withBeforeFeatureStep(TestStep.Builder().withName(testStepBeforeName1))
             .withBeforeFeatureStep(TestStep.Builder().withName(testStepBeforeName2))
             .withAfterFeatureStep(TestStep.Builder().withName(testStepAfterName1))
@@ -276,6 +287,7 @@ class FeatureRunnerTest {
     private fun createFeature(): Feature {
         return Feature.Builder()
             .withName("f1")
+            .withFilePath("/path/f1.sf")
             .withTestScenario(
                 TestScenario.Builder()
                     .withName("s1")

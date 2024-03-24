@@ -28,7 +28,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     protected val afterHookReportDetails = mutableListOf<HookReportDetails>()
     protected var beforeTestStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
     protected var afterTestStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
-    private var testStepHooksRunResults: MutableList<TestStepProcessor.TestStepRunResult>? = mutableListOf()
+    protected var testStepRunResults = mutableListOf<TestStepProcessor.TestStepRunResult>()
     private var childDescriptions = mutableMapOf<Int, Description>()
     private var isTestFailed = false
 
@@ -57,6 +57,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
         } catch (e: Throwable) {
             testNotifier.addFailure(e)
         } finally {
+            awaitForTestStepRunResults(testStepRunResults, notifier)
             testNotifier.fireTestSuiteFinished()
         }
     }
@@ -67,7 +68,6 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
 
     open fun runAfterHooks(notifier: RunNotifier) {
         runHooks(afterHookType, afterHookReportDetails)
-//        awaitForTestStepRunResults(testStepHooksRunResults, notifier)
     }
 
     private fun runHooks(
@@ -130,23 +130,12 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
                 fireFailureEvent(notifier, childDescription, e)
             } finally {
                 testStepsDataReport.add(testStepReportBuilder.withLogRecords(testStepLogger.getLogsAndClean()))
+                runResult?.let { testStepRunResults.add(it) }
                 notifier.fireTestFinished(childDescription)
             }
         }
         return runResult
     }
-
-  /*  private fun runTestSteps(
-        testSteps: List<TestStepWrapper>?,
-        notifier: RunNotifier,
-        testStepsDataReport: MutableList<TestStepReportDetails.Builder>
-    ): List<TestStepProcessor.TestStepRunResult?>? {
-        return testSteps
-            ?.map {
-                val testStep = describeTestStep(it)
-                runTestStep(it, testStep, notifier, testStepsDataReport)
-            }?.toList()
-    }*/
 
     protected fun describeTestStep(step: TestStepWrapper): Description {
         val id = step.testStep.getId()
@@ -156,11 +145,11 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     private fun createHookReportDetails(name: String, e: Throwable?, duration: Long) =
         HookReportDetails(name, e?.message, testStepLogger.getLogsAndClean(), duration)
 
-    protected fun awaitForTestStepRunResults(testStepRunResults: MutableList<TestStepProcessor.TestStepRunResult>?, notifier: RunNotifier) {
+    protected fun awaitForTestStepRunResults(testStepRunResults: MutableList<TestStepProcessor.TestStepRunResult>, notifier: RunNotifier) {
         try {
             // if there are any async test step running, then wait until they're finished
             // within set timeout. Cleanup results as they are no longer needed.
-            testStepRunResults?.forEach {
+            testStepRunResults.forEach {
                 try {
                     it.awaitResult()
                 } catch (ex: Exception) {
@@ -168,7 +157,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
                 }
             }
         } finally {
-            testStepRunResults?.clear()
+            testStepRunResults.clear()
         }
     }
 
