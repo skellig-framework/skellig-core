@@ -50,8 +50,6 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
             runBeforeHooks(notifier)
             classBlock(notifier).evaluate()
             runAfterHooks(notifier)
-        } catch (e: AssumptionViolatedException) {
-            testNotifier.addFailedAssumption(e)
         } catch (e: StoppedByUserException) {
             throw e
         } catch (e: Throwable) {
@@ -125,6 +123,8 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
                         throw e
                     }
                 }
+            } catch (e: StoppedByUserException) {
+                throw e
             } catch (e: Throwable) {
                 testStepReportBuilder.withOriginalTestStep(child.testStep.name).withErrorLog(attachStackTrace(e))
                 fireFailureEvent(notifier, childDescription, e)

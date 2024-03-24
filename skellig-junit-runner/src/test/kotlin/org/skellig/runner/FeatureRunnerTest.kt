@@ -1,9 +1,11 @@
 package org.skellig.runner
 
 import org.junit.Test
+import org.junit.internal.AssumptionViolatedException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.assertAll
 import org.junit.runner.notification.RunNotifier
+import org.junit.runner.notification.StoppedByUserException
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.*
@@ -265,6 +267,26 @@ class FeatureRunnerTest {
             { verify(notifier).fireTestFailure(argThat { i -> i.message == "internal error" }) },
             { verify(notifier).fireTestFailure(argThat { i -> i.message == "internal error 2" }) }
         )
+    }
+
+    @Test
+    fun testRunWhenTestStepFailsOnWaitingResult() {
+        val result1 = mock<TestStepProcessor.TestStepRunResult>()
+        whenever(testStepRunner.run(feature.scenarios!![0].steps!![0].name, emptyMap())).thenReturn(result1)
+        whenever(result1.awaitResult()).thenThrow(RuntimeException("internal error"))
+
+        val notifier = mock<RunNotifier>()
+        featureRunner.run(notifier)
+
+        verify(notifier).fireTestFailure(argThat { i -> i.message == "internal error" })
+    }
+
+    @Test
+    fun testRunWhenTestStepFailsOnUserInterrupt() {
+        doThrow(StoppedByUserException())
+            .whenever(testStepRunner).run(feature.scenarios!![0].steps!![0].name, emptyMap())
+
+        org.junit.jupiter.api.assertThrows<StoppedByUserException> { featureRunner.run(mock<RunNotifier>()) }
     }
 
     private fun createFeatureWithBeforeAndAfterSteps(): Feature {
