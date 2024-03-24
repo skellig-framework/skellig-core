@@ -21,7 +21,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     protected val testStepRunner: TestStepRunner?,
     protected val testStepLogger: TestStepLogger,
     protected val beforeHookType: Class<out Annotation>,
-    protected val afterHookType: Class<out Annotation>,
+    protected val afterHookType: Class<out Annotation>
 ) : ParentRunner<T>(testEntity::class.java), SkelligTestEntity {
 
     protected val beforeHookReportDetails = mutableListOf<HookReportDetails>()

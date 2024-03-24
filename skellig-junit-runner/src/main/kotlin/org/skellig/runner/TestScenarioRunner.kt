@@ -20,9 +20,7 @@ open class TestScenarioRunner protected constructor(
     testStepLogger: TestStepLogger
 ) : BaseSkelligTestEntityRunner<TestStepWrapper>(
     testScenario, hookRunner, testStepRunner, testStepLogger,
-    BeforeTestScenario::class.java, AfterTestScenario::class.java,
-//    testScenario.beforeSteps?.map { TestStepWrapper(it, TestStepRunnerType.BEFORE) },
-//    testScenario.afterSteps?.map { TestStepWrapper(it, TestStepRunnerType.AFTER) }
+    BeforeTestScenario::class.java, AfterTestScenario::class.java
 ) {
 
     companion object {

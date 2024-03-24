@@ -52,6 +52,8 @@ class SkelligReportGenerator : ReportGenerator {
         dataModel["feature"] = featureReportDetails
         dataModel["featureTitle"] = "Feature"
         dataModel["hooksTitle"] = "Hooks"
+        dataModel["beforeTitle"] = "Before"
+        dataModel["afterTitle"] = "After"
         dataModel["parametersTitle"] = "Parameters"
         dataModel["propertiesTitle"] = "Properties"
         dataModel["testDataTitle"] = "Test data"

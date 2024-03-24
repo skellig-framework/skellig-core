@@ -35,9 +35,27 @@ class FeatureReportDetails(
         return beforeHooksReportDetails?.plus(afterHooksReportDetails?: emptyList())
     }
 
-    fun getHooksDurationFormatted(): String {
+    fun getBeforeHooksDurationFormatted(): String {
         return getFormattedDuration(
-            getTotalHooksDuration()
+            (beforeHooksReportDetails?.sumOf { it.duration } ?: 0)
+        )
+    }
+
+    fun getAfterHooksDurationFormatted(): String {
+        return getFormattedDuration(
+            (afterHooksReportDetails?.sumOf { it.duration } ?: 0)
+        )
+    }
+
+    fun getBeforeFeatureDurationFormatted(): String {
+        return getFormattedDuration(
+            (beforeReportDetails?.sumOf { it.duration } ?: 0)
+        )
+    }
+
+    fun getAfterFeatureDurationFormatted(): String {
+        return getFormattedDuration(
+            (afterReportDetails?.sumOf { it.duration } ?: 0)
         )
     }
 

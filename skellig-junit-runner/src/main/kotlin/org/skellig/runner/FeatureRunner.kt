@@ -75,7 +75,12 @@ open class FeatureRunner(
     }
 
     override fun runChild(child: TestScenarioRunner, notifier: RunNotifier) {
-        child.run(notifier)
+        try {
+            child.run(notifier)
+        } finally {
+            // clear the state after test scenario is finished
+            testScenarioState!!.clean()
+        }
     }
 
     fun getFeatureReportDetails(): FeatureReportDetails {
@@ -110,6 +115,9 @@ open class FeatureRunner(
         }
     }
 
+    /**
+     * A wrapper for TestScenario which is used to group before and after test steps of the feature
+     */
     class TestScenarioWrapper(
         path: String,
         name: String,

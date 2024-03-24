@@ -107,21 +107,6 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         return child.description
     }
 
-    /*override fun runChild(child: FeatureRunner, notifier: RunNotifier) {
-//        child.run(notifier)
-        val childDescription = describeChild(child)
-        try {
-//            notifier.fireTestSuiteStarted(childDescription)
-            child.runBeforeHooks(notifier)
-            child.run(notifier)
-        } catch (e: Throwable) {
-            notifier.fireTestFailure(Failure(childDescription, e))
-        } finally {
-            child.runAfterHooks(notifier)
-//            notifier.fireTestSuiteFinished(childDescription)
-        }
-    }*/
-
     override fun childrenInvoker(notifier: RunNotifier): Statement? {
         return object : Statement() {
             override fun evaluate() {

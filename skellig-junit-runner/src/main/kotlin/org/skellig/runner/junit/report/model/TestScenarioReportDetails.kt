@@ -38,6 +38,30 @@ class TestScenarioReportDetails(
         return getFormattedDuration(testStepReportDetails?.sumOf { it.duration } ?: 0)
     }
 
+    fun getBeforeScenarioDurationFormatted(): String {
+        return getFormattedDuration(
+            (beforeReportDetails?.sumOf { it.duration } ?: 0)
+        )
+    }
+
+    fun getAfterScenarioDurationFormatted(): String {
+        return getFormattedDuration(
+            (afterReportDetails?.sumOf { it.duration } ?: 0)
+        )
+    }
+
+    fun getBeforeHooksDurationFormatted(): String {
+        return getFormattedDuration(
+            (beforeHooksReportDetails?.sumOf { it.duration } ?: 0)
+        )
+    }
+
+    fun getAfterHooksDurationFormatted(): String {
+        return getFormattedDuration(
+            (afterHooksReportDetails?.sumOf { it.duration } ?: 0)
+        )
+    }
+
     fun getTotalPassedPercentage(): Float {
         return if (testStepReportDetails?.isNotEmpty() == true)
             getTotalPassedTestSteps().toFloat() / testStepReportDetails.size * 100
