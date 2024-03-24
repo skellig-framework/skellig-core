@@ -33,7 +33,7 @@ internal class StsParser {
         val result = mutableListOf<Map<ValueExpression, ValueExpression?>>();
 
         if (tree != null) {
-            var c = 0;
+            var c = 0
             while (c < tree.childCount) {
                 if (tree.getChild(c) is TestStepNameContext) {
                     val rawTestStep: MutableMap<ValueExpression, ValueExpression?> = LinkedHashMap()

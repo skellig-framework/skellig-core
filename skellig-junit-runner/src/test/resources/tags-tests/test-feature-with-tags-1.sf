@@ -1,5 +1,8 @@
 @SmokeTestGroup
-Feature: Test feature
+Feature: Test feature with tags
+
+    Before Test Scenario:
+        * Run something
 
     @T1
     Scenario: Test scenario
@@ -31,3 +34,6 @@ Feature: Test feature
         Examples:
             | num | expected_f2 | expected_f3 |
             | 1   | 1           | 11          |
+
+    After Test Scenario:
+        * Validate something

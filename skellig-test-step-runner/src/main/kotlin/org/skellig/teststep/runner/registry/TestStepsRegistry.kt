@@ -103,7 +103,7 @@ internal class TestStepsRegistry(
         private fun readFileFromPath(it: Path): List<Map<ValueExpression, ValueExpression?>> {
             LOGGER.debug("Extract test steps from file '{}'", it)
             try {
-                return testStepReader.read(it.toUri().toURL().openStream())
+                return it.toUri().toURL().openStream().use { testStepReader.read(it) }
             } catch (ex: TestStepReadException) {
                 throw TestStepReadException("Failed to read test steps in file '$it'", ex)
             }

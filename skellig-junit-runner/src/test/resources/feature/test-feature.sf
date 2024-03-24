@@ -1,4 +1,8 @@
+@Tag_A
 Feature: Test feature
+
+    Before Feature:
+     * Run something
 
     Scenario: Test scenario
         * Given something
@@ -24,6 +28,7 @@ Feature: Test feature
             | v1    | e1       |
             | v2    | e2       |
 
+    @Tag_B
     Scenario: Check If statement in test step
         * Send a message with if statement
             | num | <num> |
@@ -42,3 +47,10 @@ Feature: Test feature
         Examples:
             | usr  |
             | dude |
+
+    @Tag_B
+    Scenario: Verify hooks
+        * Verify scenario run counter
+
+    After Feature:
+        * Validate something

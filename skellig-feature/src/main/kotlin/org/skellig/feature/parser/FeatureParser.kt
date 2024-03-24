@@ -4,5 +4,5 @@ import org.skellig.feature.Feature
 
 interface FeatureParser {
 
-    fun parse(path: String?): List<Feature>?
+    fun parse(path: String?): List<Feature>
 }

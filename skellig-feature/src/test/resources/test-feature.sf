@@ -2,6 +2,14 @@
 @User
 Feature: Sign in user
 
+    Before Feature:
+        * populate data
+
+    Before Test Scenario:
+        * prepare cache
+        * prepare user sign in
+           | p1 | v1 |
+
     @E2E-light-1
     Scenario: Sign in user <user> with valid credentials
         * User <user> exist in system
@@ -28,3 +36,9 @@ Feature: Sign in user
         Examples:
             | user  | password | error          |
             | usr_1 | 00000    | "can't log in" |
+
+    After Feature:
+        * clear data
+
+    After Test Scenario:
+        * clear cache
