@@ -7,6 +7,7 @@ class MathOperationExpression(private val operator: String,
                               private val rightExpression: ValueExpression
 ) : ValueExpression {
 
+    //TODO: handle nullable evaluated values
     override fun evaluate(context: ValueExpressionContext): Any {
         var evaluatedLeft = leftExpression.evaluate(context)
         var evaluatedRight = rightExpression.evaluate(context)

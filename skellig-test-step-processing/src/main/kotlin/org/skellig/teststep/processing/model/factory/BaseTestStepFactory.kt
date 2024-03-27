@@ -18,7 +18,7 @@ abstract class BaseTestStepFactory<T : TestStep>(val valueExpressionContextFacto
         return value?.evaluate(valueExpressionContextFactory.create(parameters)) as T?
     }
 
-    protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>): Map<String, String?>? {
+    protected fun extractParametersFromTestStepName(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>): MutableMap<String, String?>? {
         var parameters: MutableMap<String, String?>? = null
         val matcher = CachedPattern.compile(getName(rawTestStep)).matcher(testStepName)
         if (matcher.find()) {

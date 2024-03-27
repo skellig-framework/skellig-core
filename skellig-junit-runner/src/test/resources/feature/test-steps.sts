@@ -87,3 +87,39 @@ name ("Check result after log in test step file") {
         get(log1_result).match("Log record: result") = true
     }
 }
+
+name ("Actions") {
+    values {
+    }
+
+    task {
+        a = 9
+        asyncForEach(${nodes}, n) {
+            a = ${a} + ${n}.size
+            runTest("Validate test with if statement for node " + ${n}.name) {
+                parameters {
+                    p1 = ${a}
+                }
+                parameters = ${p1}
+                onPassed {
+                    asyncEach {
+                        runTest("Validate test with if statement") {}
+                        runTest("Check result after log in test step file") {}
+                    }
+                    state {
+
+                    }
+                }
+                onFailed {
+                    runIf(${a} > 0) {
+
+                    }
+                }
+            }
+        }
+    }
+
+    validate {
+        ${a} >= 15 = true
+    }
+}
