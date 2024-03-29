@@ -11,7 +11,7 @@ internal class AsyncForeachTaskProcessor(
     override fun forEach(items: Iterable<*>, itemName: String, parameters: MutableMap<String, Any?>, value: ValueExpression) {
         runBlocking {
             withContext(Dispatchers.Default) {
-                forEachAsync(items, itemName, parameters.toMutableMap(), value)
+                forEachAsync(items, itemName, parameters, value)
             }
         }
     }
@@ -25,8 +25,9 @@ internal class AsyncForeachTaskProcessor(
         coroutineScope {
             items.forEach { item ->
                 launch {
-                    parameters[itemName] = item
-                    taskProcessor.process(null, value, parameters)
+                    val parametersCopy = parameters.toMutableMap()
+                    parametersCopy[itemName] = item
+                    taskProcessor.process(null, value, parametersCopy)
                 }
             }
         }

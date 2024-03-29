@@ -12,23 +12,27 @@ internal class RunTestTaskProcessor(
     private val runTestDelegate: (String, Map<String, Any?>?) -> TestStepProcessor.TestStepRunResult
 ) : TaskProcessor {
 
+    companion object {
+        private val PARAMETERS = AlphanumericValueExpression("parameters")
+        private val ON_PASSED = AlphanumericValueExpression("onPassed")
+        private val ON_FAILED = AlphanumericValueExpression("onFailed")
+    }
+
     override fun process(task: ValueExpression?, value: ValueExpression?, parameters: MutableMap<String, Any?>) {
         (task as? FunctionCallExpression)?.let {
             when (value) {
                 is MapValueExpression -> {
-                    val runTestParameters = (valueConvertDelegate(value.value[AlphanumericValueExpression("parameters")], parameters) as? Map<String, Any?>)
+                    val testStepName = valueConvertDelegate(task.args[0], parameters)
+                    val result = testStepName?.let {
+                        val runTestParameters = (valueConvertDelegate(value.value[PARAMETERS], parameters) as? Map<String, Any?>)?: parameters
+                        runTestDelegate(testStepName.toString(), runTestParameters)
+                    }?: error("The Test Step '${task.args[0]}' was evaluated to 'null'")
 
-                    val result = valueConvertDelegate(task.args[0], parameters)?.let { testName ->
-                        runTestDelegate(testName.toString(), runTestParameters)
-                    }
-                    result?.subscribe { _, _, e ->
-                        if (e == null) {
-                            value.value[AlphanumericValueExpression("onPassed")]
-                                ?.let { onPassed -> taskProcessor.process(null, onPassed, parameters) }
-                        } else {
-                            value.value[AlphanumericValueExpression("onFailed")]
-                                ?.let { onFailed -> taskProcessor.process(null, onFailed, parameters) }
-                        }
+                    var valueExpression : ValueExpression?
+                    result.subscribe { _, _, e ->
+                        valueExpression = if (e == null) value.value[ON_PASSED] else value.value[ON_FAILED]
+
+                        valueExpression?.let { taskProcessor.process(null, it, parameters) }
                     }
                 }
 

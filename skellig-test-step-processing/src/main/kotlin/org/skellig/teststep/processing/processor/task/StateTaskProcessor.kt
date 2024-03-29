@@ -17,6 +17,7 @@ internal class StateTaskProcessor(
                     value.value.forEach { item ->
                         val key = valueConvertDelegate(item.key, parameters)?.toString()
                             ?: error("Cannot set value to the null key in the Test Scenario State")
+
                         state.set(key, valueConvertDelegate(item.value, parameters))
                     }
                 }
