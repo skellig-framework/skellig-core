@@ -7,10 +7,10 @@ import org.skellig.teststep.reader.value.expression.FunctionCallExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
-class DefaultTaskProcessor(
-    state: TestScenarioState,
+internal class DefaultTaskProcessor(
+    testScenarioState: TestScenarioState,
     valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
-    runTestDelegate: (String, Map<String, Any?>?) -> TestStepProcessor.TestStepRunResult
+    processTestStepDelegate: (String, Map<String, Any?>) -> TestStepProcessor.TestStepRunResult
 ) : TaskProcessor {
 
     private val tasks = mutableMapOf<String, TaskProcessor>()
@@ -19,9 +19,9 @@ class DefaultTaskProcessor(
         registerTask(VariableTaskProcessor(valueConvertDelegate))
         registerTask(ForeachTaskProcessor(this, valueConvertDelegate))
         registerTask(AsyncForeachTaskProcessor(this, valueConvertDelegate))
-        registerTask(RunTestTaskProcessor(this, valueConvertDelegate, runTestDelegate))
+        registerTask(RunTestTaskProcessor(this, valueConvertDelegate, processTestStepDelegate))
         registerTask(AsyncEachTaskProcessor(this))
-        registerTask(StateTaskProcessor(state, valueConvertDelegate))
+        registerTask(StateTaskProcessor(testScenarioState, valueConvertDelegate))
         registerTask(RunIfTaskProcessor(this, valueConvertDelegate))
     }
 

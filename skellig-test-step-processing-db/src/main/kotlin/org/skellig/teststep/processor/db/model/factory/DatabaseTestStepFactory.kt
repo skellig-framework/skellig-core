@@ -31,7 +31,7 @@ abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(
         )
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): TS {
+    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): TS {
         val testStep = super.create(testStepName, rawTestStep, parameters)
         if (testStep.testData != null) {
             if (testStep.query != null && testStep.testData !is List<*>) {

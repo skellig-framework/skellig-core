@@ -6,5 +6,5 @@ interface TestStepRunner {
 
     fun run(testStepName: String): TestStepRunResult
 
-    fun run(testStepName: String, parameters: Map<String, String?>): TestStepRunResult
+    fun run(testStepName: String, parameters: Map<String, Any?>): TestStepRunResult
 }

@@ -9,9 +9,9 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 import java.math.BigDecimal
 
 abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
-    private val testStepRegistry: TestStepRegistry,
+    protected val testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory,
-    private val defaultTestDataConverter: String? = null,
+    protected val defaultTestDataConverter: String? = null,
 ) : BaseTestStepFactory<T>(valueExpressionContextFactory) {
 
     companion object {
@@ -43,7 +43,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         )
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): T {
+    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): T {
         val parentTestSteps = rawTestStep[PARENT_KEYWORD]
         return if (parentTestSteps != null) {
             val newRawTestStep = mutableMapOf<ValueExpression, ValueExpression?>()
@@ -60,7 +60,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         } else createTestStep(testStepName, rawTestStep, parameters)
     }
 
-    private fun createTestStep(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): T {
+    private fun createTestStep(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): T {
         val additionalParameters = HashMap<String, Any?>(parameters)
         val parametersFromTestName = extractParametersFromTestStepName(testStepName, rawTestStep)
         parametersFromTestName?.let {

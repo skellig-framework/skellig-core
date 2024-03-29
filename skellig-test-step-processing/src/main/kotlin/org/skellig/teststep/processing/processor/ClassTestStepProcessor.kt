@@ -23,7 +23,7 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
     operator fun invoke(
         testStepName: String,
         testStep: ClassTestStep,
-        parameters: Map<String, String?>?
+        parameters: Map<String, Any?>?
     ): TestStepProcessor.TestStepRunResult {
         val methodParameters = getMethodParameters(testStepName, testStep, parameters)
 
@@ -61,7 +61,7 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
     private fun getMethodParameters(
         testStepName: String,
         testStep: ClassTestStep,
-        parameters: Map<String, String?>?
+        parameters: Map<String, Any?>?
     ): Array<Any?> {
         val testStepMethod = testStep.testStepMethod
         val testStepNamePattern = testStep.testStepNamePattern

@@ -9,7 +9,7 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 internal class RunTestTaskProcessor(
     private val taskProcessor: TaskProcessor,
     private val valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
-    private val runTestDelegate: (String, Map<String, Any?>?) -> TestStepProcessor.TestStepRunResult
+    private val processTestStepDelegate: (String, Map<String, Any?>) -> TestStepProcessor.TestStepRunResult
 ) : TaskProcessor {
 
     companion object {
@@ -25,7 +25,7 @@ internal class RunTestTaskProcessor(
                     val testStepName = valueConvertDelegate(task.args[0], parameters)
                     val result = testStepName?.let {
                         val runTestParameters = (valueConvertDelegate(value.value[PARAMETERS], parameters) as? Map<String, Any?>)?: parameters
-                        runTestDelegate(testStepName.toString(), runTestParameters)
+                        processTestStepDelegate(testStepName.toString(), runTestParameters)
                     }?: error("The Test Step '${task.args[0]}' was evaluated to 'null'")
 
                     var valueExpression : ValueExpression?

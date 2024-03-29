@@ -26,7 +26,7 @@ class PerformanceTestStepFactory(
         private val TIME_PATTERN = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): PerformanceTestStep {
+    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): PerformanceTestStep {
         val rps = getRps(rawTestStep, parameters)
         val timeToRun = getTimeToRun(rawTestStep, parameters)
         val before = rawTestStep[BEFORE] as ListValueExpression?
@@ -42,7 +42,7 @@ class PerformanceTestStepFactory(
 
     private fun toListOfTestStepsToRun(
         rawListOfTestSteps: List<*>?, testStepName: String,
-        parameters: Map<String, String?>,
+        parameters: Map<String, Any?>,
         propertyName: AlphanumericValueExpression
     ): List<(testStepRegistry: TestStepRegistry) -> TestStep> =
         rawListOfTestSteps?.let {
@@ -58,7 +58,7 @@ class PerformanceTestStepFactory(
             }
         } ?: emptyList()
 
-    private fun getRps(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): Int {
+    private fun getRps(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Int {
         val rps = rawTestStep[RPS]
         return convertValue<BigDecimal>(rps, parameters)?.toInt()
             ?: error("Invalid RPS value '$rps' for the test '${getName(rawTestStep)}'. The value must be Int")
@@ -69,7 +69,7 @@ class PerformanceTestStepFactory(
         return LocalTime.parse(timeToRun, TIME_PATTERN)
     }
 
-    private fun createAsTestStepDelegate(testStepName: String, parameters: Map<String, String?>): (testStepRegistry: TestStepRegistry) -> TestStep =
+    private fun createAsTestStepDelegate(testStepName: String, parameters: Map<String, Any?>): (testStepRegistry: TestStepRegistry) -> TestStep =
         { testStepRegistry: TestStepRegistry ->
             val rawTestStepToRun = testStepRegistry.getByName(testStepName)
                 ?: error("Test step '$testStepName' is not found in any of test data files or classes indicated in the runner")

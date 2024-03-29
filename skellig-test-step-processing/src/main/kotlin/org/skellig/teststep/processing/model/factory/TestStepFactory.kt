@@ -5,7 +5,7 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 
 interface TestStepFactory<T : TestStep> {
 
-    fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): T
+    fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): T
 
     fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean
 }

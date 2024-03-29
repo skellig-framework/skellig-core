@@ -19,8 +19,8 @@ internal class GroupedTestStepFactory(
         private val FAILED = fromProperty("failed")
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): GroupedTestStep {
-        val additionalParameters: MutableMap<String, String?> = HashMap(parameters)
+    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): GroupedTestStep {
+        val additionalParameters = parameters.toMutableMap()
         val parametersFromTestName = extractParametersFromTestStepName(testStepName, rawTestStep)
         parametersFromTestName?.let {
             additionalParameters.putAll(parametersFromTestName)
@@ -29,7 +29,7 @@ internal class GroupedTestStepFactory(
         return GroupedTestStep(testStepName, createTestStepRun(rawTestStep, additionalParameters)!!)
     }
 
-    private fun createTestStepRun(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): GroupedTestStep.TestStepRun? {
+    private fun createTestStepRun(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): GroupedTestStep.TestStepRun? {
         var passed: GroupedTestStep.TestStepRun? = null
         var failed: GroupedTestStep.TestStepRun? = null
 
@@ -47,7 +47,7 @@ internal class GroupedTestStepFactory(
         } else null
     }
 
-    private fun createConvertToTestDataFunction(rawTestStepName: ValueExpression?, parameters: Map<String, String?>): () -> TestStep =
+    private fun createConvertToTestDataFunction(rawTestStepName: ValueExpression?, parameters: Map<String, Any?>): () -> TestStep =
         {
             val testStepName = convertValue<String>(rawTestStepName, parameters) ?: error("Test step name cannot be null from the expression '$rawTestStepName'")
             val rawTestStepToRun = testStepRegistry.getByName(testStepName)

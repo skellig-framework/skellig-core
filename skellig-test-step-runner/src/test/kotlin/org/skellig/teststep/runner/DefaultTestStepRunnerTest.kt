@@ -67,7 +67,7 @@ internal class DefaultTestStepRunnerTest {
         Mockito.verifyNoInteractions(testStepProcessor)
     }
 
-    private fun initializeTestSteps(testStepName: String, parameters: Map<String, String?>) {
+    private fun initializeTestSteps(testStepName: String, parameters: Map<String, Any?>) {
         val rawTestStep = mapOf<ValueExpression, ValueExpression?>(Pair(AlphanumericValueExpression("name"), StringValueExpression(testStepName)))
         testStep = DefaultTestStep.DefaultTestStepBuilder()
                 .withId("t1")

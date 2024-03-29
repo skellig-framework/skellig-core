@@ -1,25 +1,25 @@
 package org.skellig.teststep.processing.model.factory
 
+import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TaskTestStep
-import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 internal class TaskTestStepFactory(
-    private val testStepRegistry: TestStepRegistry,
-    private val testStepFactory: TestStepFactory<TestStep>,
-    valueExpressionContextFactory: ValueExpressionContextFactory
-) : BaseTestStepFactory<TaskTestStep>(valueExpressionContextFactory) {
+    testStepRegistry: TestStepRegistry,
+    valueExpressionContextFactory: ValueExpressionContextFactory,
+    defaultTestDataConverter: String? = null,
+) : BaseDefaultTestStepFactory<TaskTestStep>(testStepRegistry, valueExpressionContextFactory, defaultTestDataConverter) {
 
     companion object {
         private val TASK = fromProperty("task")
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): TaskTestStep {
-        val additionalParameters = extractParametersFromTestStepName(testStepName, rawTestStep)
-        additionalParameters?.putAll(parameters)
-
-        return TaskTestStep(testStepName, rawTestStep[TASK], additionalParameters) { v, p -> convertValue(v, p) }
+    //TODO: verify extended task fom parent test step is in correct order
+    override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<TaskTestStep> {
+        return TaskTestStep.Builder()
+            .withTask(rawTestStep[TASK])
+            .withParameters(parameters.toMutableMap())
     }
 
     override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {

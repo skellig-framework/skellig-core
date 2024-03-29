@@ -4,13 +4,45 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 
 
 class TaskTestStep(
-    override val name: String,
+    id: String?,
+    name: String?,
+    execution: TestStepExecutionType?,
+    timeout: Int,
+    delay: Int,
+    attempts: Int,
+    values: Map<String, Any?>?,
+    testData: Any?,
+    validationDetails: ValidationNode?,
+    scenarioStateUpdaters: List<ScenarioStateUpdater>?,
     val task: ValueExpression?,
-    val parameters: Map<String, Any?>?,
-    val convertValueDelegate: (ValueExpression?, Map<String, Any?>) -> Any?
-) : TestStep {
+    val parameters: MutableMap<String, Any?>,
+) : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+
 
     override fun toString(): String {
-        return name
+        return super.toString() + "task = $task\n"
+    }
+
+    class Builder : DefaultTestStep.Builder<TaskTestStep>() {
+
+        private var task: ValueExpression? = null
+        private var parameters: MutableMap<String, Any?>? = null
+
+        fun withTask(task: ValueExpression?) = apply {
+            this.task = task
+        }
+
+        fun withParameters(parameters: MutableMap<String, Any?>?) = apply {
+            this.parameters = parameters
+        }
+
+
+        override fun build(): TaskTestStep {
+            return TaskTestStep(
+                id, name, execution, timeout, delay, attempts, values, testData,
+                validationDetails, scenarioStateUpdaters, task,
+                parameters ?: error("Parameters are mandatory for TaskTestStep")
+            )
+        }
     }
 }
