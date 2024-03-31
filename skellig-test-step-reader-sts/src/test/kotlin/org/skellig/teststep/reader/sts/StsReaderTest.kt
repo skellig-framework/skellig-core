@@ -262,6 +262,21 @@ class StsReaderTest {
         )
     }
 
+    @Test
+    @DisplayName("When test step has inner references in properties")
+    fun testParseTestStepWithInnerReferences() {
+        val filePath = getFileUrl("/test-step-with-inner-references.sts")
+
+        val testSteps = stsReader.read(filePath.openStream())
+
+        val firstTestStep = testSteps[0]
+        assertAll(
+            { assertEquals(NumberValueExpression("1"), getValueFromMap(firstTestStep, "values", "i")) },
+            { assertEquals(NumberValueExpression("2"), getValueFromMap(firstTestStep, "values", "n_ + \${i}")) },
+            { assertEquals(NumberValueExpression("3"), getValueFromMap(firstTestStep, "values", "x_ + \${n_ + \${i}}")) },
+        )
+    }
+
     private fun getFileUrl(filePath: String): URL = javaClass.getResource(filePath)!!.toURI().toURL()
 
     private fun getValueFromMap(data: Map<ValueExpression, ValueExpression?>, vararg keys: Any): Any? {

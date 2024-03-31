@@ -1,0 +1,7 @@
+name("Test step with inner references") {
+    values {
+        i = 1
+        n_ + ${i} = 2
+        x_ + ${n_ + ${i}} = 3
+    }
+}

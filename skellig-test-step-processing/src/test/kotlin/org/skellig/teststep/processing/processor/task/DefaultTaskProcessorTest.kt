@@ -270,7 +270,13 @@ class DefaultTaskProcessorTest {
                                                                 AlphanumericValueExpression("stored-p."),
                                                                 CallChainExpression(listOf(PropertyValueExpression("i"), AlphanumericValueExpression("num")))
                                                             ),
-                                                            CallChainExpression(listOf(PropertyValueExpression("i"), AlphanumericValueExpression("code")))
+                                                            PropertyValueExpression(
+                                                                MathOperationExpression(
+                                                                    "+",
+                                                                    AlphanumericValueExpression("p."),
+                                                                    CallChainExpression(listOf(PropertyValueExpression("i"), AlphanumericValueExpression("num")))
+                                                                )
+                                                            )
                                                         )
                                                     )
                                                 )

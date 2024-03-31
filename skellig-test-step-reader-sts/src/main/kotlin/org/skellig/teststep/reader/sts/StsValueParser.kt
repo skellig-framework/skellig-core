@@ -2,6 +2,7 @@ package org.skellig.teststep.reader.sts
 
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.skellig.teststep.reader.sts.parser.value.SkelligTestValueGrammarLexer
@@ -55,6 +56,8 @@ internal class StsValueParser {
                     ArrayValueAccessorContext::class.java -> valueExpression = convert(tree as ArrayValueAccessorContext)
                     LambdaExpressionContext::class.java -> valueExpression = convert(tree as LambdaExpressionContext)
                     NotExprContext::class.java -> valueExpression = convert(tree as NotExprContext)
+                    AdditionPropertyKeyExprContext::class.java -> valueExpression = convert(tree as AdditionPropertyKeyExprContext)
+                    InnerPropertyExprContext::class.java -> valueExpression = convert(tree as InnerPropertyExprContext)
                     StartContext::class.java -> valueExpression = convert(tree.getChild(0))
                 }
             } else if (tree is TerminalNode) {
@@ -100,7 +103,7 @@ internal class StsValueParser {
         )
     }
 
-    private fun convertMathOperation(operation: String, leftContext: ExpressionContext, rightContext: ExpressionContext): ValueExpression {
+    private fun convertMathOperation(operation: String, leftContext: ParserRuleContext, rightContext: ParserRuleContext): ValueExpression {
         return MathOperationExpression(operation, convert(leftContext)!!, convert(rightContext)!!)
     }
 
@@ -147,9 +150,21 @@ internal class StsValueParser {
     }
 
     private fun convert(context: PropertyExpressionContext): ValueExpression {
-        val name = extractString(context.propertyKey().text)
+        val key = convert(context.propertyKey())?: error("Failed to parse value reference ${context.propertyKey()}: cannot be null")
         val defaultValue = convert(context.expression())
-        return PropertyValueExpression(name, defaultValue)
+        return PropertyValueExpression(key, defaultValue)
+    }
+
+    private fun convert(context: AdditionPropertyKeyExprContext): ValueExpression {
+        return convertMathOperation(
+            context.ADD().text,
+            context.propertyKey(0),
+            context.propertyKey(1)
+        )
+    }
+
+    private fun convert(context: InnerPropertyExprContext): ValueExpression {
+        return convert(context.propertyExpression())
     }
 
     private fun convert(context: LambdaExpressionContext): ValueExpression {

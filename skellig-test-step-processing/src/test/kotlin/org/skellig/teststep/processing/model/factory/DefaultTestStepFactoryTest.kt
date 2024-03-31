@@ -329,9 +329,6 @@ class DefaultTestStepFactoryTest {
     @Test
     @DisplayName("With values has reference to other values")
     fun testCreateTestStepWithValuesReferenceToOtherValues() {
-        val generatedId = "0001"
-        whenever(testScenarioState.get("gen_id")).thenReturn(generatedId)
-
         val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
             Pair(
                 AlphanumericValueExpression("values"),
@@ -352,6 +349,33 @@ class DefaultTestStepFactoryTest {
             { assertEquals("v1", values["f2"]) },
             { assertEquals(values["f1"], values["f2"]) },
             { assertEquals(values["f1"], values["f3"]) },
+        )
+    }
+
+    @Test
+    @DisplayName("With values has reference to other values")
+    fun testCreateTestStepWithValuesReferenceToOtherValuesAndInnerReferences() {
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(
+                AlphanumericValueExpression("values"),
+                MapValueExpression(
+                    mapOf(
+                        Pair(AlphanumericValueExpression("i"), NumberValueExpression("1")),
+                        Pair(MathOperationExpression("+", AlphanumericValueExpression("n_"), PropertyValueExpression("i")), NumberValueExpression("2")),
+                        Pair(MathOperationExpression("+", AlphanumericValueExpression("x_"),
+                            PropertyValueExpression(MathOperationExpression("+", AlphanumericValueExpression("n_"), PropertyValueExpression("i")))), NumberValueExpression("3")),
+                    )
+                )
+            )
+        )
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap<String, String>())
+        val values = testStep.values!!
+
+        assertAll(
+            { assertEquals(BigDecimal("1"), values["i"]) },
+            { assertEquals(BigDecimal("2"), values["n_1"]) },
+            { assertEquals(BigDecimal("3"), values["x_2"]) },
         )
     }
 

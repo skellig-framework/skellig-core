@@ -1,9 +1,12 @@
 package org.skellig.teststep.reader.value.expression
 
-class PropertyValueExpression(private val key: String, private val defaultValue: ValueExpression? = null) : ValueExpression {
+class PropertyValueExpression(private val key: ValueExpression, private val defaultValue: ValueExpression? = null) : ValueExpression {
+
+    constructor(key: String, defaultValue: ValueExpression? = null)
+            : this(AlphanumericValueExpression(key), defaultValue)
 
     override fun evaluate(context: ValueExpressionContext): Any? {
-        return context.onGetReferenceValue(key) { defaultValue?.evaluate(context) }
+        return key.evaluate(context)?.toString()?.let { context.onGetReferenceValue(it) { defaultValue?.evaluate(context) } }
     }
 
     override fun toString(): String {

@@ -39,15 +39,23 @@ functionBase
 
 functionCall: ID '(' (arg (COMMA arg)*)? (')'|'):');
 
-arg: expression | logicalExpression | comparison | lambdaExpression;
+arg: expression | logicalExpression | comparison | lambdaExpression | array;
 
 lambdaExpression: ID LAMBDA (logicalExpression | expression);
 
 propertyExpression: '${' propertyKey (COMMA expression)? '}';
 
-propertyKey: ID | INT | STRING;
+propertyKey
+    : propertyKey ADD propertyKey      # additionPropertyKeyExpr
+    | propertyExpression               # innerPropertyExpr
+    | ID                               # idPropertyKeyExpr
+    | STRING                           # stringPropertyKeyExpr
+    | INT                              # numberPropertyKeyExpr
+    ;
 
 arrayValueAccessor: ID '[' INT ']';
+
+array: '[' expression (COMMA expression)* ']';
 
 number: FLOAT | INT;
 

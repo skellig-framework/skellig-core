@@ -1,4 +1,4 @@
-package org.skellig.teststep.processing.processor.task
+package org.skellig.teststep.processing.processor.task.config
 
 import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.model.factory.TaskTestStepFactory
@@ -6,6 +6,8 @@ import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.config.ConfiguredTestStepProcessorDetails
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
+import org.skellig.teststep.processing.processor.task.DefaultTaskProcessor
+import org.skellig.teststep.processing.processor.task.TaskTestStepProcessor
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 class TaskTestStepProcessorConfig : TestStepProcessorConfig<TaskTestStep> {
@@ -23,21 +25,19 @@ class TaskTestStepProcessorConfig : TestStepProcessorConfig<TaskTestStep> {
             details.testStepProcessor.process(testStep)
         }
 
-        return if (details.config.hasPath("cassandra"))
-            ConfiguredTestStepProcessorDetails(
-                TaskTestStepProcessor(
-                    DefaultTaskProcessor(
-                        details.state,
-                        valueConvertDelegate,
-                        processTestStepDelegate
-                    ),
-                    details.state
+        return ConfiguredTestStepProcessorDetails(
+            TaskTestStepProcessor(
+                DefaultTaskProcessor(
+                    details.state,
+                    valueConvertDelegate,
+                    processTestStepDelegate
                 ),
-                TaskTestStepFactory(
-                    details.testStepRegistry,
-                    details.valueExpressionContextFactory
-                )
+                details.state
+            ),
+            TaskTestStepFactory(
+                details.testStepRegistry,
+                details.valueExpressionContextFactory
             )
-        else null
+        )
     }
 }

@@ -347,7 +347,7 @@ class ValueExpressionContextFactoryTest {
     }
 
     @Nested
-    inner class ComplexExtractionsTest {
+    inner class ComplexCallChainTest {
 
         @Test
         fun testExtractFromManyObjects() {
