@@ -304,6 +304,66 @@ public class SkelligTestValueGrammarBaseListener implements SkelligTestValueGram
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterArray(SkelligTestValueGrammarParser.ArrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArray(SkelligTestValueGrammarParser.ArrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterArrayValues(SkelligTestValueGrammarParser.ArrayValuesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArrayValues(SkelligTestValueGrammarParser.ArrayValuesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMap(SkelligTestValueGrammarParser.MapContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMap(SkelligTestValueGrammarParser.MapContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPair(SkelligTestValueGrammarParser.PairContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPair(SkelligTestValueGrammarParser.PairContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterKey(SkelligTestValueGrammarParser.KeyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitKey(SkelligTestValueGrammarParser.KeyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterLambdaExpression(SkelligTestValueGrammarParser.LambdaExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -395,18 +455,6 @@ public class SkelligTestValueGrammarBaseListener implements SkelligTestValueGram
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitArrayValueAccessor(SkelligTestValueGrammarParser.ArrayValueAccessorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterArray(SkelligTestValueGrammarParser.ArrayContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitArray(SkelligTestValueGrammarParser.ArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

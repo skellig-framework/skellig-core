@@ -37,9 +37,14 @@ functionBase
     | ID
     | STRING;
 
-functionCall: ID '(' (arg (COMMA arg)*)? (')'|'):');
+functionCall: ID '(' (arg (COMMA arg)*)? ')';
 
-arg: expression | logicalExpression | comparison | lambdaExpression | array;
+arg: expression | logicalExpression | comparison | lambdaExpression | array | map;
+array: '[' arrayValues? (COMMA arrayValues)* ']';
+arrayValues : (expression | map | array);
+map: '{' pair* '}';
+pair: key ('=' expression | map | array);
+key: expression;
 
 lambdaExpression: ID LAMBDA (logicalExpression | expression);
 
@@ -54,8 +59,6 @@ propertyKey
     ;
 
 arrayValueAccessor: ID '[' INT ']';
-
-array: '[' expression (COMMA expression)* ']';
 
 number: FLOAT | INT;
 

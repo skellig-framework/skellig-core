@@ -30,7 +30,7 @@ expression
 
 functionExpression: ID '(' (arg (COMMA arg)*) ')';
 
-arg: expression*;
+arg: expression* | array | map;
 
 propertyExpression: '${' expression* (COMMA expression*)? '}';
 

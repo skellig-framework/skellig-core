@@ -1,0 +1,10 @@
+name("Simple test step with complex function where no property to assign the result") {
+// technically it's possible but the result of toJson will be lost as not assigned to any key (ex. parent key)
+    toJson() {
+    a = 0
+}
+
+    a = toJson({
+        b = 1
+    })
+}

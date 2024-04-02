@@ -1,0 +1,14 @@
+name("Simple test step with complex function where parent has more properties"){
+    task
+    {
+        forEach([0,1,2], i)
+        {
+            p0 = ${i}
+            forEach([3,2,1], j)
+            {
+                command = "go"
+            }
+        }
+        p1 = something
+    }
+}

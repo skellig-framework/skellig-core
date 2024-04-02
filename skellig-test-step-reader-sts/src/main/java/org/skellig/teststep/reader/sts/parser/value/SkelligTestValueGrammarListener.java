@@ -283,6 +283,56 @@ public interface SkelligTestValueGrammarListener extends ParseTreeListener {
 	 */
 	void exitArg(SkelligTestValueGrammarParser.ArgContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SkelligTestValueGrammarParser#array}.
+	 * @param ctx the parse tree
+	 */
+	void enterArray(SkelligTestValueGrammarParser.ArrayContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SkelligTestValueGrammarParser#array}.
+	 * @param ctx the parse tree
+	 */
+	void exitArray(SkelligTestValueGrammarParser.ArrayContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SkelligTestValueGrammarParser#arrayValues}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayValues(SkelligTestValueGrammarParser.ArrayValuesContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SkelligTestValueGrammarParser#arrayValues}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayValues(SkelligTestValueGrammarParser.ArrayValuesContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SkelligTestValueGrammarParser#map}.
+	 * @param ctx the parse tree
+	 */
+	void enterMap(SkelligTestValueGrammarParser.MapContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SkelligTestValueGrammarParser#map}.
+	 * @param ctx the parse tree
+	 */
+	void exitMap(SkelligTestValueGrammarParser.MapContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SkelligTestValueGrammarParser#pair}.
+	 * @param ctx the parse tree
+	 */
+	void enterPair(SkelligTestValueGrammarParser.PairContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SkelligTestValueGrammarParser#pair}.
+	 * @param ctx the parse tree
+	 */
+	void exitPair(SkelligTestValueGrammarParser.PairContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SkelligTestValueGrammarParser#key}.
+	 * @param ctx the parse tree
+	 */
+	void enterKey(SkelligTestValueGrammarParser.KeyContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SkelligTestValueGrammarParser#key}.
+	 * @param ctx the parse tree
+	 */
+	void exitKey(SkelligTestValueGrammarParser.KeyContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SkelligTestValueGrammarParser#lambdaExpression}.
 	 * @param ctx the parse tree
 	 */
@@ -372,16 +422,6 @@ public interface SkelligTestValueGrammarListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitArrayValueAccessor(SkelligTestValueGrammarParser.ArrayValueAccessorContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link SkelligTestValueGrammarParser#array}.
-	 * @param ctx the parse tree
-	 */
-	void enterArray(SkelligTestValueGrammarParser.ArrayContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SkelligTestValueGrammarParser#array}.
-	 * @param ctx the parse tree
-	 */
-	void exitArray(SkelligTestValueGrammarParser.ArrayContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SkelligTestValueGrammarParser#number}.
 	 * @param ctx the parse tree

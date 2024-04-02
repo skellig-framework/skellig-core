@@ -58,6 +58,8 @@ internal class StsValueParser {
                     NotExprContext::class.java -> valueExpression = convert(tree as NotExprContext)
                     AdditionPropertyKeyExprContext::class.java -> valueExpression = convert(tree as AdditionPropertyKeyExprContext)
                     InnerPropertyExprContext::class.java -> valueExpression = convert(tree as InnerPropertyExprContext)
+                    ArrayContext::class.java -> valueExpression = convert(tree as ArrayContext)
+                    MapContext::class.java -> valueExpression = convert(tree as MapContext)
                     StartContext::class.java -> valueExpression = convert(tree.getChild(0))
                 }
             } else if (tree is TerminalNode) {
@@ -150,7 +152,7 @@ internal class StsValueParser {
     }
 
     private fun convert(context: PropertyExpressionContext): ValueExpression {
-        val key = convert(context.propertyKey())?: error("Failed to parse value reference ${context.propertyKey()}: cannot be null")
+        val key = convert(context.propertyKey()) ?: error("Failed to parse value reference ${context.propertyKey()}: cannot be null")
         val defaultValue = convert(context.expression())
         return PropertyValueExpression(key, defaultValue)
     }
@@ -174,6 +176,21 @@ internal class StsValueParser {
 
     private fun convert(context: ArrayValueAccessorContext): ValueExpression {
         return StringValueExpression(context.text)
+    }
+
+    private fun convert(context: ArrayContext): ValueExpression {
+        return ListValueExpression(context.arrayValues().map { convert(it) })
+    }
+
+    private fun convert(context: MapContext): ValueExpression {
+        val value: Map<ValueExpression, ValueExpression?> =
+            context.pair().associate {
+                (convert(it.key()) ?: error("The key ${it.key()} cannot be evaluated to 'null' because the value cannot be assigned to 'null'")) to
+                        (if (it.map() != null) convert(it.map())
+                        else if (it.array() != null) convert(it.array())
+                        else convert(it.expression()))
+            }
+        return MapValueExpression(value)
     }
 
     private fun convert(context: NotExprContext): ValueExpression {

@@ -1,6 +1,0 @@
-name("Simple test step with invalid complex function where no property to assign the result"){
-    toJson()
-    {
-        a = 0
-    }
-}
