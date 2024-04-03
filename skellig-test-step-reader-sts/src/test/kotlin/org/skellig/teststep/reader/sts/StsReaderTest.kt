@@ -122,7 +122,10 @@ class StsReaderTest {
             { assertEquals("v2", getValueFromMap(firstTestStep, "data", "values", 0, "c2").toString()) },
             { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values", 1) as MapValueExpression).value.size) },
             { assertEquals("v3", getValueFromMap(firstTestStep, "data", "values", 1, "c1").toString()) },
-            { assertEquals("v4", getValueFromMap(firstTestStep, "data", "values", 1, "c2").toString()) })
+            { assertEquals("v4", getValueFromMap(firstTestStep, "data", "values", 1, "c2").toString()) },
+
+            { assertEquals(0, (getValueFromMap(firstTestStep, "data", "values2") as ListValueExpression).value.size) }
+        )
     }
 
     @Test
@@ -283,6 +286,7 @@ class StsReaderTest {
         val listValueExpression2 =
             ((getValueFromMap(testSteps[0], "values") as MapValueExpression).value.keys.last()
                     as FunctionCallExpression).args[0] as ListValueExpression
+        val listValueExpression3 = (getValueFromMap(testSteps[0], "values", "j") as FunctionCallExpression).args[0] as ListValueExpression
         assertAll(
             { assertEquals(NumberValueExpression("1"), listValueExpression.value[0]) },
             { assertEquals(NumberValueExpression("2"), listValueExpression.value[1]) },
@@ -291,6 +295,8 @@ class StsReaderTest {
             { assertEquals(AlphanumericValueExpression("a"), listValueExpression2.value[0]) },
             { assertEquals(AlphanumericValueExpression("b"), listValueExpression2.value[1]) },
             { assertEquals(AlphanumericValueExpression("c"), listValueExpression2.value[2]) },
+
+            { assertEquals(0, listValueExpression3.value.size) }
         )
     }
 

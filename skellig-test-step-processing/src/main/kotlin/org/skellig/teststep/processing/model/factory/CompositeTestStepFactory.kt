@@ -16,6 +16,7 @@ class CompositeTestStepFactory private constructor(
     init {
         registerTestStepFactory(GroupedTestStepFactory(testStepsRegistry, this, valueExpressionContextFactory))
         registerTestStepFactory(ClassTestStepFactory())
+        registerTestStepFactory(TaskTestStepFactory(testStepsRegistry, valueExpressionContextFactory))
 
         defaultTestStepFactory = DefaultTestStepFactory.Builder()
             .withValueExpressionContextFactory(valueExpressionContextFactory)

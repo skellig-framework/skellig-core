@@ -1,10 +1,10 @@
 package org.skellig.teststep.processing.processor
 
-import org.mockito.kotlin.mock
-import org.mockito.Mockito.verify
-import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
 import org.skellig.teststep.processing.model.DefaultTestStep
@@ -14,9 +14,12 @@ import java.util.regex.Pattern
 
 class CompositeTestStepProcessorTest {
 
-    private val compositeProcessor: CompositeTestStepProcessor = CompositeTestStepProcessor.Builder()
-        .withTestScenarioState(mock())
-        .build() as CompositeTestStepProcessor
+    private val compositeProcessor: CompositeTestStepProcessor =
+        CompositeTestStepProcessor.Builder()
+            .withValueConvertDelegate { _, _ -> }
+            .withProcessTestStepDelegate { _, _ -> mock() }
+            .withTestScenarioState(mock())
+            .build() as CompositeTestStepProcessor
 
     @Test
     fun testProcessWithRegisteredTestStepProcessor() {

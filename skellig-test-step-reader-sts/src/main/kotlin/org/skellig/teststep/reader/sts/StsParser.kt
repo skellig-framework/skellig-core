@@ -6,7 +6,10 @@ import org.antlr.v4.runtime.tree.ParseTree
 import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarLexer
 import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser
 import org.skellig.teststep.reader.sts.parser.teststep.SkelligGrammarParser.*
-import org.skellig.teststep.reader.value.expression.*
+import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
+import org.skellig.teststep.reader.value.expression.ListValueExpression
+import org.skellig.teststep.reader.value.expression.MapValueExpression
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
 
 internal class StsParser {
@@ -61,22 +64,22 @@ internal class StsParser {
         }
     }
 
-   /* private fun convertArg(argContext: ArgContext): ValueExpression? {
-        return if (argContext.expression() != null) {
-            convertValue(argContext.text)
-        } else if (argContext.map() != null) {
-            MapValueExpression(convertMap(argContext.map()))
-        } else if (argContext.array() != null) {
-            ListValueExpression(convertArray(argContext.array()))
-        } else {
-            return null
-        }
-    }
+    /* private fun convertArg(argContext: ArgContext): ValueExpression? {
+         return if (argContext.expression() != null) {
+             convertValue(argContext.text)
+         } else if (argContext.map() != null) {
+             MapValueExpression(convertMap(argContext.map()))
+         } else if (argContext.array() != null) {
+             ListValueExpression(convertArray(argContext.array()))
+         } else {
+             return null
+         }
+     }
 
-    private fun convertFunctionCall(functionCallContext: FunctionExpressionContext): FunctionCallExpression {
-        return FunctionCallExpression(functionCallContext.ID().text,
-            functionCallContext.arg()?.map { convertArg(it) }?.toTypedArray() ?: emptyArray())
-    }*/
+     private fun convertFunctionCall(functionCallContext: FunctionExpressionContext): FunctionCallExpression {
+         return FunctionCallExpression(functionCallContext.ID().text,
+             functionCallContext.arg()?.map { convertArg(it) }?.toTypedArray() ?: emptyArray())
+     }*/
 
     private fun convertValue(valueContext: ValueContext): ValueExpression? {
         val text = valueContext.text
@@ -94,7 +97,7 @@ internal class StsParser {
         var c = 0
         val values = arrayContext.values()
         while (c < values.size) {
-            if (arrayContext.values()[c].value() != null) {
+            if (arrayContext.values()[c].value() != null && arrayContext.values()[c].value().text.isNotEmpty()) {
                 array.add(convertValue(arrayContext.values()[c].value()))
             } else if (arrayContext.values()[c].map() != null) {
                 array.add(MapValueExpression(convertMap(arrayContext.values()[c].map())))

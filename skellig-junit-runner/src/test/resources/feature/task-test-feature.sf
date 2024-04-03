@@ -1,0 +1,6 @@
+Feature: Task test steps
+
+    Scenario: Insert coin
+        * Insert coins into slot And verify capacity and message displayed
+            | coins | 1,5,5,10,20 |
+        * Verify 41 coins inserted successfully

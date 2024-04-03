@@ -3,14 +3,21 @@ package org.skellig.teststep.processing.processor
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
+import org.skellig.teststep.processing.processor.task.DefaultTaskProcessor
+import org.skellig.teststep.processing.processor.task.TaskTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.reader.value.expression.ValueExpression
 
 /**
  * Processes any test step by assigning an appropriate test step processor from its registry.
  *
  * If no processor found for the provided test step, then it throws `TestStepProcessingException`
  */
-open class CompositeTestStepProcessor private constructor(testScenarioState: TestScenarioState) : TestStepProcessor<TestStep> {
+class CompositeTestStepProcessor private constructor(
+    testScenarioState: TestScenarioState,
+    valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
+    processTestStepDelegate: (String, Map<String, Any?>) -> TestStepRunResult
+) : TestStepProcessor<TestStep> {
 
     private val testStepProcessors: MutableList<TestStepProcessor<in TestStep>> = mutableListOf()
 
@@ -21,6 +28,12 @@ open class CompositeTestStepProcessor private constructor(testScenarioState: Tes
                 .build()
         )
         registerTestStepProcessor(GroupedTestStepProcessor(this))
+        registerTestStepProcessor(
+            TaskTestStepProcessor(
+                DefaultTaskProcessor(testScenarioState, valueConvertDelegate, processTestStepDelegate),
+                testScenarioState
+            )
+        )
         registerTestStepProcessor(ClassTestStepProcessor(testScenarioState))
     }
 
@@ -49,9 +62,21 @@ open class CompositeTestStepProcessor private constructor(testScenarioState: Tes
     }
 
     class Builder : BaseTestStepProcessor.Builder<TestStep>() {
+        var valueConvertDelegate: ((ValueExpression?, Map<String, Any?>) -> Any?)? = null
+        var processTestStepDelegate: ((String, Map<String, Any?>) -> TestStepRunResult)? = null
+
+        fun withValueConvertDelegate(valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?) =
+            apply { this.valueConvertDelegate = valueConvertDelegate }
+
+        fun withProcessTestStepDelegate(processTestStepDelegate: (String, Map<String, Any?>) -> TestStepRunResult) =
+            apply { this.processTestStepDelegate = processTestStepDelegate }
 
         override fun build(): CompositeTestStepProcessor {
-            return CompositeTestStepProcessor(testScenarioState!!)
+            return CompositeTestStepProcessor(
+                testScenarioState!!,
+                valueConvertDelegate!!,
+                processTestStepDelegate!!
+            )
         }
     }
 }

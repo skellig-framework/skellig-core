@@ -3,8 +3,8 @@ package org.skellig.teststep.processing.value.function
 import org.skellig.task.TaskUtils.Companion.runTask
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
-import java.math.BigDecimal
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 
 class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : FunctionValueExecutor {
 
@@ -18,6 +18,17 @@ class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : F
                 val key = args[0]?.toString() ?: "null"
                 testScenarioState.get(key) ?: throw FunctionExecutionException("No data found in Test Scenario State with key `$key`")
             }
+
+            2 -> {
+                val key = args[0]?.toString() ?: "null"
+                var storedValue = testScenarioState.get(key)
+                if (storedValue == null) {
+                    storedValue = args[1]
+                    testScenarioState.set(key, storedValue)
+                }
+                storedValue
+            }
+
             3 -> {
                 val key = args[0]?.toString() ?: "null"
                 val attempts = (args[1] as BigDecimal?) ?: 0
@@ -29,6 +40,7 @@ class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : F
                     { it != null }
                 )
             }
+
             else -> throw FunctionExecutionException("Function `get` can only accept 1 or 3 arguments. Found ${args.size}")
         }
     }

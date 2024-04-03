@@ -65,6 +65,7 @@ class DefaultFunctionValueExecutor private constructor(
             this.withFunctionValueExecutor(ToBytesFunctionExecutor())
             this.withFunctionValueExecutor(SizeFunctionExecutor())
             this.withFunctionValueExecutor(AllFunctionExecutor())
+            this.withFunctionValueExecutor(AddFunctionExecutor())
             this.withFunctionValueExecutor(AnyFunctionExecutor())
             this.withFunctionValueExecutor(NoneFunctionExecutor())
             this.withFunctionValueExecutor(CountFunctionExecutor())

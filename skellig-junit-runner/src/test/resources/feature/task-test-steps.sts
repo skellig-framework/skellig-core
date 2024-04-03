@@ -1,0 +1,62 @@
+name ("Insert coins into slot And verify capacity and message displayed") {
+    values {
+        initialValue = 0
+    }
+
+    task {
+        counter = ${initialValue}
+        forEach(listOf(${coins}), c) {
+            coin = ${c}.toBigDecimal()
+            counter = ${counter} + ${coin}
+
+            runIf(${coin} > 0) {
+                // Store coinNumber in state and use it in the test below
+                state {
+                    coinNumber = ${c}
+                }
+                runTest("Insert coin to machine") {
+                    parameters {
+                        coin = ${coin}
+                    }
+                }
+                // run 2 tests async as well as storing data incrementally in the state
+                asyncEach {
+                    runTest("Verify machine capacity") {}
+                    runTest("Verify inserted coin message displayed") {
+                        parameters {
+                            msg = "Coin " + ${c} + " has been inserted"
+                        }
+                    }
+                    state {
+                        // Add more entries to insert_iteration. At the beginning the default value is empty array
+                        insert_iteration = get(insert_iteration, []).add({
+                            coin = ${coin}
+                        })
+                    }
+                }
+            }
+        }
+        // Store total number of coins to validate it below, because local vars are wiped after task is completed
+        state {
+            total = ${counter}
+        }
+    }
+
+    validate {
+        get(total) > 0 = true
+    }
+}
+
+name ("Verify inserted coin message displayed") {
+    validate {
+        ${msg} = "Coin " + get(coinNumber) + " has been inserted"
+    }
+}
+
+name ("Verify (\d+) coins inserted successfully") {
+    // 2 ways of validating the result from the task above
+    validate {
+        get(insert_iteration).sumOf(c -> c.coin) = ${1}.toBigDecimal()
+        get(total) = ${1}.toBigDecimal()
+    }
+}

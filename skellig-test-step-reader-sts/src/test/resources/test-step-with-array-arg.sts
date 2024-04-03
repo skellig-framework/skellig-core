@@ -1,6 +1,7 @@
 name("Test step with array arg") {
     values {
         i = func([1,2])
+        j = func([])
         f2([a,b,c]) {
         }
     }

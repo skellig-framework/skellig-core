@@ -24,13 +24,17 @@ internal class RunTestTaskProcessor(
                 is MapValueExpression -> {
                     val testStepName = valueConvertDelegate(task.args[0], parameters)
                     val result = testStepName?.let {
-                        val runTestParameters = (valueConvertDelegate(value.value[PARAMETERS], parameters) as? Map<String, Any?>)?: parameters
+                        val runTestParameters = (valueConvertDelegate(value.value[PARAMETERS], parameters) as? Map<String, Any?>) ?: parameters
                         processTestStepDelegate(testStepName.toString(), runTestParameters)
-                    }?: error("The Test Step '${task.args[0]}' was evaluated to 'null'")
+                    } ?: error("The Test Step '${task.args[0]}' was evaluated to 'null'")
 
-                    var valueExpression : ValueExpression?
+                    var valueExpression: ValueExpression?
                     result.subscribe { _, _, e ->
-                        valueExpression = if (e == null) value.value[ON_PASSED] else value.value[ON_FAILED]
+                        valueExpression = if (e == null) value.value[ON_PASSED]
+                        else {
+                            if (value.value.containsKey(ON_FAILED)) value.value[ON_FAILED]
+                            else throw e
+                        }
 
                         valueExpression?.let { taskProcessor.process(null, it, parameters) }
                     }
