@@ -10,7 +10,7 @@ name ("Insert coins into slot And verify capacity and message displayed") {
             counter = ${counter} + ${coin}
 
             runIf(${coin} > 0) {
-                // Store coinNumber in state and use it in the test below
+            // Store coinNumber in state and use it in the test below
                 state {
                     coinNumber = ${c}
                 }
@@ -19,7 +19,7 @@ name ("Insert coins into slot And verify capacity and message displayed") {
                         coin = ${coin}
                     }
                 }
-                // run 2 tests async as well as storing data incrementally in the state
+            // run 2 tests async as well as storing data incrementally in the state
                 asyncEach {
                     runTest("Verify machine capacity") {}
                     runTest("Verify inserted coin message displayed") {
@@ -28,7 +28,7 @@ name ("Insert coins into slot And verify capacity and message displayed") {
                         }
                     }
                     state {
-                        // Add more entries to insert_iteration. At the beginning the default value is empty array
+                    // Add more entries to insert_iteration. At the beginning the default value is empty array
                         insert_iteration = get(insert_iteration, []).add({
                             coin = ${coin}
                         })
@@ -36,7 +36,7 @@ name ("Insert coins into slot And verify capacity and message displayed") {
                 }
             }
         }
-        // Store total number of coins to validate it below, because local vars are wiped after task is completed
+    // Store total number of coins to validate it below, because local vars are wiped after task is completed
         state {
             total = ${counter}
         }
@@ -44,6 +44,53 @@ name ("Insert coins into slot And verify capacity and message displayed") {
 
     validate {
         get(total) > 0 = true
+    }
+}
+
+name ("Insert too many coins into slot And verify capacity") {
+    task {
+        forEach(listOf(${coins}), c) {
+            runTest("Insert coin to machine") {
+                parameters {
+                    coin = ${c}.toBigDecimal()
+                }
+                onPassed {
+                    state {
+                        insertedCoins = get(insertedCoins, []).add(${c})
+                    }
+                }
+            }
+            runTest("Verify machine capacity") {
+                onFailed {
+                    state {
+                        isFailed = true
+                    }
+                }
+            }
+        }
+    }
+
+    validate {
+        get(isFailed) = true
+        get(insertedCoins).sumOf (c -> c) > 0 = true
+    }
+}
+
+name ("Insert coins in parallel") {
+    task {
+        asyncForEach(listOf(${coins}), c) {
+            runTest("Insert coin to machine") {
+                parameters {
+                    coin = ${c}.toBigDecimal()
+                }
+            }
+        }
+    }
+}
+
+name ("Verify (\d+) coins inserted") {
+    validate {
+        getMachineCapacity() = ${1}.toInt()
     }
 }
 

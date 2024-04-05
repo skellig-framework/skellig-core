@@ -57,15 +57,16 @@ open class SkelligTestContext : Closeable {
             ("Initializing Skellig Context with test steps in '$testStepPaths'" +
                     configPath?.let { "and config file '$it'" })
         )
+        val newClassInstanceRegistry = classInstanceRegistry ?: ConcurrentHashMap<Class<*>, Any>()
 
         config = createConfig(classLoader, configPath)
 
         testScenarioState = createTestScenarioState()
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepReader = createTestStepReader()
-        val functionExecutor = createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths)
+        val functionExecutor = createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths, newClassInstanceRegistry)
 
-        testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths, classInstanceRegistry)
+        testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths, newClassInstanceRegistry)
 
         valueExpressionContextFactory = ValueExpressionContextFactory(
             functionExecutor,
@@ -134,16 +135,13 @@ open class SkelligTestContext : Closeable {
         classLoader: ClassLoader,
         testStepReader: TestStepReader,
         testStepClassPaths: Collection<String>,
-        classInstanceRegistry: MutableMap<Class<*>, Any>?
+        classInstanceRegistry: MutableMap<Class<*>, Any>
     ): CachedTestStepsRegistry {
         val paths = extractTestStepPaths(testStepPaths, classLoader)
         val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader)
         testStepsRegistry.registerFoundTestStepsInPath(paths)
 
-        val classTestStepsRegistry = ClassTestStepsRegistry(
-            testStepClassPaths,
-            classInstanceRegistry ?: ConcurrentHashMap<Class<*>, Any>()
-        )
+        val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths, classInstanceRegistry)
         classTestStepsRegistry.getTestSteps().forEach { testStep ->
             testStep.values
                 .mapNotNull { it?.evaluate(ValueExpressionContext.EMPTY) }
@@ -196,7 +194,8 @@ open class SkelligTestContext : Closeable {
     private fun createFunctionExecutor(
         classLoader: ClassLoader,
         testScenarioState: TestScenarioState?,
-        testStepClassPaths: Collection<String>
+        testStepClassPaths: Collection<String>,
+        classInstanceRegistry: MutableMap<Class<*>, Any>
     ): FunctionValueExecutor {
         val functionExecutorBuilder = DefaultFunctionValueExecutor.Builder()
 
@@ -209,6 +208,7 @@ open class SkelligTestContext : Closeable {
             }
 
         return functionExecutorBuilder
+            .withClassInstanceRegistry(classInstanceRegistry)
             .withClassLoader(classLoader)
             .withClassPaths(testStepClassPaths)
             .withTestScenarioState(testScenarioState)

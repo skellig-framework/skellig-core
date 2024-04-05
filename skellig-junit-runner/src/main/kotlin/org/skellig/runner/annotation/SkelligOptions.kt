@@ -8,5 +8,5 @@ annotation class SkelligOptions(val features: Array<String>,
                                 val config: String = "",
                                 val context: KClass<out SkelligTestContext> = SkelligTestContext::class,
                                 val includeTags: Array<String> = [],
-                                val excludeTags: Array<String> = ["Ignore"],
+                                val excludeTags: Array<String> = ["@Ignore"],
     )

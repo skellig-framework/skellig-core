@@ -30,11 +30,12 @@ internal class RunTestTaskProcessor(
 
                     var valueExpression: ValueExpression?
                     result.subscribe { _, _, e ->
-                        valueExpression = if (e == null) value.value[ON_PASSED]
-                        else {
-                            if (value.value.containsKey(ON_FAILED)) value.value[ON_FAILED]
-                            else throw e
-                        }
+                        valueExpression =
+                            if (e == null) value.value[ON_PASSED]
+                            else {
+                                if (value.value.containsKey(ON_FAILED)) value.value[ON_FAILED]
+                                else throw e
+                            }
 
                         valueExpression?.let { taskProcessor.process(null, it, parameters) }
                     }

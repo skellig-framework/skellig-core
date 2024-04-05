@@ -4,3 +4,18 @@ Feature: Task test steps
         * Insert coins into slot And verify capacity and message displayed
             | coins | 1,5,5,10,20 |
         * Verify 41 coins inserted successfully
+
+    // This test is to check Ignore tag
+    @Ignore
+    Scenario: Broken insert coint
+        * Insert coins into slot And verify capacity and message displayed
+            | coins | 100 |
+
+    Scenario: Insert coin with overflow capacity
+        * Insert too many coins into slot And verify capacity
+            | coins | 10, 50 |
+
+    Scenario: Insert coin in parallel
+        * Insert coins in parallel
+            | coins | 5, 5 |
+        * Verify 10 coins inserted
