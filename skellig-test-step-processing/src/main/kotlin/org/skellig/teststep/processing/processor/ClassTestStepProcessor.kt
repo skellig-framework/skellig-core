@@ -46,6 +46,11 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
         } catch (e: IllegalAccessException) {
             error = TestStepProcessingException("Unexpected failure when running a test step method", e)
             throw error
+        } catch (e: IllegalArgumentException) {
+            error = TestStepProcessingException("Failed to call a method '${testStepMethod.name}' " +
+                    "with arguments '${methodParameters.joinToString(",") { "$it: ${it?.javaClass?.simpleName ?: ""}" }}'", e
+            )
+            throw error
         } catch (e: InvocationTargetException) {
             var targetException: Throwable = e
             if (e.targetException != null) {

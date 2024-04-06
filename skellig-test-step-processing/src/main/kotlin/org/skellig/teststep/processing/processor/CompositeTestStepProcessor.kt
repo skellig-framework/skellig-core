@@ -27,7 +27,6 @@ class CompositeTestStepProcessor private constructor(
                 .withTestScenarioState(testScenarioState)
                 .build()
         )
-        registerTestStepProcessor(GroupedTestStepProcessor(this))
         registerTestStepProcessor(
             TaskTestStepProcessor(
                 DefaultTaskProcessor(testScenarioState, valueConvertDelegate, processTestStepDelegate),

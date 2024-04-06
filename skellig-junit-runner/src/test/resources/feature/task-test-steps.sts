@@ -88,6 +88,43 @@ name ("Insert coins in parallel") {
     }
 }
 
+name ("Many clients insert coins in parallel") {
+    task {
+        asyncForEach([
+            {
+                client = A
+                coins [ 10, 5, 20]
+            },
+            {
+                client = B
+                coins [ 1, 10, 50, 5]
+            },
+            {
+                client = C
+                coins [ 5, 5]
+            }
+        ], i) {
+            client = ${i}.client
+            forEach(${i}.coins, c) {
+                runTest("Client "+ ${client} + " inserts coin to machine") {
+                    parameters {
+                        coin = ${c}
+                    }
+                }
+            }
+            state {
+                ${i}.client = ${i}.coins.sumOf(c -> c)
+            }
+        }
+    }
+
+    validate {
+        get(A) = 35
+        get(B) = 66
+        get(C) = 10
+    }
+}
+
 name ("Verify (\d+) coins inserted") {
     validate {
         getMachineCapacity() = ${1}.toInt()
@@ -101,9 +138,9 @@ name ("Verify inserted coin message displayed") {
 }
 
 name ("Verify (\d+) coins inserted successfully") {
-    // 2 ways of validating the result from the task above
+// 2 ways of validating the result from the task above
     validate {
-        get(insert_iteration).sumOf(c -> c.coin) = ${1}.toBigDecimal()
-        get(total) = ${1}.toBigDecimal()
-    }
+    get(insert_iteration).sumOf(c -> c.coin) = ${1}.toBigDecimal()
+    get(total) = ${1}.toBigDecimal()
+}
 }

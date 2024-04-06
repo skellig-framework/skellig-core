@@ -1,5 +1,6 @@
 package org.skellig.runner.stepdefs
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.skellig.feature.hook.annotation.BeforeTestScenario
 import org.skellig.teststep.processing.value.function.Function
@@ -17,6 +18,7 @@ class TaskTestStepDefs : SkelligTestContextAware {
 
     private val lock = ReentrantLock()
     private var capacity = 0
+    private var insertedCoinsPerClient = mutableMapOf<String, Int>()
     private var context: SkelligTestContext? = null
 
     @BeforeTestScenario
@@ -32,6 +34,21 @@ class TaskTestStepDefs : SkelligTestContextAware {
         } finally {
             lock.unlock()
         }
+    }
+
+    @TestStep(name = "Client (.+) inserts coin to machine")
+    fun clientInsertCoin(client: String, parameters: Map<String, Any?>) {
+        lock.lock()
+        try {
+            insertedCoinsPerClient[client] = insertedCoinsPerClient.getOrDefault(client, 0) + (parameters["coin"]?.toString()?.toInt() ?: 0)
+        } finally {
+            lock.unlock()
+        }
+    }
+
+    @TestStep(name = "Verify inserted coins from client (.+) is (\\d+)")
+    fun verifyInsertedCoinsFromClients(client: String, total: String) {
+        assertEquals(total.toInt(), insertedCoinsPerClient[client])
     }
 
     @TestStep(name = "Verify machine capacity")

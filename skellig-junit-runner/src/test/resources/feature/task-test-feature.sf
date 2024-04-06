@@ -19,3 +19,10 @@ Feature: Task test steps
         * Insert coins in parallel
             | coins | 5, 5 |
         * Verify 10 coins inserted
+
+    Scenario: Client insert coins in parallel
+        * Many clients insert coins in parallel
+            | coins | 5, 5 |
+        * Verify inserted coins from client A is 35
+        * Verify inserted coins from client B is 66
+        * Verify inserted coins from client C is 10
