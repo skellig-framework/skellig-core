@@ -58,13 +58,13 @@ public interface SkelligGrammarListener extends ParseTreeListener {
 	void exitValue(SkelligGrammarParser.ValueContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code values}
-	 * labeled alternative in {@link SkelligGrammarParser#expressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpression}.
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
 	void enterValues(SkelligGrammarParser.ValuesContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code values}
-	 * labeled alternative in {@link SkelligGrammarParser#expressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpression}.
+	 * labeled alternative in {@link SkelligGrammarParser#expression}.
 	 * @param ctx the parse tree
 	 */
 	void exitValues(SkelligGrammarParser.ValuesContext ctx);

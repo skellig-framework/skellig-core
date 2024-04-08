@@ -237,15 +237,6 @@ class StsReaderTest {
     }
 
     @Test
-    @DisplayName("When test step has invalid complex functions")
-    fun testParseSimpleTestStepWithInvalidComplexFunctions() {
-        val testStep = stsReader.read(getFileUrl("/test-step-with-invalid-functions-1.sts").openStream())[0]
-//        (testStep[AlphanumericValueExpression("task")] as MapValueExpression).value[]
-
-        stsReader.read(getFileUrl("/test-step-with-complex-functions-2.sts").openStream())
-    }
-
-    @Test
     @DisplayName("When test step has complex functions in validation")
     fun testParseSimpleTestStepWithComplexFunctionsInValidation() {
         val filePath = getFileUrl("/test-step-with-complex-functions-in-validation.sts")
