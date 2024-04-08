@@ -44,7 +44,7 @@ class DefaultTaskProcessorTest {
                 )
             )
             val parameters = mutableMapOf<String, Any?>()
-            taskProcessor.process(null, value, parameters)
+            taskProcessor.process(null, value, TaskProcessingContext(parameters))
 
             assertAll(
                 { assertEquals(BigDecimal(100), parameters["a"]) },
@@ -71,7 +71,7 @@ class DefaultTaskProcessorTest {
                 )
             )
             val parameters = mutableMapOf<String, Any?>()
-            taskProcessor.process(null, value, parameters)
+            taskProcessor.process(null, value, TaskProcessingContext(parameters))
 
             assertAll(
                 { assertEquals(mapOf(Pair("p1", "v1")), parameters["a"]) },
@@ -85,13 +85,13 @@ class DefaultTaskProcessorTest {
             val value = NumberValueExpression("100")
 
             val ex = assertThrows<IllegalStateException> {
-                taskProcessor.process(PropertyValueExpression("a"), value, mutableMapOf())
+                taskProcessor.process(PropertyValueExpression("a"), value, TaskProcessingContext(mutableMapOf()))
             }
 
             assertEquals("Cannot assign value to the null key", ex.message)
 
             val ex2 = assertThrows<IllegalStateException> {
-                taskProcessor.process(null, value, mutableMapOf())
+                taskProcessor.process(null, value, TaskProcessingContext(mutableMapOf()))
             }
             assertEquals("Key must not be null or Value type must be MapValueExpression", ex2.message)
         }
@@ -118,7 +118,7 @@ class DefaultTaskProcessorTest {
                 )
             )
             val parameters = mutableMapOf<String, Any?>()
-            taskProcessor.process(AlphanumericValueExpression("asyncEach"), value, parameters)
+            taskProcessor.process(AlphanumericValueExpression("asyncEach"), value, TaskProcessingContext(parameters))
 
             assertAll(
                 { assertEquals(mapOf(Pair("p1", "v1")), parameters["a"]) },
@@ -137,7 +137,7 @@ class DefaultTaskProcessorTest {
                 )
             )
             val ex = assertThrows<IllegalStateException> {
-                taskProcessor.process(AlphanumericValueExpression("asyncEach"), value, mutableMapOf())
+                taskProcessor.process(AlphanumericValueExpression("asyncEach"), value, TaskProcessingContext(mutableMapOf()))
             }
 
             assertEquals("Invalid property type of the function 'asyncEach'. Expected key-value pairs, found ${ListValueExpression::class.java}", ex.message)
@@ -174,13 +174,43 @@ class DefaultTaskProcessorTest {
                 )
             )
             val parameters = mutableMapOf<String, Any?>()
-            taskProcessor.process(AlphanumericValueExpression("asyncEach"), value, parameters)
+            taskProcessor.process(AlphanumericValueExpression("asyncEach"), value, TaskProcessingContext(parameters))
 
             assertAll(
                 { assertEquals("passed", testScenarioState.get("test A")) },
                 { assertEquals("passed", testScenarioState.get("test B")) },
                 { assertEquals("passed", testScenarioState.get("test C")) },
             )
+        }
+
+        @Test
+        fun testRunTestsInAsyncWhenOneFails() {
+            val taskProcessor = createTaskProcessor { testName, _ ->
+                val testStepRunResult = TestStepProcessor.TestStepRunResult(mock<TestStep>())
+                return@createTaskProcessor when (testName) {
+                    "test B" -> {
+                        testStepRunResult.notify(null, RuntimeException("failed"))
+                        testStepRunResult
+                    }
+
+                    else -> {
+                        testStepRunResult.notify("response", null)
+                        testStepRunResult
+                    }
+                }
+            }
+
+            val value = MapValueExpression(
+                mapOf(
+                    Pair(FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))), MapValueExpression(mapOf())),
+                    Pair(FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test B"))), MapValueExpression(mapOf())),
+                    Pair(FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test C"))), MapValueExpression(mapOf())),
+                )
+            )
+            val parameters = mutableMapOf<String, Any?>()
+            val ex = assertThrows<RuntimeException> { taskProcessor.process(AlphanumericValueExpression("asyncEach"), value, TaskProcessingContext(parameters)) }
+
+            assertEquals("failed", ex.message)
         }
     }
 
@@ -224,7 +254,7 @@ class DefaultTaskProcessorTest {
                 FunctionCallExpression(
                     "forEach",
                     arrayOf(PropertyValueExpression("items"), AlphanumericValueExpression("i"))
-                ), value, parameters
+                ), value, TaskProcessingContext(parameters)
             )
 
             assertAll(
@@ -303,7 +333,7 @@ class DefaultTaskProcessorTest {
                 FunctionCallExpression(
                     "asyncForEach",
                     arrayOf(PropertyValueExpression("items"), AlphanumericValueExpression("i"))
-                ), value, parameters
+                ), value, TaskProcessingContext(parameters)
             )
 
             assertAll(
@@ -321,12 +351,43 @@ class DefaultTaskProcessorTest {
                     FunctionCallExpression(
                         "forEach",
                         arrayOf(PropertyValueExpression("items"), AlphanumericValueExpression("i"))
-                    ), ListValueExpression(listOf()), mutableMapOf()
+                    ), ListValueExpression(listOf()), TaskProcessingContext(mutableMapOf())
                 )
             }
 
             assertEquals(
                 "Invalid property type of the function 'forEach'. Expected key-value pairs, found ${ListValueExpression::class.java}", ex.message
+            )
+        }
+
+        @Test
+        fun testForEachWithInvalidTypeForItems() {
+            val taskProcessor = createTaskProcessor()
+
+            val ex = assertThrows<IllegalStateException> {
+                taskProcessor.process(
+                    FunctionCallExpression(
+                        "forEach",
+                        arrayOf(AlphanumericValueExpression("items"), AlphanumericValueExpression("i"))
+                    ), MapValueExpression(mapOf()), TaskProcessingContext(mutableMapOf())
+                )
+            }
+
+            assertEquals(
+                "Invalid items type of the function 'forEach'. Expected array or key-value pairs, found class org.skellig.teststep.reader.value.expression.AlphanumericValueExpression", ex.message
+            )
+
+            val ex2 = assertThrows<IllegalStateException> {
+                taskProcessor.process(
+                    FunctionCallExpression(
+                        "forEach",
+                        arrayOf(null, AlphanumericValueExpression("i"))
+                    ), MapValueExpression(mapOf()), TaskProcessingContext(mutableMapOf())
+                )
+            }
+
+            assertEquals(
+                "Invalid items type of the function 'forEach'. Expected array or key-value pairs, found null", ex2.message
             )
         }
     }
@@ -348,7 +409,7 @@ class DefaultTaskProcessorTest {
                 FunctionCallExpression(
                     "runIf",
                     arrayOf(ValueComparisonExpression("==", PropertyValueExpression("result"), AlphanumericValueExpression("success")))
-                ), value, parameters
+                ), value, TaskProcessingContext(parameters)
             )
 
             assertEquals(listOf("v2"), parameters["b"])
@@ -358,7 +419,7 @@ class DefaultTaskProcessorTest {
                 FunctionCallExpression(
                     "runIf",
                     arrayOf(ValueComparisonExpression("==", PropertyValueExpression("result"), AlphanumericValueExpression("failed")))
-                ), value, parameters
+                ), value, TaskProcessingContext(parameters)
             )
 
             assertFalse(parameters.contains("b"))
@@ -376,7 +437,7 @@ class DefaultTaskProcessorTest {
                     FunctionCallExpression(
                         "runIf",
                         arrayOf(ValueComparisonExpression("==", PropertyValueExpression("result"), AlphanumericValueExpression("success")))
-                    ), value, parameters
+                    ), value, TaskProcessingContext(parameters)
                 )
             }
 
@@ -397,7 +458,7 @@ class DefaultTaskProcessorTest {
             )
             val parameters = mutableMapOf<String, Any?>()
 
-            taskProcessor.process(FunctionCallExpression("runIf", emptyArray()), value, parameters)
+            taskProcessor.process(FunctionCallExpression("runIf", emptyArray()), value, TaskProcessingContext(parameters))
 
             assertFalse(parameters.contains("b"))
         }
@@ -417,7 +478,7 @@ class DefaultTaskProcessorTest {
                 )
             )
             val parameters = mutableMapOf<String, Any?>(Pair("result", "success"))
-            taskProcessor.process(AlphanumericValueExpression("state"), value, parameters)
+            taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(parameters))
 
             assertEquals(listOf("success"), testScenarioState.get("a"))
         }
@@ -433,7 +494,7 @@ class DefaultTaskProcessorTest {
             )
             val parameters = mutableMapOf<String, Any?>()
             val ex = assertThrows<IllegalStateException> {
-                taskProcessor.process(AlphanumericValueExpression("state"), value, parameters)
+                taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(parameters))
             }
 
             assertEquals("Cannot set value to the null key in the Test Scenario State", ex.message)
@@ -446,7 +507,7 @@ class DefaultTaskProcessorTest {
             val value = ListValueExpression(listOf(AlphanumericValueExpression("a")))
 
             val ex = assertThrows<IllegalStateException> {
-                taskProcessor.process(AlphanumericValueExpression("state"), value, mutableMapOf())
+                taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(mutableMapOf()))
             }
 
             assertEquals(
@@ -457,7 +518,7 @@ class DefaultTaskProcessorTest {
     }
 
     @Nested
-    inner class RunTaskProcessorTest {
+    inner class RunTestTaskProcessorTest {
 
         @Test
         fun testRunTaskWithCallbacks() {
@@ -476,9 +537,27 @@ class DefaultTaskProcessorTest {
                 )
             )
             val parameters = mutableMapOf<String, Any?>()
-            taskProcessor.process(FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))), value, parameters)
+            taskProcessor.process(FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))), value, TaskProcessingContext(parameters))
 
             assertEquals(BigDecimal("100"), parameters["a"])
+        }
+
+        @Test
+        fun testRunTaskWithNoCallbacksAndFails() {
+            val taskProcessor = createTaskProcessor { _, _ ->
+                val testStepRunResult = TestStepProcessor.TestStepRunResult(mock<TestStep>())
+                testStepRunResult.notify(null, RuntimeException("test failed"))
+                testStepRunResult
+            }
+
+            val ex = assertThrows<RuntimeException> {
+                taskProcessor.process(
+                    FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))),
+                    MapValueExpression(mapOf()), TaskProcessingContext(mutableMapOf())
+                )
+            }
+
+            assertEquals("test failed", ex.message)
         }
 
         @Test
@@ -488,7 +567,7 @@ class DefaultTaskProcessorTest {
             val value = ListValueExpression(emptyList())
 
             val ex = assertThrows<IllegalStateException> {
-                taskProcessor.process(FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))), value, mutableMapOf())
+                taskProcessor.process(FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))), value, TaskProcessingContext(mutableMapOf()))
             }
 
             assertEquals(
@@ -514,13 +593,13 @@ class DefaultTaskProcessorTest {
                 )
             )
             val parameters = mutableMapOf<String, Any?>(Pair("p1", "v1"))
-            taskProcessor.process(FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))), value, parameters)
+            taskProcessor.process(FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))), value, TaskProcessingContext(parameters))
 
             assertEquals(parameters, testScenarioState.get("parameters"))
 
             taskProcessor.process(
                 FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))),
-                MapValueExpression(mapOf()), parameters
+                MapValueExpression(mapOf()), TaskProcessingContext(parameters)
             )
 
             assertEquals(parameters, testScenarioState.get("parameters"))
@@ -533,7 +612,7 @@ class DefaultTaskProcessorTest {
             val ex = assertThrows<IllegalStateException> {
                 taskProcessor.process(
                     FunctionCallExpression("runTest", arrayOf(PropertyValueExpression("test_A"))),
-                    MapValueExpression(mapOf()), mutableMapOf()
+                    MapValueExpression(mapOf()), TaskProcessingContext(mutableMapOf())
                 )
             }
 

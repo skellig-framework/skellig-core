@@ -25,17 +25,17 @@ internal class DefaultTaskProcessor(
         registerTask(RunIfTaskProcessor(this, valueConvertDelegate))
     }
 
-    override fun process(task: ValueExpression?, value: ValueExpression?, parameters: MutableMap<String, Any?>) {
+    override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         val taskName = getTaskName(task)
         taskName?.let {
-            getTaskProcessor(taskName).process(task, value, parameters)
+            getTaskProcessor(taskName).process(task, value, context)
         } ?: if (value is MapValueExpression) {
             value.value.forEach { t ->
                 val innerTaskName = getTaskName(t.key) ?: ""
-                getTaskProcessor(innerTaskName).process(t.key, t.value, parameters)
+                getTaskProcessor(innerTaskName).process(t.key, t.value, context)
             }
         } else if (task != null) {
-            getTaskProcessor().process(task, value, parameters)
+            getTaskProcessor().process(task, value, context)
         } else error("Key must not be null or Value type must be MapValueExpression")
     }
 

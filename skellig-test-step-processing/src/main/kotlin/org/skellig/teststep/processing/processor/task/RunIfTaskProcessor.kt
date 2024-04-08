@@ -9,13 +9,13 @@ internal class RunIfTaskProcessor(
     private val valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
 ) : TaskProcessor {
 
-    override fun process(task: ValueExpression?, value: ValueExpression?, parameters: MutableMap<String, Any?>) {
+    override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? FunctionCallExpression)?.let {
             when (value) {
                 is MapValueExpression -> {
                     if (task.args.isNotEmpty()) {
-                        if ((valueConvertDelegate(task.args[0], parameters) as? Boolean) == true) {
-                            taskProcessor.process(null, value, parameters)
+                        if ((valueConvertDelegate(task.args[0], context.parameters) as? Boolean) == true) {
+                            taskProcessor.process(null, value, context)
                         }
                     }
                 }

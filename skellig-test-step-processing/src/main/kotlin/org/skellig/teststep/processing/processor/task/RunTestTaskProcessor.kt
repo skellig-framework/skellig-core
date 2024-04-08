@@ -18,13 +18,13 @@ internal class RunTestTaskProcessor(
         private val ON_FAILED = AlphanumericValueExpression("onFailed")
     }
 
-    override fun process(task: ValueExpression?, value: ValueExpression?, parameters: MutableMap<String, Any?>) {
+    override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? FunctionCallExpression)?.let {
             when (value) {
                 is MapValueExpression -> {
-                    val testStepName = valueConvertDelegate(task.args[0], parameters)
+                    val testStepName = valueConvertDelegate(task.args[0], context.parameters)
                     val result = testStepName?.let {
-                        val runTestParameters = (valueConvertDelegate(value.value[PARAMETERS], parameters) as? Map<String, Any?>) ?: parameters
+                        val runTestParameters = (valueConvertDelegate(value.value[PARAMETERS], context.parameters) as? Map<String, Any?>) ?: context.parameters
                         processTestStepDelegate(testStepName.toString(), runTestParameters)
                     } ?: error("The Test Step '${task.args[0]}' was evaluated to 'null'")
 
@@ -37,8 +37,9 @@ internal class RunTestTaskProcessor(
                                 else throw e
                             }
 
-                        valueExpression?.let { taskProcessor.process(null, it, parameters) }
+                        valueExpression?.let { taskProcessor.process(null, it, context) }
                     }
+                    context.addResultFromTestStep(result)
                 }
 
                 else -> error("Invalid property type of the function 'runTest'. Expected key-value pairs, found ${value?.javaClass}")

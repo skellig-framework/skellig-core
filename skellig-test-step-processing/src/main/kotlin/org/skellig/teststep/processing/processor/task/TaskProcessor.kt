@@ -4,7 +4,7 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 
 interface TaskProcessor {
 
-    fun process(task: ValueExpression?, value: ValueExpression?, parameters: MutableMap<String, Any?>)
+    fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext)
 
     fun getTaskName(): String
 

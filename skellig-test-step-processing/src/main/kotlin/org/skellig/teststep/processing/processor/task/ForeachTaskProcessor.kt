@@ -13,16 +13,16 @@ internal open class ForeachTaskProcessor(
         private const val IT = "it"
     }
 
-    override fun process(task: ValueExpression?, value: ValueExpression?, parameters: MutableMap<String, Any?>) {
+    override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
 
         (task as? FunctionCallExpression)?.let {
             when (value) {
                 is MapValueExpression -> {
                     if (task.args.isNotEmpty()) {
                         forEach(
-                            extractItems(task, parameters)
-                                ?: error("Invalid items type of the function '${getTaskName()}'. Expected array or key-value pairs, found ${value::class.java}"),
-                            extractItemName(task, parameters), parameters, value
+                            extractItems(task.args[0], context.parameters)
+                                ?: error("Invalid items type of the function '${getTaskName()}'. Expected array or key-value pairs, found ${task.args[0]?.javaClass}"),
+                            extractItemName(task, context.parameters), context, value
                         )
                     }
                 }
@@ -35,17 +35,17 @@ internal open class ForeachTaskProcessor(
     protected open fun forEach(
         items: Iterable<*>,
         itemName: String,
-        parameters: MutableMap<String, Any?>,
+        context: TaskProcessingContext,
         value: ValueExpression
     ) {
         items.forEach { item ->
-            parameters[itemName] = item
-            taskProcessor.process(null, value, parameters)
+            context.parameters[itemName] = item
+            taskProcessor.process(null, value, context)
         }
     }
 
-    private fun extractItems(task: FunctionCallExpression, parameters: MutableMap<String, Any?>): Iterable<*>? {
-        return (valueConvertDelegate(task.args[0], parameters) as? Iterable<*>)
+    private fun extractItems(items: ValueExpression?, parameters: MutableMap<String, Any?>): Iterable<*>? {
+        return (valueConvertDelegate(items, parameters) as? Iterable<*>)
     }
 
     private fun extractItemName(task: FunctionCallExpression, parameters: MutableMap<String, Any?>): String {

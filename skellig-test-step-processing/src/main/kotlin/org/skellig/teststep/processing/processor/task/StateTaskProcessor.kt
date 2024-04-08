@@ -10,15 +10,15 @@ internal class StateTaskProcessor(
     private val valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
 ) : TaskProcessor {
 
-    override fun process(task: ValueExpression?, value: ValueExpression?, parameters: MutableMap<String, Any?>) {
+    override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? AlphanumericValueExpression)?.let {
             when (value) {
                 is MapValueExpression -> {
                     value.value.forEach { item ->
-                        val key = valueConvertDelegate(item.key, parameters)?.toString()
+                        val key = valueConvertDelegate(item.key, context.parameters)?.toString()
                             ?: error("Cannot set value to the null key in the Test Scenario State")
 
-                        state.set(key, valueConvertDelegate(item.value, parameters))
+                        state.set(key, valueConvertDelegate(item.value, context.parameters))
                     }
                 }
 

@@ -2,7 +2,6 @@ package org.skellig.teststep.processing.processor.task
 
 import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
-import org.skellig.teststep.processing.processor.CompositeTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 
 internal class TaskTestStepProcessor(
@@ -11,7 +10,13 @@ internal class TaskTestStepProcessor(
 ) : BaseTestStepProcessor<TaskTestStep>(testScenarioState) {
 
     override fun processTestStep(testStep: TaskTestStep): Any {
-        taskProcessor.process(null, testStep.task, testStep.parameters)
+        TaskProcessingContext(testStep.parameters).use { context ->
+            try {
+                taskProcessor.process(null, testStep.task, context)
+            } finally {
+                context.getTestStepsResult().forEach { it.awaitResult() }
+            }
+        }
         return testScenarioState
     }
 

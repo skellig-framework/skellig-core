@@ -83,21 +83,29 @@ interface TestStepProcessor<T : TestStep> : Closeable {
 
         /**
          * Wait for result of the processed test step.
-         * Notifies the test step immediately if an error is thrown.
+         * If the test step is already finished, then returns immediately with no actions taken.
+         *
+         * If the test step is not finished yet, then waits for a result with the provided timeout. If result has not been
+         * received within the timeout, then throws [TestStepProcessingException].
+         * If result has been received within the timeout but was notified about an error, then throws [TestStepProcessingException]
          */
         @Throws(TestStepProcessingException::class)
         fun awaitResult() {
             if (testStep != null && !isFinished()) {
                 try {
-                    countDownLatch.await(getTimeout(), TimeUnit.MILLISECONDS)
-                    if (error != null) {
-                        error = TestStepProcessingException(String.format("Failed to process test step '%s'",
-                                                                          testStep.name), error)
+                    if (!countDownLatch.await(getTimeout(), TimeUnit.MILLISECONDS)) {
+                        error = TestStepProcessingException("Failed to received the final result of test step '${testStep.name}' within ${getTimeout()} ms")
+                    } else if (error != null) {
+                        error = TestStepProcessingException("Failed to process test step '${testStep.name}'", error)
                     }
                 } catch (ex: InterruptedException) {
                     error =
-                        TestStepProcessingException(String.format("Failed to get response from test step '%s' within %d seconds",
-                                                                  testStep.name, getTimeout()), ex)
+                        TestStepProcessingException(
+                            String.format(
+                                "Failed to get response from test step '%s' within %d seconds",
+                                testStep.name, getTimeout()
+                            ), ex
+                        )
                     notify(null, error)
                 }
                 if (error != null) {

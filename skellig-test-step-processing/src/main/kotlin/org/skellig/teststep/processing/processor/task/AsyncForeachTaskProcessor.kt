@@ -8,10 +8,10 @@ internal class AsyncForeachTaskProcessor(
     valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
 ) : ForeachTaskProcessor(taskProcessor, valueConvertDelegate) {
 
-    override fun forEach(items: Iterable<*>, itemName: String, parameters: MutableMap<String, Any?>, value: ValueExpression) {
+    override fun forEach(items: Iterable<*>, itemName: String, context: TaskProcessingContext, value: ValueExpression) {
         runBlocking {
             withContext(Dispatchers.Default) {
-                forEachAsync(items, itemName, parameters, value)
+                forEachAsync(items, itemName, context, value)
             }
         }
     }
@@ -19,15 +19,15 @@ internal class AsyncForeachTaskProcessor(
     private suspend fun forEachAsync(
         items: Iterable<*>,
         itemName: String,
-        parameters: MutableMap<String, Any?>,
+        context: TaskProcessingContext,
         value: ValueExpression
     ) {
         coroutineScope {
             items.forEach { item ->
                 launch {
-                    val parametersCopy = parameters.toMutableMap()
-                    parametersCopy[itemName] = item
-                    taskProcessor.process(null, value, parametersCopy)
+                    val contextCopy = TaskProcessingContext(context)
+                    contextCopy.parameters[itemName] = item
+                    taskProcessor.process(null, value, contextCopy)
                 }
             }
         }

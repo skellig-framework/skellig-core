@@ -9,13 +9,13 @@ internal class AsyncEachTaskProcessor(
     private val taskProcessor: TaskProcessor,
 ) : TaskProcessor {
 
-    override fun process(task: ValueExpression?, value: ValueExpression?, parameters: MutableMap<String, Any?>) {
+    override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? AlphanumericValueExpression)?.let {
             when (value) {
                 is MapValueExpression -> {
                     runBlocking {
                         withContext(Dispatchers.Default) {
-                            forEachAsync(parameters, value)
+                            forEachAsync(context, value)
                         }
                     }
                 }
@@ -26,11 +26,11 @@ internal class AsyncEachTaskProcessor(
         }
     }
 
-    private suspend fun forEachAsync(parameters: MutableMap<String, Any?>, value: MapValueExpression) {
+    private suspend fun forEachAsync(context: TaskProcessingContext, value: MapValueExpression) {
         coroutineScope {
             value.value.forEach { item ->
                 launch {
-                    item.value?.let { taskProcessor.process(item.key, it, parameters) }
+                    item.value?.let { taskProcessor.process(item.key, it, context) }
                 }
             }
         }
