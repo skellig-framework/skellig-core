@@ -15,7 +15,6 @@ internal class TaskTestStepFactory(
         private val TASK = fromProperty("task")
     }
 
-    //TODO: verify extended task fom parent test step is in correct order
     override fun createTestStepBuilder(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): DefaultTestStep.Builder<TaskTestStep> {
         return TaskTestStep.Builder()
             .withTask(rawTestStep[TASK])

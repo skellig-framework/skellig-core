@@ -12,7 +12,7 @@ internal class TaskTestStepProcessor(
     override fun processTestStep(testStep: TaskTestStep): Any {
         TaskProcessingContext(testStep.parameters).use { context ->
             try {
-                taskProcessor.process(null, testStep.task, context)
+                taskProcessor.process(null, testStep.getTask(), context)
             } finally {
                 context.getTestStepsResult().forEach { it.awaitResult() }
             }

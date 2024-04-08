@@ -1,5 +1,8 @@
 package org.skellig.teststep.processing.util
 
+import org.skellig.teststep.reader.value.expression.ListValueExpression
+import org.skellig.teststep.reader.value.expression.MapValueExpression
+
 sealed class PropertyFormatUtils {
 
     companion object {
@@ -8,8 +11,10 @@ sealed class PropertyFormatUtils {
         fun toString(value: Any?, indent: Int): String {
             return when (value) {
                 is Collection<*> -> toStringCollection(value, "[", "]", indent)
+                is ListValueExpression -> toStringCollection(value.value, "[", "]", indent)
                 is Array<*> -> toStringCollection(value.toList(), "[", "]", indent)
                 is Map<*, *> -> toStringCollection(value.entries, "{", "}", indent)
+                is MapValueExpression -> toStringCollection(value.value.entries, "{", "}", indent)
                 is Map.Entry<*, *> -> {
                     if (value.key is Map<*, *> || value.value is Collection<*> || value.value is Array<*>)
                         "${createIndent(indent)}${value.key} ${toString(value.value, indent + 1)}"

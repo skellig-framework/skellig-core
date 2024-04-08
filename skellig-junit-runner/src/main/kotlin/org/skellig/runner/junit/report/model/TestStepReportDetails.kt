@@ -2,6 +2,7 @@ package org.skellig.runner.junit.report.model
 
 import org.apache.commons.lang3.time.DurationFormatUtils
 import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.util.PropertyFormatUtils
 
@@ -103,7 +104,7 @@ class DefaultTestStepReportDetails(
 ) : TestStepReportDetails<DefaultTestStep>(name, parameters, originalTestStep, result, errorLog, logRecords, duration) {
 
     override fun getTestData(): String {
-        return PropertyFormatUtils.toString(originalTestStep?.testData?.toString() ?: "", 0)
+        return PropertyFormatUtils.toString(originalTestStep?.testData ?: "", 0)
     }
 
     override fun getValidationDetails(): String {

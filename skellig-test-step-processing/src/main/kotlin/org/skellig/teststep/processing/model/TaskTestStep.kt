@@ -11,17 +11,13 @@ class TaskTestStep(
     delay: Int,
     attempts: Int,
     values: Map<String, Any?>?,
-    testData: Any?,
+    testData: ValueExpression?,
     validationDetails: ValidationNode?,
     scenarioStateUpdaters: List<ScenarioStateUpdater>?,
-    val task: ValueExpression?,
     val parameters: MutableMap<String, Any?>,
 ) : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
 
-
-    override fun toString(): String {
-        return super.toString() + "task = $task\n"
-    }
+    fun getTask(): ValueExpression? = testData as? ValueExpression?
 
     class Builder : DefaultTestStep.Builder<TaskTestStep>() {
 
@@ -36,11 +32,11 @@ class TaskTestStep(
             this.parameters = parameters
         }
 
-
         override fun build(): TaskTestStep {
+            if (task == null) task = testData as? ValueExpression?
             return TaskTestStep(
-                id, name, execution, timeout, delay, attempts, values, testData,
-                validationDetails, scenarioStateUpdaters, task,
+                id, name, execution, timeout, delay, attempts, values, task,
+                validationDetails, scenarioStateUpdaters,
                 parameters ?: error("Parameters are mandatory for TaskTestStep")
             )
         }
