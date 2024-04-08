@@ -136,7 +136,7 @@ class TaskTestStepProcessorTest {
     )
 
     private fun createTaskTestStep(timeout: Int, task: ValueExpression?, executionType: TestStepExecutionType = TestStepExecutionType.SYNC) =
-        TaskTestStep("", "task", executionType, timeout, 0, 0, null, null, null, null, task, mutableMapOf())
+        TaskTestStep("", "task", executionType, timeout, 0, 0, null, task, null, null, mutableMapOf())
 
     private fun createTaskTestStepProcessor(runTestDelegate: (String, Map<String, Any?>?) -> TestStepProcessor.TestStepRunResult): TaskTestStepProcessor {
         return TaskTestStepProcessor(

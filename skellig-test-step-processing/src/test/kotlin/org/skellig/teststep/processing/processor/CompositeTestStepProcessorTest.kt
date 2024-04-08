@@ -48,7 +48,7 @@ class CompositeTestStepProcessorTest {
         val testStep = DefaultTestStep(name = "t1")
 
         assertNotNull(compositeProcessor.process(testStep))
-        assertNotNull(compositeProcessor.process(TaskTestStep("t1", "t1", null, 0, 0, 0, null, null, null, null, null, mutableMapOf())))
+        assertNotNull(compositeProcessor.process(TaskTestStep("t1", "t1", null, 0, 0, 0, null, null, null, null, mutableMapOf())))
         assertNotNull(compositeProcessor.process(ClassTestStep("i1", Pattern.compile(".+"), this, javaClass.methods[0], "n2", emptyMap())))
     }
 
