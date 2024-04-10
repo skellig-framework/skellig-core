@@ -464,16 +464,13 @@ class DefaultTaskProcessorTest {
         fun testRunIfWhenNoComparison() {
             val taskProcessor = createTaskProcessor()
 
-            val value = MapValueExpression(
-                mapOf(
-                    Pair(AlphanumericValueExpression("b"), ListValueExpression(listOf(AlphanumericValueExpression("v2")))),
+            val ex = assertThrows<IllegalStateException> {
+                taskProcessor.process(
+                    FunctionCallExpression("runIf", emptyArray()), MapValueExpression(mapOf()), TaskProcessingContext(mutableMapOf())
                 )
-            )
-            val parameters = mutableMapOf<String, Any?>()
+            }
 
-            taskProcessor.process(FunctionCallExpression("runIf", emptyArray()), value, TaskProcessingContext(parameters))
-
-            assertFalse(parameters.contains("b"))
+            assertEquals("No arguments found for 'runIf'. Expected 1, found 0", ex.message)
         }
 
     }
