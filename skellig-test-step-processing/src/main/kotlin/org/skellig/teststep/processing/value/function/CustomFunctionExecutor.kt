@@ -8,7 +8,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 
-class CustomFunctionExecutor(packages: Collection<String>?) : FunctionValueExecutor {
+class CustomFunctionExecutor(
+    packages: Collection<String>?,
+    private val classInstanceRegistry: MutableMap<Class<*>, Any> = mutableMapOf()
+) : FunctionValueExecutor {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(CustomFunctionExecutor::class.java)
@@ -41,25 +44,26 @@ class CustomFunctionExecutor(packages: Collection<String>?) : FunctionValueExecu
     override fun getFunctionName(): String = ""
 
     private fun loadCustomFunctions(classInfo: ClassInfo) {
-        var foundClassInstance: Any? = null
         classInfo.methodInfo
             .filter { m -> m.hasAnnotation(Function::class.java) }
             .forEach { m ->
                 LOGGER.debug("Extract test step from method in '${m.name}' of '${classInfo.name}'")
 
-                foundClassInstance.let {
+                val foundClassInstance = classInstanceRegistry.computeIfAbsent(classInfo.loadClass()) { type ->
                     try {
-                        foundClassInstance = classInfo.loadClass().getDeclaredConstructor().newInstance()
+                        type.getDeclaredConstructor().newInstance()
                     } catch (ex: NoSuchMethodException) {
-                        throw FunctionRegistryException("Failed to instantiate class '${classInfo.name}'", ex)
+                        throw FunctionRegistryException("Failed to instantiate class '${type.name}'", ex)
                     }
                 }
-                val method = foundClassInstance?.let { i ->
-                    i::class.java.methods.find { method -> method.name == m.name }
-                }
-                method?.let {
-                    functions[it.name] = CustomFunction(foundClassInstance!!, it)
-                }
+                foundClassInstance::class.java.methods
+                    .find { method -> method.name == m.name }
+                    ?.let { methodInstance ->
+                        methodInstance.let {
+                            functions[it.name] = CustomFunction(foundClassInstance, it)
+                        }
+                    }
+
             }
     }
 

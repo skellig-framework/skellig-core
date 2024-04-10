@@ -1,22 +1,21 @@
 package org.skellig.teststep.processing.processor
 
-import org.mockito.kotlin.mock
-import org.mockito.Mockito.verify
-import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.GroupedTestStep
+import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.model.TestStep
 import java.util.regex.Pattern
 
 class CompositeTestStepProcessorTest {
 
-    private val compositeProcessor: CompositeTestStepProcessor = CompositeTestStepProcessor.Builder()
-        .withTestScenarioState(mock())
-        .build() as CompositeTestStepProcessor
+    private val compositeProcessor: CompositeTestStepProcessor =
+        CompositeTestStepProcessor.Builder().withValueConvertDelegate { _, _ -> }.withProcessTestStepDelegate { _, _ -> mock() }.withTestScenarioState(mock()).build() as CompositeTestStepProcessor
 
     @Test
     fun testProcessWithRegisteredTestStepProcessor() {
@@ -49,7 +48,7 @@ class CompositeTestStepProcessorTest {
         val testStep = DefaultTestStep(name = "t1")
 
         assertNotNull(compositeProcessor.process(testStep))
-        assertNotNull(compositeProcessor.process(GroupedTestStep("t1", GroupedTestStep.TestStepRun({ testStep }, null, null))))
+        assertNotNull(compositeProcessor.process(TaskTestStep("t1", "t1", null, 0, 0, 0, null, null, null, null, mutableMapOf())))
         assertNotNull(compositeProcessor.process(ClassTestStep("i1", Pattern.compile(".+"), this, javaClass.methods[0], "n2", emptyMap())))
     }
 

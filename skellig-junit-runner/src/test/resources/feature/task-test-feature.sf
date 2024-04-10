@@ -1,0 +1,28 @@
+Feature: Task test steps
+
+    Scenario: Insert coin
+        * Insert coins into slot And verify capacity and message displayed
+            | coins | 1,5,5,10,20 |
+        * Verify 41 coins inserted successfully
+
+    // This test is to check Ignore tag
+    @Ignore
+    Scenario: Broken insert coint
+        * Insert coins into slot And verify capacity and message displayed
+            | coins | 100 |
+
+    Scenario: Insert coin with overflow capacity
+        * Insert too many coins into slot And verify capacity
+            | coins | 10, 50 |
+
+    Scenario: Insert coin in parallel
+        * Insert coins in parallel
+            | coins | 5, 5 |
+        * Verify 10 coins inserted
+
+    Scenario: Client insert coins in parallel
+        * Many clients insert coins in parallel
+            | coins | 5, 5 |
+        * Verify inserted coins from client A is 35
+        * Verify inserted coins from client B is 66
+        * Verify inserted coins from client C is 10

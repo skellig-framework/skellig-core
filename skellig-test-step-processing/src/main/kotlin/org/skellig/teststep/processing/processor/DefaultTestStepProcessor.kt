@@ -4,15 +4,20 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Processes a default test step by running validation of a result from another test step.
  */
 internal class DefaultTestStepProcessor private constructor(testScenarioState: TestScenarioState) : ValidatableTestStepProcessor<DefaultTestStep>(testScenarioState) {
 
+    private val log: Logger = LoggerFactory.getLogger(DefaultTestStepProcessor::class.java)
+
     override fun process(testStep: DefaultTestStep): TestStepRunResult {
         val testStepRunResult = TestStepRunResult(testStep)
         testScenarioState.set(testStep.getId, testStep)
+        log.info("[${testStep.hashCode()}]: Start to process task of test '${testStep.name}' by running validation only")
         validate(testStep, testStepRunResult)
 
         return testStepRunResult
@@ -21,11 +26,24 @@ internal class DefaultTestStepProcessor private constructor(testScenarioState: T
     private fun validate(testStep: DefaultTestStep, testStepRunResult: TestStepRunResult) {
         var error: RuntimeException? = null
         try {
-            super.validate(testStep)
+            validate(testStep)
         } catch (ex: ValidationException) {
             error = ex
         } finally {
             testStepRunResult.notify(null, error)
+        }
+    }
+
+    /**
+     * Validate any result (ex. from other test step).
+     * Usually the result from another test step is taken by its `id` property using `get` function,
+     * for example:
+     *  [get(testA_result).values().size > 0 = true]
+     */
+    @Throws(ValidationException::class)
+    private fun validate(testStep: DefaultTestStep) {
+        testStep.validationDetails?.let { validationDetails ->
+            validate(testStep, validationDetails, null)
         }
     }
 

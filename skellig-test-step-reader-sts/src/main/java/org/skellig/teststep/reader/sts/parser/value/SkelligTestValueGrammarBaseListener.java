@@ -304,6 +304,66 @@ public class SkelligTestValueGrammarBaseListener implements SkelligTestValueGram
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterArray(SkelligTestValueGrammarParser.ArrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArray(SkelligTestValueGrammarParser.ArrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterArrayValues(SkelligTestValueGrammarParser.ArrayValuesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArrayValues(SkelligTestValueGrammarParser.ArrayValuesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMap(SkelligTestValueGrammarParser.MapContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMap(SkelligTestValueGrammarParser.MapContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPair(SkelligTestValueGrammarParser.PairContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPair(SkelligTestValueGrammarParser.PairContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterKey(SkelligTestValueGrammarParser.KeyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitKey(SkelligTestValueGrammarParser.KeyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterLambdaExpression(SkelligTestValueGrammarParser.LambdaExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -328,13 +388,61 @@ public class SkelligTestValueGrammarBaseListener implements SkelligTestValueGram
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPropertyKey(SkelligTestValueGrammarParser.PropertyKeyContext ctx) { }
+	@Override public void enterInnerPropertyExpr(SkelligTestValueGrammarParser.InnerPropertyExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPropertyKey(SkelligTestValueGrammarParser.PropertyKeyContext ctx) { }
+	@Override public void exitInnerPropertyExpr(SkelligTestValueGrammarParser.InnerPropertyExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterNumberPropertyKeyExpr(SkelligTestValueGrammarParser.NumberPropertyKeyExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNumberPropertyKeyExpr(SkelligTestValueGrammarParser.NumberPropertyKeyExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAdditionPropertyKeyExpr(SkelligTestValueGrammarParser.AdditionPropertyKeyExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAdditionPropertyKeyExpr(SkelligTestValueGrammarParser.AdditionPropertyKeyExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterStringPropertyKeyExpr(SkelligTestValueGrammarParser.StringPropertyKeyExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStringPropertyKeyExpr(SkelligTestValueGrammarParser.StringPropertyKeyExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIdPropertyKeyExpr(SkelligTestValueGrammarParser.IdPropertyKeyExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIdPropertyKeyExpr(SkelligTestValueGrammarParser.IdPropertyKeyExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

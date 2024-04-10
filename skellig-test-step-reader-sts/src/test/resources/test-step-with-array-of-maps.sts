@@ -11,5 +11,6 @@ name("do something big") {
           c2 = v4
         }
      ]
+     values2 []
  }
 }

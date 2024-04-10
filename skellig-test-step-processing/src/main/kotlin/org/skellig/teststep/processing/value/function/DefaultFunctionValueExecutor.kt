@@ -27,6 +27,7 @@ class DefaultFunctionValueExecutor private constructor(
         private var testScenarioState: TestScenarioState? = null
         private var classLoader: ClassLoader? = null
         private var classPaths: Collection<String>? = null
+        private var classInstanceRegistry: MutableMap<Class<*>, Any>? = null
 
         fun withTestScenarioState(testScenarioState: TestScenarioState?) =
             apply { this.testScenarioState = testScenarioState }
@@ -37,6 +38,9 @@ class DefaultFunctionValueExecutor private constructor(
 
         fun withFunctionValueExecutor(functionValueExecutor: FunctionValueExecutor) =
             apply { functions[functionValueExecutor.getFunctionName()] = functionValueExecutor }
+
+        fun withClassInstanceRegistry(classInstanceRegistry: MutableMap<Class<*>, Any>) =
+            apply { this.classInstanceRegistry = classInstanceRegistry }
 
         fun build(): FunctionValueExecutor {
             Objects.requireNonNull(testScenarioState, "Test Scenario State must be provided")
@@ -65,6 +69,7 @@ class DefaultFunctionValueExecutor private constructor(
             this.withFunctionValueExecutor(ToBytesFunctionExecutor())
             this.withFunctionValueExecutor(SizeFunctionExecutor())
             this.withFunctionValueExecutor(AllFunctionExecutor())
+            this.withFunctionValueExecutor(AddFunctionExecutor())
             this.withFunctionValueExecutor(AnyFunctionExecutor())
             this.withFunctionValueExecutor(NoneFunctionExecutor())
             this.withFunctionValueExecutor(CountFunctionExecutor())
@@ -95,7 +100,11 @@ class DefaultFunctionValueExecutor private constructor(
                 this.withFunctionValueExecutor(FromTemplateFunctionExecutor(it))
             }
 
-            return DefaultFunctionValueExecutor(functions, CustomFunctionExecutor(classPaths), FromObjectFunctionExecutor())
+            return DefaultFunctionValueExecutor(
+                functions,
+                CustomFunctionExecutor(classPaths, classInstanceRegistry ?: mutableMapOf()),
+                FromObjectFunctionExecutor()
+            )
         }
     }
 }

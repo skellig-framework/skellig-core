@@ -1,0 +1,146 @@
+name ("Insert coins into slot And verify capacity and message displayed") {
+    values {
+        initialValue = 0
+    }
+
+    task {
+        counter = ${initialValue}
+        forEach(listOf(${coins}), c) {
+            coin = ${c}.toBigDecimal()
+            counter = ${counter} + ${coin}
+
+            runIf(${coin} > 0) {
+            // Store coinNumber in state and use it in the test below
+                state {
+                    coinNumber = ${c}
+                }
+                runTest("Insert coin to machine") {
+                    parameters {
+                        coin = ${coin}
+                    }
+                }
+            // run 2 tests async as well as storing data incrementally in the state
+                asyncEach {
+                    runTest("Verify machine capacity") {}
+                    runTest("Verify inserted coin message displayed") {
+                        parameters {
+                            msg = "Coin " + ${c} + " has been inserted"
+                        }
+                    }
+                    state {
+                    // Add more entries to insert_iteration. At the beginning the default value is empty array
+                        insert_iteration = get(insert_iteration, []).add({
+                            coin = ${coin}
+                        })
+                    }
+                }
+            }
+        }
+    // Store total number of coins to validate it below, because local vars are wiped after task is completed
+        state {
+            total = ${counter}
+        }
+    }
+
+    validate {
+        get(total) > 0 = true
+    }
+}
+
+name ("Insert too many coins into slot And verify capacity") {
+    task {
+        forEach(listOf(${coins}), c) {
+            runTest("Insert coin to machine") {
+                parameters {
+                    coin = ${c}.toBigDecimal()
+                }
+                onPassed {
+                    state {
+                        insertedCoins = get(insertedCoins, []).add(${c})
+                    }
+                }
+            }
+            runTest("Verify machine capacity") {
+                onFailed {
+                    state {
+                        isFailed = true
+                    }
+                }
+            }
+        }
+    }
+
+    validate {
+        get(isFailed) = true
+        get(insertedCoins).sumOf (c -> c) > 0 = true
+    }
+}
+
+name ("Insert coins in parallel") {
+    task {
+        asyncForEach(listOf(${coins}), c) {
+            runTest("Insert coin to machine") {
+                parameters {
+                    coin = ${c}.toBigDecimal()
+                }
+            }
+        }
+    }
+}
+
+name ("Many clients insert coins in parallel") {
+    task {
+        asyncForEach([
+            {
+                client = A
+                coins [ 10, 5, 20]
+            },
+            {
+                client = B
+                coins [ 1, 10, 50, 5]
+            },
+            {
+                client = C
+                coins [ 5, 5]
+            }
+        ], i) {
+            client = ${i}.client
+            forEach(${i}.coins, c) {
+                runTest("Client "+ ${client} + " inserts coin to machine") {
+                    parameters {
+                        coin = ${c}
+                    }
+                }
+            }
+            state {
+                ${i}.client = ${i}.coins.sumOf(c -> c)
+            }
+        }
+    }
+
+    validate {
+        get(A) = 35
+        get(B) = 66
+        get(C) = 10
+    }
+}
+
+name ("Verify (\d+) coins inserted") {
+    validate {
+        getMachineCapacity() = ${1}.toInt()
+    }
+}
+
+name ("Verify inserted coin message displayed") {
+    validate {
+        ${msg} = "Coin " + get(coinNumber) + " has been inserted"
+    }
+}
+
+name ("Verify (\d+) coins inserted successfully") {
+// 2 ways of validating the result from the task above
+    validate {
+    get(insert_iteration).sumOf(c -> c.coin) = ${1}.toBigDecimal()
+    get(total) = ${1}.toBigDecimal()
+}
+}

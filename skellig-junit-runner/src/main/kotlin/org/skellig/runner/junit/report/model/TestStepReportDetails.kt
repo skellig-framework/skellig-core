@@ -2,7 +2,7 @@ package org.skellig.runner.junit.report.model
 
 import org.apache.commons.lang3.time.DurationFormatUtils
 import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.GroupedTestStep
+import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.util.PropertyFormatUtils
 
@@ -87,7 +87,6 @@ open class TestStepReportDetails<T>(
         fun build(): TestStepReportDetails<*> {
             return when (originalTestStep) {
                 is DefaultTestStep -> DefaultTestStepReportDetails(name!!, parameters, originalTestStep as DefaultTestStep, result, errorLog, logRecords, duration)
-                is GroupedTestStep -> GroupedTestStepReportDetails(name!!, parameters, originalTestStep as GroupedTestStep, result, errorLog, logRecords, duration)
                 else -> TestStepReportDetails(name!!, parameters, originalTestStep, result, errorLog, logRecords, duration)
             }
         }
@@ -105,7 +104,7 @@ class DefaultTestStepReportDetails(
 ) : TestStepReportDetails<DefaultTestStep>(name, parameters, originalTestStep, result, errorLog, logRecords, duration) {
 
     override fun getTestData(): String {
-        return PropertyFormatUtils.toString(originalTestStep?.testData?.toString() ?: "", 0)
+        return PropertyFormatUtils.toString(originalTestStep?.testData ?: "", 0)
     }
 
     override fun getValidationDetails(): String {
@@ -113,16 +112,6 @@ class DefaultTestStepReportDetails(
     }
 
 }
-
-class GroupedTestStepReportDetails(
-    name: String,
-    parameters: Map<String, Any?>?,
-    originalTestStep: GroupedTestStep?,
-    result: Any?,
-    errorLog: String?,
-    logRecords: List<String>?,
-    duration: Long
-) : TestStepReportDetails<GroupedTestStep>(name, parameters, originalTestStep, result, errorLog, logRecords, duration)
 
 fun getFormattedDuration(duration: Long): String {
     return if (duration > 60000) {

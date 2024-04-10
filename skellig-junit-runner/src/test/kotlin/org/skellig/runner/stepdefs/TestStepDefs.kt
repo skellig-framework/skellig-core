@@ -93,6 +93,10 @@ class TestStepDefs : SkelligTestContextAware {
         assertFalse(hookRunRegistry.contains("afterFeature"))
     }
 
+    @TestStep(name = "Verify capacity")
+    fun verifyCapacity() {
+    }
+
     override fun setSkelligTestContext(context: SkelligTestContext) {
         this.context = context
     }

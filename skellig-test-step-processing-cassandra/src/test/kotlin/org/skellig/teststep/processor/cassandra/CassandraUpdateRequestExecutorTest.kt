@@ -16,8 +16,6 @@ import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-//TODO: fix tests
-@Disabled
 @DisplayName("Execute update")
 internal class CassandraUpdateRequestExecutorTest {
 
@@ -59,7 +57,7 @@ internal class CassandraUpdateRequestExecutorTest {
 
         val databaseRequest = DatabaseRequest("update", "t1", data)
         val resultSet = makeSessionReturnResultSet(sql, data.size)
-        whenever(selectRequestExecutor.execute(argThat { o -> o.query == "select" })).thenReturn(listOf("record with id c1 = v1"))
+        whenever(selectRequestExecutor.execute(argThat { o -> o.command == "select" })).thenReturn(listOf("record with id c1 = v1"))
 
         assertEquals(resultSet, updateExecutor.execute(databaseRequest))
     }

@@ -1,10 +1,8 @@
 package org.skellig.teststep.processor.tcp
 
 import org.apache.commons.lang3.StringUtils
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
+import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.tcp.model.TcpDetails
 import org.slf4j.LoggerFactory
 import java.io.DataInputStream
@@ -92,13 +90,19 @@ internal class TcpChannelTest {
         var response = tcpChannel!!.read(0, DEFAULT_BUFFER_SIZE)
         Assertions.assertNotNull(response)
 
-        response = tcpChannel!!.read(100, DEFAULT_BUFFER_SIZE)
+        response = try {
+            tcpChannel!!.read(100, DEFAULT_BUFFER_SIZE)
+        } catch (ex: TestStepProcessingException) {
+            null
+        }
         Assertions.assertNull(response)
     }
 
     @Test
-    @DisplayName("Read 3 times with different timeouts When Server responds only 2 times with delay " +
-            "Then verify receives 2 responses")
+    @DisplayName(
+        "Read 3 times with different timeouts When Server responds only 2 times with delay " +
+                "Then verify receives 2 responses"
+    )
     fun testReadSeveralTimesWhenServerRespondedTwiceAndDelay() {
         startSocketServer(300, 2)
 
@@ -148,9 +152,11 @@ internal class TcpChannelTest {
         tcpChannel = TcpChannel(TcpDetails("h1", "localhost", 1116))
     }
 
-    private inner class SocketRequestHandler(private val socket: Socket,
-                                             private val delay: Int,
-                                             private var respondTimes: Int) : Runnable {
+    private inner class SocketRequestHandler(
+        private val socket: Socket,
+        private val delay: Int,
+        private var respondTimes: Int
+    ) : Runnable {
 
         private val isRespondOnly: Boolean = respondTimes > 0
 

@@ -30,9 +30,9 @@ expression
 
 functionExpression: ID '(' (arg (COMMA arg)*) ')';
 
-arg: expression*;
+arg: expression* | array | map;
 
-propertyExpression: '${' (ID|INT) (COMMA expression*)? '}';
+propertyExpression: '${' expression* (COMMA expression*)? '}';
 
 number: FLOAT | INT;
 

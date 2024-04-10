@@ -3,8 +3,6 @@ package org.skellig.teststep.reader.sts
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.skellig.teststep.reader.exception.TestStepReadException
 import org.skellig.teststep.reader.value.expression.*
 import java.net.URL
 
@@ -97,11 +95,13 @@ class StsReaderTest {
         assertAll({ assertEquals("Validate response", getValueFromMap(firstTestStep, "name").toString()) },
             { assertEquals("T1", getValueFromMap(firstTestStep, "validate", "fromTest").toString()) },
             {
-                assertTrue((getValueFromMap(firstTestStep, "validate", "contains_expected_values") as ListValueExpression).value.map { it.toString() }.containsAll(
+                assertTrue(
+                    (getValueFromMap(firstTestStep, "validate", "contains_expected_values") as ListValueExpression).value.map { it.toString() }.containsAll(
                         listOf(
                             "equals to something", "contains(success)", "contains(go go go)", "match(.*get(\"id\").*)"
                         )
-                    ))
+                    )
+                )
             },
             { assertEquals("v1", getValueFromMap(firstTestStep, "validate", "has_'fields'", "f1").toString()) },
             { assertEquals("get(id) + and more", getValueFromMap(firstTestStep, "validate", "has_'fields'", "json_path(f1.f2)").toString()) })
@@ -122,7 +122,10 @@ class StsReaderTest {
             { assertEquals("v2", getValueFromMap(firstTestStep, "data", "values", 0, "c2").toString()) },
             { assertEquals(2, (getValueFromMap(firstTestStep, "data", "values", 1) as MapValueExpression).value.size) },
             { assertEquals("v3", getValueFromMap(firstTestStep, "data", "values", 1, "c1").toString()) },
-            { assertEquals("v4", getValueFromMap(firstTestStep, "data", "values", 1, "c2").toString()) })
+            { assertEquals("v4", getValueFromMap(firstTestStep, "data", "values", 1, "c2").toString()) },
+
+            { assertEquals(0, (getValueFromMap(firstTestStep, "data", "values2") as ListValueExpression).value.size) }
+        )
     }
 
     @Test
@@ -234,20 +237,6 @@ class StsReaderTest {
     }
 
     @Test
-    @DisplayName("When test step has invalid complex functions")
-    fun testParseSimpleTestStepWithInvalidComplexFunctions() {
-        var ex = assertThrows<TestStepReadException> { stsReader.read(getFileUrl("/test-step-with-invalid-complex-functions.sts").openStream()) }
-        assertEquals(
-            "Failed to parse the function 'toJson' as its parent property must have only this function assignment, but found 2 properties inside", ex.message
-        )
-
-        ex = assertThrows<TestStepReadException> { stsReader.read(getFileUrl("/test-step-with-invalid-complex-functions-2.sts").openStream()) }
-        assertEquals(
-            "Failed to parse the function 'toJson' as it has no parent property", ex.message
-        )
-    }
-
-    @Test
     @DisplayName("When test step has complex functions in validation")
     fun testParseSimpleTestStepWithComplexFunctionsInValidation() {
         val filePath = getFileUrl("/test-step-with-complex-functions-in-validation.sts")
@@ -257,8 +246,48 @@ class StsReaderTest {
         val firstTestStep = testSteps[0]
         assertAll(
             { assertEquals(NumberValueExpression("0"), getValueFromMap(firstTestStep, "validate", "toJson()", "a")) },
-            { assertEquals(NumberValueExpression("10"), getValueFromMap(firstTestStep, "validate", "values(10)", 0, "a","toJson()", "b")) },
-            { assertEquals(NumberValueExpression("100"), getValueFromMap(firstTestStep, "validate", "values(10)", 1, "b","toJson()", "c")) },
+            { assertEquals(NumberValueExpression("10"), getValueFromMap(firstTestStep, "validate", "values(10)", 0, "a", "toJson()", "b")) },
+            { assertEquals(NumberValueExpression("100"), getValueFromMap(firstTestStep, "validate", "values(10)", 1, "b", "toJson()", "c")) },
+        )
+    }
+
+    @Test
+    @DisplayName("When test step has inner references in properties")
+    fun testParseTestStepWithInnerReferences() {
+        val filePath = getFileUrl("/test-step-with-inner-references.sts")
+
+        val testSteps = stsReader.read(filePath.openStream())
+
+        val firstTestStep = testSteps[0]
+        assertAll(
+            { assertEquals(NumberValueExpression("1"), getValueFromMap(firstTestStep, "values", "i")) },
+            { assertEquals(NumberValueExpression("2"), getValueFromMap(firstTestStep, "values", "n_ + \${i}")) },
+            { assertEquals(NumberValueExpression("3"), getValueFromMap(firstTestStep, "values", "x_ + \${n_ + \${i}}")) },
+        )
+    }
+
+    @Test
+    @DisplayName("When test step has inner references in properties")
+    fun testParseTestStepWithArrayArg() {
+        val filePath = getFileUrl("/test-step-with-array-arg.sts")
+
+        val testSteps = stsReader.read(filePath.openStream())
+
+        val listValueExpression = (getValueFromMap(testSteps[0], "values", "i") as FunctionCallExpression).args[0] as ListValueExpression
+        val listValueExpression2 =
+            ((getValueFromMap(testSteps[0], "values") as MapValueExpression).value.keys.last()
+                    as FunctionCallExpression).args[0] as ListValueExpression
+        val listValueExpression3 = (getValueFromMap(testSteps[0], "values", "j") as FunctionCallExpression).args[0] as ListValueExpression
+        assertAll(
+            { assertEquals(NumberValueExpression("1"), listValueExpression.value[0]) },
+            { assertEquals(NumberValueExpression("2"), listValueExpression.value[1]) },
+
+            { assertEquals(3, listValueExpression2.value.size) },
+            { assertEquals(AlphanumericValueExpression("a"), listValueExpression2.value[0]) },
+            { assertEquals(AlphanumericValueExpression("b"), listValueExpression2.value[1]) },
+            { assertEquals(AlphanumericValueExpression("c"), listValueExpression2.value[2]) },
+
+            { assertEquals(0, listValueExpression3.value.size) }
         )
     }
 

@@ -3,7 +3,7 @@ package org.skellig.feature
 class TestStep private constructor(
     val path: String,
     val name: String,
-    val parameters: Map<String, String?>?
+    val parameters: Map<String, Any?>?
 ) : SkelligTestEntity {
 
     override fun getEntityName(): String = name
@@ -44,7 +44,7 @@ class TestStep private constructor(
 
         private fun createPath() = "$parent:$name:$position"
 
-        private fun getParametersWithAppliedTestData(dataRow: Map<String, String>): Map<String, String?>? {
+        private fun getParametersWithAppliedTestData(dataRow: Map<String, String>): Map<String, Any?>? {
             return parameters
                 ?.map { it.key to it.value?.let { v -> ParametersUtils.replaceParametersIfFound(v, dataRow) } }
                 ?.toMap()

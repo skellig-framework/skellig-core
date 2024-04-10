@@ -16,7 +16,7 @@ internal class ClassTestStepFactory : TestStepFactory<ClassTestStep> {
         private val testStepMethod = AlphanumericValueExpression("testStepMethod")
     }
 
-    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, String?>): ClassTestStep {
+    override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): ClassTestStep {
 
         return ClassTestStep(
             rawTestStep[idValueExpression]?.evaluate(ValueExpressionContext.EMPTY).toString(),

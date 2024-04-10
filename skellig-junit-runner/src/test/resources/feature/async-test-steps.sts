@@ -11,13 +11,11 @@ name ("User (\w+) is waiting for request from (\w+)") {
 name ("User .* sends the message to (\w+)") {
     id = step3
     receiver = ${1}
-    message {
-        toCustomFormat() {
-            id = get(step1).values.id
-            userName = get(step1).values.name
-            score = get(step1).values.score
-        }
-    }
+    message = toCustomFormat({
+        id = get(step1).values.id
+        userName = get(step1).values.name
+        score = get(step1).values.score
+    })
 }
 
 name ("User (\w+) received a valid response from (\w+)") {

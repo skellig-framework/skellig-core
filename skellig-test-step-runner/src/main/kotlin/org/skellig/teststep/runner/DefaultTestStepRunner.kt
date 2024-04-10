@@ -20,7 +20,7 @@ internal class DefaultTestStepRunner private constructor(private val testStepPro
         return run(testStepName, emptyMap<String, String>())
     }
 
-    override fun run(testStepName: String, parameters: Map<String, String?>): TestStepRunResult {
+    override fun run(testStepName: String, parameters: Map<String, Any?>): TestStepRunResult {
         val rawTestStep = testStepsRegistry.getByName(testStepName)
 
         return rawTestStep?.let {

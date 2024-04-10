@@ -13,7 +13,7 @@ class ClassTestStep(
     val testStepDefInstance: Any,
     val testStepMethod: Method,
     override val name: String,
-    val parameters: Map<String, String?>?
+    val parameters: Map<String, Any?>?
 ) : TestStep {
 
     val getId: String = id

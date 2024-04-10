@@ -37,15 +37,26 @@ functionBase
     | ID
     | STRING;
 
-functionCall: ID '(' (arg (COMMA arg)*)? (')'|'):');
+functionCall: ID '(' (arg (COMMA arg)*)? ')';
 
-arg: expression | logicalExpression | comparison | lambdaExpression;
+arg: expression | logicalExpression | comparison | lambdaExpression | array | map;
+array: '[' arrayValues? (COMMA arrayValues)* ']';
+arrayValues : (expression | map | array);
+map: '{' pair* '}';
+pair: key ('=' expression | map | array);
+key: expression;
 
 lambdaExpression: ID LAMBDA (logicalExpression | expression);
 
 propertyExpression: '${' propertyKey (COMMA expression)? '}';
 
-propertyKey: ID | INT | STRING;
+propertyKey
+    : propertyKey ADD propertyKey      # additionPropertyKeyExpr
+    | propertyExpression               # innerPropertyExpr
+    | ID                               # idPropertyKeyExpr
+    | STRING                           # stringPropertyKeyExpr
+    | INT                              # numberPropertyKeyExpr
+    ;
 
 arrayValueAccessor: ID '[' INT ']';
 

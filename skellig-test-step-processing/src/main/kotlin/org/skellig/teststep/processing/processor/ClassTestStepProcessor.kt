@@ -23,7 +23,7 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
     operator fun invoke(
         testStepName: String,
         testStep: ClassTestStep,
-        parameters: Map<String, String?>?
+        parameters: Map<String, Any?>?
     ): TestStepProcessor.TestStepRunResult {
         val methodParameters = getMethodParameters(testStepName, testStep, parameters)
 
@@ -46,6 +46,11 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
         } catch (e: IllegalAccessException) {
             error = TestStepProcessingException("Unexpected failure when running a test step method", e)
             throw error
+        } catch (e: IllegalArgumentException) {
+            error = TestStepProcessingException("Failed to call a method '${testStepMethod.name}' " +
+                    "with arguments '${methodParameters.joinToString(",") { "$it: ${it?.javaClass?.simpleName ?: ""}" }}'", e
+            )
+            throw error
         } catch (e: InvocationTargetException) {
             var targetException: Throwable = e
             if (e.targetException != null) {
@@ -61,7 +66,7 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
     private fun getMethodParameters(
         testStepName: String,
         testStep: ClassTestStep,
-        parameters: Map<String, String?>?
+        parameters: Map<String, Any?>?
     ): Array<Any?> {
         val testStepMethod = testStep.testStepMethod
         val testStepNamePattern = testStep.testStepNamePattern
