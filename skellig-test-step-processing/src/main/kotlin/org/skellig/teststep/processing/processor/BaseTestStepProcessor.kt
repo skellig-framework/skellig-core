@@ -8,6 +8,8 @@ import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Base processor for `DefaultTestStep`.
@@ -17,12 +19,18 @@ import org.skellig.teststep.processing.state.TestScenarioState
  */
 abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: TestScenarioState) : ValidatableTestStepProcessor<T>(testScenarioState) {
 
+    private val log: Logger = LoggerFactory.getLogger(BaseTestStepProcessor::class.java)
+
     override fun process(testStep: T): TestStepRunResult {
         val testStepRunResult = DefaultTestStepRunResult(testStep)
         testScenarioState.set(testStep.getId, testStep)
 
         when (testStep.execution) {
-            TestStepExecutionType.ASYNC -> runTaskAsync { processAndValidate(testStep, testStepRunResult) }
+            TestStepExecutionType.ASYNC -> runTaskAsync {
+                log.debug("[${testStep.hashCode()}]: Run the test step asynchronously")
+                processAndValidate(testStep, testStepRunResult)
+            }
+
             else -> processAndValidate(testStep, testStepRunResult)
         }
 
@@ -50,7 +58,7 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
             result = processTestStep(testStep)
             testScenarioState.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, result)
             testStep.scenarioStateUpdaters?.let { updaters ->
-                updaters.forEach { it.update(result, testScenarioState)  }
+                updaters.forEach { it.update(result, testScenarioState) }
             }
             validate(testStep, result)
         } catch (ex: Throwable) {
@@ -59,6 +67,7 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
                 else -> TestStepProcessingException(ex.message, ex)
             }
         } finally {
+            log.debug("[${testStep.hashCode()}]: Notify the subscribers with result of test processing")
             testStepRunResult.notify(result, error)
         }
     }

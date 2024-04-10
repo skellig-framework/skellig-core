@@ -6,6 +6,8 @@ import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.FunctionCallExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 internal class DefaultTaskProcessor(
     testScenarioState: TestScenarioState,
@@ -13,6 +15,7 @@ internal class DefaultTaskProcessor(
     processTestStepDelegate: (String, Map<String, Any?>) -> TestStepProcessor.TestStepRunResult
 ) : TaskProcessor {
 
+    private val log: Logger = LoggerFactory.getLogger(DefaultTaskProcessor::class.java)
     private val tasks = mutableMapOf<String, TaskProcessor>()
 
     init {
@@ -52,6 +55,7 @@ internal class DefaultTaskProcessor(
 
     private fun registerTask(taskProcessor: TaskProcessor) {
         tasks[taskProcessor.getTaskName()] = taskProcessor
+        log.debug("Register processor '${taskProcessor::class.java}' for the task '${taskProcessor.getTaskName()}'")
     }
 
     override fun getTaskName(): String = ""

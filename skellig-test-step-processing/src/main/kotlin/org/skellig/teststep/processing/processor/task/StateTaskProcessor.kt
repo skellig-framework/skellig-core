@@ -4,11 +4,15 @@ import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 internal class StateTaskProcessor(
     private val state: TestScenarioState,
     private val valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
 ) : TaskProcessor {
+
+    private val log: Logger = LoggerFactory.getLogger(RunTestTaskProcessor::class.java)
 
     override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? AlphanumericValueExpression)?.let {
@@ -18,7 +22,10 @@ internal class StateTaskProcessor(
                         val key = valueConvertDelegate(item.key, context.parameters)?.toString()
                             ?: error("Cannot set value to the null key in the Test Scenario State")
 
-                        state.set(key, valueConvertDelegate(item.value, context.parameters))
+                        val convertedValue = valueConvertDelegate(item.value, context.parameters)
+                        state.set(key, convertedValue)
+
+                        log.info("Assign state key '$key' with value '$convertedValue'")
                     }
                 }
 

@@ -361,6 +361,19 @@ class DefaultTaskProcessorTest {
         }
 
         @Test
+        fun testForEachWithNoArguments() {
+            val taskProcessor = createTaskProcessor()
+
+            val ex = assertThrows<IllegalStateException> {
+                taskProcessor.process(
+                    FunctionCallExpression("forEach", emptyArray()), MapValueExpression(mapOf()), TaskProcessingContext(mutableMapOf())
+                )
+            }
+
+            assertEquals("No arguments found for 'forEach'. Expected 1 or 2, found 0", ex.message)
+        }
+
+        @Test
         fun testForEachWithInvalidTypeForItems() {
             val taskProcessor = createTaskProcessor()
 
