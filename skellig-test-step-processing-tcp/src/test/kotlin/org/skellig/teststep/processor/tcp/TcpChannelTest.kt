@@ -2,6 +2,7 @@ package org.skellig.teststep.processor.tcp
 
 import org.apache.commons.lang3.StringUtils
 import org.junit.jupiter.api.*
+import org.skellig.task.TaskUtils.Companion.runTask
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.tcp.model.TcpDetails
 import org.slf4j.LoggerFactory
@@ -65,8 +66,13 @@ internal class TcpChannelTest {
     fun testReadWhenTimedOut() {
         startSocketServer(200, 1)
 
-        val response = tcpChannel!!.read(100, DEFAULT_BUFFER_SIZE)
-
+        val response = runTask({
+            try {
+                tcpChannel!!.read(100, DEFAULT_BUFFER_SIZE)
+            } catch (ex: TestStepProcessingException) {
+                null
+            }
+        }, 100, 10, { it == null })
         Assertions.assertNull(response)
     }
 
@@ -90,11 +96,13 @@ internal class TcpChannelTest {
         var response = tcpChannel!!.read(0, DEFAULT_BUFFER_SIZE)
         Assertions.assertNotNull(response)
 
-        response = try {
-            tcpChannel!!.read(100, DEFAULT_BUFFER_SIZE)
-        } catch (ex: TestStepProcessingException) {
-            null
-        }
+        response = runTask({
+            try {
+                tcpChannel!!.read(100, DEFAULT_BUFFER_SIZE)
+            } catch (ex: TestStepProcessingException) {
+                null
+            }
+        }, 100, 10, { it == null })
         Assertions.assertNull(response)
     }
 
