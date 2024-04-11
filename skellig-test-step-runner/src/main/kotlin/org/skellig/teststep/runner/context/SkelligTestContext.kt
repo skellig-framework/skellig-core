@@ -11,6 +11,8 @@ import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.config.FunctionsConfig
 import org.skellig.teststep.processing.value.config.FunctionsConfigDetails
@@ -39,10 +41,7 @@ private const val DEFAULT_PACKAGE_TO_SCAN = "org.skellig.teststep.processor"
 
 open class SkelligTestContext : Closeable {
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(SkelligTestContext::class.java)
-    }
-
+    private val log = logger<SkelligTestContext>()
     private var valueExpressionContextFactory: ValueExpressionContextFactory? = null
     private var testScenarioState: TestScenarioState? = null
     private var rootTestStepProcessor: CompositeTestStepProcessor? = null
@@ -53,9 +52,9 @@ open class SkelligTestContext : Closeable {
         classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null,
         classInstanceRegistry: MutableMap<Class<*>, Any>? = null
     ): TestStepRunner {
-        LOGGER.info(
-            ("Initializing Skellig Context with test steps in '$testStepPaths'" +
-                    configPath?.let { "and config file '$it'" })
+        log.info(
+            "Initializing Skellig Context with test steps in '$testStepPaths'" +
+                    configPath?.let { "and config file '$it'" }
         )
         val newClassInstanceRegistry = classInstanceRegistry ?: ConcurrentHashMap<Class<*>, Any>()
 
@@ -109,11 +108,12 @@ open class SkelligTestContext : Closeable {
         { processorConfig ->
             try {
                 val testStepProcessorConfig = processorConfig as TestStepProcessorConfig<out TestStep>
+                log.debug {"Found a config for Test Step Processing: '${processorConfig.javaClass.name}'"}
                 val testStepProcessorConfigDetails = TestStepProcessorConfigDetails(
                     testScenarioState!!,
                     config!!,
                     testStepsRegistry!!,
-                    valueExpressionContextFactory!!,
+                    valueExpressionContextFactory,
                     rootTestStepProcessor!!,
                     rootTestStepFactory!!
                 )
@@ -215,9 +215,7 @@ open class SkelligTestContext : Closeable {
             .build()
     }
 
-    protected open fun createTestStepReader(): TestStepReader {
-        return StsReader()
-    }
+    protected open fun createTestStepReader(): TestStepReader = StsReader()
 
     protected open fun createTestScenarioState(): TestScenarioState {
         return DefaultTestScenarioState()
@@ -232,6 +230,7 @@ open class SkelligTestContext : Closeable {
 
     private fun injectTestContextIfRequired(it: Any) {
         if (it is SkelligTestContextAware) {
+            log.debug { "Assign the Skellig Context into ${it.javaClass}" }
             it.setSkelligTestContext(this)
         }
     }
@@ -259,11 +258,9 @@ open class SkelligTestContext : Closeable {
 
     override fun close() {
         rootTestStepProcessor?.let {
-            LOGGER.info("Shutting down the Skellig Context")
-
+            log.info("Shutting down the Skellig Context")
             it.close()
-
-            LOGGER.info("Skellig Context has been shut down")
+            log.info("Skellig Context has been shut down")
         }
     }
 

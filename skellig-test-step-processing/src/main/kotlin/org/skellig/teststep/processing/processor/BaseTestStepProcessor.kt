@@ -8,6 +8,10 @@ import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logTestStepResult
+import org.skellig.teststep.processing.util.logger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -19,7 +23,7 @@ import org.slf4j.LoggerFactory
  */
 abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: TestScenarioState) : ValidatableTestStepProcessor<T>(testScenarioState) {
 
-    private val log: Logger = LoggerFactory.getLogger(BaseTestStepProcessor::class.java)
+    private val log = logger<BaseTestStepProcessor<*>>()
 
     override fun process(testStep: T): TestStepRunResult {
         val testStepRunResult = DefaultTestStepRunResult(testStep)
@@ -27,7 +31,7 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
 
         when (testStep.execution) {
             TestStepExecutionType.ASYNC -> runTaskAsync {
-                log.debug("[${testStep.hashCode()}]: Run the test step asynchronously")
+                log.debug(testStep) {"Run the test step asynchronously" }
                 processAndValidate(testStep, testStepRunResult)
             }
 
@@ -67,7 +71,7 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
                 else -> TestStepProcessingException(ex.message, ex)
             }
         } finally {
-            log.debug("[${testStep.hashCode()}]: Notify the subscribers with result of test processing")
+            log.logTestStepResult(testStep, result, error)
             testStepRunResult.notify(result, error)
         }
     }

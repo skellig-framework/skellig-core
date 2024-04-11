@@ -5,10 +5,10 @@ import com.ibm.mq.constants.CMQC
 import com.ibm.mq.constants.MQConstants
 import org.apache.commons.lang3.StringUtils
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.ibmmq.model.IbmMqManagerDetails
 import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 import java.util.*
@@ -19,12 +19,11 @@ import java.util.concurrent.Executors
 open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable {
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(IbmMqChannel::class.java)
-
         private const val DEFAULT_MSG_EXPIRY = 100
         private val queueManagerFactory = IbmMqManagerFactory()
     }
 
+    private val log = logger<IbmMqTestStepProcessor>()
     private var queueManager: MQQueueManager? = null
     private var queue: MQQueue? = null
     private var consumerThread: ExecutorService? = null
@@ -37,65 +36,63 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
         try {
             val mqMessage = convertMqMessage(request)
             queue!!.put(mqMessage)
-            LOGGER.debug("Message sent to IBMMQ '${ibmMqQueueDetails.id}'")
         } catch (e: Exception) {
-            LOGGER.error("Failed to send a message to IBMMQ '${ibmMqQueueDetails.id}'", e)
+            log.error("Failed to send a message to IBMMQ queue '${ibmMqQueueDetails.id}'", e)
         }
     }
 
     fun read(timeout: Int): Any? =
-            try {
-                val message = MQMessage()
-                val options = MQGetMessageOptions()
-                options.options = MQConstants.MQGMO_WAIT
-                options.waitInterval = timeout
+        try {
+            val message = MQMessage()
+            val options = MQGetMessageOptions()
+            options.options = MQConstants.MQGMO_WAIT
+            options.waitInterval = timeout
 
-                queue!![message, options]
+            queue!![message, options]
 
-                val messageBody = getMessageBody(message)
-
-                LOGGER.debug("Received message from IBMMQ '${ibmMqQueueDetails.id}'")
-
-                messageBody
-            } catch (e: Exception) {
-                LOGGER.error("Failed to read a message from IBMMQ '${ibmMqQueueDetails.id}'", e)
-                null
-            }
-
-    fun consume(response: Any?, timeout: Int, responseHandler: (message: Any?) -> Unit) {
-       /*
-        TODO: consider this later
-        val cf = MQQueueConnectionFactory()
-        cf.hostName = ibmMqQueueDetails.ibmMqManagerDetails.host;
-        cf.port = ibmMqQueueDetails.ibmMqManagerDetails.port;
-        cf.queueManager = ibmMqQueueDetails.ibmMqManagerDetails.name;
-        cf.channel = ibmMqQueueDetails.ibmMqManagerDetails.channel;
-        cf.transportType = WMQConstants.WMQ_CM_CLIENT;
-        val conn = cf.createQueueConnection() as MQQueueConnection
-        val session = conn.createSession(false, 1) as MQQueueSession
-
-        val queue = session.createQueue(ibmMqQueueDetails.queueName)
-
-        val receiver = session.createReceiver(queue) as MQQueueReceiver
-
-        receiver.messageListener = MessageListener {
-            responseHandler(it)
-            response?.let {
-                send(response)
-            }
+            getMessageBody(message)
+        } catch (e: Exception) {
+            log.error("Failed to read a message from IBMMQ channel '${ibmMqQueueDetails.id}'", e)
+            null
         }
 
-        conn.start()*/
+    fun consume(response: Any?, timeout: Int, responseHandler: (message: Any?) -> Unit) {
+        /*
+         TODO: consider this later
+         val cf = MQQueueConnectionFactory()
+         cf.hostName = ibmMqQueueDetails.ibmMqManagerDetails.host;
+         cf.port = ibmMqQueueDetails.ibmMqManagerDetails.port;
+         cf.queueManager = ibmMqQueueDetails.ibmMqManagerDetails.name;
+         cf.channel = ibmMqQueueDetails.ibmMqManagerDetails.channel;
+         cf.transportType = WMQConstants.WMQ_CM_CLIENT;
+         val conn = cf.createQueueConnection() as MQQueueConnection
+         val session = conn.createSession(false, 1) as MQQueueSession
+
+         val queue = session.createQueue(ibmMqQueueDetails.queueName)
+
+         val receiver = session.createReceiver(queue) as MQQueueReceiver
+
+         receiver.messageListener = MessageListener {
+             responseHandler(it)
+             response?.let {
+                 send(response)
+             }
+         }
+
+         conn.start()*/
 
         if (consumerThread == null || consumerThread!!.isShutdown) {
             consumerThread = Executors.newCachedThreadPool()
         }
-        LOGGER.info("Start listener for IbmMq queue: ${ibmMqQueueDetails.id}")
+        log.info("Start listener for IBMMQ queue: ${ibmMqQueueDetails.id}")
         consumerThread?.execute {
             while (!consumerThread!!.isShutdown) {
                 val data = read(timeout)
                 responseHandler(data)
-                response?.let { send(it) }
+                response?.let {
+                    log.debug { "Respond with '$response' to IBMMQ queue '${ibmMqQueueDetails.id}'" }
+                    send(it)
+                }
             }
         }
     }
@@ -123,9 +120,13 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
 
     private fun connectQueue() {
         try {
+            log.debug { "Start to connect to IBMMQ queue ${ibmMqQueueDetails.id}" }
             queueManager = queueManagerFactory.createQueueManagerFromDetails(ibmMqQueueDetails.ibmMqManagerDetails)
-            queue = queueManager!!.accessQueue(ibmMqQueueDetails.queueName,
-                    CMQC.MQOO_OUTPUT or CMQC.MQOO_INQUIRE or CMQC.MQOO_INPUT_SHARED)
+            queue = queueManager!!.accessQueue(
+                ibmMqQueueDetails.queueName,
+                CMQC.MQOO_OUTPUT or CMQC.MQOO_INQUIRE or CMQC.MQOO_INPUT_SHARED
+            )
+            log.debug { "Successfully connected to IBMMQ queue ${ibmMqQueueDetails.id}" }
         } catch (e: MQException) {
             throw TestStepProcessingException(e.message, e)
         }
@@ -138,7 +139,7 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
             queueManager!!.close()
             queue!!.close()
         } catch (e: Exception) {
-            LOGGER.warn("Could not safely close IBMMQ channel ${ibmMqQueueDetails.id}", e)
+            log.warn("Could not safely close IBMMQ queue ${ibmMqQueueDetails.id}. Reason: ${e.message}")
         }
     }
 
@@ -159,7 +160,7 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
                 }
                 queueManagers[mqManagerName]
             } catch (e: MQException) {
-                throw TestStepProcessingException(String.format("Could not connect to queue manager: %s", mqManagerDetails.name), e)
+                throw TestStepProcessingException("Could not connect to queue manager: ${mqManagerDetails.name}", e)
             }
         }
 

@@ -3,24 +3,26 @@ package org.skellig.teststep.processing.processor.task
 import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logger
 
 internal class TaskTestStepProcessor(
     private val taskProcessor: TaskProcessor,
     testScenarioState: TestScenarioState
 ) : BaseTestStepProcessor<TaskTestStep>(testScenarioState) {
 
-    private val log: Logger = LoggerFactory.getLogger(TaskTestStepProcessor::class.java)
+    private val log = logger<TaskTestStepProcessor>()
 
     override fun processTestStep(testStep: TaskTestStep): Any {
         TaskProcessingContext(testStep.parameters).use { context ->
-            log.info("[${testStep.hashCode()}]: Start to process task of test '${testStep.name}'")
+            log.info(testStep, "Start to process task of test '${testStep.name}'")
             try {
                 taskProcessor.process(null, testStep.getTask(), context)
             } finally {
-                log.info("[${testStep.hashCode()}]: Processing of test '${testStep.name}' has finished. " +
-                        "Start to wait for unfinished results of test steps if any remaining")
+                log.info(testStep,
+                    "Processing of test '${testStep.name}' has finished. " +
+                            "Start to wait for unfinished results of test steps if any remaining"
+                )
                 context.getTestStepsResult().forEach { it.awaitResult() }
             }
         }

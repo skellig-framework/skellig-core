@@ -3,15 +3,19 @@ package org.skellig.teststep.processor.ibmmq
 import com.typesafe.config.Config
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails
 
 abstract class BaseIbmMqTestStepProcessorBuilder<T : DefaultTestStep>
     : BaseTestStepProcessor.Builder<T>() {
 
+    private val log = logger<BaseIbmMqTestStepProcessorBuilder<T>>()
     protected val ibmMqChannels = mutableMapOf<String, IbmMqChannel>()
     private val ibmmqDetailsConfigReader = IbmmqDetailsConfigReader()
 
     fun ibmMqChannel(mqQueueDetails: IbmMqQueueDetails) = apply {
+        log.debug { "Register IBMMQ Channel '${mqQueueDetails.id}' with details: $mqQueueDetails" }
         ibmMqChannels.putIfAbsent(mqQueueDetails.id, IbmMqChannel(mqQueueDetails))
     }
 

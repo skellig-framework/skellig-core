@@ -4,6 +4,7 @@ import freemarker.cache.URLTemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.Template
 import org.skellig.runner.junit.report.model.FeatureReportDetails
+import org.skellig.teststep.processing.util.logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileWriter
@@ -16,8 +17,6 @@ import java.nio.file.attribute.BasicFileAttributes
 class SkelligReportGenerator : ReportGenerator {
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(SkelligReportGenerator::class.java)
-
         private const val JAR_URL_TYPE = "jar"
         private const val TARGET_FOLDER = "target"
         private const val OUT_FOLDER = "out"
@@ -30,9 +29,12 @@ class SkelligReportGenerator : ReportGenerator {
         private const val REPORT_SRC_PATH = "report/$REPORT_ROOT_FOLDER_NAME"
     }
 
+    private val log = logger<SkelligReportGenerator>()
+
     override fun generate(testReportDetails: List<FeatureReportDetails>?) {
+        log.info("Start to generate a Skellig Test Report")
         try {
-            val htmlReport = prepareReportFoldersAndFiles(REPORT_SRC_PATH, REPORT_ROOT_FOLDER_NAME, "index")
+            val htmlReport = prepareReportFoldersAndFiles(REPORT_ROOT_FOLDER_NAME, "index")
             val dataModel = mutableMapOf<String, Any?>()
             dataModel["featuresReportDetails"] = testReportDetails
             dataModel["featureTitle"] = "Feature"
@@ -41,13 +43,14 @@ class SkelligReportGenerator : ReportGenerator {
             testReportDetails?.forEach {
                 generateFeatureReports(it)
             }
+            log.info("Skellig Test Report has been created")
         } catch (e: Exception) {
-            LOGGER.error("Failed to generate a Skellig Report", e)
+            log.error("Failed to generate a Skellig Report", e)
         }
     }
 
     private fun generateFeatureReports(featureReportDetails: FeatureReportDetails) {
-        val htmlScenarioReport = prepareReportFoldersAndFiles(REPORT_SRC_PATH, FEATURE_REPORT_ROOT_FOLDER_NAME, featureReportDetails.name ?: "")
+        val htmlScenarioReport = prepareReportFoldersAndFiles(FEATURE_REPORT_ROOT_FOLDER_NAME, featureReportDetails.name ?: "")
         val dataModel = mutableMapOf<String, Any?>()
         dataModel["feature"] = featureReportDetails
         dataModel["featureTitle"] = "Feature"
@@ -64,11 +67,11 @@ class SkelligReportGenerator : ReportGenerator {
         constructFromTemplate(loadFtlTemplate(FEATURE_REPORT_FTL), dataModel, htmlScenarioReport)
     }
 
-    private fun prepareReportFoldersAndFiles(reportSrcPath: String, reportRootFolder: String, testScenarioName: String): File {
-        val uri = getUrl(reportSrcPath).toURI()
+    private fun prepareReportFoldersAndFiles(reportRootFolder: String, testScenarioName: String): File {
+        val uri = getUrl(REPORT_SRC_PATH).toURI()
         if (uri.scheme == JAR_URL_TYPE) {
             FileSystems.newFileSystem(uri, mapOf<String, String>()).use {
-                return createHtmlReport(it.getPath("/$reportSrcPath"), reportRootFolder, testScenarioName)
+                return createHtmlReport(it.getPath("/$REPORT_SRC_PATH"), reportRootFolder, testScenarioName)
             }
         } else {
             return createHtmlReport(Paths.get(uri), reportRootFolder, testScenarioName)

@@ -1,6 +1,8 @@
 package org.skellig.teststep.processing.value.function
 
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processing.value.function.collection.*
 import java.util.*
 
@@ -23,6 +25,8 @@ class DefaultFunctionValueExecutor private constructor(
 
     class Builder {
 
+        private val log = logger<Builder>()
+
         private val functions = mutableMapOf<String, FunctionValueExecutor>()
         private var testScenarioState: TestScenarioState? = null
         private var classLoader: ClassLoader? = null
@@ -36,8 +40,13 @@ class DefaultFunctionValueExecutor private constructor(
 
         fun withClassPaths(classPaths: Collection<String>) = apply { this.classPaths = classPaths }
 
-        fun withFunctionValueExecutor(functionValueExecutor: FunctionValueExecutor) =
+        fun withFunctionValueExecutor(functionValueExecutor: FunctionValueExecutor) {
+            log.debug {
+                "Register function executor class '${functionValueExecutor::class.java}'" +
+                        " for  function '${functionValueExecutor.getFunctionName()}'"
+             }
             apply { functions[functionValueExecutor.getFunctionName()] = functionValueExecutor }
+        }
 
         fun withClassInstanceRegistry(classInstanceRegistry: MutableMap<Class<*>, Any>) =
             apply { this.classInstanceRegistry = classInstanceRegistry }

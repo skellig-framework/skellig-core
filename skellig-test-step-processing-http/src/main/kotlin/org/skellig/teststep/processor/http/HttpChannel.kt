@@ -5,15 +5,10 @@ import okhttp3.Response
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.http.model.HttpRequestDetails
 import org.skellig.teststep.processor.http.model.HttpResponse
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(HttpChannel::class.java)
-    }
 
     private var httpRequestFactory = HttpRequestFactory(baseUrl)
     private val httpClient = OkHttpClient.Builder()
@@ -30,14 +25,8 @@ open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
 
             try {
                 val httpRequest = httpRequestFactory.createRequest(request)
-                LOGGER.debug("Run HTTP request {}", request.toString())
-
                 val response = httpClient.newCall(httpRequest).execute()
-                val localResponse = convertToLocalResponse(response)
-
-                LOGGER.debug("Received HTTP response from {}: {}", httpRequest.url, localResponse?.toString())
-
-                localResponse
+                convertToLocalResponse(response)
             } catch (e: Exception) {
                 throw TestStepProcessingException("Failed to send HTTP request to " + request.url, e)
             }
@@ -66,7 +55,6 @@ open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
     }
 
     fun close() {
-        LOGGER.info("Close all existing HTTP connections for the HTTP Test Step Processor")
         httpClient.connectionPool.evictAll();
         httpClient.dispatcher.executorService.shutdown();
     }

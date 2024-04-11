@@ -1,5 +1,7 @@
 package org.skellig.teststep.processing.processor.task
 
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.FunctionCallExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
@@ -11,7 +13,7 @@ internal class RunIfTaskProcessor(
     private val valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
 ) : TaskProcessor {
 
-    private val log: Logger = LoggerFactory.getLogger(RunIfTaskProcessor::class.java)
+    private val log = logger <RunIfTaskProcessor>()
 
     override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? FunctionCallExpression)?.let {
@@ -20,7 +22,7 @@ internal class RunIfTaskProcessor(
                     if (task.args.isNotEmpty()) {
                         if ((valueConvertDelegate(task.args[0], context.parameters) as? Boolean) == true) {
                             taskProcessor.process(null, value, context)
-                        } else log.debug("The condition '${task.args[0]}' of the task '${getTaskName()}' has evaluated to false")
+                        } else log.debug {"The condition '${task.args[0]}' of the task '${getTaskName()}' has evaluated to false" }
                     } else error("No arguments found for '${getTaskName()}'. Expected 1, found 0")
                 }
 

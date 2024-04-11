@@ -6,7 +6,10 @@ import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunRe
 import org.skellig.teststep.processing.processor.task.DefaultTaskProcessor
 import org.skellig.teststep.processing.processor.task.TaskTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.ValueExpression
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Processes any test step by assigning an appropriate test step processor from its registry.
@@ -19,6 +22,7 @@ class CompositeTestStepProcessor private constructor(
     processTestStepDelegate: (String, Map<String, Any?>) -> TestStepRunResult
 ) : TestStepProcessor<TestStep> {
 
+    private val log = logger<CompositeTestStepProcessor>()
     private val testStepProcessors: MutableList<TestStepProcessor<in TestStep>> = mutableListOf()
 
     init {
@@ -49,6 +53,7 @@ class CompositeTestStepProcessor private constructor(
      * Register test step processor.
      */
     fun registerTestStepProcessor(testStepProcessor: TestStepProcessor<out TestStep>) {
+        log.info("Register Test Step Processor '${testStepProcessor::class.java}' for the Test Step '${testStepProcessor.getTestStepClass().simpleName}'")
         testStepProcessors.add(testStepProcessor as TestStepProcessor<TestStep>)
     }
 
@@ -61,8 +66,8 @@ class CompositeTestStepProcessor private constructor(
     }
 
     class Builder : BaseTestStepProcessor.Builder<TestStep>() {
-        var valueConvertDelegate: ((ValueExpression?, Map<String, Any?>) -> Any?)? = null
-        var processTestStepDelegate: ((String, Map<String, Any?>) -> TestStepRunResult)? = null
+        private var valueConvertDelegate: ((ValueExpression?, Map<String, Any?>) -> Any?)? = null
+        private var processTestStepDelegate: ((String, Map<String, Any?>) -> TestStepRunResult)? = null
 
         fun withValueConvertDelegate(valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?) =
             apply { this.valueConvertDelegate = valueConvertDelegate }

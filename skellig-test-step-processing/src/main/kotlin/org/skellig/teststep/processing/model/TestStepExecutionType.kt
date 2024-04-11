@@ -6,7 +6,7 @@ enum class TestStepExecutionType {
 
     companion object {
         fun fromName(name: String?): TestStepExecutionType {
-            for (value in values()) {
+            for (value in entries) {
                 if (value.name.equals(name, ignoreCase = true)) {
                     return value
                 }

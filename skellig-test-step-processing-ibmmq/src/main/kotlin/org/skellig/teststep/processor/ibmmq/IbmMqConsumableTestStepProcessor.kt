@@ -5,6 +5,9 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
 
 open class IbmMqConsumableTestStepProcessor(
@@ -12,10 +15,13 @@ open class IbmMqConsumableTestStepProcessor(
     testScenarioState: TestScenarioState?,
 ) : ValidatableTestStepProcessor<IbmMqConsumableTestStep>(testScenarioState!!) {
 
+    private val log = logger<IbmMqConsumableTestStepProcessor>()
+
     override fun process(testStep: IbmMqConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
         testScenarioState.set(testStep.getId, testStep)
 
+        log.info(testStep, "Start to consume data of test step '${testStep.name}' from IBMMQ queues ${testStep.consumeFrom}")
         consume(testStep, testStep.consumeFrom, testStepRunResult)
 
         return testStepRunResult
@@ -32,13 +38,14 @@ open class IbmMqConsumableTestStepProcessor(
             val channel = ibmMqChannels[channelName] ?: error(getChannelNotExistErrorMessage(channelName))
             channel.consume(if (respondTo != null) null else response, testStep.timeout)
             { receivedMessage ->
+                log.debug(testStep) { "Received data from IBMMQ queue '${channelName}': $receivedMessage" }
                 var error: RuntimeException? = null
                 try {
                     validate(testStep, receivedMessage)
                     respondTo?.let {
                         response?.let {
-                            if (isValid(testStep, receivedMessage))
-                                send(response, respondTo[index])
+                            log.info(testStep, "Respond to received data to IBMMQ queues '$respondTo'")
+                            send(response, respondTo[index])
                         }
                     }
                 } catch (ex: Exception) {

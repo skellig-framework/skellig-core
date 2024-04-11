@@ -5,9 +5,10 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.skellig.performance.runner.service.model.PerformanceTestResponse
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.performance.model.LongRunResponse
 import org.skellig.teststep.runner.context.SkelligTestContext
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.task.TaskExecutor
@@ -29,10 +30,11 @@ import java.util.concurrent.TimeUnit
 class SkelligPerformanceController {
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(SkelligPerformanceController::class.java)
         private val JSON = "application/json; charset=utf-8".toMediaType()
         private const val DEFAULT_TIMEOUT = 10L
     }
+
+    private val log = logger<SkelligPerformanceController>()
 
     @Autowired
     private var skelligTestContext: SkelligTestContext? = null
@@ -74,6 +76,7 @@ class SkelligPerformanceController {
         val nodes: List<String>? = getRemoteNodesIfExist()
 
         if (nodes?.isNotEmpty() == true) {
+            log.info("Start to run the test '${details.name}' on $nodes nodes")
             val objectMapper = ObjectMapper()
             val requestAsJson = String(objectMapper.writeValueAsBytes(details), Charset.forName("utf-8"))
             val counter = CountDownLatch(nodes.size)
@@ -88,8 +91,10 @@ class SkelligPerformanceController {
             }
 
             try {
+                log.info("Wait for response from all nodes...")
                 counter.await(10, TimeUnit.SECONDS)
             } catch (ex: Exception) {
+                log.error("Failed to receive response from all nodes", ex)
                 responses.add(PerformanceTestResponse(500, null, ex.message))
             }
         } else {
@@ -111,7 +116,7 @@ class SkelligPerformanceController {
         startTime = LocalDateTime.now()
         lastError = null
 
-        LOGGER.info("Start to run the test '$details'")
+        log.info("Start to run the test '$details'")
 
         taskExecutor.execute {
             try {
@@ -121,15 +126,15 @@ class SkelligPerformanceController {
                         longRunResult.getTimeSeries().forEach {
                             stopCurrentRunningTest()
 
-                            LOGGER.info("Start writing time series data into file '${it.key}'")
+                            log.info("Start writing time series data into file '${it.key}'")
 
                             val file = File("${it.key}.pts")
                             it.value.consumeTimeSeriesRecords { record ->
-                                LOGGER.info(record)
+                                log.info(record)
                                 file.appendText(record)
                             }
 
-                            LOGGER.info("File '${it.key}' with time series data has been created")
+                            log.info("File '${it.key}' with time series data has been created")
                         }
                     }
                     ?: error("Failed to run '${details.name}' because test step runner was not initialized from the context")
@@ -147,6 +152,7 @@ class SkelligPerformanceController {
         val nodes: List<String>? = getRemoteNodesIfExist()
 
         if (nodes?.isNotEmpty() == true) {
+            log.info("Stop to run the test the current test on $nodes nodes")
             val counter = CountDownLatch(nodes.size)
 
             nodes.forEach {
@@ -158,8 +164,10 @@ class SkelligPerformanceController {
             }
 
             try {
+                log.info("Wait for response from all nodes...")
                 counter.await(10, TimeUnit.SECONDS)
             } catch (ex: Exception) {
+                log.error("Failed to receive response from all nodes", ex)
                 responses.add(PerformanceTestResponse(500, null, ex.message))
             }
         } else {
@@ -181,7 +189,10 @@ class SkelligPerformanceController {
         return runningTest?.let {
             val timeToRun = runningTest?.timeToRun ?: "0"
             val timePassed = LocalTime.ofNanoOfDay(Duration.between(startTime, LocalDateTime.now()).toNanos())
-            Progress(runningTest, timePassed.format(SkelligPerformancePageController.TIME_PATTERN) + " / $timeToRun")
+            val formattedTimePassed = timePassed.format(SkelligPerformancePageController.TIME_PATTERN) + " / $timeToRun"
+            log.debug { "Running of test '${it.name} is in progress... Time passed: $formattedTimePassed" }
+
+            Progress(runningTest, formattedTimePassed)
         } ?: lastError?.let {
             Progress(error = "error: ${lastError?.message}")
         }
@@ -202,17 +213,19 @@ class SkelligPerformanceController {
     ) = object : Callback {
         override fun onFailure(call: Call, e: IOException) {
             counter.countDown()
+            log.error("Received failure response from node: ${e.message}")
             responses.add(PerformanceTestResponse(500, null, e.message))
         }
 
         override fun onResponse(call: Call, response: Response) {
             counter.countDown()
+            log.info("Received response from node: $response")
             responses.add(PerformanceTestResponse(response.code, response.body.toString(), null))
         }
     }
 
     private fun stopCurrentRunningTest() {
-        LOGGER.info("Stop running current test '$runningTest'")
+        log.info("Stop to run the current test '$runningTest'")
 
         runningTest = null
         startTime = null

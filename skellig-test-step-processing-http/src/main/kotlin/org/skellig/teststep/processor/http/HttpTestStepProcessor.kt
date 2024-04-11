@@ -7,6 +7,9 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.http.model.HttpMethodName
 import org.skellig.teststep.processor.http.model.HttpRequestDetails
 import org.skellig.teststep.processor.http.model.HttpResponse
@@ -16,6 +19,8 @@ class HttpTestStepProcessor(
     private val httpServices: Map<String, HttpChannel>,
     testScenarioState: TestScenarioState
 ) : BaseTestStepProcessor<HttpTestStep>(testScenarioState) {
+
+    private val log = logger<HttpTestStepProcessor>()
 
     override fun processTestStep(testStep: HttpTestStep): Any? {
         var services: Collection<String>? = testStep.services
@@ -29,10 +34,19 @@ class HttpTestStepProcessor(
                 services = httpServices.keys
             }
         }
+        log.info(testStep, "Start to run HTTP query of test step '${testStep.name}' in $services services")
 
-        val tasks = services
-            .map { it to { getHttpService(it).send(buildHttpRequestDetails(testStep)) } }
-            .toMap()
+        val tasks = services.associateWith {
+            {
+                val request = buildHttpRequestDetails(testStep)
+                log.debug(testStep) { "Run HTTP request $request" }
+
+                val response = getHttpService(it).send(request)
+                log.debug(testStep) { "Received HTTP response from ${request.url}: $response" }
+
+                response
+            }
+        }
         val results = runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
         return if (isResultForSingleService(results, testStep)) results.values.first() else results
     }
@@ -61,6 +75,7 @@ class HttpTestStepProcessor(
     }
 
     override fun close() {
+        log.info("Close Http Test Step Processor and all connections to services")
         httpServices.values.forEach { it.close() }
     }
 
@@ -78,10 +93,12 @@ class HttpTestStepProcessor(
             private const val HTTP_SERVICES_KEYWORD = "http.services"
         }
 
+        private val log = logger<Builder>()
         private val httpChannelPerService = mutableMapOf<String, HttpChannel>()
 
 
         fun withHttpService(serviceName: String?, url: String?, defaultTimeoutMs: Long) = apply {
+            log.debug { "Register HTTP service '$serviceName' with default URL '$url'" }
             serviceName?.let { url?.let { httpChannelPerService[serviceName] = HttpChannel(url, defaultTimeoutMs) } }
         }
 
@@ -89,6 +106,7 @@ class HttpTestStepProcessor(
 
         fun withHttpService(config: Config) = apply {
             if (config.hasPath(HTTP_SERVICES_KEYWORD)) {
+                log.info("HTTP configuration found in the Config file. Start to register its HTTP services")
                 val services = config.getAnyRef(HTTP_SERVICES_KEYWORD)
                 if (services is List<*>) {
                     services.mapNotNull { it as? Map<*, *> }

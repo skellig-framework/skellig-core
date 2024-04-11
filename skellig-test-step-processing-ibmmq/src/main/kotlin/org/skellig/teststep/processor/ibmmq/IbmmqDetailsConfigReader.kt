@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.ibmmq
 
 import com.typesafe.config.Config
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.ibmmq.model.IbmMqManagerDetails
 import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails
 import java.util.*
@@ -11,11 +12,15 @@ internal class IbmmqDetailsConfigReader {
         private const val IBMMQ_CONFIG_KEYWORD = "ibmmq.hosts"
     }
 
+    private val log = logger<IbmmqDetailsConfigReader>()
+
     fun read(config: Config?): Collection<IbmMqQueueDetails> {
         Objects.requireNonNull(config, "IBMMQ config cannot be null")
 
         var ibmmqDetails: Collection<IbmMqQueueDetails> = emptyList()
         if (config!!.hasPath(IBMMQ_CONFIG_KEYWORD)) {
+            log.info("IBMMQ configuration found in the Config file. Start to register its channels")
+
             val anyRefList = config.getAnyRefList(IBMMQ_CONFIG_KEYWORD) as List<*>
             ibmmqDetails = anyRefList
                 .map { rawIbmmqDetails: Any? -> createIbmmqDetails(rawIbmmqDetails) }

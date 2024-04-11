@@ -2,6 +2,8 @@ package org.skellig.teststep.processing.model
 
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.createIndent
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.*
 
@@ -10,6 +12,8 @@ interface ValidationNode {
 }
 
 internal abstract class BaseValidationNode : ValidationNode {
+
+    protected val log = logger<ValidationNode>()
 
     override fun toString(): String {
         return toString(0)
@@ -26,9 +30,9 @@ internal abstract class BaseValidationNode : ValidationNode {
         return if (valueExpression?.javaClass == AlphanumericValueExpression::class.java ||
             valueExpression?.javaClass == CallChainExpression::class.java ||
             valueExpression?.javaClass == FunctionCallExpression::class.java
-        )
+        ) {
             valueExpressionContextFactory.createForValidationAsCallChain(value, parameters)
-        else valueExpressionContextFactory.createForValidation(value, parameters, true)
+        } else valueExpressionContextFactory.createForValidation(value, parameters, true)
     }
 
     protected fun createContextForExpectedValue(
@@ -76,6 +80,7 @@ internal class GroupedValidationNode(
 
     override fun validate(value: Any?) {
         val evaluatedActualValue = actual.evaluate(createContext(actual, valueExpressionContextFactory, value, parameters))
+        log.debug { "Start to verify '$evaluatedActualValue' evaluated from '$actual'\n" }
         items.validate(evaluatedActualValue)
     }
 
@@ -101,8 +106,13 @@ internal class PairValidationNode(
             throw ValidationException(
                 "Validation failed for '$actual = $expected'!\n" +
                         "Actual: $actualEvaluated\n" +
-                        "Expected: $expectedEvaluated"
+                        "Expected: $expectedEvaluated\n"
             )
+        else log.debug {
+            "Verify that '$actual' is '$expected'\n" +
+                    "Expected: $expectedEvaluated\n" +
+                    "Actual: $actualEvaluated\n"
+        }
     }
 
     override fun toString(indent: Int): String {
@@ -123,16 +133,25 @@ internal class SingleValidationNode(
             if (!evaluated)
                 throw ValidationException(
                     "Validation failed for '$expected'!\n" +
-                            "Actual: $value\n" +
-                            "Expected: $evaluated"
+                            "Expected: $evaluated" +
+                            "Actual: false\n"
                 )
+            else log.debug {
+                "Verify that '$value' is '$expected'\n" +
+                        "Expected: $evaluated\n" +
+                        "Actual: true\n"
+            }
         } else {
             if (evaluated != value) {
                 throw ValidationException(
                     "Validation failed!\n" +
-                            "Actual: $value\n" +
-                            "Expected: $evaluated"
+                            "Expected: $evaluated" +
+                            "Actual: $value\n"
                 )
+            } else log.debug {
+                "Verify that '$value' is '$expected'\n" +
+                        "Expected: $evaluated\n" +
+                        "Actual: $value\n"
             }
         }
     }

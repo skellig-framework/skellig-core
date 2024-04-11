@@ -3,6 +3,9 @@ package org.skellig.teststep.processing.processor
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logTestStepResult
+import org.skellig.teststep.processing.util.logger
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
@@ -12,6 +15,8 @@ import java.lang.reflect.Method
  * @see org.skellig.teststep.runner.annotation.TestStep
  */
 internal class ClassTestStepProcessor(private val testScenarioState: TestScenarioState) : TestStepProcessor<ClassTestStep> {
+
+    private val log = logger<ClassTestStepProcessor>()
 
     override fun process(testStep: ClassTestStep): TestStepProcessor.TestStepRunResult {
         return invoke(testStep.name, testStep, testStep.parameters)
@@ -40,6 +45,11 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
         var response: Any? = null
         var error: TestStepProcessingException? = null
 
+        log.info(
+            testStep,
+            "Invoke method '${testScenarioState.javaClass}:$testStepMethod'" +
+                    if (log.isDebugEnabled) "(${getParametersAsString(methodParameters)})" else ""
+        )
         try {
             response = testStepMethod.invoke(testStepDefInstance, *methodParameters)
             testScenarioState.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, response)
@@ -47,8 +57,9 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
             error = TestStepProcessingException("Unexpected failure when running a test step method", e)
             throw error
         } catch (e: IllegalArgumentException) {
-            error = TestStepProcessingException("Failed to call a method '${testStepMethod.name}' " +
-                    "with arguments '${methodParameters.joinToString(",") { "$it: ${it?.javaClass?.simpleName ?: ""}" }}'", e
+            error = TestStepProcessingException(
+                "Failed to call a method '${testStepMethod.name}' " +
+                        "with arguments '${getParametersAsString(methodParameters)}'", e
             )
             throw error
         } catch (e: InvocationTargetException) {
@@ -58,6 +69,7 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
             }
             error = TestStepProcessingException(targetException.message, targetException)
         } finally {
+            log.logTestStepResult(testStep, result, error)
             result.notify(response, error)
         }
         return result
@@ -88,4 +100,7 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
         }
         return methodParameters
     }
+
+    private fun getParametersAsString(methodParameters: Array<Any?>) =
+        methodParameters.joinToString(",") { "$it: ${it?.javaClass?.simpleName ?: ""}" }
 }

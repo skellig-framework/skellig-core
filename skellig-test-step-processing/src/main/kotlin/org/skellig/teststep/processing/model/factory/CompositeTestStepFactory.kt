@@ -2,6 +2,9 @@ package org.skellig.teststep.processing.model.factory
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.processor.CompositeTestStepProcessor
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
@@ -10,6 +13,7 @@ class CompositeTestStepFactory private constructor(
     valueExpressionContextFactory: ValueExpressionContextFactory
 ) : TestStepFactory<TestStep> {
 
+    private val log = logger<CompositeTestStepProcessor>()
     private val factories: MutableList<TestStepFactory<out TestStep>> = mutableListOf()
     private var defaultTestStepFactory: TestStepFactory<DefaultTestStep>
 
@@ -24,6 +28,7 @@ class CompositeTestStepFactory private constructor(
     }
 
     fun registerTestStepFactory(factory: TestStepFactory<out TestStep>) {
+        log.debug {"Register Test Step Factory class '${factory.javaClass.simpleName}'" }
         factories.add(factory)
     }
 

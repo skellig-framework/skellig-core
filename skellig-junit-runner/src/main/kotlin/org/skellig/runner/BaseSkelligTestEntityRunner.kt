@@ -1,6 +1,5 @@
 package org.skellig.runner
 
-import org.junit.internal.AssumptionViolatedException
 import org.junit.internal.runners.model.EachTestNotifier
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
@@ -13,6 +12,7 @@ import org.skellig.runner.junit.report.TestStepLogger
 import org.skellig.runner.junit.report.model.HookReportDetails
 import org.skellig.runner.junit.report.model.TestStepReportDetails
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.TestStepRunner
 
 abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
@@ -24,6 +24,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     protected val afterHookType: Class<out Annotation>
 ) : ParentRunner<T>(testEntity::class.java), SkelligTestEntity {
 
+    protected val log = logger<BaseSkelligTestEntityRunner<T>>()
     protected val beforeHookReportDetails = mutableListOf<HookReportDetails>()
     protected val afterHookReportDetails = mutableListOf<HookReportDetails>()
     protected var beforeTestStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
@@ -147,6 +148,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
 
     protected fun awaitForTestStepRunResults(testStepRunResults: MutableList<TestStepProcessor.TestStepRunResult>, notifier: RunNotifier) {
         try {
+            log.info("Waiting for the unfinished processing of test steps if any remaining...")
             // if there are any async test step running, then wait until they're finished
             // within set timeout. Cleanup results as they are no longer needed.
             testStepRunResults.forEach {
@@ -166,5 +168,9 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     private fun fireFailureEvent(notifier: RunNotifier, childDescription: Description, e: Throwable) {
         notifier.fireTestFailure(Failure(childDescription, e))
         isTestFailed = true
+    }
+
+    override fun toString(): String {
+        return name
     }
 }

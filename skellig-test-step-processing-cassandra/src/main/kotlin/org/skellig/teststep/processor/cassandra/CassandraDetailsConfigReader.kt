@@ -1,6 +1,8 @@
 package org.skellig.teststep.processor.cassandra
 
 import com.typesafe.config.Config
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.cassandra.model.CassandraDetails
 import java.net.InetSocketAddress
 import java.util.*
@@ -11,11 +13,14 @@ internal class CassandraDetailsConfigReader {
         private const val CASSANDRA_CONFIG_KEYWORD = "cassandra.servers"
     }
 
+    private val log = logger<CassandraDetailsConfigReader>()
+
     fun read(config: Config): Collection<CassandraDetails> {
         Objects.requireNonNull(config, "Cassandra config cannot be null")
 
         var cassandraDetails = emptyList<CassandraDetails>()
         if (config.hasPath(CASSANDRA_CONFIG_KEYWORD)) {
+            log.info("Cassandra configuration found in the Config file. Start to register its DB servers")
             val anyRefList = config.getAnyRefList(CASSANDRA_CONFIG_KEYWORD) as List<Map<*, *>>
             cassandraDetails = anyRefList
                     .map { createCassandraDetails(it) }

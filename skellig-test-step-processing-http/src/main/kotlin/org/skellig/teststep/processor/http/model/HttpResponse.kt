@@ -7,7 +7,7 @@ class HttpResponse(val statusCode: Int,
     override fun toString(): String {
         return "statusCode: $statusCode" +
                 (if (headers.isNotEmpty()) ("\nheaders: $headers") else "") +
-                body?.let { ("\nbody: $body") }?:""
+                (body?.let { ("\nbody: $body") }?:"")
     }
 
     class Builder {

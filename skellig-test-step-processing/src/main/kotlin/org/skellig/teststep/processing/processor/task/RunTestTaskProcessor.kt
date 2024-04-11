@@ -1,12 +1,12 @@
 package org.skellig.teststep.processing.processor.task
 
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.FunctionCallExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 internal class RunTestTaskProcessor(
     private val taskProcessor: TaskProcessor,
@@ -20,7 +20,7 @@ internal class RunTestTaskProcessor(
         private val ON_FAILED = AlphanumericValueExpression("onFailed")
     }
 
-    private val log: Logger = LoggerFactory.getLogger(RunTestTaskProcessor::class.java)
+    private val log = logger<RunTestTaskProcessor>()
 
     override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? FunctionCallExpression)?.let {
@@ -39,14 +39,13 @@ internal class RunTestTaskProcessor(
                             if (e == null) value.value[ON_PASSED]
                             else {
                                 if (value.value.containsKey(ON_FAILED)) {
-                                    log.info("[${t?.hashCode()}] Run the $ON_FAILED callback for the failed test '${t?.name}'")
+                                    t?.let { log.info(t, "Run the $ON_FAILED callback for the failed test '${t.name}'") }
                                     value.value[ON_FAILED]
-                                }
-                                else throw e
+                                } else throw e
                             }
 
                         valueExpression?.let {
-                            log.info("[${t?.hashCode()}] Run the $ON_PASSED callback for the passed test '${t?.name}'")
+                            t?.let { log.info(t, "Run the $ON_PASSED callback for the passed test '${t.name}'") }
                             taskProcessor.process(null, it, context)
                         }
                     }

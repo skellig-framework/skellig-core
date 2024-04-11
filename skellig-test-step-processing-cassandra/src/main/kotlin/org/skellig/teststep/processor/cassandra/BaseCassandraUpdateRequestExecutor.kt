@@ -3,6 +3,8 @@ package org.skellig.teststep.processor.cassandra
 import com.datastax.oss.driver.api.core.CqlSession
 import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -10,9 +12,7 @@ import org.slf4j.LoggerFactory
 internal abstract class BaseCassandraUpdateRequestExecutor(private val session: CqlSession) :
     BaseCassandraRequestExecutor() {
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BaseCassandraUpdateRequestExecutor::class.java)
-    }
+    private val log = logger<BaseCassandraUpdateRequestExecutor>()
 
     override fun execute(databaseRequest: DatabaseRequest): Any? {
         try {
@@ -35,8 +35,7 @@ internal abstract class BaseCassandraUpdateRequestExecutor(private val session: 
 
     private fun executeUpdate(query: String, rawParameters: Array<Any?>): Any {
         val response = session.execute(SimpleStatement.newInstance(query, *rawParameters))
-        LOGGER.debug("Query has been executed successfully: $query " +
-                             "with parameters: ${rawParameters.contentToString()}")
+        log.debug {"Query has been executed successfully: $query with parameters: ${rawParameters.contentToString()}" }
         return response
     }
 

@@ -6,6 +6,10 @@ class IbmMqManagerDetails private constructor(val name: String,
                                               val port: Int,
                                               val userCredentials: IbmMqUserCredentials?) {
 
+    override fun toString(): String {
+        return "(name = '$name', channel = '$channel', host = '$host', port = $port, userCredentials $userCredentials)"
+    }
+
     class Builder {
 
         private var host: String? = null
@@ -42,5 +46,9 @@ class IbmMqManagerDetails private constructor(val name: String,
         }
     }
 
-    class IbmMqUserCredentials(val username: String, val password: String?)
+    class IbmMqUserCredentials(val username: String, val password: String?) {
+        override fun toString(): String {
+            return "(username = '$username', password = $password)"
+        }
+    }
 }

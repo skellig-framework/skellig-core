@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.cassandra
 
 import com.datastax.oss.driver.api.core.CqlSession
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 
 internal class CassandraUpdateRequestExecutor(session: CqlSession,
