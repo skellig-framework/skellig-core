@@ -21,7 +21,7 @@ open class IbmMqConsumableTestStepProcessor(
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
         testScenarioState.set(testStep.getId, testStep)
 
-        log.info(testStep, "Start to consume data of test step '${testStep.name}' from IBMMQ queues ${testStep.consumeFrom}")
+        log.info(testStep, "Start to consume messages for test step '${testStep.name}' from IBMMQ queues ${testStep.consumeFrom}")
         consume(testStep, testStep.consumeFrom, testStepRunResult)
 
         return testStepRunResult
@@ -44,7 +44,7 @@ open class IbmMqConsumableTestStepProcessor(
                     validate(testStep, receivedMessage)
                     respondTo?.let {
                         response?.let {
-                            log.info(testStep, "Respond to received data to IBMMQ queues '$respondTo'")
+                            log.debug(testStep) { "Respond to received data to IBMMQ queues '$respondTo'" }
                             send(response, respondTo[index])
                         }
                     }

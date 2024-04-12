@@ -1,9 +1,9 @@
 package org.skellig.teststep.processor.tcp
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.tcp.model.TcpDetails
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -17,11 +17,10 @@ import java.util.concurrent.Executors
 class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(TcpChannel::class.java)
-
         private const val DEFAULT_TIMEOUT = 30000
     }
 
+    private val log = logger<TcpChannel>()
     private var socket: Socket? = null
     private var inputStream: DataInputStream? = null
     private var outputStream: DataOutputStream? = null
@@ -29,6 +28,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
 
     private fun lazyConnectSocket() {
         if (socket == null) {
+            log.debug { "Start to connect to TCP channel '$tcpDetails'" }
             try {
                 socket = Socket()
                 socket!!.keepAlive = tcpDetails.isKeepAlive
@@ -38,7 +38,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
                 inputStream = DataInputStream(socket!!.getInputStream())
                 outputStream = DataOutputStream(socket!!.getOutputStream())
 
-                LOGGER.info("TCP channel has been connected on ${getRemoteAddressAsString()}")
+                log.debug { "Successfully connected to TCP channel '$tcpDetails'" }
             } catch (e: IOException) {
                 throw TestStepProcessingException(e.message, e)
             }
@@ -59,9 +59,9 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
                     it.flush()
                 }
             } catch (e: Exception) {
-                LOGGER.error("Failed to send request to ${getRemoteAddressAsString()}", e)
+                log.error("Failed to send a message to TCP address '${getRemoteAddressAsString()}'", e)
             }
-        } ?: error("Request was not sent to ${getRemoteAddressAsString()} as it must be String or Byte Array");
+        } ?: error("Request was not sent to '${getRemoteAddressAsString()}' as it must be String or Byte Array")
     }
 
     fun read(timeout: Int, bufferSize: Int): Any? {
@@ -70,7 +70,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
             initTimeout(timeout)
             readAllBytes(bufferSize)
         } catch (e: Exception) {
-            LOGGER.error("Failed to read response from ${getRemoteAddressAsString()}", e)
+            log.error("Failed to read response from '${getRemoteAddressAsString()}'", e)
             null
         }
     }
@@ -83,12 +83,16 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
             consumerThread = Executors.newCachedThreadPool()
         }
         lazyConnectSocket()
+        log.info("Start listener for TCP channel: $tcpDetails")
         consumerThread?.execute {
             initTimeout(timeout)
             while (!consumerThread!!.isShutdown) {
                 val bytes = readAllBytes(bufferSize)
                 responseHandler(bytes)
-                response?.let { send(it) }
+                response?.let {
+                    log.debug { "Reply with '$it' to TCP address '${getRemoteAddressAsString()}'" }
+                    send(it)
+                }
             }
         }
     }
@@ -102,13 +106,13 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         try {
             closeConsumer()
             if (socket?.isClosed == false) {
-                LOGGER.debug("Closing TCP channel ${getRemoteAddressAsString()}")
+                log.debug { "Closing TCP channel '$tcpDetails' with address '${getRemoteAddressAsString()}'" }
                 inputStream!!.close()
                 outputStream!!.close()
                 socket?.close()
             }
         } catch (e: Exception) {
-            LOGGER.warn("Could not safely close TCP channel ${getRemoteAddressAsString()}", e)
+            log.warn("Could not safely close TCP channel '$tcpDetails'. Reason: ${e.message}")
         }
     }
 
@@ -141,7 +145,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
 
         return if (response.isEmpty()) null
         else {
-            LOGGER.debug("Tcp channel ${getRemoteAddressAsString()} received ${response.size}")
+            log.debug { "Received ${response.size} bytes from address '${getRemoteAddressAsString()}'" }
             response
         }
     }

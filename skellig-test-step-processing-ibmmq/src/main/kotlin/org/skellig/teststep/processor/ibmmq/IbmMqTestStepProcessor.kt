@@ -10,9 +10,9 @@ import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 
 open class IbmMqTestStepProcessor protected constructor(
-    testScenarioState: TestScenarioState?,
+    testScenarioState: TestScenarioState,
     private val ibmMqChannels: Map<String, IbmMqChannel>
-) : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState!!) {
+) : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState) {
 
     private val log = logger<IbmMqTestStepProcessor>()
 
@@ -23,16 +23,16 @@ open class IbmMqTestStepProcessor protected constructor(
         val respondTo = testStep.respondTo
 
         sendTo?.let {
-            log.info(testStep, "Start to send data of test step '${testStep.name}' to IBMMQ queues $sendTo")
+            log.info(testStep, "Start to send message of test step '${testStep.name}' to IBMMQ queues $sendTo")
             send(testStep, it)
         }
 
         readFrom?.let {
-            log.info(testStep, "Start to read data of test step '${testStep.name}' fro IBMMQ queues $readFrom")
+            log.info(testStep, "Start to read message of test step '${testStep.name}' from IBMMQ queues $readFrom")
             response = read(testStep, readFrom)
             respondTo?.let {
                 if (isValid(testStep, response)) {
-                    log.info(testStep, "Respond to received data to IBMMQ queues '$respondTo'")
+                    log.info(testStep, "Respond to received message to IBMMQ queues '$respondTo'")
                     send(testStep, respondTo)
                 }
             }
@@ -44,11 +44,11 @@ open class IbmMqTestStepProcessor protected constructor(
         val tasks = channels.associateWith {
             {
                 val channel = ibmMqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
-                log.debug(testStep) { "Start to read data from IBMMQ queue '${it}'" }
-                val response = channel.read(testStep.timeout)
-                log.debug(testStep) { "Received data from IBMMQ queue '${it}'" }
+                log.debug(testStep) { "Start to read message from IBMMQ queue '$it'" }
+                val message = channel.read(testStep.timeout)
+                log.debug(testStep) { "Received message from IBMMQ queue '$it'" }
 
-                response
+                message
             }
         }
         return runTasksAsyncAndWait(
@@ -65,9 +65,9 @@ open class IbmMqTestStepProcessor protected constructor(
             val tasks = channels.associateWith {
                 {
                     val channel = ibmMqChannels[it] ?: error(getChannelNotExistErrorMessage(it))
-                    log.debug(testStep) { "Send data to IBMMQ queue '${it}'" }
+                    log.debug(testStep) { "Send message to IBMMQ queue '$it'" }
                     channel.send(testData)
-                    log.debug(testStep) { "Data has sent to IBMMQ queue '$it'" }
+                    log.debug(testStep) { "Message has sent to IBMMQ queue '$it'" }
                 }
             }
             runTasksAsyncAndWait(tasks)
@@ -81,9 +81,17 @@ open class IbmMqTestStepProcessor protected constructor(
         return IbmMqTestStep::class.java
     }
 
+    override fun close() {
+        log.info("Close IBMMQ Test Step Processor and all connections to queues")
+        ibmMqChannels.values.forEach { it.close() }
+    }
+
     class Builder : BaseIbmMqTestStepProcessorBuilder<IbmMqTestStep>() {
         override fun build(): TestStepProcessor<IbmMqTestStep> {
-            return IbmMqTestStepProcessor(testScenarioState, ibmMqChannels)
+            return IbmMqTestStepProcessor(
+                testScenarioState ?: error("Test Scenario State is mandatory for IbmMqTestStepProcessor"),
+                ibmMqChannels
+            )
         }
     }
 }

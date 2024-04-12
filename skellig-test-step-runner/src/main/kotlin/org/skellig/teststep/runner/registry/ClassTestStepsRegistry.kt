@@ -3,11 +3,11 @@ package org.skellig.teststep.runner.registry
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.*
 import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.exception.TestStepRegistryException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 internal class ClassTestStepsRegistry(
     packages: Collection<String>,
@@ -15,17 +15,17 @@ internal class ClassTestStepsRegistry(
 ) : TestStepRegistry {
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(ClassTestStepsRegistry::class.java)
-
         private val ID = AlphanumericValueExpression("id")
         private val TEST_STEP_NAME_PATTERN = AlphanumericValueExpression("testStepNamePattern")
         private val TEST_STEP_DEF_INSTANCE = AlphanumericValueExpression("testStepDefInstance")
         private val TEST_STEP_METHOD = AlphanumericValueExpression("testStepMethod")
     }
 
+    private val log = logger<ClassTestStepsRegistry>()
     private var testStepsPerClass: MutableCollection<Map<ValueExpression, ValueExpression?>> = mutableListOf()
 
     init {
+        log.debug {"Start to scan Test Step methods marked with ${TestStep::class.java.simpleName} in classes from packages $packages" }
         ClassGraph().acceptPackages(*packages.toTypedArray())
             .enableMethodInfo()
             .enableAnnotationInfo()
@@ -49,7 +49,7 @@ internal class ClassTestStepsRegistry(
         classInfo.methodInfo
             .filter { m -> m.hasAnnotation(TestStep::class.java) }
             .forEach { m ->
-                LOGGER.debug("Extract test step from method in '${m.name}' of '${classInfo.name}'")
+                log.debug { "Extract test step from method in '${m.name}' of '${classInfo.name}'" }
 
                 val instance = classInstanceRegistry.computeIfAbsent(classInfo.loadClass()) { type ->
                     try {

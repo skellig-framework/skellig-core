@@ -6,6 +6,9 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
 
 open class RmqConsumableTestStepProcessor(
@@ -13,11 +16,13 @@ open class RmqConsumableTestStepProcessor(
     testScenarioState: TestScenarioState?,
 ) : ValidatableTestStepProcessor<RmqConsumableTestStep>(testScenarioState!!) {
 
+    private val log = logger<RmqConsumableTestStepProcessor>()
 
     override fun process(testStep: RmqConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
         testScenarioState.set(testStep.getId, testStep)
 
+        log.info(testStep, "Start to consume messages for test step '${testStep.name}' from RMQ queues ${testStep.consumeFrom}")
         consume(testStep, testStep.consumeFrom, testStepRunResult)
 
         return testStepRunResult
@@ -33,6 +38,7 @@ open class RmqConsumableTestStepProcessor(
         channels.forEachIndexed { index, channelName ->
             val channel = rmqChannels[channelName] ?: error(getChannelNotExistErrorMessage(channelName))
             channel.consume(if (respondTo != null) null else response) { receivedMessage ->
+                log.debug(testStep) { "Received message from RMQ queue '${channelName}': $receivedMessage" }
                 var error: RuntimeException? = null
                 try {
                     validate(testStep, receivedMessage)
@@ -46,8 +52,10 @@ open class RmqConsumableTestStepProcessor(
                 }
 
                 respondTo?.let {
-                    if (isValid(testStep, response))
+                    response?.let {
+                        log.debug(testStep) { "Respond to received message to RMQ queues '$respondTo'" }
                         send(response, respondTo[index], testStep.routingKey, testStep.getAmqpProperties())
+                    }
                 }
             }
         }

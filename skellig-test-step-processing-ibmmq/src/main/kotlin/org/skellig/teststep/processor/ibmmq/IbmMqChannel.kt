@@ -52,7 +52,7 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
 
             getMessageBody(message)
         } catch (e: Exception) {
-            log.error("Failed to read a message from IBMMQ channel '${ibmMqQueueDetails.id}'", e)
+            log.error("Failed to read a message from IBMMQ queue '${ibmMqQueueDetails.id}'", e)
             null
         }
 

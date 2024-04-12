@@ -2,23 +2,17 @@ package org.skellig.teststep.processor.rmq
 
 import com.rabbitmq.client.*
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.rmq.model.RmqDetails
 import java.io.Closeable
 import java.io.IOException
 import java.nio.charset.StandardCharsets
-import com.rabbitmq.client.AMQP
-
-import com.rabbitmq.client.DefaultConsumer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 
 class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(RmqChannel::class.java)
-    }
-
+    private val log = logger<RmqChannel>()
     private var conn: Connection? = null
     private var channel: Channel? = null
 
@@ -34,9 +28,8 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
                 properties ?: MessageProperties.TEXT_PLAIN,
                 convertRequestToBytes(request)
             )
-            LOGGER.debug("Message sent to RMQ '$rmqDetails': $request")
         } catch (ex: Exception) {
-            LOGGER.error("Failed to send a message to RMQ '$rmqDetails'", ex)
+            log.error("Failed to send a message to RMQ '$rmqDetails'", ex)
         }
     }
 
@@ -46,25 +39,31 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
             val msg = channel!!.basicGet(rmqDetails.queue.name, true)
             if (msg != null) {
                 response = msg.body
-                LOGGER.debug("Received message from RMQ '{}': {}", rmqDetails, response)
 
                 acknowledgeResponse?.let { sendResponse(msg.props, it) }
                     ?: channel!!.basicAck(msg.envelope.deliveryTag, true)
             }
         } catch (e: Exception) {
-            LOGGER.error("Failed to read a message from RMQ '$rmqDetails'", e)
+            log.error("Failed to read a message from RMQ '$rmqDetails'", e)
         }
         return response
     }
 
     fun consume(acknowledgeResponse: Any?, callback: (message: Any) -> Unit): String? {
+        log.info("Start listener for RMQ queue: ${rmqDetails.queue.id}")
         return channel!!.basicConsume(
-            rmqDetails.queue.name, acknowledgeResponse == null,
+            rmqDetails.queue.name,
+            acknowledgeResponse == null,
             object : DefaultConsumer(channel) {
-                override fun handleDelivery(consumerTag: String, envelope: Envelope,
-                                            properties: AMQP.BasicProperties, body: ByteArray) {
+                override fun handleDelivery(
+                    consumerTag: String, envelope: Envelope,
+                    properties: AMQP.BasicProperties, body: ByteArray
+                ) {
                     callback(body)
-                    acknowledgeResponse?.let { sendResponse(properties, it) }
+                    acknowledgeResponse?.let {
+                        log.debug { "Reply with '$it' to RMQ queue '${rmqDetails.queue.id}'" }
+                        sendResponse(properties, it)
+                    }
                 }
             })
     }
@@ -77,9 +76,9 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
                 properties,
                 convertRequestToBytes(message)
             )
-            LOGGER.debug("Response has been sent to RMQ '${properties.replyTo}': $message")
+            log.debug { "Response has been sent to RMQ '${properties.replyTo}': $message" }
         } catch (e: IOException) {
-            LOGGER.error("Failed to respond with message to RMQ '${properties.replyTo}': $message", e)
+            log.error("Failed to reply to '${properties.replyTo}' with message: $message", e)
         }
     }
 
@@ -87,11 +86,12 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
         return if (request is ByteArray) {
             request
         } else {
-            request.toString().toByteArray(StandardCharsets.UTF_8)
+            request?.toString()?.toByteArray(StandardCharsets.UTF_8) ?: byteArrayOf()
         }
     }
 
     private fun createConnectionFactory(rmqDetails: RmqDetails): ConnectionFactory {
+        log.debug { "Start to connect to RMQ queue '$rmqDetails'" }
         val hostDetails = rmqDetails.hostDetails
         val factory = ConnectionFactory()
         factory.username = hostDetails.user
@@ -108,23 +108,27 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
             channel = conn!!.createChannel()
             val exchange = rmqDetails.exchange
             if (exchange.isCreateIfNew) {
-                channel!!.exchangeDeclare(exchange.name,
-                                          exchange.type,
-                                          exchange.isDurable,
-                                          exchange.isAutoDelete,
-                                          exchange.parameters)
+                channel!!.exchangeDeclare(
+                    exchange.name,
+                    exchange.type,
+                    exchange.isDurable,
+                    exchange.isAutoDelete,
+                    exchange.parameters
+                )
             }
             val queueDetails = rmqDetails.queue
             if (queueDetails.isCreateIfNew) {
-                channel!!.queueDeclare(queueDetails.name,
-                                       queueDetails.isDurable,
-                                       queueDetails.isExclusive,
-                                       queueDetails.isAutoDelete,
-                                       queueDetails.parameters)
+                channel!!.queueDeclare(
+                    queueDetails.name,
+                    queueDetails.isDurable,
+                    queueDetails.isExclusive,
+                    queueDetails.isAutoDelete,
+                    queueDetails.parameters
+                )
             }
             channel!!.queueBind(queueDetails.name, exchange.name, queueDetails.routingKey)
 
-            LOGGER.info("Connected to RMQ channel '$rmqDetails'")
+            log.debug { "Successfully connected to RMQ queue '$rmqDetails'" }
         } catch (e: Exception) {
             throw TestStepProcessingException(e.message, e)
         }
@@ -132,10 +136,11 @@ class RmqChannel(private val rmqDetails: RmqDetails) : Closeable {
 
     override fun close() {
         try {
+            log.debug { "Closing RMQ queue '$rmqDetails'" }
             channel!!.close()
             conn!!.close()
         } catch (e: Exception) {
-            LOGGER.warn("Could not manually close RMQ channel '$rmqDetails'. Reason: ${e.message}")
+            log.warn("Could not manually close RMQ channel '$rmqDetails'. Reason: ${e.message}")
         }
     }
 }

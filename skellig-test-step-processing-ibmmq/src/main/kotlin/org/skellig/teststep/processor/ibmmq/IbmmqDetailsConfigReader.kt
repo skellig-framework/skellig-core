@@ -19,7 +19,7 @@ internal class IbmmqDetailsConfigReader {
 
         var ibmmqDetails: Collection<IbmMqQueueDetails> = emptyList()
         if (config!!.hasPath(IBMMQ_CONFIG_KEYWORD)) {
-            log.info("IBMMQ configuration found in the Config file. Start to register its channels")
+            log.info("IBMMQ configuration found in the Config file. Start to register its queues")
 
             val anyRefList = config.getAnyRefList(IBMMQ_CONFIG_KEYWORD) as List<*>
             ibmmqDetails = anyRefList

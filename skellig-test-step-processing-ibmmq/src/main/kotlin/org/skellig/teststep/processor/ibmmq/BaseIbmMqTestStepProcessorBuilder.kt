@@ -15,7 +15,7 @@ abstract class BaseIbmMqTestStepProcessorBuilder<T : DefaultTestStep>
     private val ibmmqDetailsConfigReader = IbmmqDetailsConfigReader()
 
     fun ibmMqChannel(mqQueueDetails: IbmMqQueueDetails) = apply {
-        log.debug { "Register IBMMQ Channel '${mqQueueDetails.id}' with details: $mqQueueDetails" }
+        log.debug { "Register IBMMQ queue '${mqQueueDetails.id}' with details: $mqQueueDetails" }
         ibmMqChannels.putIfAbsent(mqQueueDetails.id, IbmMqChannel(mqQueueDetails))
     }
 

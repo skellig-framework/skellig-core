@@ -4,6 +4,7 @@ import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.common.IOUtils
 import net.schmizz.sshj.connection.channel.direct.Session
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.util.logger
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -13,12 +14,10 @@ class DefaultSshClient private constructor(private val host: String,
                                            private val password: String?,
                                            private val privateSshKeyPath: String?) : SSHClient() {
 
-    companion object {
-        private const val DEFAULT_CONNECT_TIMEOUT = 10000
-    }
+    private val logger = logger<DefaultSshClient>()
 
     init {
-        connectTimeout = DEFAULT_CONNECT_TIMEOUT
+        connectTimeout = 10000
     }
 
     private var sshSession: Session? = null
@@ -32,7 +31,7 @@ class DefaultSshClient private constructor(private val host: String,
 
             IOUtils.readFully(cmd.inputStream).use { outputStream -> response = outputStream.toString() }
         } catch (ex: Exception) {
-            //log later
+            logger.error("Failed to run the shell command '$command' in '$host:$port'", ex)
         }
         return response
     }
@@ -46,7 +45,7 @@ class DefaultSshClient private constructor(private val host: String,
             }
             super.close()
         } catch (ex: Exception) {
-            //log later
+            logger.error("Failed to close SSH Session of '$host:$port'", ex)
         }
     }
 
@@ -57,6 +56,7 @@ class DefaultSshClient private constructor(private val host: String,
                 if (!(isConnected && isAuthenticated)) {
                     createAndConnectSshClient()
                 }
+                logger.info("Start new SSH session for '$host:$port'")
                 sshSession = super.startSession()
                 sshSession?.allocateDefaultPTY()
             } catch (ex: Exception) {
@@ -67,10 +67,12 @@ class DefaultSshClient private constructor(private val host: String,
 
     @Throws(IOException::class)
     private fun createAndConnectSshClient() {
+        logger.info("Create new SSH connection to '$host:$port' with username '$user' and password '$password'")
         addHostKeyVerifier("")
         connect(host, port)
 
         privateSshKeyPath?.let {
+            logger.info("Authenticate SSH connection to '$host:$port' with private key '$privateSshKeyPath'")
             authPublickey(user, privateSshKeyPath)
         } ?: this.authPassword(user, password)
     }

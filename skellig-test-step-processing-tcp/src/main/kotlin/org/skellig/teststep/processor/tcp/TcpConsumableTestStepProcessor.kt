@@ -5,6 +5,9 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.tcp.model.TcpConsumableTestStep
 
 open class TcpConsumableTestStepProcessor(
@@ -12,11 +15,13 @@ open class TcpConsumableTestStepProcessor(
     testScenarioState: TestScenarioState?,
 ) : ValidatableTestStepProcessor<TcpConsumableTestStep>(testScenarioState!!) {
 
+    private val log = logger<TcpConsumableTestStepProcessor>()
 
     override fun process(testStep: TcpConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
         testScenarioState.set(testStep.getId, testStep)
 
+        log.info(testStep, "Start to consume messages for test step '${testStep.name}' from TCP channels ${testStep.consumeFrom}")
         consume(testStep, testStep.consumeFrom, testStepRunResult)
 
         return testStepRunResult
@@ -35,12 +40,14 @@ open class TcpConsumableTestStepProcessor(
                 if (respondTo != null) null else response,
                 testStep.timeout, testStep.readBufferSize
             ) { receivedMessage ->
+                log.debug(testStep) { "Received message from TCP channel '$id': $receivedMessage" }
                 var error: RuntimeException? = null
                 try {
                     validate(testStep, receivedMessage)
                     respondTo?.let {
                         response?.let {
-                            if (isValid(testStep, receivedMessage)) send(response, respondTo[index])
+                            log.debug(testStep) { "Respond to received message to TCP channels '$respondTo'" }
+                            send(response, respondTo[index])
                         }
                     }
                 } catch (ex: Exception) {
