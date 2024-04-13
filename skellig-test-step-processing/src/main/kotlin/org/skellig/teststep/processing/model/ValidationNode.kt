@@ -105,8 +105,8 @@ internal class PairValidationNode(
         if (actualEvaluated != expectedEvaluated)
             throw ValidationException(
                 "Validation failed for '$actual = $expected'!\n" +
-                        "Actual: $actualEvaluated\n" +
-                        "Expected: $expectedEvaluated\n"
+                        "Expected: $expectedEvaluated\n" +
+                        "Actual: $actualEvaluated"
             )
         else log.debug {
             "Verify that '$actual' is '$expected'\n" +
@@ -134,7 +134,7 @@ internal class SingleValidationNode(
                 throw ValidationException(
                     "Validation failed for '$expected'!\n" +
                             "Expected: $evaluated" +
-                            "Actual: false\n"
+                            "Actual: false"
                 )
             else log.debug {
                 "Verify that '$value' is '$expected'\n" +
@@ -145,8 +145,8 @@ internal class SingleValidationNode(
             if (evaluated != value) {
                 throw ValidationException(
                     "Validation failed!\n" +
-                            "Expected: $evaluated" +
-                            "Actual: $value\n"
+                            "Expected: $evaluated\n" +
+                            "Actual: $value"
                 )
             } else log.debug {
                 "Verify that '$value' is '$expected'\n" +
