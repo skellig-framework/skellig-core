@@ -9,6 +9,19 @@ import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
 
+/**
+ * TcpTestStepProcessor is a class that processes TCP test steps.
+ * It processes the test step this way:
+ * 1) Sends a message ([TcpTestStep.testData]) to [TcpTestStep.sendTo]
+ * 2) Reads a message ([TcpTestStep.testData]) from [TcpTestStep.readFrom]. If [TcpTestStep.respondTo] defined, then
+ * responds with message ([TcpTestStep.testData]) to [TcpTestStep.respondTo] if the received message is valid
+ * based on [TcpTestStep.validationDetails].
+ *
+ * All send, read and respond operations are performed in parallel per each channel but blocked until they are all finished.
+ *
+ * @param tcpChannels A map of TCP channels where the key is the channel ID and the value is the TCPChannel instance.
+ * @param testScenarioState The state of the test scenario.
+ */
 open class TcpTestStepProcessor(
     private val tcpChannels: Map<String, TcpChannel>,
     testScenarioState: TestScenarioState?

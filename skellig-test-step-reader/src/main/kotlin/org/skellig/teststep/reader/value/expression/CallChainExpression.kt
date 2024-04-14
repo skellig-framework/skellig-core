@@ -1,5 +1,14 @@
 package org.skellig.teststep.reader.value.expression
 
+/**
+ * Represents a call chain expression, which is a sequence of value expressions separated by dots,
+ * indicating a chain of method calls or property access operations, for example:
+ * ```
+ * ${keyA}.prices."book.name"
+ * ```
+ *
+ * @param callChain The list of value expressions in the call chain.
+ */
 class CallChainExpression(val callChain: List<ValueExpression?>) : ValueExpression {
 
     override fun evaluate(context: ValueExpressionContext): Any? {

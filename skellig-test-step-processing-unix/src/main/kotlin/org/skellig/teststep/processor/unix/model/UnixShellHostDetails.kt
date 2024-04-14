@@ -1,11 +1,25 @@
 package org.skellig.teststep.processor.unix.model
 
-class UnixShellHostDetails private constructor(val hostName: String,
-                                               val hostAddress: String,
-                                               val port: Int,
-                                               val sshKeyPath: String?,
-                                               val userName: String?,
-                                               val password: String?) {
+/**
+ * Class representing the details of a Unix shell host.
+ * You must provide either a password or path to ssh key in order to connect to [hostAddress].
+ *
+ * @param hostName the name of the host (used in test step file as a reference to the config).
+ * It may be any name (not necessary the same as [hostAddress]) as long as it's unique in the Skellig Config file.
+ * @param hostAddress the IP address or hostname of the host
+ * @param port the port number for SSH connection (default is 22)
+ * @param sshKeyPath the file path of the SSH key (optional). It's used if [password] is not provided.
+ * @param userName the username for SSH connection (optional)
+ * @param password the password for SSH connection (optional)
+ */
+class UnixShellHostDetails private constructor(
+    val hostName: String,
+    val hostAddress: String,
+    val port: Int,
+    val sshKeyPath: String?,
+    val userName: String?,
+    val password: String?
+) {
 
     class Builder {
 
@@ -41,8 +55,10 @@ class UnixShellHostDetails private constructor(val hostName: String,
         }
 
         fun build(): UnixShellHostDetails {
-            return UnixShellHostDetails(hostName ?: error("Host name must not be null. Please set any unique name"),
-                    hostAddress ?: error("Host address must not be null"), port, sshKeyPath, userName, password)
+            return UnixShellHostDetails(
+                hostName ?: error("Host name must not be null. Please set any unique name"),
+                hostAddress ?: error("Host address must not be null"), port, sshKeyPath, userName, password
+            )
         }
     }
 }

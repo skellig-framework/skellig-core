@@ -1,5 +1,10 @@
 package org.skellig.teststep.processing.model
 
+/**
+ * Represents the execution type of test step.
+ * This type is used by [TestStepProcessor][org.skellig.teststep.processing.processor.TestStepProcessor] to determine
+ * the way of running a test step: synchronously or asynchronously.
+ */
 enum class TestStepExecutionType {
     SYNC,
     ASYNC;

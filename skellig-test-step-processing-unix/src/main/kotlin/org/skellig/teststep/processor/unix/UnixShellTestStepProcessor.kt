@@ -12,6 +12,21 @@ import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.unix.model.UnixShellHostDetails
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 
+/**
+ * UnixShellTestStepProcessor is a class that processes test steps containing Unix Shell commands.
+ * The command runs in parallel on each host defined in [UnixShellTestStep]. After it gets result from all parallel runs,
+ * it's validated based on details provided in [UnixShellTestStep.validationDetails] and if not valid, it will retry the
+ * same processing with N-[attempts][UnixShellTestStep.attempts] (if more than 0).
+ *
+ * Each individual run of Unix Shell command per host, can be limited by a [timeout][UnixShellTestStep.timeout].
+ *
+ * The result of test step processing is a Map where key is a host name from [hosts][UnixShellTestStep.hosts] and value
+ * is a response from execution of the command. If only 1 host name is provided in [hosts][UnixShellTestStep.hosts], then
+ * the result is String - response from execution of the command.
+ *
+ * @param testScenarioState The test scenario state.
+ * @param hosts The map of host names and their corresponding [DefaultSshClient] instances.
+ */
 open class UnixShellTestStepProcessor(
     testScenarioState: TestScenarioState,
     private val hosts: Map<String, DefaultSshClient>
@@ -68,6 +83,13 @@ open class UnixShellTestStepProcessor(
         return UnixShellTestStep::class.java
     }
 
+    /**
+     * Closes the Unix Shell Test Step Processor and all SSH connections with hosts.
+     *
+     * This method iterates over the values of the 'hosts' map and calls the 'close()' method on each SSH connection.
+     *
+     * @see UnixShellTestStepProcessor
+     */
     override fun close() {
         log.info("Close Unix Shell Test Step Processor and all SSH connections with hosts")
         hosts.values.forEach { it.close() }
@@ -88,6 +110,13 @@ open class UnixShellTestStepProcessor(
                 .build()
         }
 
+        /**
+         * Applies the provided configuration to the current builder instance by reading the UnixShellHostDetails from the given Skellig Config
+         * and register a connection for each host.
+         *
+         * @param config The Skellig Config containing the configuration of Unix Shell Processor (see [UnixShellConfigReader]).
+         * @return The modified builder instance.
+         */
         fun withHost(config: Config) = apply {
             unixShellConfigReader.read(config).forEach { withHost(it) }
         }

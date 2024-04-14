@@ -1,11 +1,13 @@
 package org.skellig.teststep.reader.value.expression
 
-class BooleanValueExpression(value: String) : ValueExpression {
-    private val value: Boolean
 
-    init {
-        this.value = value.toBoolean()
-    }
+/**
+ * Represents a boolean value expression (true or false).
+ *
+ * @property value The boolean value of the expression.
+ */
+class BooleanValueExpression(value: String) : ValueExpression {
+    private val value: Boolean = value.toBoolean()
 
     override fun evaluate(context: ValueExpressionContext): Any = value
 

@@ -18,6 +18,12 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.stream.Collectors
 
+/**
+ * The TestStepsRegistry class is responsible for registering and retrieving test steps from Skellig Test Step files.
+ *
+ * @property testStepFileExtension The extension of the test step files.
+ * @property testStepReader The reader for reading test steps from a file.
+ */
 internal class TestStepsRegistry(
     private val testStepFileExtension: TestStepFileExtension,
     private val testStepReader: TestStepReader
@@ -61,6 +67,13 @@ internal class TestStepsRegistry(
             .map { readFileStrategy.getTestStepsFromUri(it) }
             .flatten()
             .toList()
+    }
+
+    /**
+     * Represents a reader for retrieving raw test steps from a URI.
+     */
+    private interface RawTestStepsReader {
+        fun getTestStepsFromUri(rootUri: URI): Collection<Map<ValueExpression, ValueExpression?>>
     }
 
     private inner class RawTestStepsReaderStrategy : RawTestStepsReader {

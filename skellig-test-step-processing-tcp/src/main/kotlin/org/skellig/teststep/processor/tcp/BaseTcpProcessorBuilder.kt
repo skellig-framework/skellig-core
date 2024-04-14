@@ -26,6 +26,11 @@ abstract class BaseTcpProcessorBuilder<T : BaseTcpTestStep> : BaseTestStepProces
         tcpChannels.putIfAbsent(tcpDetails.id, TcpChannel(tcpDetails))
     }
 
+    /**
+     * Registers TCP channels based on the provided Skellig [Config].
+     *
+     * @param config The configuration containing TCP channel details, registered for 'tcp.hosts' properties in [Config].
+     */
     fun tcpChannels(config: Config) = apply {
         if (config.hasPath(TCP_CONFIG_KEYWORD)) {
             log.info("TCP configuration found in the Config file. Start to register its channels")

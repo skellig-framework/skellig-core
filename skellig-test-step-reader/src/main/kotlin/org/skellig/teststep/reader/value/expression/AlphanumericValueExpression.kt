@@ -1,6 +1,15 @@
 package org.skellig.teststep.reader.value.expression
 
 
+/**
+ * Represents a value expression that evaluates alphanumeric values.
+ * There are 2 special values for AlphanumericValueExpression:
+ * 1) $ - indicates a reference to the current value, usually used in validation of a Test Step.
+ * 2) $result - indicating a reference to the result of a Test Step execution,
+ *    usually used in direct data extraction from the result to the scenario state.
+ *
+ * @property value The alphanumeric value.
+ */
 class AlphanumericValueExpression(private val value: String) : ValueExpression {
 
     companion object {

@@ -3,12 +3,14 @@ package org.skellig.teststep.reader
 import org.skellig.teststep.reader.value.expression.ValueExpression
 import java.io.InputStream
 
+/**
+ * Interface for reading test steps from a file content.
+ */
 interface TestStepReader {
 
     /**
-     * Read file of test steps and return a list of them,
-     * where each test step represents a raw format (Map) where key (or property)
-     * and value are [ValueExpression] which may be, for example:
+     * Read file of test steps and return a list of them, where each test step represents a raw format
+     * [Map] where key (or property) and value are [ValueExpression] which may be, for example:
      *
      *    1) simple value
      *    2) math or boolean expressions

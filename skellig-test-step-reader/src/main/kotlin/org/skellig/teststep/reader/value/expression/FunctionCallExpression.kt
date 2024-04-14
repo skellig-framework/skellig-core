@@ -1,5 +1,19 @@
 package org.skellig.teststep.reader.value.expression
 
+/**
+ * Represents a function call expression.
+ * The default syntax of the function expression is:
+ *```
+ * functionName([list of arguments])
+ *```
+ * for example:
+ * ```
+ * funcA(100, true)
+ * ```
+ *
+ * @property name The name of the function to be called.
+ * @property args The arguments to be passed to the function.
+ */
 class FunctionCallExpression(val name: String, val args: Array<ValueExpression?>) : ValueExpression {
 
     override fun evaluate(context: ValueExpressionContext): Any? {

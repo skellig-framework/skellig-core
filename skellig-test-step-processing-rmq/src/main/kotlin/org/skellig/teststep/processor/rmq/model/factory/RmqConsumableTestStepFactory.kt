@@ -6,6 +6,14 @@ import org.skellig.teststep.processor.rmq.model.BaseRmqTestStep
 import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * Factory class for creating [RmqConsumableTestStep] instances.
+ *
+ * @property testStepRegistry The test step registry for retrieving test steps.
+ * @property valueExpressionContextFactory The value expression context factory used to create the value expression contexts
+ * for evaluation of [ValueExpression].
+ * @property defaultTestDataConverter The name of default converter (function) for test data (optional).
+ */
 class RmqConsumableTestStepFactory(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory,

@@ -9,8 +9,16 @@ import org.skellig.teststep.reader.value.expression.*
 import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 
+/**
+ * This class is an implementation of the TestStepRegistry interface.
+ * It is responsible for scanning classes in the given packages and loading test step methods marked with the [@TestStep][TestStep] annotation.
+ * The loaded test steps are stored in the testStepsPerClass collection and can be retrieved using the getByName, getById, and getTestSteps methods.
+ *
+ * @property packagesToScan the packages to scan for test step methods
+ * @property classInstanceRegistry the registry for storing instances of test step classes
+ */
 internal class ClassTestStepsRegistry(
-    packages: Collection<String>,
+    packagesToScan: Collection<String>,
     private val classInstanceRegistry: MutableMap<Class<*>, Any>
 ) : TestStepRegistry {
 
@@ -25,8 +33,8 @@ internal class ClassTestStepsRegistry(
     private var testStepsPerClass: MutableCollection<Map<ValueExpression, ValueExpression?>> = mutableListOf()
 
     init {
-        log.debug {"Start to scan Test Step methods marked with ${TestStep::class.java.simpleName} in classes from packages $packages" }
-        ClassGraph().acceptPackages(*packages.toTypedArray())
+        log.debug {"Start to scan Test Step methods marked with ${TestStep::class.java.simpleName} in classes from packages $packagesToScan" }
+        ClassGraph().acceptPackages(*packagesToScan.toTypedArray())
             .enableMethodInfo()
             .enableAnnotationInfo()
             .scan()

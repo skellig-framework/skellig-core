@@ -5,7 +5,10 @@ import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStri
 /**
  * A basic test step with common properties and validation details for a result.
  *
- * @param id a unique id of the test step. It is usually used to store its data or a result in the scenario state.
+ * @param id a unique id of the test step. It is usually used to store its data or a result in the scenario state, or
+ * used to extend other test steps.
+ * The result of test step execution is stored in [TestScenarioState][org.skellig.teststep.processing.state.TestScenarioState]
+ * in the key "[id]_result". If id is null, then calling [DefaultTestStep.getId] returns [name] of the test step.
  * @param name name of the test step can be a simple string or a regex, including capture groups as parameters.
  * For example: `run (\\d+) request[s]?`
  * @param execution can be `async` or `sync` (default)
@@ -16,6 +19,7 @@ import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStri
  * @param values a list of values of the test step. Value of a variable can be referenced withing the test step
  * by using `${ }` notation.
  * @param testData can be any type of data representing a message or a request used when processing the test step.
+ * Usually the test data is converted (ex. using Skellig functions) to a format applicable for a particular Test Step Processor.
  * @param validationDetails defines a structure to validate the processing result of the test step or another test step.
  * @param scenarioStateUpdaters defines a structure to validate the processing result of the test step or another test step.
  */
@@ -32,7 +36,10 @@ open class DefaultTestStep(
     val scenarioStateUpdaters: List<ScenarioStateUpdater>? = null
 ) : TestStep {
 
-    val getId: String? = id
+    /**
+     * Get id of the test step. If not defined, then its name is returned as id.
+     */
+    val getId = id
         get() = field ?: name
 
     class DefaultTestStepBuilder : Builder<DefaultTestStep>() {

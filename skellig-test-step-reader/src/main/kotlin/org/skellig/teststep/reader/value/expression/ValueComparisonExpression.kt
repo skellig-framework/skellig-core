@@ -2,6 +2,13 @@ package org.skellig.teststep.reader.value.expression
 
 import java.math.BigDecimal
 
+/**
+ * Represents a value comparison expression that compares two value expressions using a specified operator
+ *
+ * @property operator The comparison operator (==, !=, >, >=, <, <=)
+ * @property leftExpression The left value expression to compare.
+ * @property rightExpression The right value expression to compare.
+ */
 class ValueComparisonExpression(
     private val operator: String,
     private val leftExpression: ValueExpression,

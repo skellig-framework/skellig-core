@@ -21,6 +21,7 @@ import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.reader.sts.StsReader
+import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 import org.skellig.teststep.runner.DefaultTestStepRunner
 import org.skellig.teststep.runner.TestStepRunner
@@ -29,16 +30,37 @@ import org.skellig.teststep.runner.model.TestStepFileExtension
 import org.skellig.teststep.runner.registry.CachedTestStepsRegistry
 import org.skellig.teststep.runner.registry.ClassTestStepsRegistry
 import org.skellig.teststep.runner.registry.TestStepsRegistry
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.net.URI
 import java.net.URISyntaxException
 import java.util.concurrent.ConcurrentHashMap
 
-
 private const val DEFAULT_PACKAGE_TO_SCAN = "org.skellig.teststep.processor"
 
+/**
+ * The `SkelligTestContext` class is a main entry-point of Skellig Framework which represents a context for keeping
+ * necessary interfaces to interact with Skellig Test Steps, such as:
+ * - [TestStepRunner]
+ * - [TestStepRegistry]
+ * - [TestScenarioState]
+ * - [ValueExpressionContextFactory]
+ * - [Config]
+ *
+ * The main interfaces which Skellig Context provides are [TestStepRunner] and [TestScenarioState] and the rest are available
+ * for convenience of working with other tasks, such as: reading properties of Skellig Config, taking out a raw Test Step
+ * from registry or evaluating [ValueExpression] in the code using [ValueExpressionContextFactory].
+ *
+ * When [SkelligTestContext.initialize] is called, it scans the Skellig [Config] file, paths to Test Step files and
+ * instantiate all required interfaces and Test Step processors, configured by implementing [TestStepProcessorConfig].
+ * After initialization is completed, it returns the [TestStepRunner] - the main interface to run test steps.
+ *
+ * SkelligTestContext implements [Closeable] interface and by calling method [Closeable.close], it will close all active
+ * Test Step processors and release all opened resources. By calling this method you won't be able to run test steps anymore
+ * as there will be no active Test Step processors to process them. You must call [SkelligTestContext.initialize] method
+ * again or create a new instance of SkelligTestContext.
+ *
+ * @constructor Creates a new instance of SkelligTestContext.
+ */
 open class SkelligTestContext : Closeable {
 
     private val log = logger<SkelligTestContext>()
@@ -108,7 +130,7 @@ open class SkelligTestContext : Closeable {
         { processorConfig ->
             try {
                 val testStepProcessorConfig = processorConfig as TestStepProcessorConfig<out TestStep>
-                log.debug {"Found a config for Test Step Processing: '${processorConfig.javaClass.name}'"}
+                log.debug { "Found a config for Test Step Processing: '${processorConfig.javaClass.name}'" }
                 val testStepProcessorConfigDetails = TestStepProcessorConfigDetails(
                     testScenarioState!!,
                     config!!,

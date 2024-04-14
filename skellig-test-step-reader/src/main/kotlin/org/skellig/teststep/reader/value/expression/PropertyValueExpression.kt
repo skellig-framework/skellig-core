@@ -1,5 +1,13 @@
 package org.skellig.teststep.reader.value.expression
 
+
+/**
+ * Represents a value expression that retrieves a property value from.
+ * The default syntax of the Property expression is `${property_key, default value}`
+ *
+ * @property key The key used to retrieve the property.
+ * @property defaultValue The default value to use if value of the property not found.
+ */
 class PropertyValueExpression(private val key: ValueExpression, private val defaultValue: ValueExpression? = null) : ValueExpression {
 
     constructor(key: String, defaultValue: ValueExpression? = null)

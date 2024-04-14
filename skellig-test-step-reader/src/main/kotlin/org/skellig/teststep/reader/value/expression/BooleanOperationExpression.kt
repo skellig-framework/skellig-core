@@ -1,5 +1,12 @@
 package org.skellig.teststep.reader.value.expression
 
+/**
+ * Represents a boolean operation expression.
+ *
+ * @property operator The operator of the boolean operation expression (&&, ||)
+ * @property leftExpression The left value expression.
+ * @property rightExpression The right value expression.
+ */
 class BooleanOperationExpression(
     private val operator: String,
     private val leftExpression: ValueExpression,
