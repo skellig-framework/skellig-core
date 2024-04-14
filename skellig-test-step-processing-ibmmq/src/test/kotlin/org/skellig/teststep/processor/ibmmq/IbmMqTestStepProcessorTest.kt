@@ -53,7 +53,7 @@ internal class IbmMqTestStepProcessorTest {
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
 
-        Assertions.assertEquals("Channel 'host3' was not registered in IBM MQ Test Step Processor", ref.get().message)
+        Assertions.assertEquals("IBMMQ queue 'host3' was not registered in IBM MQ Test Step Processor", ref.get().message)
     }
 
     @Nested

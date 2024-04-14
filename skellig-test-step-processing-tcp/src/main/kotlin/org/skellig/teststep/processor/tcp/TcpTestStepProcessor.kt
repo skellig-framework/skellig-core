@@ -46,8 +46,9 @@ open class TcpTestStepProcessor(
             {
                 val channel = tcpChannels[it] ?: error(getChannelNotExistErrorMessage(it))
                 log.debug(testStep) { "Start to read message from TCP channel '$it'" }
-                channel.read(testStep.timeout, testStep.readBufferSize)
+                val message = channel.read(testStep.timeout, testStep.readBufferSize)
                 log.debug(testStep) { "Received message from TCP channel '$it'" }
+                message
             }
         }
         return runTasksAsyncAndWait(
