@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference
 internal class IbmMqTestStepProcessorTest {
 
     class IbmMqTestStepProcessorUnderTest(
-        testScenarioState: TestScenarioState?,
+        testScenarioState: TestScenarioState,
         ibmMqChannels: Map<String, IbmMqChannel>
     ) : IbmMqTestStepProcessor(testScenarioState, ibmMqChannels)
 
@@ -38,7 +38,7 @@ internal class IbmMqTestStepProcessorTest {
 
         testScenarioState = mock()
 
-        processor = IbmMqTestStepProcessorUnderTest(testScenarioState,ibmMqChannels)
+        processor = IbmMqTestStepProcessorUnderTest(testScenarioState!!, ibmMqChannels)
     }
 
     @Test
@@ -53,7 +53,7 @@ internal class IbmMqTestStepProcessorTest {
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
 
-        Assertions.assertEquals("Channel 'host3' was not registered in IBM MQ Test Step Processor", ref.get().message)
+        Assertions.assertEquals("IBMMQ queue 'host3' was not registered in IBM MQ Test Step Processor", ref.get().message)
     }
 
     @Nested

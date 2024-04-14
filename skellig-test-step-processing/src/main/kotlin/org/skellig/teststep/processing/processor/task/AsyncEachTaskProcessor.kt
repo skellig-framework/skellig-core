@@ -1,17 +1,16 @@
 package org.skellig.teststep.processing.processor.task
 
 import kotlinx.coroutines.*
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 internal class AsyncEachTaskProcessor(
     private val taskProcessor: TaskProcessor,
 ) : TaskProcessor {
 
-    private val log: Logger = LoggerFactory.getLogger(AsyncEachTaskProcessor::class.java)
+    private val log = logger<AsyncEachTaskProcessor>()
 
     override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? AlphanumericValueExpression)?.let {

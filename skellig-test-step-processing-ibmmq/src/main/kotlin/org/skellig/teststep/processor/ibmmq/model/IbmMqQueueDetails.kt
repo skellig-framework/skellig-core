@@ -5,9 +5,15 @@ class IbmMqQueueDetails private constructor(
     val queueName: String,
     val ibmMqManagerDetails: IbmMqManagerDetails) {
 
+
+    override fun toString(): String {
+        return "(id = '$id', queue = '$queueName', IBMMQ Manager $ibmMqManagerDetails)"
+    }
+
     class Builder {
         private var id: String? = null
         private var queueName: String? = null
+
         private var ibmMqManagerDetails: IbmMqManagerDetails? = null
 
         fun id(id: String?) = apply {
@@ -21,7 +27,6 @@ class IbmMqQueueDetails private constructor(
         fun mqManagerDetails(ibmMqManagerDetails: IbmMqManagerDetails?) = apply {
             this.ibmMqManagerDetails = ibmMqManagerDetails
         }
-
         fun build(): IbmMqQueueDetails {
             return IbmMqQueueDetails(id ?: queueName ?: "",
                                      queueName ?: error("IBMMQ Queue name cannot be null"),

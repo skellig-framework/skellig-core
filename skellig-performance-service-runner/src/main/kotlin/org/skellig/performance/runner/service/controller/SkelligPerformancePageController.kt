@@ -28,7 +28,7 @@ class SkelligPerformancePageController {
         private val RUN = AlphanumericValueExpression("run")
         private val NAME = AlphanumericValueExpression("name")
 
-        val TIME_PATTERN = DateTimeFormatter.ofPattern("HH:mm:ss")
+        val TIME_PATTERN: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 
     @Autowired

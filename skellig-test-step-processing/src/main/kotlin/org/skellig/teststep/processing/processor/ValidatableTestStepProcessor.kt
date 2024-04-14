@@ -4,15 +4,16 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.state.TestScenarioState
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.skellig.teststep.processing.util.error
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logger
 
 /**
  * This is a basic processor for tests steps whose result can be validated.
  */
 abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(protected val testScenarioState: TestScenarioState) : TestStepProcessor<T> {
 
-    private val log: Logger = LoggerFactory.getLogger(ValidatableTestStepProcessor::class.java)
+    private val log = logger<ValidatableTestStepProcessor<*>>()
 
     /**
      * Validate test step actual result with expected one.
@@ -41,16 +42,13 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(protected val t
                 true
             } else actualResult != null
         } catch (ex: Exception) {
-            log.error("[${testStep.hashCode()}]: Validation failed: ${ex.message}")
+            log.error(testStep, "Validation failed: ${ex.message}")
             false
         }
 
     protected open fun validate(testStep: T, expectedResult: ValidationNode, actualResult: Any?) {
         try {
-            log.info(
-                "[${testStep.hashCode()}]: Start to validate the following: $expectedResult\n" +
-                        "with actual result: $actualResult\n"
-            )
+            log.info(testStep, "Start to validate the result of processed test step '${testStep.name}'")
             expectedResult.validate(actualResult)
         } catch (ex: ValidationException) {
             throw ValidationException(ex.message, testStep.getId)

@@ -86,9 +86,12 @@
                                             <#if hook.logRecords?? && hook.logRecords?has_content>
                                                 <div class="card card-body">
                                                     <pre class="small-text-panel">
-                                                        <#list hook.logRecords as log>
-                                                            <p>${log?html?trim}</p>
-                                                        </#list>
+                                                     <#compress>
+                                                         <#list hook.logRecords as log>
+                                                             ${log?html?trim}
+
+                                                         </#list>
+                                                     </#compress>
                                                     </pre>
                                                 </div>
                                             </#if>
@@ -190,9 +193,12 @@
                                                     <div class="collapse" id="beforeFeatureLogPanel${i}">
                                                         <div class="card card-body">
                                                                 <pre class="small-text-panel">
-                                                                    <#list step.logRecords as log>
-                                                                        <p>${log?html?trim}</p>
-                                                                    </#list>
+                                                            <#compress>
+                                                                <#list step.logRecords as log>
+                                                                    ${log?html?trim}
+                                                                </#list>
+                                                            </#compress>
+
                                                                 </pre>
                                                         </div>
                                                     </div>
@@ -239,15 +245,17 @@
                             </#if>
 
                             <div class="card-body">
-                                
+
                                 <#if tsrd.beforeHooksReportDetails?? && tsrd.beforeHooksReportDetails?has_content>
-                                    <div id="beforeScenarioHooksParentPanel${i}" role="tablist" aria-multiselectable="true"
+                                    <div id="beforeScenarioHooksParentPanel${i}" role="tablist"
+                                         aria-multiselectable="true"
                                          class="card-collapse">
                                         <div class="card card-plain">
                                             <div class="card-header" id="beforeScenarioHooksHeader${i}">
                                                 <a data-toggle="collapse"
                                                    href="#beforeScenarioHooksPanel${i}" aria-expanded="false"
-                                                   aria-controls="beforeScenarioHooksParentPanel${i}" data-parent="#beforeScenarioHooksParentPanel${i}"
+                                                   aria-controls="beforeScenarioHooksParentPanel${i}"
+                                                   data-parent="#beforeScenarioHooksParentPanel${i}"
                                                    class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
                                                     ${hooksTitle}
                                                     <div class="duration">
@@ -256,15 +264,19 @@
                                                 </a>
                                             </div>
 
-                                            <div id="beforeScenarioHooksPanel${i}" role="tablist" aria-multiselectable="true"
+                                            <div id="beforeScenarioHooksPanel${i}" role="tablist"
+                                                 aria-multiselectable="true"
                                                  class="collapse" aria-labelledby="beforeScenarioHooksHeader${i}">
                                                 <div class="card-body">
                                                     <#list tsrd.beforeHooksReportDetails as hook>
                                                         <#assign shi = hook?index />
                                                         <div class="card card-plain">
-                                                            <div class="card-header" id="beforeScenarioHookHeader${i}_${shi}">
-                                                                <a data-toggle="collapse" data-parent="#beforeScenarioHookPanel${i}_${shi}"
-                                                                   href="#beforeScenarioHookPanel${i}_${shi}" aria-expanded="false"
+                                                            <div class="card-header"
+                                                                 id="beforeScenarioHookHeader${i}_${shi}">
+                                                                <a data-toggle="collapse"
+                                                                   data-parent="#beforeScenarioHookPanel${i}_${shi}"
+                                                                   href="#beforeScenarioHookPanel${i}_${shi}"
+                                                                   aria-expanded="false"
                                                                    aria-controls="beforeScenarioHookPanel${i}_${shi}"
                                                                    class="collapsed <#if hook.passed>passed-color<#else>failed-color</#if>">
                                                                     ${hook.methodName}
@@ -273,7 +285,8 @@
                                                                     </div>
                                                                 </a>
                                                             </div>
-                                                            <div id="beforeScenarioHookPanel${i}_${shi}" class="collapse" role="tabpanel"
+                                                            <div id="beforeScenarioHookPanel${i}_${shi}"
+                                                                 class="collapse" role="tabpanel"
                                                                  aria-labelledby="beforeScenarioHookHeader${i}_${shi}">
                                                                 <#if !hook.passed>
                                                                     <div class="medium-text-panel failed-content-color">
@@ -284,9 +297,11 @@
                                                                 <#if hook.logRecords?? && hook.logRecords?has_content>
                                                                     <div class="card card-body">
                                                                         <pre class="small-text-panel">
-                                                                            <#list hook.logRecords as log>
-                                                                                <p>${log?html?trim}</p>
-                                                                            </#list>
+                                                                         <#compress>
+                                                                             <#list hook.logRecords as log>
+                                                                                 ${log?html?trim}
+                                                                             </#list>
+                                                                         </#compress>
                                                                         </pre>
                                                                     </div>
                                                                 </#if>
@@ -309,7 +324,8 @@
                                             <div class="card-header" id="beforeScenarioHeader${i}">
                                                 <a data-toggle="collapse"
                                                    href="#beforeScenarioPanel${i}" aria-expanded="false"
-                                                   aria-controls="beforeScenarioPanel${i}" data-parent="#beforeScenarioParentPanel${i}"
+                                                   aria-controls="beforeScenarioPanel${i}"
+                                                   data-parent="#beforeScenarioParentPanel${i}"
                                                    class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
                                                     ${beforeTitle}
                                                     <div class="duration">
@@ -324,9 +340,12 @@
                                                     <#list tsrd.beforeReportDetails as step>
                                                         <#assign bsi = step?index />
                                                         <div class="card card-plain">
-                                                            <div class="card-header" id="beforeScenarioStepHeader${i}_${bsi}">
-                                                                <a data-toggle="collapse" data-parent="#beforeScenarioStepPanel${i}_${bsi}"
-                                                                   href="#beforeScenarioStepPanel${i}_${bsi}" aria-expanded="false"
+                                                            <div class="card-header"
+                                                                 id="beforeScenarioStepHeader${i}_${bsi}">
+                                                                <a data-toggle="collapse"
+                                                                   data-parent="#beforeScenarioStepPanel${i}_${bsi}"
+                                                                   href="#beforeScenarioStepPanel${i}_${bsi}"
+                                                                   aria-expanded="false"
                                                                    aria-controls="beforeScenarioStepPanel${i}_${bsi}"
                                                                    class="collapsed <#if step.ignored>ignored-color<#elseif step.passed>passed-color<#else>failed-color</#if>">
                                                                     ${step.name}
@@ -335,7 +354,8 @@
                                                                     </div>
                                                                 </a>
                                                             </div>
-                                                            <div id="beforeScenarioStepPanel${i}_${bsi}" class="collapse" role="tabpanel"
+                                                            <div id="beforeScenarioStepPanel${i}_${bsi}"
+                                                                 class="collapse" role="tabpanel"
                                                                  aria-labelledby="beforeScenarioStepHeader${bsi}">
                                                                 <#assign parameters = step.parameters?html?trim />
                                                                 <#if parameters?? && parameters?has_content>
@@ -377,20 +397,25 @@
                                                                 </#if>
                                                                 <#if step.logRecords?? && step.logRecords?has_content>
                                                                     <div class="medium-text-panel">
-                                                                        <a data-toggle="collapse" data-parent="#beforeScenarioStepPanel${i}_${bsi}"
-                                                                           href="#beforeScenarioLogPanel${i}_${bsi}" aria-expanded="false"
+                                                                        <a data-toggle="collapse"
+                                                                           data-parent="#beforeScenarioStepPanel${i}_${bsi}"
+                                                                           href="#beforeScenarioLogPanel${i}_${bsi}"
+                                                                           aria-expanded="false"
                                                                            aria-controls="beforeScenarioLogPanel${i}_${bsi}"
                                                                            class="collapsed passed-color">
                                                                             ${logTitle}
                                                                         </a>
                                                                     </div>
                                                                     <div class="small-text-panel">
-                                                                        <div class="collapse" id="beforeScenarioLogPanel${i}_${bsi}">
+                                                                        <div class="collapse"
+                                                                             id="beforeScenarioLogPanel${i}_${bsi}">
                                                                             <div class="card card-body">
                                                                             <pre class="small-text-panel">
-                                                                                <#list step.logRecords as log>
-                                                                                    <p>${log?html?trim}</p>
-                                                                                </#list>
+                                                                             <#compress>
+                                                                                 <#list step.logRecords as log>
+                                                                                     ${log?html?trim}
+                                                                                 </#list>
+                                                                             </#compress>
                                                                             </pre>
                                                                             </div>
                                                                         </div>
@@ -475,9 +500,11 @@
                                                     <div class="collapse" id="logPanel${si}">
                                                         <div class="card card-body">
                                                                 <pre class="small-text-panel">
-                                                                    <#list step.logRecords as log>
-                                                                        <p>${log?html?trim}</p>
-                                                                    </#list>
+                                                                 <#compress>
+                                                                     <#list step.logRecords as log>
+                                                                         ${log?html?trim}
+                                                                     </#list>
+                                                                 </#compress>
                                                                 </pre>
                                                         </div>
                                                     </div>
@@ -494,7 +521,8 @@
                                             <div class="card-header" id="afterScenarioHeader${i}">
                                                 <a data-toggle="collapse"
                                                    href="#afterScenarioPanel${i}" aria-expanded="false"
-                                                   aria-controls="afterScenarioStepsPanel${i}" data-parent="#afterScenarioParentPanel${i}"
+                                                   aria-controls="afterScenarioStepsPanel${i}"
+                                                   data-parent="#afterScenarioParentPanel${i}"
                                                    class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
                                                     ${afterTitle}
                                                     <div class="duration">
@@ -509,9 +537,12 @@
                                                     <#list tsrd.afterReportDetails as step>
                                                         <#assign asi = step?index />
                                                         <div class="card card-plain">
-                                                            <div class="card-header" id="afterScenarioStepHeader${i}_${asi}">
-                                                                <a data-toggle="collapse" data-parent="#afterScenarioStepPanel${i}_${asi}"
-                                                                   href="#afterScenarioStepPanel${i}_${asi}" aria-expanded="false"
+                                                            <div class="card-header"
+                                                                 id="afterScenarioStepHeader${i}_${asi}">
+                                                                <a data-toggle="collapse"
+                                                                   data-parent="#afterScenarioStepPanel${i}_${asi}"
+                                                                   href="#afterScenarioStepPanel${i}_${asi}"
+                                                                   aria-expanded="false"
                                                                    aria-controls="afterScenarioStepPanel${i}_${asi}"
                                                                    class="collapsed <#if step.ignored>ignored-color<#elseif step.passed>passed-color<#else>failed-color</#if>">
                                                                     ${step.name}
@@ -520,7 +551,8 @@
                                                                     </div>
                                                                 </a>
                                                             </div>
-                                                            <div id="afterScenarioStepPanel${i}_${asi}" class="collapse" role="tabpanel"
+                                                            <div id="afterScenarioStepPanel${i}_${asi}" class="collapse"
+                                                                 role="tabpanel"
                                                                  aria-labelledby="afterScenarioStepHeader${asi}">
                                                                 <#assign parameters = step.parameters?html?trim />
                                                                 <#if parameters?? && parameters?has_content>
@@ -562,20 +594,25 @@
                                                                 </#if>
                                                                 <#if step.logRecords?? && step.logRecords?has_content>
                                                                     <div class="medium-text-panel">
-                                                                        <a data-toggle="collapse" data-parent="#afterScenarioStepPanel${i}_${asi}"
-                                                                           href="#afterScenarioLogPanel${i}_${asi}" aria-expanded="false"
+                                                                        <a data-toggle="collapse"
+                                                                           data-parent="#afterScenarioStepPanel${i}_${asi}"
+                                                                           href="#afterScenarioLogPanel${i}_${asi}"
+                                                                           aria-expanded="false"
                                                                            aria-controls="afterScenarioLogPanel${i}_${asi}"
                                                                            class="collapsed passed-color">
                                                                             ${logTitle}
                                                                         </a>
                                                                     </div>
                                                                     <div class="small-text-panel">
-                                                                        <div class="collapse" id="afterScenarioLogPanel${i}_${asi}">
+                                                                        <div class="collapse"
+                                                                             id="afterScenarioLogPanel${i}_${asi}">
                                                                             <div class="card card-body">
                                                                             <pre class="small-text-panel">
-                                                                                <#list step.logRecords as log>
-                                                                                    <p>${log?html?trim}</p>
-                                                                                </#list>
+                                                                             <#compress>
+                                                                                 <#list step.logRecords as log>
+                                                                                     ${log?html?trim}
+                                                                                 </#list>
+                                                                             </#compress>
                                                                             </pre>
                                                                             </div>
                                                                         </div>
@@ -594,13 +631,15 @@
                                 </#if>
 
                                 <#if tsrd.afterHooksReportDetails?? && tsrd.afterHooksReportDetails?has_content>
-                                    <div id="afterScenarioHooksParentPanel${i}" role="tablist" aria-multiselectable="true"
+                                    <div id="afterScenarioHooksParentPanel${i}" role="tablist"
+                                         aria-multiselectable="true"
                                          class="card-collapse">
                                         <div class="card card-plain">
                                             <div class="card-header" id="afterScenarioHooksHeader${i}">
                                                 <a data-toggle="collapse"
                                                    href="#afterScenarioHooksPanel${i}" aria-expanded="false"
-                                                   aria-controls="afterScenarioHooksPanel${i}" data-parent="#afterScenarioHooksParentPanel${i}"
+                                                   aria-controls="afterScenarioHooksPanel${i}"
+                                                   data-parent="#afterScenarioHooksParentPanel${i}"
                                                    class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
                                                     ${hooksTitle}
                                                     <div class="duration">
@@ -609,15 +648,19 @@
                                                 </a>
                                             </div>
 
-                                            <div id="afterScenarioHooksPanel${i}" role="tablist" aria-multiselectable="true"
+                                            <div id="afterScenarioHooksPanel${i}" role="tablist"
+                                                 aria-multiselectable="true"
                                                  class="collapse" aria-labelledby="afterScenarioHooksHeader${i}">
                                                 <div class="card-body">
                                                     <#list tsrd.afterHooksReportDetails as hook>
                                                         <#assign shi = hook?index />
                                                         <div class="card card-plain">
-                                                            <div class="card-header" id="afterScenarioHookHeader${i}_${shi}">
-                                                                <a data-toggle="collapse" data-parent="#afterScenarioHookPanel${i}_${shi}"
-                                                                   href="#afterScenarioHookPanel${i}_${shi}" aria-expanded="false"
+                                                            <div class="card-header"
+                                                                 id="afterScenarioHookHeader${i}_${shi}">
+                                                                <a data-toggle="collapse"
+                                                                   data-parent="#afterScenarioHookPanel${i}_${shi}"
+                                                                   href="#afterScenarioHookPanel${i}_${shi}"
+                                                                   aria-expanded="false"
                                                                    aria-controls="afterScenarioHookPanel${i}_${shi}"
                                                                    class="collapsed <#if hook.passed>passed-color<#else>failed-color</#if>">
                                                                     ${hook.methodName}
@@ -626,7 +669,8 @@
                                                                     </div>
                                                                 </a>
                                                             </div>
-                                                            <div id="afterScenarioHookPanel${i}_${shi}" class="collapse" role="tabpanel"
+                                                            <div id="afterScenarioHookPanel${i}_${shi}" class="collapse"
+                                                                 role="tabpanel"
                                                                  aria-labelledby="afterScenarioHookHeader${i}_${shi}">
                                                                 <#if !hook.passed>
                                                                     <div class="medium-text-panel failed-content-color">
@@ -637,9 +681,11 @@
                                                                 <#if hook.logRecords?? && hook.logRecords?has_content>
                                                                     <div class="card card-body">
                                                                         <pre class="small-text-panel">
-                                                                            <#list hook.logRecords as log>
-                                                                                <p>${log?html?trim}</p>
-                                                                            </#list>
+                                                                         <#compress>
+                                                                             <#list hook.logRecords as log>
+                                                                                 ${log?html?trim}
+                                                                             </#list>
+                                                                         </#compress>
                                                                         </pre>
                                                                     </div>
                                                                 </#if>
@@ -748,9 +794,11 @@
                                                     <div class="collapse" id="afterFeatureLogPanel${i}">
                                                         <div class="card card-body">
                                                                 <pre class="small-text-panel">
-                                                                    <#list step.logRecords as log>
-                                                                        <p>${log?html?trim}</p>
-                                                                    </#list>
+                                                                 <#compress>
+                                                                     <#list step.logRecords as log>
+                                                                         ${log?html?trim}
+                                                                     </#list>
+                                                                 </#compress>
                                                                 </pre>
                                                         </div>
                                                     </div>
@@ -812,9 +860,11 @@
                                             <#if hook.logRecords?? && hook.logRecords?has_content>
                                                 <div class="card card-body">
                                                     <pre class="small-text-panel">
-                                                        <#list hook.logRecords as log>
-                                                            <p>${log?html?trim}</p>
-                                                        </#list>
+                                                     <#compress>
+                                                         <#list hook.logRecords as log>
+                                                             ${log?html?trim}
+                                                         </#list>
+                                                     </#compress>
                                                     </pre>
                                                 </div>
                                             </#if>

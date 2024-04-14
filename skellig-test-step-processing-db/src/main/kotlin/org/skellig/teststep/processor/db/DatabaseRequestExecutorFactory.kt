@@ -3,16 +3,18 @@ package org.skellig.teststep.processor.db
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 
-open class DatabaseRequestExecutorFactory(select: DatabaseRequestExecutor,
-                                          insert: DatabaseRequestExecutor,
-                                          update: DatabaseRequestExecutor) {
+open class DatabaseRequestExecutorFactory(
+    select: DatabaseRequestExecutor,
+    insert: DatabaseRequestExecutor,
+    update: DatabaseRequestExecutor
+) {
 
     private var databaseRequestExecutors =
-            mutableMapOf(
-                    Pair("select", select),
-                    Pair("insert", insert),
-                    Pair("update", update)
-            )
+        mutableMapOf(
+            Pair("select", select),
+            Pair("insert", insert),
+            Pair("update", update)
+        )
 
     operator fun get(databaseRequest: DatabaseRequest): DatabaseRequestExecutor? {
         var command = databaseRequest.command
@@ -24,11 +26,15 @@ open class DatabaseRequestExecutorFactory(select: DatabaseRequestExecutor,
             databaseRequestExecutors[command]
         } else {
             if (isQueryOnlyProvided(databaseRequest, command)) {
-                throw TestStepProcessingException(java.lang.String.format("No database query executors found for query: '%s'." +
-                        " Supported types of queries: %s", databaseRequest.query, databaseRequestExecutors.keys))
+                throw TestStepProcessingException(
+                    "No database query executors found for query: '${databaseRequest.query}'." +
+                            " Supported types of queries: ${databaseRequestExecutors.keys}"
+                )
             } else {
-                throw TestStepProcessingException(String.format("No database query executors found for command: '%s'." +
-                        " Supported commands: %s", command, databaseRequestExecutors.keys))
+                throw TestStepProcessingException(
+                    "No database query executors found for command: '$command'." +
+                            " Supported commands: ${databaseRequestExecutors.keys}"
+                )
             }
         }
     }

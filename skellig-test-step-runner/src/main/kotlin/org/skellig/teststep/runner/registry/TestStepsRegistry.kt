@@ -2,6 +2,8 @@ package org.skellig.teststep.runner.registry
 
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.util.CachedPattern.Companion.compile
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.reader.exception.TestStepReadException
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
@@ -9,8 +11,6 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.skellig.teststep.runner.model.TestStepFileExtension
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.net.URI
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -26,9 +26,9 @@ internal class TestStepsRegistry(
     companion object {
         private val ID = AlphanumericValueExpression("id")
         private val NAME = AlphanumericValueExpression("name")
-        private val LOGGER: Logger = LoggerFactory.getLogger(TestStepsRegistry::class.java)
     }
 
+    private val log = logger<TestStepsRegistry>()
     private var testSteps: Collection<Map<ValueExpression, ValueExpression?>> = emptyList()
     private var testStepsGroupedById: Map<String, Map<ValueExpression, ValueExpression?>> = mutableMapOf()
 
@@ -54,7 +54,7 @@ internal class TestStepsRegistry(
         rawTestStep[NAME]?.evaluate(ValueExpressionContext.EMPTY)?.toString() ?: error("Attribute 'name' was not found in a raw Test Step $rawTestStep")
 
     private fun getTestStepsFromPath(rootPaths: Collection<URI>): Collection<Map<ValueExpression, ValueExpression?>> {
-        LOGGER.debug("Extracting test steps from files in '{}'", rootPaths)
+        log.debug { "Start to scan Test Steps in paths: '$rootPaths'" }
 
         val readFileStrategy = RawTestStepsReaderStrategy()
         return rootPaths
@@ -101,7 +101,7 @@ internal class TestStepsRegistry(
             }
 
         private fun readFileFromPath(it: Path): List<Map<ValueExpression, ValueExpression?>> {
-            LOGGER.debug("Extract test steps from file '{}'", it)
+            log.debug { "Extract test steps from file '$it'" }
             try {
                 return it.toUri().toURL().openStream().use { testStepReader.read(it) }
             } catch (ex: TestStepReadException) {

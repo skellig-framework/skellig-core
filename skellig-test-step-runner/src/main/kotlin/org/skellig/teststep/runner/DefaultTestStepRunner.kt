@@ -5,6 +5,8 @@ import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -12,9 +14,7 @@ internal class DefaultTestStepRunner private constructor(private val testStepPro
                                                          private val testStepsRegistry: TestStepRegistry,
                                                          private val testStepFactory: TestStepFactory<TestStep>) : TestStepRunner {
 
-    companion object {
-        private val LOGGER : Logger = LoggerFactory.getLogger(DefaultTestStepRunner::class.java)
-    }
+    private val log = logger<DefaultTestStepRunner>()
 
     override fun run(testStepName: String): TestStepRunResult {
         return run(testStepName, emptyMap<String, String>())
@@ -24,9 +24,9 @@ internal class DefaultTestStepRunner private constructor(private val testStepPro
         val rawTestStep = testStepsRegistry.getByName(testStepName)
 
         return rawTestStep?.let {
-            LOGGER.info("Run test step '$testStepName'")
-
             val testStep = testStepFactory.create(testStepName, rawTestStep, parameters)
+            log.info(testStep, "Run test step '$testStepName'")
+
             return testStepProcessor.process(testStep)
         } ?: error("Test step '${testStepName}' is not found in any of registered test data files in resources " +
                 "or classes of the classloader")

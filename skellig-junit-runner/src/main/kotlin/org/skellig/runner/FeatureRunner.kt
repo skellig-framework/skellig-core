@@ -76,10 +76,12 @@ open class FeatureRunner(
 
     override fun runChild(child: TestScenarioRunner, notifier: RunNotifier) {
         try {
+            log.info("Run Test Scenario '${child}'")
             child.run(notifier)
+            log.info("Test Scenario '${child}' has finished")
         } finally {
-            // clear the state after test scenario is finished
-            testScenarioState!!.clean()
+            log.info("Cleanup the Test Scenario State")
+            testScenarioState?.clean()
         }
     }
 

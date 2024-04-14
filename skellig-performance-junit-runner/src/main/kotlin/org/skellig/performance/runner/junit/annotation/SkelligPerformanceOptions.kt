@@ -4,8 +4,8 @@ import org.skellig.teststep.runner.context.SkelligTestContext
 import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
 
-@kotlin.annotation.Target(AnnotationTarget.TYPE)
-@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.TYPE)
+@Retention(AnnotationRetention.RUNTIME)
 @Inherited
 annotation class SkelligPerformanceOptions(val testName: String,
                                            val testSteps: Array<String>,

@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.unix
 
 import com.typesafe.config.Config
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.unix.model.UnixShellHostDetails
 import java.util.*
 
@@ -10,11 +11,14 @@ class UnixShellConfigReader {
         private const val UNIX_SHELL_CONFIG_KEYWORD = "unix-shell.hosts"
     }
 
+    private val log = logger<UnixShellConfigReader>()
+
     fun read(config: Config): Collection<UnixShellHostDetails> {
         Objects.requireNonNull(config, "Unix Shell config cannot be null")
 
         var unixShellDetails = emptyList<UnixShellHostDetails>()
         if (config.hasPath(UNIX_SHELL_CONFIG_KEYWORD)) {
+            log.info("UNIX Shell configuration found in the Config file. Start to register its hosts")
             val anyRefList = config.getAnyRefList(UNIX_SHELL_CONFIG_KEYWORD) as List<*>
             unixShellDetails = anyRefList
                 .mapNotNull { createUnixShellDetails(it) }

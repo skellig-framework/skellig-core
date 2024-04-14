@@ -6,6 +6,9 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.info
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.unix.model.UnixShellHostDetails
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 
@@ -13,6 +16,8 @@ open class UnixShellTestStepProcessor(
     testScenarioState: TestScenarioState,
     private val hosts: Map<String, DefaultSshClient>
 ) : BaseTestStepProcessor<UnixShellTestStep>(testScenarioState) {
+
+    private val log = logger<UnixShellTestStepProcessor>()
 
     override fun processTestStep(testStep: UnixShellTestStep): Any? {
         var hostsToUse: Collection<String>? = testStep.hosts
@@ -27,15 +32,16 @@ open class UnixShellTestStepProcessor(
             }
         }
 
-
-        val tasks = hostsToUse
-            .map {
-                it to {
-                    val sshClient = getSshClient(it)
-                    sshClient.runShellCommand(testStep.getCommand(), testStep.timeout)
-                }
+        log.info(testStep, "Start to run remote Unix Shell commands of test step '${testStep.name}' in $hosts hosts")
+        val tasks = hostsToUse.associateWith {
+            {
+                val sshClient = getSshClient(it)
+                log.debug(testStep) { "Run remote Unix Shell command: '${testStep.getCommand()}' on host '$it'" }
+                val response = sshClient.runShellCommand(testStep.getCommand(), testStep.timeout)
+                log.debug(testStep) { "Received response from Unix Shell command: '${testStep.getCommand()}' from host '$it': $response" }
+                response
             }
-            .toMap()
+        }
         val results = AsyncTaskUtils.runTasksAsyncAndWait(
             tasks,
             { isValid(testStep, it) },
@@ -60,6 +66,11 @@ open class UnixShellTestStepProcessor(
 
     override fun getTestStepClass(): Class<UnixShellTestStep> {
         return UnixShellTestStep::class.java
+    }
+
+    override fun close() {
+        log.info("Close Unix Shell Test Step Processor and all SSH connections with hosts")
+        hosts.values.forEach { it.close() }
     }
 
     class Builder : BaseTestStepProcessor.Builder<UnixShellTestStep>() {

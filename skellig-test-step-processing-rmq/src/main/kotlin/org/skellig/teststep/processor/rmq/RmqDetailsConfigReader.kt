@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.rmq
 
 import com.typesafe.config.Config
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.rmq.model.RmqDetails
 import org.skellig.teststep.processor.rmq.model.RmqExchangeDetails
 import org.skellig.teststep.processor.rmq.model.RmqHostDetails
@@ -13,11 +14,14 @@ internal class RmqDetailsConfigReader {
         private const val RMQ_CONFIG_KEYWORD = "rmq.hosts"
     }
 
+    private val log = logger<RmqDetailsConfigReader>()
+
     fun read(config: Config?): Collection<RmqDetails> {
         Objects.requireNonNull(config, "RMQ config cannot be null")
 
         var rmqDetails: Collection<RmqDetails> = emptyList()
         if (config!!.hasPath(RMQ_CONFIG_KEYWORD)) {
+            log.info("RMQ configuration found in the Config file. Start to register its queue")
             val anyRefList = config.getAnyRefList(RMQ_CONFIG_KEYWORD) as List<*>
             rmqDetails = anyRefList
                 .map { createRmqDetails(it) }

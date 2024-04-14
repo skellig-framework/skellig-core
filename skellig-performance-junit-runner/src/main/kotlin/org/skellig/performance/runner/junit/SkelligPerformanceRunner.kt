@@ -5,6 +5,7 @@ import org.junit.runner.Runner
 import org.junit.runner.notification.RunNotifier
 import org.skellig.performance.runner.junit.annotation.SkelligPerformanceOptions
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.performance.model.LongRunResponse
 import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.context.SkelligTestContext
@@ -14,9 +15,7 @@ import kotlin.reflect.full.createInstance
 
 open class SkelligPerformanceRunner(clazz: Class<*>) : Runner() {
 
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(SkelligPerformanceRunner::class.java)
-    }
+    private val log = logger<SkelligPerformanceRunner>()
 
     private val skelligTestContext: SkelligTestContext
     private val testStepRunner: TestStepRunner
@@ -24,6 +23,7 @@ open class SkelligPerformanceRunner(clazz: Class<*>) : Runner() {
     private val testName: String
 
     init {
+        log.info("Start to initialize Skellig Performance Runner")
         val skelligOptions = clazz.getDeclaredAnnotation(SkelligPerformanceOptions::class.java)
         testName = skelligOptions.testName
 
@@ -31,24 +31,27 @@ open class SkelligPerformanceRunner(clazz: Class<*>) : Runner() {
         skelligTestContext = skelligOptions.context.createInstance()
         testStepRunner = skelligTestContext.initialize(clazz.classLoader, skelligOptions.testSteps.toList(), config)
         testScenarioState = skelligTestContext.getTestScenarioState()
+
+        log.info("Skellig Performance Runner initialized successfully for test '${skelligOptions.testName}' " +
+                "and with test steps from '${skelligOptions.testSteps.joinToString(",")}'")
     }
 
     override fun getDescription(): Description = Description.createTestDescription(testName, testName)
 
     override fun run(notifier: RunNotifier?) {
-        LOGGER.info("Start to run the test '$testName'")
+        log.info("Start to run the test '$testName'")
 
         skelligTestContext.use {
             testStepRunner.run(testName)
                 .subscribe { _, r, _ ->
                     val longRunResult = r as LongRunResponse
                     longRunResult.getTimeSeries().forEach {
-                        LOGGER.info("Start writing time series data into file '${it.key}'")
+                        log.info("Start writing time series data into file '${it.key}'")
 
                         val file = File("${it.key}.sts")
                         it.value.consumeTimeSeriesRecords { record -> file.appendText(record) }
 
-                        LOGGER.info("File '${it.key}' with time series data has been created")
+                        log.info("File '${it.key}' with time series data has been created")
                     }
                 }
         }

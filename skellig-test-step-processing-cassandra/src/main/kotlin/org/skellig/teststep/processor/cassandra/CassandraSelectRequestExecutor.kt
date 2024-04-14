@@ -5,26 +5,26 @@ import com.datastax.oss.driver.api.core.cql.ResultSet
 import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.util.debug
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.db.model.DatabaseRequest
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.function.Consumer
 
 internal open class CassandraSelectRequestExecutor(private val session: CqlSession) : BaseCassandraRequestExecutor() {
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(CassandraSelectRequestExecutor::class.java)
-
         private const val COMPARATOR = "comparator"
     }
+
+    private val log = logger<CassandraSelectRequestExecutor>()
 
     override fun execute(databaseRequest: DatabaseRequest): Any {
         return try {
             if (databaseRequest.query != null) {
                 executeQuery(databaseRequest.query!!,
-                             databaseRequest.queryParameters
-                                 ?.map { getParameterValue(it) }
-                                 ?.toTypedArray() ?: emptyArray())
+                    databaseRequest.queryParameters
+                        ?.map { getParameterValue(it) }
+                        ?.toTypedArray() ?: emptyArray())
             } else {
                 val searchCriteria = databaseRequest.columnValuePairs ?: emptyMap()
                 val query = composeFindQuery(databaseRequest, searchCriteria)
@@ -37,9 +37,11 @@ internal open class CassandraSelectRequestExecutor(private val session: CqlSessi
 
     private fun executeQuery(query: String, queryParameters: Array<Any?>): Any {
         val response = extractFromResultSet(session.execute(SimpleStatement.newInstance(query, *queryParameters)))
-        LOGGER.debug("Query has been executed successfully: $query " +
-                             "with parameters: ${queryParameters.contentToString()} " +
-                             "and response: $response")
+        log.debug {
+            "Query has been executed successfully: $query " +
+                    "with parameters: ${queryParameters.contentToString()} " +
+                    "and response: $response"
+        }
         return response
     }
 

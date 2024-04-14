@@ -16,8 +16,8 @@ import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.runner.junit.report.CustomAppender
 import org.skellig.runner.junit.report.DefaultTestStepLogger
 import org.skellig.runner.junit.report.SkelligReportGenerator
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.context.SkelligTestContext
-import org.slf4j.LoggerFactory
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.full.createInstance
@@ -25,16 +25,19 @@ import kotlin.reflect.full.createInstance
 open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(SkelligRunner::class.java)
         private const val REPORT_LOG_ENABLED = "report.log.enabled"
     }
 
+    private val log = logger<SkelligRunner>()
     private val children = mutableListOf<FeatureRunner>()
     private var reportGenerator = SkelligReportGenerator()
     private var skelligTestContext: SkelligTestContext
 
     init {
+        log.info("Start to initialize Skellig Runner")
         val skelligOptions = clazz.getDeclaredAnnotation(SkelligOptions::class.java) as SkelligOptions
+
+        log.info("Reading the config from file '${skelligOptions.config}'")
         val config = getConfig(skelligOptions.config)
         val classInstanceRegistry = ConcurrentHashMap<Class<*>, Any>()
         skelligTestContext = skelligOptions.context.createInstance()
@@ -78,12 +81,14 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
                                 )
                             }
                             .toCollection(children)
-                        if (features.isEmpty()) throwNoFeaturesFoundError(featureResourcePath)
-                    } ?: throwNoFeaturesFoundError(featureResourcePath)
+                        if (features.isEmpty()) throwNoFeaturesFoundError(featureResourcePath, includeTags, excludeTags)
+                    } ?: throwNoFeaturesFoundError(featureResourcePath, includeTags, excludeTags)
                 } catch (e: Exception) {
                     throw FeatureRunnerException("Failed to read features from path: $featureResourcePath", e)
                 }
             }
+        log.info("Skellig Runner initialized successfully with test steps from '${skelligOptions.testSteps.joinToString(",")}' " +
+                "and features from '${skelligOptions.features.joinToString(",")}'")
     }
 
     override fun runChild(child: FeatureRunner, notifier: RunNotifier) {
@@ -94,6 +99,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         try {
             super.run(notifier)
         } finally {
+            log.info("Start to generate report out of the collected run results for all features")
             reportGenerator.generate(getChildren().map { it.getFeatureReportDetails() }.toList())
             skelligTestContext.close()
         }
@@ -125,8 +131,8 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         return config.replace("\${$key}", property)
     }
 
-    private fun throwNoFeaturesFoundError(featureResourcePath: String) {
-        error("No Skellig Feature files found in '$featureResourcePath'")
+    private fun throwNoFeaturesFoundError(featureResourcePath: String, includeTags: Set<String>, excludeTags: Set<String>) {
+        error("No features were found in '${featureResourcePath}' with the included tags '${includeTags}' and excluded tags '${excludeTags}')")
     }
 
     private val scheduler = object : RunnerScheduler {

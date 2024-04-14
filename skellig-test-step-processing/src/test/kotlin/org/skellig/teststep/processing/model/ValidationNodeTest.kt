@@ -32,8 +32,8 @@ class ValidationNodeTest {
         val ex = Assertions.assertThrows(ValidationException::class.java) { validator.validate("data") }
         assertEquals(
             "Validation failed!\n" +
-                    "Actual: data\n" +
-                    "Expected: null", ex.message
+                    "Expected: null\n" +
+                    "Actual: data", ex.message
         )
     }
 
@@ -48,8 +48,8 @@ class ValidationNodeTest {
 
         assertEquals(
             "Validation failed for 'f1 = null'!\n" +
-                    "Actual: v1\n" +
-                    "Expected: null", ex.message
+                    "Expected: null\n" +
+                    "Actual: v1", ex.message
         )
     }
 
@@ -67,8 +67,8 @@ class ValidationNodeTest {
 
         assertEquals(
             "Validation failed for 'f1.contains(\${k1}) = true'!\n" +
-                    "Actual: false\n" +
-                    "Expected: true", ex.message
+                    "Expected: true\n" +
+                    "Actual: false", ex.message
         )
     }
 
@@ -246,8 +246,8 @@ class ValidationNodeTest {
 
         assertEquals(
             "Validation failed for 'k1 = v2'!\n" +
-                    "Actual: v1\n" +
-                    "Expected: v2", e.message
+                    "Expected: v2\n" +
+                    "Actual: v1", e.message
         )
     }
 
@@ -389,8 +389,8 @@ class ValidationNodeTest {
 
         assertEquals(
             "Validation failed for 'k1 = v1'!\n" +
-                    "Actual: v3\n" +
-                    "Expected: v1", e.message
+                    "Expected: v1\n" +
+                    "Actual: v3", e.message
         )
     }
 
@@ -433,8 +433,8 @@ class ValidationNodeTest {
 
         assertEquals(
             "Validation failed for 'k1 = v1'!\n" +
-                    "Actual: v3\n" +
-                    "Expected: v1\n", e.message
+                    "Expected: v1\n" +
+                    "Actual: v3\n", e.message
         )
     }
 

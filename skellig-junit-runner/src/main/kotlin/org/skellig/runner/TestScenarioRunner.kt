@@ -9,7 +9,6 @@ import org.skellig.feature.hook.annotation.BeforeTestScenario
 import org.skellig.runner.junit.report.TestStepLogger
 import org.skellig.runner.junit.report.model.TestScenarioReportDetails
 import org.skellig.runner.junit.report.model.TestStepReportDetails
-import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.runner.TestStepRunner
 
 

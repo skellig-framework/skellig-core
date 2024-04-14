@@ -1,10 +1,9 @@
 package org.skellig.teststep.processing.processor.task
 
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.FunctionCallExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 internal open class ForeachTaskProcessor(
     protected val taskProcessor: TaskProcessor,
@@ -15,7 +14,7 @@ internal open class ForeachTaskProcessor(
         private const val IT = "it"
     }
 
-    private val log: Logger = LoggerFactory.getLogger(ForeachTaskProcessor::class.java)
+    private val log = logger<ForeachTaskProcessor>()
 
     override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? FunctionCallExpression)?.let {

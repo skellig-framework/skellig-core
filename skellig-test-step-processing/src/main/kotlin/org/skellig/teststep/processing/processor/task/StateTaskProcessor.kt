@@ -1,18 +1,17 @@
 package org.skellig.teststep.processing.processor.task
 
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 internal class StateTaskProcessor(
     private val state: TestScenarioState,
     private val valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
 ) : TaskProcessor {
 
-    private val log: Logger = LoggerFactory.getLogger(RunTestTaskProcessor::class.java)
+    private val log = logger<RunTestTaskProcessor>()
 
     override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         (task as? AlphanumericValueExpression)?.let {
