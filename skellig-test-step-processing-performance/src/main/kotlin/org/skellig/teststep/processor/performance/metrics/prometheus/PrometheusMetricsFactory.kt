@@ -13,6 +13,14 @@ import org.skellig.teststep.processor.performance.metrics.DurationPercentileMetr
 import org.skellig.teststep.processor.performance.metrics.MessageReceptionMetric
 import org.skellig.teststep.processor.performance.metrics.MetricsFactory
 
+/**
+ * The PrometheusMetricsFactory class is responsible for creating metrics using PrometheusMeterRegistry from Micrometer library.
+ * It implements the MetricsFactory interface and provides methods for creating DurationPercentileMetric and MessageReceptionMetric instances.
+ *
+ * @property meterRegistry The PrometheusMeterRegistry instance used for registering metrics
+ * @property durationMetricsCache A cache for storing DurationPercentileMetric instances created using the createDurationPercentileMetric method
+ * @property messageReceptionMetricsCache A cache for storing MessageReceptionMetric instances created using the createMessageReceptionMetric method
+ */
 class PrometheusMetricsFactory : MetricsFactory {
 
     companion object {

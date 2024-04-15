@@ -8,6 +8,17 @@ import org.skellig.teststep.processor.performance.model.LongRunResponse
 import org.skellig.teststep.processor.performance.model.PerformanceTestStep
 import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * Class responsible for processing performance test steps.
+ *
+ * The processing of [PerformanceTestStep] does the following steps:
+ * 1) Runs test steps defined in [PerformanceTestStep.testStepsToRunBefore]
+ * 2) Runs test steps defined in [PerformanceTestStep.run] in a separated task
+ * 3) Runs test steps defined in [PerformanceTestStep.testStepsToRunAfter]
+ * 4) Register time series for the whole run
+ * 5) Notifies the subscribers with [LongRunResponse]
+ *
+ */
 open class PerformanceTestStepProcessor protected constructor(
     private val testStepProcessor: TestStepProcessor<TestStep>,
     private val testStepRegistry: TestStepRegistry,
@@ -19,7 +30,7 @@ open class PerformanceTestStepProcessor protected constructor(
     override fun process(testStep: PerformanceTestStep): TestStepProcessor.TestStepRunResult {
         val response = LongRunResponse()
 
-        if(!isClosed.get()) {
+        if (!isClosed.get()) {
             runTestSteps(testStep.testStepsToRunBefore, response)
 
             val periodicRunner = PeriodicRunner(this, testStep, testStepRegistry, metricsFactory)
@@ -35,9 +46,11 @@ open class PerformanceTestStepProcessor protected constructor(
         return result
     }
 
-    private fun runTestSteps(testSteps: List<(testStepRegistry: TestStepRegistry) -> TestStep>,
-                             response: LongRunResponse) {
-        if(!isClosed.get()) {
+    private fun runTestSteps(
+        testSteps: List<(testStepRegistry: TestStepRegistry) -> TestStep>,
+        response: LongRunResponse
+    ) {
+        if (!isClosed.get()) {
             testSteps.forEach {
                 val testStep = it(testStepRegistry)
                 val timeSeries = metricsFactory.createMessageReceptionMetric(testStep.name)

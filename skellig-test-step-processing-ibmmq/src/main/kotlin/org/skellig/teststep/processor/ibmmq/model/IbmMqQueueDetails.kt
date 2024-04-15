@@ -1,10 +1,16 @@
 package org.skellig.teststep.processor.ibmmq.model
 
+/**
+ * Represents the details of an IBM MQ Queue.
+ *
+ * @property id The ID of the IBM MQ Queue.
+ * @property queueName The name of the IBM MQ Queue.
+ * @property ibmMqManagerDetails The details of the IBM MQ Manager associated with this queue.
+ */
 class IbmMqQueueDetails private constructor(
     val id: String,
     val queueName: String,
     val ibmMqManagerDetails: IbmMqManagerDetails) {
-
 
     override fun toString(): String {
         return "(id = '$id', queue = '$queueName', IBMMQ Manager $ibmMqManagerDetails)"

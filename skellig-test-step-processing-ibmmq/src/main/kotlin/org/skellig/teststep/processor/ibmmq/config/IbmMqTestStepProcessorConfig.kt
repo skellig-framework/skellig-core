@@ -13,6 +13,10 @@ import org.skellig.teststep.processor.ibmmq.model.factory.IbmMqTestStepFactory
 
 private const val IBMMQ_TEST_DATA_CONVERTER = "ibmmq.testData.converter"
 
+/**
+ * Represents the configuration for a IBMMQ test step processor.
+ * This class implements the TestStepProcessorConfig interface and provides a way to configure a IBMMQ test step processor.
+ */
 class IbmMqTestStepProcessorConfig : TestStepProcessorConfig<IbmMqTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<IbmMqTestStep>? {
         return if (details.config.hasPath("ibmmq"))
@@ -32,6 +36,10 @@ class IbmMqTestStepProcessorConfig : TestStepProcessorConfig<IbmMqTestStep> {
 
 }
 
+/**
+ * Represents the configuration for a IBMMQ test step processor.
+ * This class implements the TestStepProcessorConfig interface and provides a way to configure a Consumable IBMMQ test step processor.
+ */
 class IbmMqConsumableTestStepProcessorConfig : TestStepProcessorConfig<IbmMqConsumableTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<IbmMqConsumableTestStep>? {
         return if (details.config.hasPath("ibmmq"))

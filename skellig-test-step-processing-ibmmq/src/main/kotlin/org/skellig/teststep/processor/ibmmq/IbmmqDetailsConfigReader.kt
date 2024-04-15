@@ -6,6 +6,9 @@ import org.skellig.teststep.processor.ibmmq.model.IbmMqManagerDetails
 import org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails
 import java.util.*
 
+/**
+ * Reads IBMMQ configuration details from a Skellig [Config] object and provides methods to create [IbmMqQueueDetails] objects.
+ */
 internal class IbmmqDetailsConfigReader {
 
     companion object {
@@ -14,6 +17,13 @@ internal class IbmmqDetailsConfigReader {
 
     private val log = logger<IbmmqDetailsConfigReader>()
 
+    /**
+     * Reads the IBMMQ configuration of 'ibmmq.hosts' from the provided Skellig [Config] object and returns a collection of [IbmMqQueueDetails].
+     *
+     * @param config The Config object containing the IBMMQ configuration.
+     * @return A collection of IBMMQ details.
+     * @throws NullPointerException if [config] is null.
+     */
     fun read(config: Config?): Collection<IbmMqQueueDetails> {
         Objects.requireNonNull(config, "IBMMQ config cannot be null")
 

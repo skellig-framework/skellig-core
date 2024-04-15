@@ -12,6 +12,18 @@ import java.math.BigDecimal
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * A factory class that creates [PerformanceTestStep] objects, by reading the following properties of a raw test step:
+ * - rps - requests per seconds to make by running test steps defined in 'run'
+ * - timeToRun - total time to run the test step
+ * - before - a list of test steps to run before the main 'run'
+ * - after - a list of test steps to run after the main 'run'
+ * - run - a list of test steps to run to measure performance
+ *
+ * @property testStepFactory A factory object for creating [TestStep] objects.
+ * @property valueExpressionContextFactory A factory object for creating [ValueExpressionContext] objects used in evaluation
+ * of [ValueExpression].
+ */
 class PerformanceTestStepFactory(
     private val testStepFactory: TestStepFactory<TestStep>,
     valueExpressionContextFactory: ValueExpressionContextFactory

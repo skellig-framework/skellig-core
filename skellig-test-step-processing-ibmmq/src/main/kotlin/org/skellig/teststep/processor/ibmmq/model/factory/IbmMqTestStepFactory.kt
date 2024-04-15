@@ -6,6 +6,14 @@ import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * Factory class for creating IBMMQ test steps.
+ *
+ * @property testStepRegistry The test step registry used for storing and retrieving test steps.
+ * @property valueExpressionContextFactory The value expression context factory used to create the value expression contexts
+ * for evaluation of [ValueExpression].
+ * @property defaultTestDataConverter The name of default converter (function) for test data (optional).
+ */
 open class IbmMqTestStepFactory(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory,

@@ -19,6 +19,11 @@ abstract class BaseIbmMqTestStepProcessorBuilder<T : DefaultTestStep>
         ibmMqChannels.putIfAbsent(mqQueueDetails.id, IbmMqChannel(mqQueueDetails))
     }
 
+    /**
+     * Registers IBMMQ queues based on the provided Skellig [Config].
+     *
+     * @param config The configuration containing IBMMQ queue details, registered for 'ibmmq.hosts' properties in [Config].
+     */
     fun ibmMqChannels(config: Config?) = apply {
         ibmmqDetailsConfigReader.read(config).forEach { ibmMqChannel(it) }
     }

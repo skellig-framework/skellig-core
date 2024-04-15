@@ -10,6 +10,14 @@ import org.skellig.teststep.processor.performance.model.PerformanceTestStep
 import java.time.LocalDateTime
 import kotlin.math.ceil
 
+/**
+ * A class responsible for executing a performance test step periodically at a given rate.
+ *
+ * @property owner The instance of [PerformanceTestStepProcessor] that owns this runner.
+ * @property testStep The performance test step to run periodically.
+ * @property testStepRegistry The test step registry to retrieve test steps from.
+ * @property metricsFactory The factory for creating metrics.
+ */
 internal class PeriodicRunner(private val owner: PerformanceTestStepProcessor,
                               private val testStep: PerformanceTestStep,
                               private val testStepRegistry: TestStepRegistry,
@@ -24,6 +32,12 @@ internal class PeriodicRunner(private val owner: PerformanceTestStepProcessor,
     private val delayTimeNs = (SEC_IN_NANOSEC / ceil(testStep.rps.toDouble())).toLong()
     private val durationPercentileMetric = metricsFactory.createDurationPercentileMetric(testStep.name)
 
+    /**
+     * Runs the processing function for each test step until the finish time is reached.
+     *
+     * @param processingFunction the function responsible for processing a test step and returning a result
+     * @return the duration percentile metric
+     */
     fun run(processingFunction: (TestStep) -> TestStepProcessor.TestStepRunResult): TimeSeries {
         runBlocking {
             withContext(Dispatchers.Default) {

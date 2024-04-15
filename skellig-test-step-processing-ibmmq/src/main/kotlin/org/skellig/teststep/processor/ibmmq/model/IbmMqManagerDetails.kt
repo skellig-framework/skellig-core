@@ -1,5 +1,14 @@
 package org.skellig.teststep.processor.ibmmq.model
 
+/**
+ * Represents the details of an IBM MQ Manager.
+ *
+ * @property name The name of the IBM MQ Manager.
+ * @property channel The channel used to connect to the IBM MQ Manager.
+ * @property host The host address of the IBM MQ Manager.
+ * @property port The port number of the IBM MQ Manager.
+ * @property userCredentials The user credentials for authentication with the IBM MQ Manager. Can be null.
+ */
 class IbmMqManagerDetails private constructor(val name: String,
                                               val channel: String,
                                               val host: String,
