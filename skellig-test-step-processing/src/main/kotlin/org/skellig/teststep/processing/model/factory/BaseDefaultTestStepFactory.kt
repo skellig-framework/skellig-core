@@ -138,20 +138,23 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
      * Extracts values from the raw test step.
      *
      * @param rawTestStep The raw representation of the test step.
-     * @param parameters The parameters to be used in converting the values.
+     * @param parameters The parameters to be used in converting the values. It adds each value from 'values' to the parameters,
+     * as they may be used as reference in other value definition.
      * @return A map containing the extracted and converted values, or null if the raw test step does not contain any values.
      * @throws TestStepCreationException If the values of the test step do not have key-value pairs.
      */
     private fun extractValuesToParameters(
         rawTestStep: Map<ValueExpression, ValueExpression?>,
-        parameters: Map<String, Any?>
+        parameters: MutableMap<String, Any?>
     ): Map<String, Any?>? {
         val rawValues = rawTestStep[VALUES_KEYWORD]
         return rawValues?.let {
             (rawValues as? MapValueExpression)?.value?.mapNotNull { entry ->
                 val convertedKey = convertValue<String>(entry.key, parameters)
                 convertedKey?.let {
-                    convertedKey to convertValue<Any>(entry.value, parameters)
+                    val convertedVar = convertValue<Any>(entry.value, parameters)
+                    parameters[convertedKey] = convertedVar
+                    convertedKey to convertedVar
                 }
             }?.toMap() ?: throw TestStepCreationException("Values of the test step must have key-value pair (ex. type: Map<String, Any>)")
         }
