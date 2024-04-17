@@ -3,6 +3,11 @@ package org.skellig.teststep.processing.value.function
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.math.BigDecimal
 
+
+/**
+ * An abstract class representing a function executor which converts [Number] or [String] to another [Number],
+ * or [String] ot [Boolean].
+ */
 abstract class ToNumberFunctionExecutor : FunctionValueExecutor {
 
     protected fun getParseException(value: Any?): FunctionExecutionException =

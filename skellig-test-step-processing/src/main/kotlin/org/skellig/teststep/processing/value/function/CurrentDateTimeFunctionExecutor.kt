@@ -7,6 +7,14 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+/**
+ * Executes 'now' function to get the current date and time [LocalDateTime] with or without timezone.
+ * Supported arguments:
+ * - now() - returns [LocalDateTime.now]
+ * - now(`<timezone>`) - for example: now(UTC) returns [LocalDateTime.now] with UTC timezone
+ *
+ * If 'value' is provided, then throws [FunctionExecutionException] as this function is independent.
+ */
 class CurrentDateTimeFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {

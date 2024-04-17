@@ -8,6 +8,13 @@ import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
+
+/**
+ * Executes function 'xpath' on an XML 'value'.
+ *
+ * Supported args:
+ * - xpath(`<xpath>`) - where `<xpath>` is a xpath applied to the XML 'value' and returns the extracted data if found
+ */
 class XPathFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {

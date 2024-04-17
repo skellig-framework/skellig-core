@@ -10,6 +10,10 @@ import org.skellig.teststep.processor.http.model.factory.HttpTestStepFactory
 
 private const val HTTP_TEST_DATA_CONVERTER = "http.testData.converter"
 
+/**
+ * This class is responsible for configuring the HTTP test step processor.
+ * A default data converter (ex. 'toJson') can be defined in 'http.testData.converter' property of Skellig [Config].
+ */
 class HttpTestStepProcessorConfig : TestStepProcessorConfig<HttpTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<HttpTestStep>? {
         return if (details.config.hasPath("http"))

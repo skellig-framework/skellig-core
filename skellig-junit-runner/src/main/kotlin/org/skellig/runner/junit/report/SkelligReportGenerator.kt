@@ -14,6 +14,11 @@ import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 
 
+/**
+ * SkelligReportGenerator class is responsible for generating a Skellig Test Report in HTML files.
+ *
+ * @see ReportGenerator
+ */
 class SkelligReportGenerator : ReportGenerator {
 
     companion object {
@@ -31,6 +36,12 @@ class SkelligReportGenerator : ReportGenerator {
 
     private val log = logger<SkelligReportGenerator>()
 
+    /**
+     * Generates a Skellig Test Report with the provided test report details. If any exception occurs, it's ignored but logged
+     * as an error and report is not generated.
+     *
+     * @param testReportDetails The list of [FeatureReportDetails] containing the details of the test report.
+     */
     override fun generate(testReportDetails: List<FeatureReportDetails>?) {
         log.info("Start to generate a Skellig Test Report")
         try {

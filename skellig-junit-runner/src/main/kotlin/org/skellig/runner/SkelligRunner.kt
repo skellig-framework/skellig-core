@@ -22,6 +22,19 @@ import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.full.createInstance
 
+
+
+/**
+ * This is the main runner for executing [Skellig features][FeatureRunner] which is set from a test runner of your project.
+ * It initializes [SkelligTestContext], scans for test steps and features and make a list of [FeatureRunner]s to run.
+ *
+ * If there are no features found, then throws [FeatureRunnerException].
+ *
+ * At the end of the run of all features, it generates a Skellig Report and then closes [SkelligTestContext] and releases all resources.
+ *
+ * @property clazz The class that is being tested. Used to extract @[SkelligOptions] and classloader.
+ * @constructor Creates an instance of SkelligRunner.
+ */
 open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
 
     companion object {

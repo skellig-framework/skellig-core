@@ -8,6 +8,16 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalQuery
 
+/**
+ * Abstract class representing an executor for functions that convert a value to a [LocalDate] or [LocalDateTime].
+ *
+ * This class is an implementation of the [FunctionValueExecutor] interface and provides a common base for other
+ * function executors that convert values to dates or date-times. It handles the parsing of input values and the
+ * application of a date/time pattern and time zone.
+ *
+ * @throws FunctionExecutionException if the function does not accept the correct number of arguments, or if a
+ * mandatory date/time pattern is not provided
+ */
 abstract class BaseToDateTimeFunctionExecutor : FunctionValueExecutor {
 
     companion object {
@@ -44,6 +54,13 @@ abstract class BaseToDateTimeFunctionExecutor : FunctionValueExecutor {
         }
 }
 
+/**
+ * Executes the "toDateTime" function, which converts a value to a [LocalDateTime] object based on the provided date/time pattern and time zone.
+ *
+ * Supported args:
+ * - toDateTime(`<date time pattern>`) - for example: toDateTime("dd/MM/yyyy HH:mm")
+ * - toDateTime(`<date time pattern>`, `<time zone>`) - for example: toDateTime("dd/MM/yyyy HH:mm", "+15")
+ */
 class ToDateTimeFunctionExecutor : BaseToDateTimeFunctionExecutor() {
 
     override fun getTemporalQuery(): TemporalQuery<*> {
@@ -53,6 +70,12 @@ class ToDateTimeFunctionExecutor : BaseToDateTimeFunctionExecutor() {
     override fun getFunctionName(): String = "toDateTime"
 }
 
+/**
+ * Executes the "toDate" function, which converts a value to a [LocalDate] object based on the provided date pattern.
+ *
+ * Supported args:
+ * - toDate(`<date time pattern>`) - for example: toDateTime("dd/MM/yyyy HH:mm")
+ */
 class ToDateFunctionExecutor : BaseToDateTimeFunctionExecutor() {
 
     override fun getTemporalQuery(): TemporalQuery<*> {

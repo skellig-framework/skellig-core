@@ -3,6 +3,11 @@ package org.skellig.teststep.processor.cassandra
 import com.datastax.oss.driver.api.core.CqlSession
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 
+/**
+ * CassandraInsertRequestExecutor is a class that handles the execution of Cassandra insert requests.
+ *
+ * @param session The CqlSession session to Cassandra DB.
+ */
 internal open class CassandraInsertRequestExecutor(session: CqlSession) : BaseCassandraUpdateRequestExecutor(session) {
 
     override fun composeQuery(request: DatabaseRequest, columnValuePairs: Map<String, Any?>): String {

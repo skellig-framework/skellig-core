@@ -6,6 +6,11 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.*
 
+/**
+ * This class is responsible for executing JDBC select queries on the database.
+ *
+ * @property connection The JDBC connection used to connect to the database.
+ */
 internal class JdbcSelectRequestExecutor(private val connection: Connection?) : BaseJdbcRequestExecutor() {
 
     companion object {

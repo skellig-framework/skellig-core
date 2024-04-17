@@ -7,6 +7,12 @@ import org.skellig.teststep.processor.db.DatabaseTestStepProcessor
 import org.skellig.teststep.processor.jdbc.model.JdbcDetails
 import org.skellig.teststep.processor.jdbc.model.JdbcTestStep
 
+/**
+ * JdbcTestStepProcessor is a class that processes JDBC test steps for executing database requests.
+ *
+ * @property dbServers a map of database servers with their corresponding [JdbcRequestExecutor], where key is a server name from [servers][JdbcTestStep.servers]
+ * @property testScenarioState the [TestScenarioState] object that holds the state of the test scenario.
+ */
 open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, JdbcRequestExecutor>,
                                                        testScenarioState: TestScenarioState)
     : DatabaseTestStepProcessor<JdbcRequestExecutor, JdbcTestStep>(dbServers, testScenarioState) {

@@ -3,6 +3,13 @@ package org.skellig.teststep.processing.value.function
 import io.restassured.path.json.JsonPath
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
+/**
+ * Executes 'jsonPath' function for extracting values from JSON strings by path.
+ * It uses 'restassured-json' library and supports its json path syntax.
+ *
+ * Supported args:
+ * - jsonPath(`<path to value>`) - for example: jsonPath(a.b.c), jsonPath(account."phone.mob")
+ */
 class JsonPathFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {

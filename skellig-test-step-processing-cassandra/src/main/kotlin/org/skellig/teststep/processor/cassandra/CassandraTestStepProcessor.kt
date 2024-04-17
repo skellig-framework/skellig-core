@@ -7,6 +7,12 @@ import org.skellig.teststep.processor.cassandra.model.CassandraDetails
 import org.skellig.teststep.processor.cassandra.model.CassandraTestStep
 import org.skellig.teststep.processor.db.DatabaseTestStepProcessor
 
+/**
+ * CassandraTestStepProcessor is a class that processes Cassandra test steps for executing database requests.
+ *
+ * @property dbServers a map of database servers with their corresponding [CassandraRequestExecutor], where key is a server name from [servers][CassandraTestStep.servers]
+ * @property testScenarioState the [TestScenarioState] object that holds the state of the test scenario.
+ */
 open class CassandraTestStepProcessor protected constructor(dbServers: Map<String, CassandraRequestExecutor>,
                                                             testScenarioState: TestScenarioState)
     : DatabaseTestStepProcessor<CassandraRequestExecutor, CassandraTestStep>(dbServers, testScenarioState) {

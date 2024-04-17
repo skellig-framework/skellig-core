@@ -12,6 +12,14 @@ import org.skellig.runner.junit.report.model.TestStepReportDetails
 import org.skellig.teststep.runner.TestStepRunner
 
 
+/**
+ * The TestScenarioRunner class is responsible for running [test scenarios][TestScenarioRunner].
+ *
+ * @param testScenario The test scenario to be executed.
+ * @param testStepRunner The test step runner used to execute individual test steps.
+ * @param hookRunner The hook runner used to execute before and after hooks.
+ * @param testStepLogger The test step logger used to log test step execution details.
+ */
 open class TestScenarioRunner protected constructor(
     testScenario: TestScenario,
     testStepRunner: TestStepRunner?,

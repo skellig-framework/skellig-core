@@ -21,7 +21,9 @@ import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStri
  * @param testData can be any type of data representing a message or a request used when processing the test step.
  * Usually the test data is converted (ex. using Skellig functions) to a format applicable for a particular Test Step Processor.
  * @param validationDetails defines a structure to validate the processing result of the test step or another test step.
- * @param scenarioStateUpdaters defines a structure to validate the processing result of the test step or another test step.
+ * @param scenarioStateUpdaters defines a structure which represents a list of property - value pairs to be stored in
+ * [state][org.skellig.teststep.processing.state.TestScenarioState]. This structure is processed by [TestStepProcessor][org.skellig.teststep.processing.processor.TestStepProcessor]
+ * when its relevant [TestStep] is processed and received a result before validation.
  */
 open class DefaultTestStep(
     val id: String? = null,

@@ -1,5 +1,16 @@
 package org.skellig.runner.junit.report.model
 
+/**
+ * Represents the report details for a test scenario.
+ *
+ * @property name The name of the test scenario.
+ * @property tags The set of tags associated with the test scenario.
+ * @property beforeHooksReportDetails The list of report details for hooks run before the test scenario.
+ * @property afterHooksReportDetails The list of report details for hooks run after the test scenario.
+ * @property beforeReportDetails The list of report details for steps executed before the test scenario.
+ * @property afterReportDetails The list of report details for steps executed after the test scenario.
+ * @property testStepReportDetails The list of report details for test steps in the test scenario.
+ */
 class TestScenarioReportDetails(
     val name: String?,
     val tags: Set<String>?,

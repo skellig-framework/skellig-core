@@ -6,6 +6,18 @@ import org.skellig.teststep.processing.value.exception.FunctionExecutionExceptio
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 
+/**
+ * Function 'get' is responsible for retrieving values from the [TestScenarioState].
+ *
+ * Supported args:
+ * - get(`<key>`) - gets value from [TestScenarioState] by any key name
+ * - get(`<key>`, `<default>`) - same as above but if not found, sets the `<default>` value into [TestScenarioState] for the `<key>`
+ * and returns it back.
+ * - get(`<key>`, `<attempts>`, `<delay>`) - periodically tries to get value from [TestScenarioState] with max `<attempts>` and
+ * delaying next attempt on `<delay>` milliseconds.
+ *
+ * @property testScenarioState the [TestScenarioState] instance to retrieve values from
+ */
 class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : FunctionValueExecutor {
 
     companion object {

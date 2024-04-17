@@ -12,9 +12,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * Processes any test step by assigning an appropriate test step processor from its registry.
+ * Processes any test step by assigning an appropriate []test step processor][TestStepProcessor] from its registry.
  *
- * If no processor found for the provided test step, then it throws `TestStepProcessingException`
+ * If no processor found for the provided test step, then it throws `[TestStepProcessingException]`
  */
 class CompositeTestStepProcessor private constructor(
     testScenarioState: TestScenarioState,

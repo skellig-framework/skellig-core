@@ -1,5 +1,12 @@
 package org.skellig.teststep.processor.http.model
 
+/**
+ * HttpResponse represents an HTTP response received from a server.
+ *
+ * @property statusCode The HTTP status code of the response.
+ * @property headers The headers of the response represented as a map.
+ * @property body The body of the response represented as a string.
+ */
 class HttpResponse(val statusCode: Int,
                    val headers: Map<String, String>,
                    val body: String?) {

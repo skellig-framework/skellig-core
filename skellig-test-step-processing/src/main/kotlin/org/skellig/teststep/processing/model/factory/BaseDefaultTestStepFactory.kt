@@ -8,10 +8,10 @@ import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 /**
- * Abstract class for creating test step factories. Subclasses must provide implementation for creating
- * specific test steps.
+ * Abstract class for creating test step factories for test steps and must provide implementation for creating
+ * specific test steps of [DefaultTestStep].
  *
- * @param T the type of DefaultTestStep that the factory creates
+ * @param T the type of [DefaultTestStep] that the factory creates
  * @property testStepRegistry the registry of test steps
  * @property valueExpressionContextFactory the factory for creating value expression contexts for evaluation of [ValueExpression]
  * @property defaultTestDataConverter the name of default converter (function) for test data (optional)

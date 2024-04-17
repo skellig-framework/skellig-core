@@ -3,7 +3,14 @@ package org.skellig.teststep.processing.value.function.collection
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 
-class AddFunctionExecutor  : FunctionValueExecutor {
+/**
+ * This function adds elements to a [Collection] or [Map], or throws [FunctionExecutionException] otherwise.
+ * The result is a new [Collection] or [Map] which has the values from arguments.
+ *
+ * Supported args:
+ * - add(`<value>`) - where `<value>` can be any type of value
+ */
+class AddFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         return if (args.isNotEmpty()) {

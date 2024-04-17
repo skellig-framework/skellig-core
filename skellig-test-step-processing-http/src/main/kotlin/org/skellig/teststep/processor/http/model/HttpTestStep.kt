@@ -7,6 +7,28 @@ import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.util.PropertyFormatUtils
 import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.createIndent
 
+/**
+ * Represents an HTTP test step used to execute HTTP requests from [HttpTestStepProcessor][org.skellig.teststep.processor.http.HttpTestStepProcessor].
+ *
+ * @param id The unique identifier of the test step
+ * @param name The name of the test step
+ * @param execution The type of test step execution
+ * @param timeout The timeout duration for the test step
+ * @param delay The delay duration before executing the test step
+ * @param attempts The number of attempts to execute the test step
+ * @param values The map of variable names and their corresponding values
+ * @param testData The test data for the test step
+ * @param validationDetails The validation details for the test step
+ * @param scenarioStateUpdaters The list of scenario state updaters for the test step
+ * @param url The URL for the HTTP request
+ * @param services The collection of services for the test step
+ * @param method The HTTP method to be used for the request
+ * @param username The username for authentication
+ * @param password The password for authentication
+ * @param headers The map of request headers
+ * @param query The map of query parameters
+ * @param form The map of form data
+ */
 class HttpTestStep(
     id: String?,
     name: String,

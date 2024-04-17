@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.RecognitionException
 import org.antlr.v4.runtime.Recognizer
 import org.skellig.teststep.reader.exception.TestStepReadException
 
-class SkelligTestStepParserErrorListener : BaseErrorListener() {
+internal class SkelligTestStepParserErrorListener : BaseErrorListener() {
     companion object {
         var INSTANCE = SkelligTestStepParserErrorListener()
     }

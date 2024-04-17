@@ -2,6 +2,12 @@ package org.skellig.teststep.processing.value.function
 
 import java.nio.charset.Charset
 
+/**
+ * Executes the toString function on a given value.
+ *
+ * Supported args:
+ * - toString()
+ */
 class ToStringFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {

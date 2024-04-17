@@ -193,22 +193,35 @@ open class SkelligTestContext : Closeable {
             ?.toSet() ?: emptySet()
     }
 
-    protected open fun createConfig(classLoader: ClassLoader, configPath: String?): Config? {
-        return configPath?.let {
-            if (classLoader.getResource(configPath) == null) {
-                throw IllegalArgumentException("Path to config file $configPath does not exist")
-            }
-            ConfigFactory.load(classLoader, configPath)
-        }
-    }
-
+    /**
+     * Returns the configured instance of [TestScenarioState]. This instance is used across all test scenarios until the
+     * [SkelligTestContext] is [closed][SkelligTestContext.close].
+     * If the testScenarioState is null, it throws an error stating that the TestScenarioState must be initialized first.
+     * Make sure to call the 'initialize' method before calling this method.
+     *
+     * @return the current state of the test scenario
+     * @throws IllegalStateException if the TestScenarioState is not initialized
+     */
     fun getTestScenarioState(): TestScenarioState =
         testScenarioState ?: error("TestScenarioState must be initialized first. Did you forget to call 'initialize'?")
 
+    /**
+     * Returns the configured instance of [ValueExpressionContextFactory].
+     *
+     * @throws IllegalStateException if [ValueExpressionContextFactory] is not initialized.
+     * Make sure to call the 'initialize' method before calling this method.
+     */
     fun getValueExpressionContextFactory(): ValueExpressionContextFactory =
         valueExpressionContextFactory
             ?: error("ValueExpressionContextFactory must be initialized first. Did you forget to call 'initialize'?")
 
+    /**
+     * Returns the configured instance of [TestStepRegistry].
+     *
+     * @return the instance of [TestStepRegistry]
+     * @throws IllegalStateException if [TestStepRegistry] is not initialized.
+     *         Make sure to call the 'initialize' method before calling this method.
+     */
     fun getTestStepRegistry(): TestStepRegistry =
         testStepsRegistry
             ?: error("TestStepRegistry must be initialized first. Did you forget to call 'initialize'?")
@@ -237,15 +250,41 @@ open class SkelligTestContext : Closeable {
             .build()
     }
 
+    protected open fun createConfig(classLoader: ClassLoader, configPath: String?): Config? {
+        return configPath?.let {
+            if (classLoader.getResource(configPath) == null) {
+                throw IllegalArgumentException("Path to config file $configPath does not exist")
+            }
+            ConfigFactory.load(classLoader, configPath)
+        }
+    }
+
+    /**
+     * Creates a new instance of [TestStepReader]. Unless overridden, by default it's [StsReader].
+     */
     protected open fun createTestStepReader(): TestStepReader = StsReader()
 
+    /**
+     * Creates a new instance of [TestScenarioState]. Unless overridden, by default it's [DefaultTestScenarioState].
+     */
     protected open fun createTestScenarioState(): TestScenarioState {
         return DefaultTestScenarioState()
     }
 
+    /**
+     * Retrieves property values from the Skellig [Config] based on the provided key.
+     *
+     * This function takes a key as a parameter and returns the associated value from the [Config]. If the key is not found, it returns null.
+     *
+     * @param key The key used to retrieve the property value from the config.
+     * @return The property value associated with the provided key, or null if the key is not found.
+     */
     protected open val propertyExtractorFunction: ((String) -> Any?)?
         get() = { key -> if (config?.hasPath(key) == true) config?.getAnyRef(key) else null }
 
+    /**
+     * Returns Skellig [Config] with all configurations and properties.
+     */
     var config: Config? = null
         get() = field
         private set
@@ -262,22 +301,23 @@ open class SkelligTestContext : Closeable {
         configClass: Class<C>,
         converter: (config: C) -> T
     ): Collection<T> {
-        val functionExecutors = ClassGraph().acceptPackages(*packagesToScan.toTypedArray())
+        return ClassGraph().acceptPackages(*packagesToScan.toTypedArray())
             .enableClassInfo()
             .scan()
             .use {
                 it.allClasses
                     .filter { c -> c.implementsInterface(configClass) }
                     .map { c ->
-                        val functionConfigClass = c.loadClass(configClass)
-                        val functionsConfig = functionConfigClass.getDeclaredConstructor().newInstance()
-                        converter(functionsConfig)
+                        val loadedConfigClass = c.loadClass(configClass)
+                        converter(loadedConfigClass.getDeclaredConstructor().newInstance())
                     }
                     .toList()
             }
-        return functionExecutors
     }
 
+    /**
+     * Closes the Skellig Context by shutting down all registered test step processors.
+     */
     override fun close() {
         rootTestStepProcessor?.let {
             log.info("Shutting down the Skellig Context")

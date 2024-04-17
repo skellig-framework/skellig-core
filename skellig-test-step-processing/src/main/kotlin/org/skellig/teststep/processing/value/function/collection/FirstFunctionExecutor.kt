@@ -3,7 +3,12 @@ package org.skellig.teststep.processing.value.function.collection
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 
-
+/**
+ * Executes the 'first' function on a [Collection] or [Array] which returns first item.
+ *
+ * Supported args:
+ * - first()
+ */
 class FirstFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {

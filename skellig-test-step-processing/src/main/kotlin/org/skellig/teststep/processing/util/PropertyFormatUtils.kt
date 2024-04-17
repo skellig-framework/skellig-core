@@ -3,6 +3,10 @@ package org.skellig.teststep.processing.util
 import org.skellig.teststep.reader.value.expression.ListValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 
+/**
+ * Utility class for property formatting operations.
+ * They can help to produce a formatted text for a Skellig report after all tests finished execution.
+ */
 sealed class PropertyFormatUtils {
 
     companion object {

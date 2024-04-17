@@ -3,6 +3,9 @@ package org.skellig.teststep.processing.value.function
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
+/**
+ * Executes the 'jsonToMap' function which converts JSON String to [Map]
+ */
 class JsonToMapTestStepFunctionExecutor : JsonToTestStepFunctionExecutor() {
 
     override fun getToClassConversion(): Class<*> = Map::class.java
@@ -12,6 +15,9 @@ class JsonToMapTestStepFunctionExecutor : JsonToTestStepFunctionExecutor() {
     override fun getFunctionName(): String = "jsonToMap"
 }
 
+/**
+ * Executes the 'jsonToMap' function which converts JSON String to [List] of [Map]
+ */
 class JsonToListTestStepFunctionExecutor : JsonToTestStepFunctionExecutor() {
 
     override fun getToClassConversion(): Class<*> = List::class.java

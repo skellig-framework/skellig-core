@@ -1,5 +1,13 @@
 package org.skellig.runner.junit.report.model
 
+/**
+ * Represents report details for hooks run before or after test scenario or feature.
+ *
+ * @property methodName The name of the method.
+ * @property errorLog The error log.
+ * @property logRecords The list of log records.
+ * @property duration The duration of the hook.
+ */
 class HookReportDetails(
     val methodName: String?,
     val errorLog: String?,

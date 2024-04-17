@@ -8,6 +8,14 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 
+
+/**
+ * Appends log events to a [TestStepLogger] which are used in report generation.
+ *
+ * @see [ReportGenerator]
+ *
+ * @property testStepLogger The TestStepLogger instance to which log events are appended
+ */
 internal class CustomAppender(private val testStepLogger: TestStepLogger) : AppenderSkeleton() {
 
     companion object {

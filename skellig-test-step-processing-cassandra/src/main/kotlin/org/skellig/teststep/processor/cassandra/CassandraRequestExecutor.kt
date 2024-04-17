@@ -7,6 +7,12 @@ import org.skellig.teststep.processor.cassandra.model.CassandraDetails
 import org.skellig.teststep.processor.db.DatabaseRequestExecutor
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 
+/**
+ * Represents a Cassandra request executor for executing database requests.
+ * It connects to Cassandra DB when object is created.
+ *
+ * @property cassandraDetails The Cassandra details for connecting to the database server.
+ */
 class CassandraRequestExecutor(cassandraDetails: CassandraDetails) : DatabaseRequestExecutor {
 
     private val log = logger<CassandraRequestExecutor>()
@@ -29,6 +35,10 @@ class CassandraRequestExecutor(cassandraDetails: CassandraDetails) : DatabaseReq
         return factory[databaseRequest]?.execute(databaseRequest)
     }
 
+    /**
+     * Closes the session associated with the CassandraRequestExecutor.
+     * It should be called after executing a database request and when the CassandraRequestExecutor is no longer needed.
+     */
     override fun close() {
         session.close()
     }

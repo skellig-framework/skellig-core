@@ -3,6 +3,12 @@ package org.skellig.teststep.processing.value.function
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.lang.String.format
 
+/**
+ * Executes the 'subString' function for a [String] value which returns a substring starting from a provided [String] in args.
+ *
+ * Supported args:
+ * - subString(`<text>`) - where `<text>` is the first occurrence of a [String] in 'value' where to start extraction of substring from.
+ */
 open class SubStringFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {

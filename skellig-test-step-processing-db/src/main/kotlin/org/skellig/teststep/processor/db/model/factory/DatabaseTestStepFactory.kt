@@ -9,6 +9,23 @@ import org.skellig.teststep.processor.db.model.DatabaseTestStep
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * Abstract class representing a factory for creating instances of [DatabaseTestStep].
+ * It extends BaseDefaultTestStepFactory and implements methods specific to database test steps.
+ * It uses the following properties from a raw test step:
+ * - provider - DB provider name
+ * - servers - list of DB services where a query is executed
+ * - table - name of a table in DB. If schema is needed, then it can be attached as a prefix, for example: Schema_A.Table_1
+ * - command - a command representing a SQL query and used in combination with 'table', 'where' and 'data' properties where applicable.
+ * The supported commands are: insert, update, select
+ * - where - a Map of properties and values used with command 'select' or 'update'
+ * - data - a Map of properties and values used with command 'insert'
+ * - query - a plain SQL query, if 'table' and 'command' are not defined
+ *
+ * @param TS the type parameter representing the specific subclass of [DatabaseTestStep]
+ * @property testStepRegistry the registry for storing and retrieving test steps
+ * @property valueExpressionContextFactory the factory for creating value expression context, used in evaluation of [ValueExpression]
+ */
 abstract class DatabaseTestStepFactory<TS : DatabaseTestStep>(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory

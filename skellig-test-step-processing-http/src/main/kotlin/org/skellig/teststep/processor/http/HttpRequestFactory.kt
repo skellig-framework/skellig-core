@@ -11,6 +11,11 @@ import org.skellig.teststep.processor.http.model.HttpMethodName
 import org.skellig.teststep.processor.http.model.HttpRequestDetails
 
 
+/**
+ * Class representing an HTTP request factory creating okhttp3 [Request] objects from [HttpRequestDetails].
+ *
+ * @property baseUrl The base URL for the requests.
+ */
 class HttpRequestFactory(private val baseUrl: String?) {
 
     fun createRequest(httpRequestDetails: HttpRequestDetails): Request {

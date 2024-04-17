@@ -8,6 +8,15 @@ import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * The main factory class for creating test steps. It has other instances of [TestStepFactory] and
+ * decides which one to apply by calling [TestStepFactory.isConstructableFrom] method on a raw test step.
+ * It registers some internal Test Step factories when object is created. The other [TestStepFactory] can be registered by
+ * calling [CompositeTestStepFactory.registerTestStepFactory] method.
+ *
+ * @property testStepsRegistry The registry [TestStepRegistry] for storing and retrieving test steps.
+ * @property valueExpressionContextFactory The factory for creating value expression contexts for evaluating [ValueExpression].
+ */
 class CompositeTestStepFactory private constructor(
     testStepsRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory
@@ -27,6 +36,12 @@ class CompositeTestStepFactory private constructor(
             .build()
     }
 
+    /**
+     * Registers a TestStepFactory for creating TestStep objects.
+     *
+     * @param factory The [TestStepFactory] to be registered.
+     * @see TestStepFactory
+     */
     fun registerTestStepFactory(factory: TestStepFactory<out TestStep>) {
         log.debug {"Register Test Step Factory class '${factory.javaClass.simpleName}'" }
         factories.add(factory)

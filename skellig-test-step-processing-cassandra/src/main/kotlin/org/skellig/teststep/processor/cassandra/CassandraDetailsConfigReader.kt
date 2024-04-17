@@ -7,6 +7,10 @@ import org.skellig.teststep.processor.cassandra.model.CassandraDetails
 import java.net.InetSocketAddress
 import java.util.*
 
+/**
+ * The CassandraDetailsConfigReader class is responsible for reading Cassandra configuration from a Skellig [Config] file,
+ * defined in 'cassandra.servers' property, and returning a collection of [CassandraDetails] objects.
+ */
 internal class CassandraDetailsConfigReader {
 
     companion object {

@@ -5,7 +5,7 @@ import java.lang.reflect.Method
 import java.util.regex.Pattern
 
 /**
- * A test step which has an implementation as a method in a class.
+ * A test step which references to a method of a class.
  */
 class ClassTestStep(
     val id: String,

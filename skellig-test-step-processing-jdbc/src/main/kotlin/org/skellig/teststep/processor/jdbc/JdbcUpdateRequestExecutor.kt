@@ -3,6 +3,15 @@ package org.skellig.teststep.processor.jdbc
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.sql.Connection
 
+/**
+ * JdbcUpdateRequestExecutor is a class that handles the execution of JDBC update requests.
+ * When requested, it uses [JdbcSelectRequestExecutor] to check if a record exists in DB and if not, executes in insert query
+ * using [JdbcInsertRequestExecutor].
+ *
+ * @property connection The JDBC connection object.
+ * @property selectExecutor The [JdbcSelectRequestExecutor] used to execute select queries.
+ * @property insertExecutor The [JdbcInsertRequestExecutor] used to execute insert queries.
+ */
 internal class JdbcUpdateRequestExecutor(
     connection: Connection,
     private val selectExecutor: JdbcSelectRequestExecutor,

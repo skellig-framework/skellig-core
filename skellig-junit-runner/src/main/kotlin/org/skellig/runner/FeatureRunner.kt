@@ -17,6 +17,17 @@ import org.skellig.teststep.runner.TestStepRunner
 private const val BEFORE_FEATURE_NAME = "Before Feature"
 private const val AFTER_FEATURE_NAME = "After Feature"
 
+/**
+ * FeatureRunner is responsible for running the test scenarios within a [Feature].
+ *
+ * @property feature The feature being executed
+ * @property testScenarioState The test scenario state with data passed through test steps during a test scenario run.
+ * It removes all data after each [TestScenarioRunner] is finished.
+ * @property tagsFilter The tags filter to determine which test scenarios to include/exclude based on their tags
+ * @property hookRunner The hook runner to run hooks before and after feature execution
+ * @property testStepRunner The test step runner to run individual test steps
+ * @property testStepLogger The test step logger for logging test steps
+ */
 open class FeatureRunner(
     feature: Feature,
     protected val testScenarioState: TestScenarioState?,

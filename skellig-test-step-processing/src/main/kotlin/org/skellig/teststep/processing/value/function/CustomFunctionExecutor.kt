@@ -8,6 +8,19 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 
+/**
+ * A class which registers custom functions as methods marked with @[Function] annotations in classes, and
+ * can execute any of these custom functions.
+ *
+ * When instantiated, it scans for classes in [packages] which has methods marked with @[Function] and register them internally.
+ *
+ * Throws [FunctionExecutionException] if function is not found in the registry when calling [CustomFunctionExecutor.execute].
+ *
+ * @param packages The packages to scan for custom functions with @[Function]
+ * @param classInstanceRegistry The registry of class instances. This registry keeps instances of classes instantiated earlier, so they can be reused elsewhere.
+ * An example of where such classes can be instantiated are Test Step definition classes which may have test step
+ * methods as well as methods marked as @[Function]. If not provided, then a new [HashMap] is assigned.
+ */
 class CustomFunctionExecutor(
     packages: Collection<String>?,
     private val classInstanceRegistry: MutableMap<Class<*>, Any> = mutableMapOf()
@@ -70,6 +83,10 @@ class CustomFunctionExecutor(
     private data class CustomFunction(val instance: Any, val method: Method)
 }
 
+/**
+ * Annotation used to mark a method of a class as a Skellig Function and registered in [CustomFunctionExecutor].
+ * The name of the function is the same as the method name.
+ */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
 annotation class Function

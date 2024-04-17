@@ -5,6 +5,13 @@ import java.lang.String.format
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
+/**
+ * Class that executes the "fromRegex" function which extracts groups from a string using a regular expression and
+ * returns a list of the extracted groups or a [String] if only 1 group is found.
+ *
+ * Supported args:
+ * - fromRegex(`<regex>`) - for example: fromRegex("key = (\w+)") extracts a [String] value captured by (\w+)
+ */
 class FromRegexFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {

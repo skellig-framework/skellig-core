@@ -51,7 +51,7 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(protected val t
             log.info(testStep, "Start to validate the result of processed test step '${testStep.name}'")
             expectedResult.validate(actualResult)
         } catch (ex: ValidationException) {
-            throw ValidationException(ex.message, testStep.getId)
+            throw ValidationException(ex.message)
         }
     }
 

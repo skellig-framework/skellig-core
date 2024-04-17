@@ -6,6 +6,12 @@ import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * The StateUpdaterFactory class is responsible for creating [ScenarioStateUpdater] instances from a raw test step.
+ * It uses a [ValueExpressionContextFactory] to create the necessary [ValueExpressionContext] objects for evaluation.
+ *
+ * @property valueExpressionContextFactory The [ValueExpressionContextFactory] to use for creating [ValueExpressionContext] objects.
+ */
 internal class StateUpdaterFactory(private val valueExpressionContextFactory: ValueExpressionContextFactory) {
 
     companion object {

@@ -1,5 +1,12 @@
 package org.skellig.feature
 
+/**
+ * The TestStep class represents a single step in a test scenario.
+ *
+ * @param path The path of the test step.
+ * @param name The name of the test step.
+ * @param parameters The parameters associated with the test step, if any.
+ */
 class TestStep private constructor(
     val path: String,
     val name: String,

@@ -3,6 +3,13 @@ package org.skellig.teststep.processing.value.function
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.util.regex.Pattern
 
+/**
+ * Executes the `listOf` function that creates a [List] from the provided arguments.
+ *
+ * Supported args:
+ * - listOf(`<items>`) - where `<items>` are comma-separated values to be added to [List],
+ * or a [String] with comma-separated [String] values.
+ */
 internal class ListOfFunctionExecutor : FunctionValueExecutor {
 
     companion object {
