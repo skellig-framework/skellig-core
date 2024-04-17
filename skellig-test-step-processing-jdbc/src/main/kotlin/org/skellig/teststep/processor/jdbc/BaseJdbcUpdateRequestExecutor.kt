@@ -8,6 +8,11 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.SQLException
 
+/**
+ * BaseJdbcUpdateRequestExecutor is an abstract class that provides the common implementation for executing JDBC update requests.
+ *
+ * @param connection The JDBC Connection object.
+ */
 internal abstract class BaseJdbcUpdateRequestExecutor(private val connection: Connection) : BaseJdbcRequestExecutor() {
 
     companion object {

@@ -8,6 +8,13 @@ import org.skellig.teststep.processor.http.model.HttpTestStep
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * The HttpTestStepFactory class is responsible for creating [HttpTestStep].
+ *
+ * @param testStepRegistry The test step registry used to store and retrieve test steps.
+ * @param valueExpressionContextFactory The value expression context factory used to create the context for evaluating [ValueExpression].
+ * @param defaultTestDataConverter The name of default converter (function) for test data (optional).
+ */
 class HttpTestStepFactory(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory,

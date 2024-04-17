@@ -7,9 +7,21 @@ import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+/**
+ * The DefaultTestStepRunner class is responsible for running test steps and returning their execution results.
+ * It implements the TestStepRunner interface and provides methods for running test steps with or without parameters.
+ * The process of running a test step involves the following steps:
+ * 1. Find the test step by name in the TestStepRegistry.
+ * 2. Convert the raw data of the test step into an instance of TestStep using the TestStepFactory.
+ * 3. Use the TestStepProcessor to process and execute the TestStep, returning the result.
+ *
+ * @param testStepProcessor The TestStepProcessor implementation used to process and execute the test steps.
+ * @param testStepsRegistry The TestStepRegistry implementation used to store and retrieve test steps.
+ * @param testStepFactory The TestStepFactory implementation used to create instances of TestStep.
+ *
+ * @see TestStepRunner
+ */
 internal class DefaultTestStepRunner private constructor(private val testStepProcessor: TestStepProcessor<TestStep>,
                                                          private val testStepsRegistry: TestStepRegistry,
                                                          private val testStepFactory: TestStepFactory<TestStep>) : TestStepRunner {

@@ -8,6 +8,12 @@ import org.skellig.teststep.processor.http.model.HttpResponse
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
+/**
+ * Represents an HTTP channel used for sending HTTP requests and receiving HTTP responses.
+ *
+ * @property baseUrl The base URL of the HTTP channel (optional). It is prefixed with this [url][org.skellig.teststep.processor.http.model.HttpTestStep.url].
+ * @property defaultTimeoutMs The default timeout for the HTTP channel in milliseconds.
+ */
 open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
 
     private var httpRequestFactory = HttpRequestFactory(baseUrl)
@@ -19,6 +25,13 @@ open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
 
     constructor() : this("", 30000)
 
+    /**
+     * Sends an HTTP request and returns the response.
+     *
+     * @param request The details of the HTTP request to be sent.
+     * @return The HTTP response received from the server.
+     * @throws TestStepProcessingException if there is an error sending the HTTP request.
+     */
     open fun send(request: HttpRequestDetails?): HttpResponse? {
         return request?.let {
             val httpClient = getHttpClient(request)
@@ -44,7 +57,7 @@ open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
     }
 
     @Throws(IOException::class)
-    private fun convertToLocalResponse(response: Response): HttpResponse? {
+    private fun convertToLocalResponse(response: Response): HttpResponse {
         val builder = HttpResponse.Builder().withStatusCode(response.code)
         builder.withHeaders(response.headers.associate { it.first to it.second })
         response.body?.let {

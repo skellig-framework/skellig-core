@@ -353,7 +353,7 @@ class DefaultTestStepFactoryTest {
     }
 
     @Test
-    @DisplayName("With values has reference to other values")
+    @DisplayName("With values has reference to other values and inner references")
     fun testCreateTestStepWithValuesReferenceToOtherValuesAndInnerReferences() {
         val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
             Pair(

@@ -1,12 +1,14 @@
 package org.skellig.teststep.processing.state
 
 /**
- * The test scenario state holds all information about running test steps in the test scenario.
- * If test step has an id, then its data (ex. values, payload, validations, etc.) is stored in
- * the state.
+ * The test scenario state holds all information about running test steps in the test scenario, as well as other
+ * values assigned to it directly in code (Kotlin/Java) or from section of test step called 'state'.
  *
- * When a test step is finished, then its result is stored on key `<test_step_id>_result`, where
- * `test_step_id` is the id of the test step.
+ * The whole data of test step (ex. values, payload, validations, etc.) is stored in
+ * the state assigned to test step ID.
+ *
+ * When a test step is finished, then its result is stored on key `<test step id>_result`, where
+ * 'test step id' is the id of the test step.
  *
  */
 interface TestScenarioState : Iterable<Pair<String, Any?>> {

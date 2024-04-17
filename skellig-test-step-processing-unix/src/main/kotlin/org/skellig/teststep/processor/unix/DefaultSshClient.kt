@@ -8,6 +8,15 @@ import org.skellig.teststep.processing.util.logger
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
+/**
+ * This class represents an SSH client that can be used to run shell commands on remote hosts.
+ *
+ * @property host The host address of the SSH server.
+ * @property port The port number of the SSH server.
+ * @property user The username used for authentication. Can be null for password-less authentication with SSH keys.
+ * @property password The password used for password-based authentication. Ignored if SSH keys are used for authentication.
+ * @property privateSshKeyPath The file path of the SSH private key, used for key-based authentication. Ignored if password-based authentication is used.
+ */
 class DefaultSshClient private constructor(private val host: String,
                                            private val port: Int,
                                            private val user: String?,
@@ -22,6 +31,13 @@ class DefaultSshClient private constructor(private val host: String,
 
     private var sshSession: Session? = null
 
+    /**
+     * Executes a shell command on the remote host using SSH.
+     *
+     * @param command The shell command to execute.
+     * @param timeout The maximum time in milliseconds to wait for the command to complete.
+     * @return The response from the shell command. Returns null if error occurred, but logs it before.
+     */
     fun runShellCommand(command: String, timeout: Int): String {
         startSshSessionLazy()
         var response = ""
@@ -36,6 +52,13 @@ class DefaultSshClient private constructor(private val host: String,
         return response
     }
 
+    /**
+     * Closes the SSH session.
+     *
+     * This method closes the SSH session if it is open. It also calls the close() method of the superclass.
+     * If an exception occurs while closing the SSH session, it is logged with the logger.
+     * This method is synchronized to ensure thread safety.
+     */
     @Synchronized
     override fun close() {
         try {

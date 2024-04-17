@@ -4,6 +4,10 @@ import com.typesafe.config.Config
 import org.skellig.teststep.processor.jdbc.model.JdbcDetails
 import java.util.*
 
+/**
+ * The JdbcDetailsConfigReader class is responsible for reading JDBC configuration from a Skellig [Config] file,
+ * defined in 'jdbc.servers' property, and returning a collection of [JdbcDetails] objects.
+ */
 internal class JdbcDetailsConfigReader {
 
     companion object {

@@ -10,6 +10,16 @@ import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
 
+/**
+ * Test step processor for consuming messages from IBMMQ queues.
+ * It starts up the consume process and returns the [TestStepProcessor.TestStepRunResult] immediately so others can subscribe
+ * to result events coming from each occurrence of consumed message.
+ *
+ * @constructor Creates a IbmMqConsumableTestStepProcessor with the provided IBMMQ queues and test scenario state.
+ * @param ibmMqChannels A map of IBMMQ queues, where the key is the queue [ID][org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails.id]
+ * and the value is the corresponding [IbmMqChannel] object.
+ * @param testScenarioState The test scenario state object.
+ */
 open class IbmMqConsumableTestStepProcessor(
     protected val ibmMqChannels: Map<String, IbmMqChannel>,
     testScenarioState: TestScenarioState?,
@@ -27,6 +37,18 @@ open class IbmMqConsumableTestStepProcessor(
         return testStepRunResult
     }
 
+    /**
+     * Consumes data from IBMMQ queues and optionally responds to a corresponding queue (see [IbmMqConsumableTestStep.respondTo]).
+     * The response occurs only if [IbmMqConsumableTestStep.respondTo] queues are provided and
+     * the received message is valid according to [IbmMqConsumableTestStep.validationDetails].
+     *
+     * If exception occurs when message is validated or response fails, then it notifies the subscribers to [TestStepProcessor.TestStepRunResult]
+     * and consume process is resumed.
+     *
+     * @param testStep The IBMMQ consumable test step.
+     * @param channels The list of queues to consume data from.
+     * @param result The test step run result. Used to notify subscribers for each consume result.
+     */
     private fun consume(
         testStep: IbmMqConsumableTestStep,
         channels: List<String>,

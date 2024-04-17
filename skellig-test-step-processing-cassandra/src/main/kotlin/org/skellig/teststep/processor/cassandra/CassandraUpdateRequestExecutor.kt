@@ -4,6 +4,15 @@ import com.datastax.oss.driver.api.core.CqlSession
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 
+/**
+ * CassandraUpdateRequestExecutor is a class that handles the execution of Cassandra update requests.
+ * When requested, it uses [CassandraSelectRequestExecutor] to check if a record exists in DB and if not, executes in insert query
+ * using [CassandraInsertRequestExecutor].
+ *
+ * @property session The Cassandra session object.
+ * @property selectExecutor The [CassandraSelectRequestExecutor] used to execute select queries.
+ * @property insertExecutor The [CassandraInsertRequestExecutor] used to execute insert queries.
+ */
 internal class CassandraUpdateRequestExecutor(session: CqlSession,
                                               private val insertExecutor: CassandraInsertRequestExecutor,
                                               private val selectExecutor: CassandraSelectRequestExecutor)

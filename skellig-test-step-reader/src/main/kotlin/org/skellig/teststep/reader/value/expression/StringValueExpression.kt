@@ -1,5 +1,10 @@
 package org.skellig.teststep.reader.value.expression
 
+/**
+ * Represents a string value expression that can be evaluated to a string value.
+ *
+ * @property value The string value of the expression.
+ */
 class StringValueExpression(private val value: String) : ValueExpression {
     override fun evaluate(context: ValueExpressionContext): Any? {
         return if (context.evaluationType == EvaluationType.CALL_CHAIN) context.onFunctionCall(value, context.value, emptyArray())

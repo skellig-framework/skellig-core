@@ -8,6 +8,9 @@ import org.skellig.teststep.processor.rmq.model.RmqHostDetails
 import org.skellig.teststep.processor.rmq.model.RmqQueueDetails
 import java.util.*
 
+/**
+ * Reads RMQ configuration details from a Skellig [Config] object and provides methods to create [RmqDetails] objects.
+ */
 internal class RmqDetailsConfigReader {
 
     companion object {
@@ -16,6 +19,13 @@ internal class RmqDetailsConfigReader {
 
     private val log = logger<RmqDetailsConfigReader>()
 
+    /**
+     * Reads the RMQ configuration of 'rmq.hosts' from the provided Skellig [Config] object and returns a collection of [RmqDetails].
+     *
+     * @param config The Config object containing the RMQ configuration.
+     * @return A collection of RMQ details.
+     * @throws NullPointerException if [config] is null.
+     */
     fun read(config: Config?): Collection<RmqDetails> {
         Objects.requireNonNull(config, "RMQ config cannot be null")
 

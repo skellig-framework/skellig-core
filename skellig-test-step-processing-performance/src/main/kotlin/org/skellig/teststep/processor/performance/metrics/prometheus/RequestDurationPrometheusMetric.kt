@@ -9,6 +9,13 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 
+/**
+ * The `RequestDurationPrometheusMetric` class is a concrete implementation of the `DurationPercentileMetric` interface.
+ * It is responsible for recording and analyzing duration percentiles of request durations using the Micrometer library and PrometheusMeterRegistry.
+ *
+ * @param name the name of the metric
+ * @param meterRegistry the PrometheusMeterRegistry instance used for registering metrics
+ */
 open class RequestDurationPrometheusMetric(private val name: String,
                                            meterRegistry: MeterRegistry) : DurationPercentileMetric {
 

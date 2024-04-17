@@ -18,6 +18,11 @@ abstract class BaseRmqProcessorBuilder<T : TestStep> : BaseTestStepProcessor.Bui
         rmqChannels.putIfAbsent(rmqDetails.queue.id, RmqChannel(rmqDetails))
     }
 
+    /**
+     * Registers RMQ queues based on the provided Skellig [Config].
+     *
+     * @param config The configuration containing RMQ queue details, registered for 'rmq.hosts' properties in [Config].
+     */
     fun rmqChannels(config: Config) = apply {
         rmqDetailsConfigReader.read(config).forEach { rmqChannel(it) }
     }

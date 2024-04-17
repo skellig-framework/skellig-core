@@ -28,7 +28,7 @@ class DefaultFeatureParser : FeatureParser {
         } ?: emptyList()
     }
 
-    fun parseFeature(content: InputStream, filePath: String): Feature {
+    private fun parseFeature(content: InputStream, filePath: String): Feature {
         return content.use {
             val skelligGrammarLexer = SkelligFeatureLexer(CharStreams.fromStream(it))
             val input = CommonTokenStream(skelligGrammarLexer)

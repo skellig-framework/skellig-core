@@ -7,6 +7,14 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 import java.lang.reflect.Method
 
+/**
+ * Creates a [ClassTestStep] object from raw test step data.
+ *
+ * @param testStepName The name of the test step.
+ * @param rawTestStep The raw test step data as a map of [ValueExpression] and their corresponding values.
+ * @param parameters The parameters to be applied in the test step.
+ * @return The created ClassTestStep object.
+ */
 internal class ClassTestStepFactory : TestStepFactory<ClassTestStep> {
 
     companion object {

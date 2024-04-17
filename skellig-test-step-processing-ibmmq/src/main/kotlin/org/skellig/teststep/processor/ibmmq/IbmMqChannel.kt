@@ -15,7 +15,13 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-
+/**
+ * Represents an IBM MQ Channel for sending and receiving messages.
+ * The channel can also consume incoming messages and respond to them asynchronously.
+ *
+ * @property ibmMqQueueDetails The details of the IBM MQ Queue associated with this channel.
+ * @constructor Creates a new instance of the `IbmMqChannel` class.
+ */
 open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Closeable {
 
     companion object {
@@ -32,6 +38,12 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
         connectQueue()
     }
 
+    /**
+     * Sends a message to the IBMMQ queue.
+     * It logs an error if fails to deliver message or if there is an error converting the message or putting it in the queue.
+     *
+     * @param request The message to send. It can be a String or any other object.
+     */
     fun send(request: Any) {
         try {
             val mqMessage = convertMqMessage(request)
@@ -41,6 +53,12 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
         }
     }
 
+    /**
+     * Reads a message from the IBM MQ queue with the specified timeout.
+     *
+     * @param timeout The timeout value in milliseconds.
+     * @return The message read from the queue, or null if an error occurs.
+     */
     fun read(timeout: Int): Any? =
         try {
             val message = MQMessage()
@@ -56,6 +74,13 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
             null
         }
 
+    /**
+     * Consumes messages from an IBM MQ queue and invokes a response handler for each received message.
+     *
+     * @param response The response message to send to the same queue on each consumed message. It can be null if no response is required.
+     * @param timeout The timeout value in milliseconds for reading messages from the queue.
+     * @param responseHandler The callback function to handle the received message.
+     */
     fun consume(response: Any?, timeout: Int, responseHandler: (message: Any?) -> Unit) {
         /*
          TODO: consider this later
@@ -132,6 +157,10 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
         }
     }
 
+    /**
+     * Closes the IBMMQ channel, disconnects from the queue manager, and closes the queue.
+     * If an exception occurs while closing, it logs a warning message.
+     */
     override fun close() {
         try {
             consumerThread?.shutdownNow()

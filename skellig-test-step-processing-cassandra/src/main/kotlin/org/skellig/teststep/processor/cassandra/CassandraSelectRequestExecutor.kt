@@ -10,6 +10,11 @@ import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.util.function.Consumer
 
+/**
+ * This class is responsible for executing Cassandra select queries on the database using.
+ *
+ * @property session The Cassandra session used to execute queries in the database.
+ */
 internal open class CassandraSelectRequestExecutor(private val session: CqlSession) : BaseCassandraRequestExecutor() {
 
     companion object {

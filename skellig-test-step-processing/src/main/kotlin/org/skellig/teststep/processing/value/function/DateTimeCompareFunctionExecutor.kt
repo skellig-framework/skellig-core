@@ -9,6 +9,35 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.regex.Pattern
 
+
+/**
+ * Executes the 'between' function to check if the date/time 'value' is between the range provided in arguments.
+ * The 'value' can be on of these types:
+ * - [LocalDateTime]
+ * - [ZonedDateTime]
+ * - [LocalDate]
+ * - [Date]
+ * - [Instant]
+ * - [Timestamp]
+ * - [java.sql.Date]
+ *
+ * Supported args:
+ * - between(`<min>`, `<max>`) - for example:
+ *   ```
+ *    between(now, 1 second after)
+ *    between(5 minutes ago, 2 days ago)
+ *    between(yesterday, tomorrow)
+ *   ```
+ * - between(`<min>`, `<max>`, `<date/time format>`) - for example:
+ *   ```
+ *    between("01/12/2020", "01/01/2021", "dd/MM/yyyy")
+ *    between("05.06.2020 10:30:00", "05.06.2020 10:30:50", "dd.MM.yyyy HH:mm:ss")
+ *   ```
+ * - between(`<min>`, `<max>`, `<date/time format>`, `<time zone>`) - where `<items>` are comma-separated values to be added to [List]
+ *   ```
+ *    between("05.06.2020 10:30:00", "05.06.2020 10:30:50", "dd.MM.yyyy HH:mm:ss", "+10")
+ *   ```
+ */
 class DateTimeCompareFunctionExecutor : FunctionValueExecutor {
 
     companion object {
@@ -58,11 +87,11 @@ class DateTimeCompareFunctionExecutor : FunctionValueExecutor {
         return when (value) {
             is LocalDate -> isDateBetween(value, min.toLocalDate(), max.toLocalDate())
             is LocalDateTime -> isBetween(value, min, max)
-            is Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(value.time), UTC), min, max)
             is java.sql.Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(value.time), UTC), min, max)
+            is Timestamp -> isBetween(LocalDateTime.ofInstant(value.toInstant(), UTC), min, max)
+            is Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(value.time), UTC), min, max)
             is Instant -> isBetween(LocalDateTime.ofInstant(value, UTC), min, max)
             is ZonedDateTime -> isBetween(LocalDateTime.ofInstant(value.toInstant(), UTC), min, max)
-            is Timestamp -> isBetween(LocalDateTime.ofInstant(value.toInstant(), UTC), min, max)
             else -> {
                 if (value is String && format != null) {
                     isBetween(convertToLocalDateTime(value, format, timezone), min, max)

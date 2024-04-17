@@ -8,6 +8,13 @@ import org.skellig.teststep.processor.jdbc.model.JdbcTestStep
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * JdbcTestStepFactory is a class that extends the [DatabaseTestStepFactory]
+ * and is responsible for creating instances of [JdbcTestStep], if 'provider' property  of raw test step is 'jdbc'.
+ *
+ * @param testStepRegistry the registry for storing and retrieving test steps
+ * @property valueExpressionContextFactory the factory for creating value expression context, used in evaluation of [ValueExpression]
+ */
 class JdbcTestStepFactory(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory

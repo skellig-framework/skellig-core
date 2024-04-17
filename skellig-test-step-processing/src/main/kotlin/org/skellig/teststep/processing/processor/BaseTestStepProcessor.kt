@@ -16,10 +16,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * Base processor for `DefaultTestStep`.
+ * Base processor for [DefaultTestStep].
  * It can handle `sync` and `async` execution, stores the data of test step in the state,
  * as well as its result after execution. After the result is received, it's validated
  * based on the validation details in the test step.
+ *
+ * @param testScenarioState The [TestScenarioState] object which stores data during a run of test scenario and accessible
+ * in all test step processors. The data can be saved in the state through the details provided in [DefaultTestStep.scenarioStateUpdaters]
  */
 abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: TestScenarioState) : ValidatableTestStepProcessor<T>(testScenarioState) {
 

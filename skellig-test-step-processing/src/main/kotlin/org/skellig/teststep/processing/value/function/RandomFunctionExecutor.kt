@@ -6,6 +6,13 @@ import java.math.RoundingMode
 import kotlin.random.Random
 
 
+/**
+  * Executes a 'random' function and returns a random value based on the provided arguments.
+ *
+ * Supported args:
+ * - random(`<min>`, `<max>`, `<type>`) - generates a random value with type (int, long, double or bigDecimal) within `<min>` and `<max>` range.
+ * - random(`<min>`, `<max>`) - generates a random value with type 'long' within `<min>` and `<max>` range.
+ */
 class RandomFunctionExecutor : FunctionValueExecutor {
 
 

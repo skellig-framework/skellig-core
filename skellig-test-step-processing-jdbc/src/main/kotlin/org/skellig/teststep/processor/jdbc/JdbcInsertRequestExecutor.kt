@@ -3,7 +3,12 @@ package org.skellig.teststep.processor.jdbc
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.sql.Connection
 
-internal class JdbcInsertRequestExecutor(private val connection: Connection)
+/**
+ * JdbcInsertRequestExecutor is a class that handles the execution of JDBC insert requests.
+ *
+ * @param connection The JDBC connection object.
+ */
+internal class JdbcInsertRequestExecutor(connection: Connection)
     : BaseJdbcUpdateRequestExecutor(connection) {
 
     override fun composeQuery(request: DatabaseRequest, columnValuePairs: Map<String, Any?>?): String {

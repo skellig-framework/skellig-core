@@ -8,6 +8,13 @@ import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * The `UnixShellTestStepFactory` class is responsible for creating instances of the [UnixShellTestStep] class.
+ *
+ * @property testStepRegistry The test step registry used to retrieve test steps.
+ * @property valueExpressionContextFactory The value expression context factory used to create the value expression contexts
+ * for evaluation of [ValueExpression]
+ */
 class UnixShellTestStepFactory(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory

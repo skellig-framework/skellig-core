@@ -9,6 +9,11 @@ import org.skellig.teststep.processor.db.model.DatabaseRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+/**
+ * BaseCassandraUpdateRequestExecutor is an abstract class that provides the common implementation for executing Cassandra update requests.
+ *
+ * @param session The CqlSession session to Cassandra DB.
+ */
 internal abstract class BaseCassandraUpdateRequestExecutor(private val session: CqlSession) :
     BaseCassandraRequestExecutor() {
 

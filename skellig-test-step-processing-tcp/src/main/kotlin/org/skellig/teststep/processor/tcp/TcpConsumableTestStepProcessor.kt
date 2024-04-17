@@ -10,6 +10,15 @@ import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.tcp.model.TcpConsumableTestStep
 
+/**
+ * Test step processor for consuming messages from TCP channels.
+ * It starts up the consume process and returns the [TestStepProcessor.TestStepRunResult] immediately so others can subscribe
+ * to result events coming from each occurrence of consumed message.
+ *
+ * @constructor Creates a TcpConsumableTestStepProcessor with the provided TCP channels and test scenario state.
+ * @param tcpChannels A map of TCP channels, where the key is the channel [ID][org.skellig.teststep.processor.tcp.model.TcpDetails.id] and the value is the corresponding [TcpChannel] object.
+ * @param testScenarioState The test scenario state object.
+ */
 open class TcpConsumableTestStepProcessor(
     protected val tcpChannels: Map<String, TcpChannel>,
     testScenarioState: TestScenarioState?,
@@ -27,6 +36,18 @@ open class TcpConsumableTestStepProcessor(
         return testStepRunResult
     }
 
+    /**
+     * Consumes data from TCP channels and optionally responds to a corresponding channel (see [TcpConsumableTestStep.respondTo]).
+     * The response occurs only if [TcpConsumableTestStep.respondTo] channels are provided and
+     * the received message is valid according to [TcpConsumableTestStep.validationDetails].
+     *
+     * If exception occurs when message is validated or response fails, then it notifies the subscribers to [TestStepProcessor.TestStepRunResult]
+     * and consume process is resumed.
+     *
+     * @param testStep The TCP consumable test step.
+     * @param channels The list of channels to consume data from.
+     * @param result The test step run result. Used to notify subscribers for each consume result.
+     */
     private fun consume(
         testStep: TcpConsumableTestStep,
         channels: List<String>,

@@ -10,6 +10,19 @@ import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.regex.Pattern
 
+/**
+ * Class to execute the increment function 'inc' which increments a value based on a provided pattern, for example:
+ *```
+ * inc(id, 10)
+ *```
+ * returns 0000000001, then 0000000002, etc.
+ *
+ * The 'id' is used as any unique name to store the previous result and reuse it next increment.
+ *
+ * Supported args:
+ * - inc(`<key>`, `<max length>`) - increments a number with `<max length>` and assigns it to `<key>`.
+ * - inc(`<max length>`) - increments a number with `<max length>` and assigns it to `skellig_default` key.
+ */
 class IncrementFunctionExecutor : FunctionValueExecutor {
 
     companion object {

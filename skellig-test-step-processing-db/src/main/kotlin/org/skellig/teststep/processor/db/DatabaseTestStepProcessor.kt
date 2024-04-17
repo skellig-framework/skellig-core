@@ -12,6 +12,15 @@ import org.skellig.teststep.processor.db.model.DatabaseDetails
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 
+
+/**
+ * Abstract class representing a processor for executing database test steps.
+ *
+ * @param T the type of the [DatabaseRequestExecutor] to be used for executing database requests.
+ * @param TS the type of the [DatabaseTestStep] to be processed.
+ * @property dbServers a map of database servers with their corresponding [DatabaseRequestExecutor]s.
+ * @property testScenarioState the [TestScenarioState] object that holds the state of the test scenario.
+ */
 abstract class DatabaseTestStepProcessor<T : DatabaseRequestExecutor, TS : DatabaseTestStep>
     ( private val dbServers: Map<String, T>,
     testScenarioState: TestScenarioState

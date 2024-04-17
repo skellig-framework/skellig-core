@@ -1,5 +1,16 @@
 package org.skellig.feature
 
+
+/**
+ * The TestScenario class represents a test scenario, which is constructed from a Skellig feature file.
+ *
+ * @param path The path of the test scenario.
+ * @param name The name of the test scenario.
+ * @param steps The list of test steps in the test scenario.
+ * @param tags The set of tags associated with the test scenario.
+ * @param beforeSteps The list of test steps to be executed before the test scenario.
+ * @param afterSteps The list of test steps to be executed after the test scenario.
+ */
 open class TestScenario protected constructor(
     val path: String,
     val name: String,

@@ -12,6 +12,13 @@ import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 
+/**
+ * This class is responsible for parsing STS (Skellig Test Step) files and converting them into a raw list
+ * of [Map] representing the test steps.
+ * Each test step represents a map of key-value pairs, where the keys and values are [ValueExpression]s.
+ *
+ * @property valueParser The parser used to parse values in the STS file.
+ */
 internal class StsParser {
     companion object {
         private val NAME_KEYWORD = AlphanumericValueExpression("name")

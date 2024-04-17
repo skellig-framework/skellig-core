@@ -4,6 +4,9 @@ import org.skellig.teststep.processor.performance.metrics.DurationMetric
 import java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * Class that implements the [DurationMetric] interface to record the duration of requests.
+ */
 open class RequestDurationDefaultMetric : DurationMetric {
 
     companion object {

@@ -10,6 +10,9 @@ import org.skellig.teststep.reader.sts.parser.value.SkelligTestValueGrammarParse
 import org.skellig.teststep.reader.sts.parser.value.SkelligTestValueGrammarParser.*
 import org.skellig.teststep.reader.value.expression.*
 
+/**
+ * Class that parses a string value into a [ValueExpression].
+ */
 internal class StsValueParser {
 
     fun parse(value: String): ValueExpression? {

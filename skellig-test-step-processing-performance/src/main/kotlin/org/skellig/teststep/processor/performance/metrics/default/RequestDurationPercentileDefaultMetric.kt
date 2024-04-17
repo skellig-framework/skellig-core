@@ -6,6 +6,12 @@ import org.slf4j.LoggerFactory
 import kotlin.concurrent.fixedRateTimer
 import kotlin.system.measureTimeMillis
 
+
+/**
+ * Class for recording and analyzing duration percentiles of request durations.
+ *
+ * @param name the name of the metric
+ */
 open class RequestDurationPercentileDefaultMetric(private val name: String) : DurationPercentileMetric {
 
     companion object {

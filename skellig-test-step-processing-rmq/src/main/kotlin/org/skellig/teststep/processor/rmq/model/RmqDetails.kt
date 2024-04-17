@@ -1,5 +1,13 @@
 package org.skellig.teststep.processor.rmq.model
 
+
+/**
+ * Represents the details of an RMQ connection, including the host details, exchange details, and queue details.
+ *
+ * @property hostDetails The details of the RMQ host.
+ * @property exchange The details of the RMQ exchange.
+ * @property queue The details of the RMQ queue.
+ */
 class RmqDetails private constructor(val hostDetails: RmqHostDetails,
                                      val exchange: RmqExchangeDetails,
                                      val queue: RmqQueueDetails) {

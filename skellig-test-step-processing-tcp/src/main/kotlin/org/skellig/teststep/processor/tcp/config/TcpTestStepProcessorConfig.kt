@@ -13,6 +13,10 @@ import org.skellig.teststep.processor.tcp.model.factory.TcpTestStepFactory
 
 private const val TCP_TEST_DATA_CONVERTER = "tcp.testData.converter"
 
+/**
+ * Represents the configuration for a TCP test step processor.
+ * This class implements the TestStepProcessorConfig interface and provides a way to configure a TCP test step processor.
+ */
 class TcpTestStepProcessorConfig : TestStepProcessorConfig<TcpTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<TcpTestStep>? {
         return if (details.config.hasPath("tcp")) ConfiguredTestStepProcessorDetails(
@@ -31,6 +35,10 @@ class TcpTestStepProcessorConfig : TestStepProcessorConfig<TcpTestStep> {
 
 }
 
+/**
+ * Represents the configuration for a TCP test step processor.
+ * This class implements the TestStepProcessorConfig interface and provides a way to configure a Consumable TCP test step processor.
+ */
 class TcpConsumableTestStepProcessorConfig : TestStepProcessorConfig<TcpConsumableTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<TcpConsumableTestStep>? {
         return if (details.config.hasPath("tcp")) ConfiguredTestStepProcessorDetails(

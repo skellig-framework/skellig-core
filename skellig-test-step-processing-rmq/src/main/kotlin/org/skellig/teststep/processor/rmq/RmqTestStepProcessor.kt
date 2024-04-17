@@ -10,6 +10,19 @@ import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
 
+/**
+ * RmqTestStepProcessor is a class that processes RMQ test steps.
+ * It processes the test step this way:
+ * 1) Sends a message ([RmqTestStep.testData]) to [RmqTestStep.sendTo]
+ * 2) Reads a message ([RmqTestStep.testData]) from [RmqTestStep.readFrom]. If [RmqTestStep.respondTo] defined, then
+ * responds with message ([RmqTestStep.testData]) to [RmqTestStep.respondTo] if the received message is valid
+ * based on [RmqTestStep.validationDetails].
+ *
+ * All send, read and respond operations are performed in parallel per each channel but blocked until they are all finished.
+ *
+ * @param rmqChannels A map of RMQ channels where the key is the channel ID and the value is the [RmqChannel] instance.
+ * @param testScenarioState The state of the test scenario.
+ */
 open class RmqTestStepProcessor(
     protected val rmqChannels: Map<String, RmqChannel>,
     testScenarioState: TestScenarioState?

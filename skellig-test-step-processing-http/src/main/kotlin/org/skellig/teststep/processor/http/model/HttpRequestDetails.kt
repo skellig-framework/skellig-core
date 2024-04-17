@@ -1,5 +1,18 @@
 package org.skellig.teststep.processor.http.model
 
+/**
+ * Class representing the details of an HTTP request.
+ *
+ * @property verb The HTTP method name.
+ * @property url The URL of the request.
+ * @property headers The headers of the request.
+ * @property formParams The form parameters of the request.
+ * @property body The body of the request.
+ * @property queryParams The query parameters of the request.
+ * @property username The username for authentication.
+ * @property password The password for authentication.
+ * @property timeout The timeout for the request.
+ */
 class HttpRequestDetails(val verb: HttpMethodName,
                          val url: String,
                          val headers: Map<String, String?>,

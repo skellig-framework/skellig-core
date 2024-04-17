@@ -7,6 +7,23 @@ import org.skellig.teststep.processing.value.exception.FunctionExecutionExceptio
 import java.io.StringWriter
 import java.net.URL
 
+/**
+ * Executor for the 'fromTemplate' function, which constructs a [String] output based on a template file and data model.
+ * Internally it uses Freemarker template, so it must be an .ftl file.
+ *
+ * Supported args:
+ * - fromTemplate(`<relative path>`, `<data>`) - where <relative path> is path to .ftl file in the 'resources' folder of
+ * the current classpath where the function is executed and `<data>` is a [List] or [Map] with data model to be applied
+ * to the Freemarker Template, for example:
+ *```
+ * fromTemplate(/tmp/file.ftl, {
+ *   propertyA = 100500
+ *   propertyB = some value
+ * })
+ * ```
+ *
+ * @property classLoader The class loader to load the template file from 'resources' folder.
+ */
 class FromTemplateFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor {
 
     companion object {
@@ -22,6 +39,7 @@ class FromTemplateFunctionExecutor(val classLoader: ClassLoader) : FunctionValue
             val templateDetails = args[1]
             constructFromTemplate(templateProvider.getTemplate(file), templateDetails)
         } else if (args.size == 1) {
+            //TODO: remove it as functions now support collections for args
             if (args[0] is Map<*,*>) {
                 val file = (args[0] as Map<*, *>)[FILE]?.toString()
                     ?: throw FunctionExecutionException("The argument of the function `${getFunctionName()}` must have property '$FILE' defined")

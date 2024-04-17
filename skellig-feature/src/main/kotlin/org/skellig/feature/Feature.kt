@@ -1,6 +1,16 @@
 package org.skellig.feature
 
 
+/**
+ * Represents a feature in a test suite, which is constructed from a Skellig feature file
+ *
+ * @property filePath The file path of the feature.
+ * @property name The name of the feature.
+ * @property scenarios The list of test scenarios associated with the feature. It can be null if there are no scenarios.
+ * @property beforeSteps The list of test steps to be executed before the feature. It can be null if there are no before steps.
+ * @property afterSteps The list of test steps to be executed after the feature. It can be null if there are no after steps.
+ * @property tags The set of tags associated with the feature. It can be null if there are no tags.
+ */
 open class Feature protected constructor(
     val filePath: String,
     val name: String,

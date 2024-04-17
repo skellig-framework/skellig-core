@@ -4,9 +4,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
+/**
+ * Default implementation of the [TestScenarioState] interface.
+ * It uses [HashMap] to store the state data and all methods are thread-safe
+ * using [ReentrantReadWriteLock] for all available write and read operations.
+ */
 class DefaultTestScenarioState : TestScenarioState {
 
-    private val state: MutableMap<String, Any?> = linkedMapOf()
+    private val state: MutableMap<String, Any?> = mutableMapOf()
     private val lock = ReentrantReadWriteLock()
 
     override fun get(key: String?): Any? {

@@ -6,6 +6,14 @@ import org.skellig.teststep.processor.tcp.model.BaseTcpTestStep
 import org.skellig.teststep.processor.tcp.model.TcpConsumableTestStep
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * Factory class for creating [TcpConsumableTestStep] instances.
+ *
+ * @property testStepRegistry The test step registry for retrieving test steps.
+ * @property valueExpressionContextFactory The value expression context factory used to create the value expression contexts
+ * for evaluation of [ValueExpression].
+ * @property defaultTestDataConverter The name of default converter (function) for test data (optional).
+ */
 class TcpConsumableTestStepFactory(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory,

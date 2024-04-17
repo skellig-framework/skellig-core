@@ -15,6 +15,24 @@ import org.skellig.teststep.processor.http.model.HttpRequestDetails
 import org.skellig.teststep.processor.http.model.HttpResponse
 import org.skellig.teststep.processor.http.model.HttpTestStep
 
+/**
+ * The HttpTestStepProcessor class is responsible for processing HTTP test steps
+ * in a test scenario. It sends HTTP requests to the specified services and
+ * returns the responses received.
+ *
+ * The HTTP request runs in parallel on each service defined in [HttpTestStep]. After it gets result from all parallel runs,
+ * it's validated based on details provided in [HttpTestStep.validationDetails] and if not valid, it will retry the
+ * same processing with N-[attempts][HttpTestStep.attempts] (if more than 0).
+ *
+ * Each individual run of HTTP request per service, can be limited by a [timeout][HttpTestStep.timeout].
+ *
+ * The result of test step processing is a Map where key is a service name from [services][HttpTestStep.services] and value
+ * is a [HttpResponse] from execution of the request. If only 1 service name is provided in [services][HttpTestStep.services], then
+ * the result is a single [HttpResponse] from execution of the request.
+ *
+ * @param httpServices A map containing the registered HTTP channels. The key represents the service name from [HttpTestStep.services]
+ * and the [HttpChannel] value represents the HTTP channel used for sending requests.
+ */
 class HttpTestStepProcessor(
     private val httpServices: Map<String, HttpChannel>,
     testScenarioState: TestScenarioState

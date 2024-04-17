@@ -10,9 +10,26 @@ import org.skellig.feature.hook.annotation.BeforeTestScenario
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+/**
+ * Default implementation of the [SkelligTestHooksRegistry] interface.
+ *
+ * This class is responsible for managing and retrieving [SkelligHook] objects.
+ *
+ * When instantiated, it scans for classes where methods are marked with the following annotations:
+ * - [BeforeTestFeature]
+ * - [BeforeTestScenario]
+ * - [AfterTestFeature]
+ * - [BeforeTestScenario]
+ * and register them internally, using cached class instances from [classInstanceRegistry]
+ *
+ * @param packages The collection of packages to scan for hook annotations.
+ * @param classInstanceRegistry The cache of the class instances, created previously in other places for instantiating
+ * test step classes or those with custom functions.
+ */
 class DefaultSkelligTestHooksRegistry(
     packages: Collection<String>,
-    private val classInstanceRegistry: MutableMap<Class<*>, Any>) : SkelligTestHooksRegistry {
+    private val classInstanceRegistry: MutableMap<Class<*>, Any>
+) : SkelligTestHooksRegistry {
 
     companion object {
         private val LOGGER: Logger = LoggerFactory.getLogger(DefaultSkelligTestHooksRegistry::class.java)
@@ -56,8 +73,10 @@ class DefaultSkelligTestHooksRegistry(
                     try {
                         type.getDeclaredConstructor().newInstance()
                     } catch (ex: NoSuchMethodException) {
-                        throw SkelligClassInstanceRegistryException("Failed to instantiate class '${type.name}'." +
-                                " The hook class must have default constructor.", ex)
+                        throw SkelligClassInstanceRegistryException(
+                            "Failed to instantiate class '${type.name}'." +
+                                    " The hook class must have default constructor.", ex
+                        )
                     }
                 }
 
@@ -83,7 +102,7 @@ class DefaultSkelligTestHooksRegistry(
                         "but was: ${annotation::class.java}"
             )
         }
-        return if(tags.isEmpty()) null else tags.toSet()
+        return if (tags.isEmpty()) null else tags.toSet()
     }
 
     private fun extractOrderFromHookAnnotation(annotation: Annotation): Int {

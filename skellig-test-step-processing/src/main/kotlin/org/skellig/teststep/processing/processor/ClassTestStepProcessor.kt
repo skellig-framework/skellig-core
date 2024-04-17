@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
 /**
- * Invokes methods annotated with `@TestStep`.
+ * Process [ClassTestStep] by invoking methods annotated with `@TestStep`.
  *
  * @see org.skellig.teststep.runner.annotation.TestStep
  */

@@ -13,9 +13,18 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.stream.Collectors
 
+/**
+ * This class is responsible for executing the 'fromCsv' function which reads a CSV file and returns a [List] of [Map] - csv records.
+ *
+ * Supported args:
+ * - fromCsv(`<path>`) - for fromCsv: fromFile(/tmp/file.csv) will read a file 'file.csv' and returns all records as [List] of [Map].
+ * - fromCsv(`<path>`, `<filter>`) - same as above but also applies a filter for each row. The `<filter>` is a [Map] which defines
+ * key-value pairs where key is column name and value is an expected value from a csv record of this column.
+ *
+ */
 class FromCsvFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor {
 
-    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         if (value != null) throw FunctionExecutionException("Function `${getFunctionName()}` cannot be called from another value")
         return if (args.isNotEmpty()) {
             val csvFile = args[0] as String

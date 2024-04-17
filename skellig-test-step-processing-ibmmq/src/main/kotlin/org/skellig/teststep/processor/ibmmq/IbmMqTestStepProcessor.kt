@@ -9,6 +9,20 @@ import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 
+/**
+ * IbmMqTestStepProcessor is a class that processes IBMMQ test steps.
+ * It processes the test step this way:
+ * 1) Sends a message ([IbmMqTestStep.testData]) to [IbmMqTestStep.sendTo]
+ * 2) Reads a message ([IbmMqTestStep.testData]) from [IbmMqTestStep.readFrom]. If [IbmMqTestStep.respondTo] defined, then
+ * responds with message ([IbmMqTestStep.testData]) to [IbmMqTestStep.respondTo] if the received message is valid
+ * based on [IbmMqTestStep.validationDetails].
+ *
+ * All send, read and respond operations are performed in parallel per each channel but blocked until they are all finished.
+ *
+ * @param ibmMqChannels A map of IBMMQ queues where the key is the queue [ID][org.skellig.teststep.processor.ibmmq.model.IbmMqQueueDetails.id]
+ * and the value is the [IbmMqChannel] instance.
+ * @param testScenarioState The state of the test scenario.
+ */
 open class IbmMqTestStepProcessor protected constructor(
     testScenarioState: TestScenarioState,
     private val ibmMqChannels: Map<String, IbmMqChannel>

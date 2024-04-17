@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.RecognitionException
 import org.antlr.v4.runtime.Recognizer
 import org.skellig.feature.exception.FeatureParseException
 
-class SkelligFeatureParserErrorListener : BaseErrorListener() {
+internal class SkelligFeatureParserErrorListener : BaseErrorListener() {
     companion object {
         var INSTANCE = SkelligFeatureParserErrorListener()
     }

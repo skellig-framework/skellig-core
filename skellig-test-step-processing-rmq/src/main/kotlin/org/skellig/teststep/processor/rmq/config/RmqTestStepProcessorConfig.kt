@@ -13,6 +13,10 @@ import org.skellig.teststep.processor.rmq.model.factory.RmqTestStepFactory
 
 private const val RMQ_TEST_DATA_CONVERTER = "rmq.testData.converter"
 
+/**
+ * Represents the configuration for a RMQ test step processor.
+ * This class implements the TestStepProcessorConfig interface and provides a way to configure a RMQ test step processor.
+ */
 class RmqTestStepProcessorConfig : TestStepProcessorConfig<RmqTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<RmqTestStep>? {
         return if (details.config.hasPath("rmq"))
@@ -34,6 +38,10 @@ class RmqTestStepProcessorConfig : TestStepProcessorConfig<RmqTestStep> {
 
 }
 
+/**
+ * Represents the configuration for a RMQ test step processor.
+ * This class implements the TestStepProcessorConfig interface and provides a way to configure a Consumable RMQ test step processor.
+ */
 class RmqConsumableTestStepProcessorConfig : TestStepProcessorConfig<RmqConsumableTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<RmqConsumableTestStep>? {
         return if (details.config.hasPath("rmq"))

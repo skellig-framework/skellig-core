@@ -2,6 +2,14 @@ package org.skellig.teststep.processing.value.function
 
 import java.util.regex.Pattern
 
+/**
+ * Executes 'match' function by comparing the 'value' with a regular expression pattern from arguments.
+ * The 'value' will be converted to [String] even if it's not.
+ *
+ * Supported args:
+ * - match(`<regex>`) - where `<regex>` is a regular expression to be used in matching with 'value'. Returns 'true' if
+ * matches the regex or 'false' otherwise.
+ */
 class MatchValueFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Boolean {

@@ -11,6 +11,15 @@ import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
 
+/**
+ * Test step processor for consuming messages from RMQ queues.
+ * It starts up the consume process and returns the [TestStepProcessor.TestStepRunResult] immediately so others can subscribe
+ * to result events coming from each occurrence of consumed message.
+ *
+ * @constructor Creates a RmqConsumableTestStepProcessor with the provided RMQ channels and test scenario state.
+ * @param rmqChannels A map of RMQ queues, where the key is the queue [ID][org.skellig.teststep.processor.rmq.model.RmqQueueDetails.id] and the value is the corresponding [RmqChannel] object.
+ * @param testScenarioState The test scenario state object.
+ */
 open class RmqConsumableTestStepProcessor(
     protected val rmqChannels: Map<String, RmqChannel>,
     testScenarioState: TestScenarioState?,
@@ -28,6 +37,18 @@ open class RmqConsumableTestStepProcessor(
         return testStepRunResult
     }
 
+    /**
+     * Consumes data from RMQ queues and optionally responds to a corresponding queue (see [RmqConsumableTestStep.respondTo]).
+     * The response occurs only if [RmqConsumableTestStep.respondTo] queues are provided and
+     * the received message is valid according to [RmqConsumableTestStep.validationDetails].
+     *
+     * If exception occurs when message is validated or response fails, then it notifies the subscribers to [TestStepProcessor.TestStepRunResult]
+     * and consume process is resumed.
+     *
+     * @param testStep The RMQ consumable test step.
+     * @param channels The list of queues to consume data from.
+     * @param result The test step run result. Used to notify subscribers for each consume result.
+     */
     private fun consume(
         testStep: RmqConsumableTestStep,
         channels: List<String>,

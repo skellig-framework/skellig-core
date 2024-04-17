@@ -1,6 +1,20 @@
 package org.skellig.teststep.processing.value.function
 
 
+/**
+ * Executes the 'contains' function on a given value with [String] arguments.
+ * The function can be applied to 'value' of:
+ * - [String]
+ * - [Array]
+ * - [Collection]
+ * - [Map]
+ *
+ * or otherwise the 'value' is converted to [String] and checks if it contains all items from the 'args'.
+ *
+ * Supported args:
+ * - contains(`<array>`) - for example: 'contains(a, b, c)' checks if 'value' contains a, b and c letters and returns 'true' or 'false'.
+ *
+ */
 class ContainsFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {

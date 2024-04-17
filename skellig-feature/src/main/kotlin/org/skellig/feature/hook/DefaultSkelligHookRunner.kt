@@ -5,6 +5,12 @@ import org.slf4j.LoggerFactory
 import java.lang.reflect.InvocationTargetException
 import kotlin.system.measureTimeMillis
 
+/**
+ * DefaultSkelligHookRunner is a class that implements the SkelligHookRunner interface.
+ * It is responsible for running hooks based on the specified tags and hook type.
+ *
+ * @param testHooksRegistry The SkelligTestHooksRegistry instance used to retrieve the hooks based on tags and hook type.
+ */
 class DefaultSkelligHookRunner(private val testHooksRegistry: SkelligTestHooksRegistry) : SkelligHookRunner {
 
     companion object {

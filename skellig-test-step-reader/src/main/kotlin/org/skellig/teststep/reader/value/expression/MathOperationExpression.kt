@@ -2,9 +2,20 @@ package org.skellig.teststep.reader.value.expression
 
 import java.math.BigDecimal
 
-class MathOperationExpression(private val operator: String,
-                              private val leftExpression: ValueExpression,
-                              private val rightExpression: ValueExpression
+
+/**
+ * Represents a mathematical operation expression which can be performed on numeric or String values after
+ * [leftExpression] and [rightExpression] are evaluated, although only `+` can be applied ot String values which
+ * results in concatenation of values
+ *
+ * @property operator The operator used in the mathematical operation (+, -, *, /)
+ * @property leftExpression The left-hand side expression of the operation.
+ * @property rightExpression The right-hand side expression of the operation.
+ */
+class MathOperationExpression(
+    private val operator: String,
+    private val leftExpression: ValueExpression,
+    private val rightExpression: ValueExpression
 ) : ValueExpression {
 
     //TODO: handle nullable evaluated values

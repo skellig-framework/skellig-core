@@ -7,6 +7,13 @@ import io.micrometer.core.instrument.binder.BaseUnits
 import org.skellig.teststep.processor.performance.metrics.MessageReceptionMetric
 import kotlin.math.ceil
 
+
+/**
+ * Represents a Prometheus metric for measuring message reception.
+ *
+ * @property name the name of the metric
+ * @property meterRegistry the Prometheus [MeterRegistry] used for registering the metric
+ */
 open class MessageReceptionPrometheusMetric(private val name: String,
                                             meterRegistry: MeterRegistry) : MessageReceptionMetric {
 

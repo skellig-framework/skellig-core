@@ -1,5 +1,18 @@
 package org.skellig.teststep.processor.rmq.model
 
+
+/**
+ * Represents the details of a RabbitMQ queue.
+ *
+ * @property id The unique identifier of the queue.
+ * @property name The name of the queue.
+ * @property routingKey The routing key of the queue.
+ * @property isDurable Indicates whether the queue is durable or not.
+ * @property isExclusive Indicates whether the queue is exclusive or not.
+ * @property isAutoDelete Indicates whether the queue is auto-deleted or not.
+ * @property isCreateIfNew Indicates whether the queue should be created if it doesn't exist.
+ * @property parameters The additional parameters of the queue.
+ */
 class RmqQueueDetails(val id: String,
                       val name: String,
                       val routingKey: String?,

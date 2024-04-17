@@ -7,6 +7,13 @@ import org.skellig.teststep.processor.unix.UnixShellTestStepProcessor
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 import org.skellig.teststep.processor.unix.model.factory.UnixShellTestStepFactory
 
+
+/**
+ * Configures the UnixShellTestStepProcessor with the provided UnixShellTestStepProcessorConfigDetails.
+ *
+ * @param details The configuration details for the UnixShellTestStepProcessor.
+ * @return The configured TestStepProcessorDetails.
+ */
 class UnixShellTestStepProcessorConfig : TestStepProcessorConfig<UnixShellTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<UnixShellTestStep>? {
         return if (details.config.hasPath("unix")) ConfiguredTestStepProcessorDetails(

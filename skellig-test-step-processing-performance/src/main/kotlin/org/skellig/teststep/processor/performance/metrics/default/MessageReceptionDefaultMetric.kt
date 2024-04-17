@@ -4,6 +4,11 @@ import org.skellig.teststep.processor.performance.metrics.MessageReceptionMetric
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * Represents a default implementation of the MessageReceptionMetric interface.
+ *
+ * @param name the name of the metric
+ */
 open class MessageReceptionDefaultMetric(private val name: String) : MessageReceptionMetric {
 
     private val timeSeriesSuccessfulReceptions = ConcurrentHashMap<Long, AtomicInteger>()

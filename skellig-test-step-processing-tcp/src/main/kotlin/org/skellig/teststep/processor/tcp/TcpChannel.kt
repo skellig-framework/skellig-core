@@ -14,6 +14,15 @@ import java.net.Socket
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+/**
+ * Represents a TCP channel that allows sending data over a TCP connection and receiving responses.
+ * The channel can also consume incoming messages and respond to them asynchronously.
+ *
+ * The TCP Socket timeout is set to 30 sec for read operations, unless the other timeout > 0 is provided in methods
+ * [TcpChannel.read] or [TcpChannel.consume].
+ *
+ * @property tcpDetails The details of [TcpDetails].
+ */
 class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
 
     companion object {
@@ -26,25 +35,16 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
     private var outputStream: DataOutputStream? = null
     private var consumerThread: ExecutorService? = null
 
-    private fun lazyConnectSocket() {
-        if (socket == null) {
-            log.debug { "Start to connect to TCP channel '$tcpDetails'" }
-            try {
-                socket = Socket()
-                socket!!.keepAlive = tcpDetails.isKeepAlive
-                socket!!.soTimeout = DEFAULT_TIMEOUT
-                socket!!.tcpNoDelay = tcpDetails.isKeepAlive
-                socket!!.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
-                inputStream = DataInputStream(socket!!.getInputStream())
-                outputStream = DataOutputStream(socket!!.getOutputStream())
-
-                log.debug { "Successfully connected to TCP channel '$tcpDetails'" }
-            } catch (e: IOException) {
-                throw TestStepProcessingException(e.message, e)
-            }
-        }
-    }
-
+    /**
+     * Sends a request to the TCP channel.
+     * The request can be either a byte array or a string.
+     * If the request is a byte array, it is sent as is.
+     * If the request is a string, it is converted to a byte array using the default character encoding.
+     *
+     * @param request the request to send, can be a byte array or a string
+     *
+     * @throws IllegalArgumentException if the request is not a byte array or a string
+     */
     fun send(request: Any?) {
         val messageAsBytes = when (request) {
             is ByteArray -> request
@@ -64,6 +64,13 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         } ?: error("Request was not sent to '${getRemoteAddressAsString()}' as it must be String or Byte Array")
     }
 
+    /**
+     * Reads data from the TCP channel with the specified timeout and buffer size.
+     *
+     * @param timeout the timeout in milliseconds for reading data from the channel. If 0 then default timeout 30 sec is applied.
+     * @param bufferSize the size of the buffer used for reading data
+     * @return the response received from the channel, or null if an exception occurred during the read operation
+     */
     fun read(timeout: Int, bufferSize: Int): Any? {
         lazyConnectSocket()
         return try {
@@ -75,6 +82,14 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         }
     }
 
+    /**
+     * Consumes data from a TCP channel.
+     *
+     * @param response the response to send, can be null
+     * @param timeout the timeout in milliseconds for reading data from the channel. If 0 then default timeout 30 sec is applied.
+     * @param bufferSize the size of the buffer used for reading data
+     * @param responseHandler the handler function to process the received response
+     */
     fun consume(response: Any?, timeout: Int, bufferSize: Int, responseHandler: (message: Any?) -> Unit) {
 //        if (consumerThread != null) {
 //            close()
@@ -97,10 +112,10 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         }
     }
 
-    private fun closeConsumer() {
-        consumerThread?.shutdownNow()
-    }
-
+    /**
+     * Closes the TCP channel, including the input and output streams and the socket connection.
+     * If an exception occurs during the close operation, it's ignored but logged as a warning message with the reason.
+     */
     @Synchronized
     override fun close() {
         try {
@@ -113,6 +128,29 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
             }
         } catch (e: Exception) {
             log.warn("Could not safely close TCP channel '$tcpDetails'. Reason: ${e.message}")
+        }
+    }
+
+    private fun closeConsumer() {
+        consumerThread?.shutdownNow()
+    }
+
+    private fun lazyConnectSocket() {
+        if (socket == null) {
+            log.debug { "Start to connect to TCP channel '$tcpDetails'" }
+            try {
+                socket = Socket()
+                socket!!.keepAlive = tcpDetails.isKeepAlive
+                socket!!.soTimeout = DEFAULT_TIMEOUT
+                socket!!.tcpNoDelay = tcpDetails.isKeepAlive
+                socket!!.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
+                inputStream = DataInputStream(socket!!.getInputStream())
+                outputStream = DataOutputStream(socket!!.getOutputStream())
+
+                log.debug { "Successfully connected to TCP channel '$tcpDetails'" }
+            } catch (e: IOException) {
+                throw TestStepProcessingException(e.message, e)
+            }
         }
     }
 

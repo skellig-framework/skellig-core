@@ -5,6 +5,11 @@ import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.unix.model.UnixShellHostDetails
 import java.util.*
 
+
+/**
+ * Class that reads Unix Shell configuration from a Skellig [Config] and returns a collection of [UnixShellHostDetails].
+ * It returns empty list if the configuration for 'unix-shell.hosts' property is not found in the Skellig [Config] file.
+ */
 class UnixShellConfigReader {
 
     companion object {

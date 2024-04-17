@@ -2,6 +2,12 @@ package org.skellig.teststep.processing.value.function
 
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
+/**
+ * Execute the "getValues" function on [Collection] or [Map] 'value', but otherwise returns the same 'value'.
+ *
+ * Supported args:
+ * - getValues()
+ */
 class GetValuesFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {

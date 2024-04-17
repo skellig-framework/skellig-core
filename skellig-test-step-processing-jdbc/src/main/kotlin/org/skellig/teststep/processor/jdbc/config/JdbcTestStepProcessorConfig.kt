@@ -7,6 +7,9 @@ import org.skellig.teststep.processor.jdbc.JdbcTestStepProcessor
 import org.skellig.teststep.processor.jdbc.model.JdbcTestStep
 import org.skellig.teststep.processor.jdbc.model.factory.JdbcTestStepFactory
 
+/**
+ * This class is responsible for configuring a [JdbcTestStepProcessor] with the given [TestStepProcessorConfigDetails].
+ */
 class JdbcTestStepProcessorConfig : TestStepProcessorConfig<JdbcTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<JdbcTestStep>? {
         return if (details.config.hasPath("jdbc"))

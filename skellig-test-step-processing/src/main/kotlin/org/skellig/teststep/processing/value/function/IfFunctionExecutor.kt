@@ -3,6 +3,14 @@ package org.skellig.teststep.processing.value.function
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
 
+/**
+ * Executes logic for the 'if' function and returns whatever is provided in arg[1] or arg[2], depending on outcome.
+ *
+ * Supported args:
+ * - if(`<condition>`, `<then>`, `<else>`) - evaluates <condition> and returns <then> if true or <else> if false.
+ * - if(`<condition>`, `<then>`) - evaluates <condition> and returns <then> if true or null if false.
+ *
+ */
 class IfFunctionExecutor : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {

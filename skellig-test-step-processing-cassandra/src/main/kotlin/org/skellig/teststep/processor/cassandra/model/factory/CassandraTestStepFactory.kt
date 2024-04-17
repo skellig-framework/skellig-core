@@ -8,6 +8,13 @@ import org.skellig.teststep.processor.db.model.factory.DatabaseTestStepFactory
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * CassandraTestStepFactory is a class that extends the [DatabaseTestStepFactory]
+ * and is responsible for creating instances of [CassandraTestStep], if 'provider' property  of raw test step is 'cassandra'.
+ *
+ * @param testStepRegistry the registry for storing and retrieving test steps
+ * @property valueExpressionContextFactory the factory for creating value expression context, used in evaluation of [ValueExpression]
+ */
 class CassandraTestStepFactory(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory

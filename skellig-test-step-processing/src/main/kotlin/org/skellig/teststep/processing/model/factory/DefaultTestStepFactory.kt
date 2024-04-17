@@ -5,6 +5,14 @@ import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 
+/**
+ * This class is responsible for creating instances of the [DefaultTestStep] class.
+ * It extends the [BaseDefaultTestStepFactory] class and implements the [TestStepFactory] interface
+ * with the [DefaultTestStep] type parameter.
+ *
+ * @param testStepRegistry The test step registry used to store and retrieve test steps.
+ * @param valueExpressionContextFactory The factory used to create instances of [ValueExpressionContext] for evaluation of [ValueExpression].
+ */
 internal class DefaultTestStepFactory(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory

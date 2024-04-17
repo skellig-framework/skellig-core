@@ -8,12 +8,12 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Responsible for processing a test step (ex. a .sts-file or java/kotlin-class)
- * and returning result.
+ * and returning [result][TestStepRunResult].
  *
- * Each processor is bound to a specific `TestStep` which has essential properties
+ * Each processor is bound to a specific [TestStep] which has essential properties
  * required for processing and getting a result from it.
  *
- * Some processors can have resources which need to close thus it implements `Closeable`
+ * Some processors can have resources which need to close thus it implements [Closeable]
  * without any actions by default. Usually this method is used
  * when all tests are finished or one of them failed.
  *

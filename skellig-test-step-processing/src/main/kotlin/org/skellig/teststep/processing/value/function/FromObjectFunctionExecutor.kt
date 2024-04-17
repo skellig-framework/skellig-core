@@ -8,6 +8,10 @@ import java.lang.reflect.Method
 import java.util.regex.Pattern
 
 
+/**
+ * Provides functionality to execute methods, extract value from properties (getters) or access [Array] or [List]
+ * properties by index for a provided 'value'.
+ */
 class FromObjectFunctionExecutor : FunctionValueExecutor {
 
     companion object {

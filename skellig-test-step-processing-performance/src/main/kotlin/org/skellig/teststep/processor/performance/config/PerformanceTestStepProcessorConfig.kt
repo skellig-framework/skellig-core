@@ -9,6 +9,10 @@ import org.skellig.teststep.processor.performance.metrics.prometheus.PrometheusM
 import org.skellig.teststep.processor.performance.model.PerformanceTestStep
 import org.skellig.teststep.processor.performance.model.factory.PerformanceTestStepFactory
 
+/**
+ * This class implements the TestStepProcessorConfig interface and provides
+ * a way to configure the [PerformanceTestStepProcessor] using the given details.
+ */
 class PerformanceTestStepProcessorConfig : TestStepProcessorConfig<PerformanceTestStep> {
 
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<PerformanceTestStep> {

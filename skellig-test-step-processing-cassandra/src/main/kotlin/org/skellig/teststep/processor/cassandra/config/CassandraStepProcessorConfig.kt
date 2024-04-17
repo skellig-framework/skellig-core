@@ -6,7 +6,9 @@ import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigD
 import org.skellig.teststep.processor.cassandra.CassandraTestStepProcessor
 import org.skellig.teststep.processor.cassandra.model.CassandraTestStep
 import org.skellig.teststep.processor.cassandra.model.factory.CassandraTestStepFactory
-
+/**
+ * This class is responsible for configuring a [CassandraTestStepProcessor] with the given [TestStepProcessorConfigDetails].
+ */
 class CassandraTestStepProcessorConfig : TestStepProcessorConfig<CassandraTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<CassandraTestStep>? {
         return if (details.config.hasPath("cassandra"))

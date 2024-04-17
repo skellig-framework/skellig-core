@@ -5,6 +5,13 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
 
+/**
+ * Represents a function executor that reads the content of a file from the given file path and returns it.
+ *
+ * Supported args:
+ * - fromFile(`<path>`) - for example: fromFile(/tmp/file.log) will read a file 'file.log' and returns its content as [String].
+ *
+ */
 class FileFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor {
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any =
@@ -20,10 +27,10 @@ class FileFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor
             try {
                 String(Files.readAllBytes(Paths.get(resource.toURI())), StandardCharsets.UTF_8)
             } catch (e: Exception) {
-                throw FunctionExecutionException(String.format("Failed to read file '%s'", pathToFile), e)
+                throw FunctionExecutionException("Failed to read file '$pathToFile'", e)
             }
         } else {
-            throw FunctionExecutionException(String.format("File '%s' doesn't exist", pathToFile))
+            throw FunctionExecutionException("File '$pathToFile' doesn't exist")
         }
     }
 

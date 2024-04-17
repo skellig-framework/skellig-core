@@ -5,6 +5,13 @@ import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
+/**
+ * This class is responsible for constructing instances of [TaskTestStep].
+ *
+ * @property testStepRegistry the [TestStepRegistry] used to retrieve test step information
+ * @property valueExpressionContextFactory the [ValueExpressionContextFactory] for creating value expression contexts for evaluation of [ValueExpression]
+ * @property defaultTestDataConverter the default test data converter to be used (nullable)
+ */
 internal class TaskTestStepFactory(
     testStepRegistry: TestStepRegistry,
     valueExpressionContextFactory: ValueExpressionContextFactory,

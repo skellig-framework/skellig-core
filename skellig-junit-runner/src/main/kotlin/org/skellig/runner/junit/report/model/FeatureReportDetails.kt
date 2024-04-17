@@ -1,5 +1,16 @@
 package org.skellig.runner.junit.report.model
 
+/**
+ * Represents the details of a feature report which includes a list of [TestScenarioReportDetails]
+ *
+ * @property name The name of the feature.
+ * @property tags The set of tags associated with the feature.
+ * @property beforeHooksReportDetails The list of before hooks report details.
+ * @property afterHooksReportDetails The list of after hooks report details.
+ * @property beforeReportDetails The list of before report details.
+ * @property afterReportDetails The list of after report details.
+ * @property testScenarioReportDetails The list of test scenario report details.
+ */
 class FeatureReportDetails(
     val name: String?,
     val tags: Set<String>?,

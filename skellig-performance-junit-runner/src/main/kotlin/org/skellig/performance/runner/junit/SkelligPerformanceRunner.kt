@@ -13,6 +13,11 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.reflect.full.createInstance
 
+/**
+ * SkelligPerformanceRunner class is used to run performance tests.
+ *
+ * @param clazz The class containing the performance test methods.
+ */
 open class SkelligPerformanceRunner(clazz: Class<*>) : Runner() {
 
     private val log = logger<SkelligPerformanceRunner>()
