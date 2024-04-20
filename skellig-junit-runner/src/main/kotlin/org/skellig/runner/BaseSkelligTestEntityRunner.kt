@@ -106,9 +106,6 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
 
                 // subscribe for result from test step. Usually needed for async test step
                 // however if it's sync, then the function will be called anyway.
-
-                // subscribe for result from test step. Usually needed for async test step
-                // however if it's sync, then the function will be called anyway.
                 runResult.subscribe { t, r, e ->
                     testStepReportBuilder.withOriginalTestStep(t)
                         .withResult(r)

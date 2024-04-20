@@ -1,0 +1,21 @@
+name ("check performance of storing data in state") {
+    rps = 100
+    timeToRun = "00:00:05"
+    run [
+        "run something"
+    ]
+    after [
+        "validate data"
+    ]
+}
+
+name ("check performance of storing data in state with failed after step") {
+    rps = 100
+    timeToRun = "00:00:05"
+    run [
+        "run something"
+    ]
+    after [
+        "validate failed data"
+    ]
+}
