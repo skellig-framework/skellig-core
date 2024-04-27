@@ -41,5 +41,5 @@ class RandomFunctionExecutor : FunctionValueExecutor {
         return randomBigDecimal.setScale(0, RoundingMode.HALF_UP)
     }
 
-    override fun getFunctionName(): String = "rand"
+    override fun getFunctionName(): String = "random"
 }

@@ -221,7 +221,7 @@ class TestScenarioReportDetailsTest {
             testStepReportDetails = null
         )
 
-        assertEquals("01.30.000 sec.", testScenarioReportDetails.getAfterScenarioDurationFormatted())
+        assertEquals("01.30.000 min.", testScenarioReportDetails.getAfterScenarioDurationFormatted())
     }
 
     @Test

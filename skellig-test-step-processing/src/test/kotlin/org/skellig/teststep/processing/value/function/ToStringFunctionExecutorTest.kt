@@ -29,4 +29,9 @@ class ToStringFunctionExecutorTest {
 
         assertEquals(expectedValue.toString(charset), extractor.execute("toString", expectedValue, arrayOf("utf16")))
     }
+
+    @Test
+    fun testToStringNullValue() {
+        assertEquals("null", extractor.execute("toString", null, emptyArray()))
+    }
 }

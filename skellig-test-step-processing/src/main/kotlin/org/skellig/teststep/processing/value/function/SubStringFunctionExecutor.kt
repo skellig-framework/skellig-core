@@ -1,7 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
-import java.lang.String.format
 
 /**
  * Executes the 'subString' function for a [String] value which returns a substring starting from a provided [String] in args.
@@ -20,9 +19,9 @@ open class SubStringFunctionExecutor : FunctionValueExecutor {
                     newValue = subStringAfter(newValue, it.toString())
                 }
                 return newValue
-            } ?: throw FunctionExecutionException(format("Cannot extract sub string '%s' from null value", extractionParameter))
+            } ?: throw FunctionExecutionException("Cannot extract sub string '$extractionParameter' from null value")
         } else {
-            throw FunctionExecutionException("Function `subString` can only accept 1 String argument. Found ${args.size}")
+            throw FunctionExecutionException("Function `${getFunctionName()}` can only accept 1 String argument. Found ${args.size}")
         }
     }
 

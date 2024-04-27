@@ -49,5 +49,6 @@ class BaseToDateTimeFunctionExecutorTest {
         assertThrows<FunctionExecutionException> { dateFunctionExecutor.execute("toDate", "something", arrayOf("dd/MM/yyyy")) }
         assertThrows<FunctionExecutionException> { dateFunctionExecutor.execute("toDate", "17/90/2020", arrayOf("dd/MM/yyyy")) }
         assertThrows<FunctionExecutionException> { dateTimeFunctionExecutor.execute("toDateTime", "14/12/2020 90:30", arrayOf("dd/MM/yyyy HH:mm")) }
+        assertThrows<FunctionExecutionException> { dateTimeFunctionExecutor.execute("toDateTime", "14/12/2020 90:30", arrayOf(null)) }
     }
 }

@@ -32,7 +32,7 @@ import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.create
 class HttpTestStep(
     id: String?,
     name: String,
-    execution: TestStepExecutionType?,
+    execution: TestStepExecutionType,
     timeout: Int,
     delay: Int,
     attempts: Int,

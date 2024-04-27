@@ -1,9 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -20,12 +18,19 @@ class FileFunctionExecutorTest {
 
     @Test
     @DisplayName("When file exist Then check content is returned")
-    fun testValidatePathToJsonFile() {
+    fun testWhenFileExistWithContent() {
         val filePath = "csv/test-file.csv"
 
         val expectedContent = readFromFileExpectedResult("/$filePath")
 
-        Assertions.assertEquals(expectedContent, fileFunctionExecutor!!.execute("fromFile", null, arrayOf(filePath)))
+        assertEquals(expectedContent, fileFunctionExecutor!!.execute("fromFile", null, arrayOf(filePath)))
+    }
+
+    @Test
+    @DisplayName("When file exist Then check content is returned")
+    fun testWhenNoPathProvided() {
+        val ex = assertThrows<FunctionExecutionException> { fileFunctionExecutor!!.execute("fromFile", null, emptyArray()) }
+        assertEquals("Function `fromFile` can only accept 1 String argument. Found 0", ex.message)
     }
 
     @Test
@@ -37,7 +42,7 @@ class FileFunctionExecutorTest {
             fileFunctionExecutor!!.execute("fromFile", null, arrayOf(filePath))
         }
 
-        Assertions.assertEquals("File '$filePath' doesn't exist", exception.message)
+        assertEquals("File '$filePath' doesn't exist", exception.message)
     }
 
     private fun readFromFileExpectedResult(pathToFile: String): String? {

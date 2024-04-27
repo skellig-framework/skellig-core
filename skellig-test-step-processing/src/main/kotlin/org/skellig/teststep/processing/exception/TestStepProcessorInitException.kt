@@ -6,7 +6,7 @@ package org.skellig.teststep.processing.exception
  * @param message The detail message of the exception.
  * @param cause The cause of the exception.
  */
-class TestDataProcessingInitException(message: String?, cause: Throwable?) : RuntimeException(message, cause) {
+class TestStepProcessorInitException(message: String?, cause: Throwable?) : RuntimeException(message, cause) {
 
     constructor(message: String?) : this(message, null)
 }

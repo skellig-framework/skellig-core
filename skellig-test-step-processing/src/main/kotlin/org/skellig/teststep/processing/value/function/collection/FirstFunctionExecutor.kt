@@ -16,6 +16,7 @@ class FirstFunctionExecutor : FunctionValueExecutor {
             return when(value) {
                 is Collection<*> -> value.first()
                 is Array<*> -> value.first()
+                is Map<*, *> -> value.entries.first()
                 else -> throw FunctionExecutionException("Function '${getFunctionName()}' can only be called from array or collection of items")
             }
         } ?: throw FunctionExecutionException("Cannot get first item from null value when calling function '${getFunctionName()}'")

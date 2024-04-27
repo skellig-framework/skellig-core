@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.value.function
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
 internal class JsonPathFunctionExecutorTest {
@@ -45,6 +46,14 @@ internal class JsonPathFunctionExecutorTest {
     @Test
     fun testExtractByEmptyJsonPath() {
         assertEquals("[a:1, b:v1, c:[d:v2, g:[1, 2, 3]]]", extractor.execute("jsonPath", createJson(), arrayOf("")))
+    }
+
+    @Test
+    fun testExtractFromJsonWithEmptyArgs() {
+        val ex = assertThrows<FunctionExecutionException> {
+            extractor.execute("jsonPath", "invalid", emptyArray())
+        }
+        assertEquals("Function `jsonPath` can only accept 1 or 2 arguments. Found 0", ex.message)
     }
 
     private fun createJson() = """

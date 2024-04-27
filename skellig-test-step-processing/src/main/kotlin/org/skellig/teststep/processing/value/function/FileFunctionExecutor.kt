@@ -18,7 +18,7 @@ class FileFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecutor
         if (args.size == 1) {
             readFileContentFromFilePath(args[0]?.toString() ?: "")
         } else {
-            throw FunctionExecutionException("Function `fromFile` can only accept 1 String argument. Found ${args.size}")
+            throw FunctionExecutionException("Function `${getFunctionName()}` can only accept 1 String argument. Found ${args.size}")
         }
 
     private fun readFileContentFromFilePath(pathToFile: String): String {

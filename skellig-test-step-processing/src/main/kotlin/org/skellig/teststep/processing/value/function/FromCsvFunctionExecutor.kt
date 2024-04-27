@@ -6,7 +6,6 @@ import de.siegmar.fastcsv.reader.CsvRow
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.function.Consumer
@@ -30,7 +29,7 @@ class FromCsvFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecu
             val csvFile = args[0] as String
             val filter = if (args.size == 2 && args[1] is Map<*, *>) args[1] as Map<String, Any?> else null
             readCsvFile(csvFile, getRowFilter(filter))
-        } else throw FunctionExecutionException("Function `csv` can only accept 1 or 2 arguments. Found ${args.size}")
+        } else throw FunctionExecutionException("Function `${getFunctionName()}` can only accept 1 or 2 arguments. Found ${args.size}")
     }
 
     private fun getRowFilter(rowFilter: Map<String, Any?>?): Predicate<Map<String, String>> {
@@ -44,24 +43,20 @@ class FromCsvFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecu
     private fun readCsvFile(fileName: String?, rowFilter: Predicate<Map<String, String>>): List<Map<String, String>> {
         val result = mutableListOf<Map<String, String>>()
         val pathToFile = getPathToFile(fileName)
-        if (Files.exists(pathToFile)) {
-            readCsvContainer(pathToFile)
-                .let { csvContainer ->
-                    csvContainer?.rows?.forEach(Consumer { csvRow: CsvRow ->
-                        val row = csvRow.fieldMap.entries.stream()
-                            .collect(
-                                Collectors.toMap<Map.Entry<String, String>, String, String>(
-                                    { entry: Map.Entry<String, String> -> entry.key.trim { it <= ' ' } },
-                                    { entry: Map.Entry<String, String> -> entry.value.trim { it <= ' ' } })
-                            )
-                        if (rowFilter.test(row)) {
-                            result.add(row)
-                        }
-                    })
-                }
-        } else {
-            throw FunctionExecutionException(String.format("File %s does not exist", fileName))
-        }
+        readCsvContainer(pathToFile)
+            .let { csvContainer ->
+                csvContainer?.rows?.forEach(Consumer { csvRow: CsvRow ->
+                    val row = csvRow.fieldMap.entries.stream()
+                        .collect(
+                            Collectors.toMap<Map.Entry<String, String>, String, String>(
+                                { entry: Map.Entry<String, String> -> entry.key.trim { it <= ' ' } },
+                                { entry: Map.Entry<String, String> -> entry.value.trim { it <= ' ' } })
+                        )
+                    if (rowFilter.test(row)) {
+                        result.add(row)
+                    }
+                })
+            }
         return result
     }
 

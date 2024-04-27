@@ -65,7 +65,7 @@ class CustomFunctionExecutor(
                 val foundClassInstance = classInstanceRegistry.computeIfAbsent(classInfo.loadClass()) { type ->
                     try {
                         type.getDeclaredConstructor().newInstance()
-                    } catch (ex: NoSuchMethodException) {
+                    } catch (ex: Exception) {
                         throw FunctionRegistryException("Failed to instantiate class '${type.name}'", ex)
                     }
                 }

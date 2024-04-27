@@ -11,6 +11,4 @@ class ValidationException(message: String?, cause: Throwable?) : RuntimeExceptio
 
     constructor(message: String?) : this(message, null)
 
-    constructor(e: Exception?) : this("", e)
-
 }

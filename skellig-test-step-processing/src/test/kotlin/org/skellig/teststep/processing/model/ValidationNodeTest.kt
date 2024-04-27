@@ -1,11 +1,7 @@
 package org.skellig.teststep.processing.model
 
-import org.junit.Ignore
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
@@ -54,6 +50,38 @@ class ValidationNodeTest {
     }
 
     @Test
+    @DisplayName("When expected field is String")
+    fun testValidateWhenActualValueIsString() {
+        PairValidationNode(StringValueExpression("f.1"), StringValueExpression("something"), emptyMap(), valueExpressionContextFactory)
+            .validate(mapOf(Pair("f.1", "something")))
+
+        SingleValidationNode(StringValueExpression("something"), emptyMap(), valueExpressionContextFactory)
+            .validate("something")
+
+        PairValidationNode(PropertyValueExpression("f1"), StringValueExpression("something"), mapOf(Pair("f1", "something")), valueExpressionContextFactory)
+            .validate("something")
+    }
+
+    @Test
+    @DisplayName("When actual is boolean expression")
+    fun testValidateWhenActualIsBooleanExpression() {
+        PairValidationNode(
+            ValueComparisonExpression(">", NumberValueExpression("10"), NumberValueExpression("1")),
+            BooleanValueExpression("true"), emptyMap(), valueExpressionContextFactory
+        ).validate("this value won't be used")
+    }
+
+    @Test
+    @DisplayName("When actual is boolean expression with references to result")
+    fun testValidateWhenActualIsBooleanExpressionWithReferencesToResult() {
+        PairValidationNode(
+            ValueComparisonExpression(">", CallChainExpression(listOf(AlphanumericValueExpression("$"), AlphanumericValueExpression("num"))),
+                NumberValueExpression("1")),
+            BooleanValueExpression("true"), emptyMap(), valueExpressionContextFactory
+        ).validate(mapOf(Pair("num", 100)))
+    }
+
+    @Test
     @DisplayName("When expected field does not contain value Then check that error message has processed expected value")
     fun testValidateWhenNotContains() {
         val validator = PairValidationNode(
@@ -88,10 +116,10 @@ class ValidationNodeTest {
     }
 
     @Test
-    @DisplayName("When actual String And expect few contains values Then pass validation")
+    @DisplayName("When actual String And expect few contains values")
     fun testValidateListOfContainsTextWhenValid() {
 
-        ValidationNodes(
+        val validationNodes = ValidationNodes(
             listOf(
                 SingleValidationNode(
                     CallChainExpression(listOf(AlphanumericValueExpression("$"), FunctionCallExpression("contains", arrayOf(StringValueExpression("v1"))))),
@@ -102,7 +130,16 @@ class ValidationNodeTest {
                     emptyMap(), valueExpressionContextFactory
                 ),
             )
-        ).validate("v1 v2")
+        )
+
+        validationNodes.validate("v1 v2")
+
+        val ex = Assertions.assertThrows(ValidationException::class.java) { validationNodes.validate("v3") }
+        assertEquals(
+            "Validation failed for '\$.contains(v1)'!\n" +
+                    "Expected: false\n" +
+                    "Actual: false", ex.message
+        )
     }
 
     @Test
@@ -194,7 +231,7 @@ class ValidationNodeTest {
         validator.validate(actualResult)
     }
 
-    @Ignore("No function 'all' for list is available yet")
+    @Disabled("No function 'all' for list is available yet")
     @DisplayName("When expected contains+size under single group And not match actual List of String")
     fun testValidateListOfContainsTextUnderGroupAndNotMatchWithActualResult() {
         val actualResult = ArrayList(listOf("v1 v2", "v3 v4"))
@@ -485,25 +522,42 @@ class ValidationNodeTest {
                         ),
                         emptyMap(), valueExpressionContextFactory
                     ),
+                    GroupedValidationNode(
+                        AlphanumericValueExpression("data"),
+                        ValidationNodes(
+                            listOf(
+                                SingleValidationNode(
+                                    CallChainExpression(listOf(AlphanumericValueExpression("$"), FunctionCallExpression("contains", arrayOf(StringValueExpression("v1"))))),
+                                    emptyMap(), valueExpressionContextFactory
+                                )
+                            )
+                        ),
+                        emptyMap(), valueExpressionContextFactory
+                    )
                 )
             )
 
-            assertEquals("{\n" +
-                    "  size() = 2.toInt()\n" +
-                    "  getValues():   {\n" +
-                    "    {\n" +
-                    "      k1 = v1\n" +
-                    "      k2 = v2\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    {\n" +
-                    "      k1 = v3\n" +
-                    "      k2 = v4\n" +
-                    "    }\n" +
-                    "\n" +
-                    "  }\n" +
-                    "\n" +
-                    "}\n", validator.toString())
+            assertEquals(
+                "{\n" +
+                        "  size() = 2.toInt()\n" +
+                        "  getValues():   {\n" +
+                        "    {\n" +
+                        "      k1 = v1\n" +
+                        "      k2 = v2\n" +
+                        "    }\n" +
+                        "\n" +
+                        "    {\n" +
+                        "      k1 = v3\n" +
+                        "      k2 = v4\n" +
+                        "    }\n" +
+                        "\n" +
+                        "  }\n\n" +
+                        "  data:   {\n"+
+                        "    $.contains(v1)\n" +
+                        "  }\n" +
+                        "\n" +
+                        "}\n", validator.toString()
+            )
         }
     }
 }

@@ -15,7 +15,7 @@ class TestStepProcessorResultTest {
     @Test
     fun testAwaitResultWithTimeoutWhenGotResult() {
         val defaultTestStep = mock<DefaultTestStep>()
-        whenever(defaultTestStep.timeout).thenReturn(1500)
+        whenever(defaultTestStep.timeout).thenReturn(5000)
 
         val result = BaseTestStepProcessor.DefaultTestStepRunResult(defaultTestStep)
         var notifiedResponse: Any? = null

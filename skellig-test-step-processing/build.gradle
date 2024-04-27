@@ -14,7 +14,7 @@ dependencies {
     implementation 'org.freemarker:freemarker:2.3.30'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    implementation group: 'org.junit.platform', name: 'junit-platform-runner'
+//    implementation group: 'org.junit.platform', name: 'junit-platform-runner'
     implementation group: 'org.apache.commons', name: 'commons-lang3'
     implementation group: 'io.rest-assured', name: 'json-path', version: '5.4.0'
     implementation group: 'org.graalvm.js', name: 'js', version: '21.3.0'
@@ -29,6 +29,7 @@ dependencies {
     api project(':skellig-test-step-reader-sts')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params'
     testImplementation group: 'org.mockito.kotlin', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'

@@ -11,7 +11,7 @@ import java.util.*
 open class BaseRmqTestStep protected constructor(
     id: String?,
     name: String?,
-    execution: TestStepExecutionType?,
+    execution: TestStepExecutionType,
     timeout: Int,
     delay: Int,
     attempts: Int,
