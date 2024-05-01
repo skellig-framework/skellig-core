@@ -16,6 +16,8 @@ package org.skellig.teststep.reader.value.expression
  */
 class FunctionCallExpression(val name: String, val args: Array<ValueExpression?>) : ValueExpression {
 
+    constructor(name: String) : this(name, emptyArray())
+
     override fun evaluate(context: ValueExpressionContext): Any? {
         context.evaluationType = EvaluationType.DEFAULT
         // if value from context is not null, then the function should be called as a method of this value

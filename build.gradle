@@ -203,7 +203,7 @@ subprojects {
 
     test {
         useJUnitPlatform {
-            excludeTags "component-test"
+            excludeTags "integration-test"
             testLogging {
                 events "failed"
 
@@ -216,9 +216,9 @@ subprojects {
         }
     }
 
-    tasks.register("componentTest", Test) {
+    tasks.register("integrationTest", Test) {
         useJUnitPlatform {
-            includeTags "component-test"
+            includeTags "integration-test"
         }
     }
 }
