@@ -1,8 +1,9 @@
 package org.skellig.teststep.processing.value.function
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
 class FromObjectFunctionExecutorTest {
@@ -10,9 +11,16 @@ class FromObjectFunctionExecutorTest {
     private var functionExecutor = FromObjectFunctionExecutor()
 
     @Test
+    @DisplayName("Extract from null value")
+    fun testExtractFromNullValue() {
+        val ex = assertThrows<FunctionExecutionException> { functionExecutor.execute("f1", null, arrayOf()) }
+        assertEquals("Cannot extract 'f1' from null value", ex.message)
+    }
+
+    @Test
     @DisplayName("Extract from Map with null value")
     fun testExtractFromMapNullValue() {
-        Assertions.assertNull(functionExecutor.execute("f1", mapOf(Pair("f1", null)), emptyArray()))
+        assertNull(functionExecutor.execute("f1", mapOf(Pair("f1", null)), emptyArray()))
     }
 
     @Test
@@ -22,7 +30,7 @@ class FromObjectFunctionExecutorTest {
         val f2 = functionExecutor.execute("f2", f1, emptyArray())
         val f3 = functionExecutor.execute("f3", f2, emptyArray())
 
-        Assertions.assertEquals("v3", f3)
+        assertEquals("v3", f3)
     }
 
     @Test
@@ -31,25 +39,38 @@ class FromObjectFunctionExecutorTest {
         val f1 = functionExecutor.execute("f1", getTestMap(), emptyArray())
         val f2 = functionExecutor.execute("f2", f1, emptyArray())
 
-        Assertions.assertTrue((f2 as Map<*, *>?)!!.containsKey("f3"))
+        assertTrue((f2 as Map<*, *>?)!!.containsKey("f3"))
     }
 
     @Test
     @DisplayName("Extract size of List")
     fun testExtractSizeOfList() {
-        Assertions.assertEquals(2, functionExecutor.execute("size", mutableListOf("v1", "v2"), emptyArray()))
+        assertEquals(2, functionExecutor.execute("size", mutableListOf("v1", "v2"), emptyArray()))
     }
 
     @Test
     @DisplayName("Extract value of List by index")
     fun testExtractValueOfListByIndex() {
-        Assertions.assertEquals("v2", functionExecutor.execute("values[1]", mutableMapOf(Pair("values", mutableListOf("v1", "v2"))), emptyArray()))
+        assertEquals("v2", functionExecutor.execute("values[1]", mutableMapOf(Pair("values", mutableListOf("v1", "v2"))), emptyArray()))
+    }
+
+    @Test
+    @DisplayName("Extract value of Array by index")
+    fun testExtractValueOfArrayByIndex() {
+        assertEquals("v2", functionExecutor.execute("values[1]", mutableMapOf(Pair("values", arrayOf("v1", "v2"))), emptyArray()))
+    }
+
+    @Test
+    @DisplayName("Extract value by index from non-array")
+    fun testExtractValueOfByIndexFromNonArray() {
+        val ex = assertThrows<FunctionExecutionException> { functionExecutor.execute("values[1]", mutableMapOf(Pair("values", "random")), emptyArray()) }
+        assertEquals("Cannot get value by index '1' from non array or list object: random", ex.message)
     }
 
     @Test
     @DisplayName("Extract size of Map")
     fun testExtractLengthOfArray() {
-        Assertions.assertEquals(1, functionExecutor.execute("size", functionExecutor.execute("f1", getTestMap(), emptyArray()), emptyArray()))
+        assertEquals(1, functionExecutor.execute("size", functionExecutor.execute("f1", getTestMap(), emptyArray()), emptyArray()))
     }
 
     @Test
@@ -58,14 +79,39 @@ class FromObjectFunctionExecutorTest {
         val testObject = TestObject("test")
 
         val name = functionExecutor.execute("name", testObject, emptyArray())
-        Assertions.assertEquals(testObject.name, name)
-        Assertions.assertEquals(testObject.name.length, functionExecutor.execute("length", name, emptyArray()))
+        assertEquals(testObject.name, name)
+        assertEquals(testObject.name.length, functionExecutor.execute("length", name, emptyArray()))
+    }
+
+    @Test
+    @DisplayName("Call interface method from object of a class")
+    fun testCallInterfaceMethodOfClass() {
+        val testObject = TestObject("test")
+
+        functionExecutor.execute("callMethod", testObject, arrayOf(1))
+        assertThrows<FunctionExecutionException> { functionExecutor.execute("callMethod", testObject, arrayOf(0)) }
+    }
+
+    @Test
+    @DisplayName("Extract from private property of object of a class")
+    fun testExtractFromCustomObjectWithPrivateProperty() {
+        val testObject = TestObjectWithPrivateProperty("test")
+
+        val ex = assertThrows<FunctionExecutionException> { functionExecutor.execute("name", testObject, emptyArray()) }
+        assertEquals("No function or property `name` found in the result `TestObjectWithPrivateProperty(test)` with argument pairs ()", ex.message)
+    }
+
+    @Test
+    @DisplayName("Call method of object which throws exception")
+    fun testCallMethodWhichThrowsException() {
+        val ex = assertThrows<FunctionExecutionException> { functionExecutor.execute("runWithException", this, emptyArray()) }
+        assertEquals("Failed to call function `runWithException` of `FromObjectFunctionExecutorTest`", ex.message)
     }
 
     @Test
     @DisplayName("Extract from object where method not found")
     fun testExtractFromObjectWhenMethodNotFound() {
-        Assertions.assertThrows(FunctionExecutionException::class.java) { functionExecutor.execute("", Any(), arrayOf("param")) }
+        assertThrows<FunctionExecutionException> { functionExecutor.execute("", Any(), arrayOf("param")) }
     }
 
     @Test
@@ -77,17 +123,41 @@ class FromObjectFunctionExecutorTest {
             Pair("a.b ", mapOf(Pair("d", 3))),
         )
 
-        Assertions.assertAll(
-            { Assertions.assertEquals(1, functionExecutor.execute("a.b.c", map, arrayOf("a.b.c"))) },
-            { Assertions.assertEquals(2, functionExecutor.execute("a b.c", map, arrayOf("a b.c"))) },
-            { Assertions.assertEquals(3, functionExecutor.execute("d", functionExecutor.execute("a.b ", map, emptyArray()), emptyArray())) },
+        assertAll(
+            { assertEquals(1, functionExecutor.execute("a.b.c", map, arrayOf("a.b.c"))) },
+            { assertEquals(2, functionExecutor.execute("a b.c", map, arrayOf("a b.c"))) },
+            { assertEquals(3, functionExecutor.execute("d", functionExecutor.execute("a.b ", map, emptyArray()), emptyArray())) },
         )
+    }
+
+    @Test
+    fun testGetFunctionName() {
+       assertEquals("", functionExecutor.getFunctionName())
     }
 
     private fun getTestMap(): MutableMap<Any, Any> {
         return mutableMapOf(Pair("f1", mutableMapOf(Pair("f2", mutableMapOf(Pair("f3", "v3"))))))
     }
 
-    private class TestObject(val name: String)
+    fun runWithException() {
+        throw RuntimeException("inner error")
+    }
+
+    override fun toString(): String = "FromObjectFunctionExecutorTest"
+
+    private interface TestInterface {
+        fun callMethod(times: Int)
+    }
+
+    private class TestObject(val name: String) : TestInterface {
+
+        override fun callMethod(times: Int) {
+            assertTrue(times > 0)
+        }
+    }
+
+    private class TestObjectWithPrivateProperty(private val name: String) {
+        override fun toString(): String = "TestObjectWithPrivateProperty($name)"
+    }
 
 }

@@ -1,0 +1,3 @@
+ignore:
+  - "java"  # ignore folders and all its contents
+  - "*.java"       # wildcards accepted

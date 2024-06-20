@@ -142,6 +142,7 @@ class DefaultFunctionValueExecutor private constructor(
             this.withFunctionValueExecutor(ContainsFunctionExecutor())
             this.withFunctionValueExecutor(MatchValueFunctionExecutor())
             this.withFunctionValueExecutor(DateTimeCompareFunctionExecutor())
+            this.withFunctionValueExecutor(ToInstantFunctionExecutor())
             classLoader?.let {
                 val fromCsvFunctionExecutor = FromCsvFunctionExecutor(it)
                 this.withFunctionValueExecutor(fromCsvFunctionExecutor)

@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.cassandra
 
 import com.datastax.oss.driver.api.core.CqlSession
+import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 
@@ -29,9 +30,8 @@ internal class CassandraUpdateRequestExecutor(session: CqlSession,
             val selectRequest = DatabaseRequest("select", databaseRequest.table, where)
             val selectResult = selectExecutor.execute(selectRequest) as List<*>
             if (selectResult.isEmpty()) {
-                val insertRequest = DatabaseRequest("insert", databaseRequest.table,
-                                                   extractAllColumnValuePairs(databaseRequest.columnValuePairs, where))
-                return insertExecutor.execute(insertRequest)
+                throw TestStepProcessingException("Failed to update the table '${databaseRequest.table}' in Cassandra DB" +
+                        " because no record found with column values: '$where'")
             }
         }
         return super.execute(databaseRequest)

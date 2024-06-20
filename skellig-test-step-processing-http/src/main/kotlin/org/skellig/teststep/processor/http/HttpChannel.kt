@@ -23,8 +23,6 @@ open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
         .writeTimeout(defaultTimeoutMs, TimeUnit.MILLISECONDS)
         .build()
 
-    constructor() : this("", 30000)
-
     /**
      * Sends an HTTP request and returns the response.
      *
@@ -41,7 +39,7 @@ open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
                 val response = httpClient.newCall(httpRequest).execute()
                 convertToLocalResponse(response)
             } catch (e: Exception) {
-                throw TestStepProcessingException("Failed to send HTTP request to " + request.url, e)
+                throw TestStepProcessingException("Failed to send HTTP request to ${request.url}", e)
             }
         }
     }
@@ -68,7 +66,7 @@ open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
     }
 
     fun close() {
-        httpClient.connectionPool.evictAll();
-        httpClient.dispatcher.executorService.shutdown();
+        httpClient.connectionPool.evictAll()
+        httpClient.dispatcher.executorService.shutdown()
     }
 }

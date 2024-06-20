@@ -6,10 +6,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.skellig.teststep.processing.exception.TestStepProcessingException
-import org.skellig.teststep.processing.model.ClassTestStep
-import org.skellig.teststep.processing.model.DefaultTestStep
-import org.skellig.teststep.processing.model.TaskTestStep
-import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.*
 import java.util.regex.Pattern
 
 class CompositeTestStepProcessorTest {
@@ -48,7 +45,7 @@ class CompositeTestStepProcessorTest {
         val testStep = DefaultTestStep(name = "t1")
 
         assertNotNull(compositeProcessor.process(testStep))
-        assertNotNull(compositeProcessor.process(TaskTestStep("t1", "t1", null, 0, 0, 0, null, null, null, null, mutableMapOf())))
+        assertNotNull(compositeProcessor.process(TaskTestStep("t1", "t1", TestStepExecutionType.SYNC, 0, 0, 0, null, null, null, null, mutableMapOf())))
         assertNotNull(compositeProcessor.process(ClassTestStep("i1", Pattern.compile(".+"), this, javaClass.methods[0], "n2", emptyMap())))
     }
 
@@ -61,5 +58,10 @@ class CompositeTestStepProcessorTest {
         }
 
         assertEquals("No processor was found for test step 'n1'", ex.message)
+    }
+
+    @Test
+    fun testClassOfTestStep() {
+        assertEquals(TestStep::class.java, compositeProcessor.getTestStepClass())
     }
 }

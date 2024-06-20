@@ -1,6 +1,7 @@
 package org.skellig.runner.annotation
 
 import org.skellig.teststep.runner.context.SkelligTestContext
+import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
 
 /**
@@ -14,6 +15,9 @@ import kotlin.reflect.KClass
  * @property excludeTags The array of tags of feature, test scenario, or hooks to exclude when executing tests.
  * By default, it has tag '@Ignore'
  */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+@Inherited
 annotation class SkelligOptions(val features: Array<String>,
                                 val testSteps: Array<String>,
                                 val config: String = "",

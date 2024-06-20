@@ -1,11 +1,9 @@
 package org.skellig.teststep.processing.value.function
 
-import org.junit.Ignore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-@Ignore
 class IfFunctionExecutorTest {
 
     private var converter: IfFunctionExecutor? = null

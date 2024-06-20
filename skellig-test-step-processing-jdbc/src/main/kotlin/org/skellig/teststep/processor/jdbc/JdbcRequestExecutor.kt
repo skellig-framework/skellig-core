@@ -1,6 +1,6 @@
 package org.skellig.teststep.processor.jdbc
 
-import org.skellig.teststep.processing.exception.TestDataProcessingInitException
+import org.skellig.teststep.processing.exception.TestStepProcessorInitException
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processor.db.DatabaseRequestExecutor
 import org.skellig.teststep.processor.db.model.DatabaseRequest
@@ -37,7 +37,7 @@ class JdbcRequestExecutor(details: JdbcDetails) : DatabaseRequestExecutor {
             connection!!.autoCommit = false
             connection!!.transactionIsolation = Connection.TRANSACTION_READ_COMMITTED
         } catch (e: Exception) {
-            throw TestDataProcessingInitException("Failed to connect to DB ${details.url}. Reason: ${e.message}", e)
+            throw TestStepProcessorInitException("Failed to connect to DB ${details.url}. Reason: ${e.message}", e)
         }
     }
 

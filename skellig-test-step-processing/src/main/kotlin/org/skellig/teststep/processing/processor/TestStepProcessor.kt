@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.processor
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import java.io.Closeable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -27,7 +28,14 @@ interface TestStepProcessor<T : TestStep> : Closeable {
     }
 
     /**
-     * Takes a test step, processes it and returns a result
+     * Takes a test step, processes it and returns a result.
+     * The [TestStepRunResult] captures thr original test step, a response from processing of the test step and
+     * an [error][RuntimeException].
+     *
+     * Note, that if any exception occurs when processing a test step, it will be wrapped to
+     * [TestStepProcessingException] or in some cases - [RuntimeException], and passed further to the response when
+     * calls [TestStepRunResult.notify]. The exception won't be thrown in this method.
+     *
      * @see TestStepRunResult
      */
     fun process(testStep: T): TestStepRunResult

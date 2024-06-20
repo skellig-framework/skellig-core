@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter
  * Supported arguments:
  * - now() - returns [LocalDateTime.now]
  * - now(`<timezone>`) - for example: now(UTC) returns [LocalDateTime.now] with UTC timezone
+ * - now(`<timezone>`, `<format>`) - for example: now(UTC, yyyy-MM-dd'T'HH:mm) returns formatted [LocalDateTime.now] as String for the timezone
  *
  * If 'value' is provided, then throws [FunctionExecutionException] as this function is independent.
  */

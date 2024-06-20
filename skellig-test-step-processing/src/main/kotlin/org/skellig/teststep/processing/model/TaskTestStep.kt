@@ -21,7 +21,7 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 class TaskTestStep(
     id: String?,
     name: String?,
-    execution: TestStepExecutionType?,
+    execution: TestStepExecutionType,
     timeout: Int,
     delay: Int,
     attempts: Int,

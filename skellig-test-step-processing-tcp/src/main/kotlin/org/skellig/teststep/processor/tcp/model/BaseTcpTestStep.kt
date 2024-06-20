@@ -7,7 +7,7 @@ import org.skellig.teststep.processing.model.ValidationNode
 
 abstract class BaseTcpTestStep protected constructor(id: String?,
                                                      name: String,
-                                                     execution: TestStepExecutionType?,
+                                                     execution: TestStepExecutionType,
                                                      timeout: Int,
                                                      delay: Int,
                                                      attempts: Int,

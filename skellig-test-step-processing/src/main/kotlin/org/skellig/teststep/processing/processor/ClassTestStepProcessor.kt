@@ -47,21 +47,15 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
 
         log.info(
             testStep,
-            "Invoke method '${testScenarioState.javaClass}:$testStepMethod'" +
+            "Invoke method '${testStepDefInstance.javaClass}:$testStepMethod'" +
                     if (log.isDebugEnabled) "(${getParametersAsString(methodParameters)})" else ""
         )
         try {
             response = testStepMethod.invoke(testStepDefInstance, *methodParameters)
             testScenarioState.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, response)
         } catch (e: IllegalAccessException) {
-            error = TestStepProcessingException("Unexpected failure when running a test step method", e)
-            throw error
-        } catch (e: IllegalArgumentException) {
-            error = TestStepProcessingException(
-                "Failed to call a method '${testStepMethod.name}' " +
-                        "with arguments '${getParametersAsString(methodParameters)}'", e
-            )
-            throw error
+            error = TestStepProcessingException("Failed to access non-public method '${testStepDefInstance.javaClass.simpleName}:$testStepMethod'" +
+                    " of test step '${testStep.name}'")
         } catch (e: InvocationTargetException) {
             var targetException: Throwable = e
             if (e.targetException != null) {

@@ -6,6 +6,7 @@ import org.skellig.teststep.reader.value.expression.PatternValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 import java.lang.reflect.Method
+import java.util.regex.Pattern
 
 /**
  * Creates a [ClassTestStep] object from raw test step data.
@@ -26,11 +27,20 @@ internal class ClassTestStepFactory : TestStepFactory<ClassTestStep> {
 
     override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): ClassTestStep {
 
+        val testStepClassInstance = (rawTestStep[testStepDefInstance]?.evaluate(ValueExpressionContext.EMPTY)
+            ?: error("Failed to create ClassTestStep for the test step '$testStepName'. " +
+                    "No class instance found."))
+        val rawMethod = rawTestStep[testStepMethod]?.evaluate(ValueExpressionContext.EMPTY)
+        val method = rawMethod as? Method?
+
         return ClassTestStep(
             rawTestStep[idValueExpression]?.evaluate(ValueExpressionContext.EMPTY).toString(),
-            (rawTestStep[testStepNamePattern] as PatternValueExpression).pattern,
-            rawTestStep[testStepDefInstance]?.evaluate(ValueExpressionContext.EMPTY) ?: error("TestStepDefInstance must not be null"),
-            (rawTestStep[testStepMethod]?.evaluate(ValueExpressionContext.EMPTY) as Method?) ?: error("TestStepMethod must not be null"),
+            (rawTestStep[testStepNamePattern] as? PatternValueExpression)?.pattern
+                ?: error("Failed to create ClassTestStep for the test step '$testStepName'. " +
+                        "No regex pattern found."),
+            testStepClassInstance,
+            method?: error("Failed to create ClassTestStep for the test step '$testStepName'. " +
+                        "Expected a Method instance but found '${rawMethod?.javaClass}'"),
             testStepName,
             parameters
         )

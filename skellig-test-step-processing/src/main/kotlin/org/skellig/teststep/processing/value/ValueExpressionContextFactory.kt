@@ -53,8 +53,6 @@ class ValueExpressionContextFactory(
             createOnGetReferenceValue(parameters)
         )
 
-    fun createEmpty() = ValueExpressionContext()
-
     /**
      * Creates a [ValueExpressionContext] for validation as part of a call chain. This is usually used to evaluate
      * [ValueExpression][org.skellig.teststep.reader.value.expression.ValueExpression] in validation details of a test step,
@@ -84,13 +82,12 @@ class ValueExpressionContextFactory(
      * @param parameters The map of parameters to be used in the context.
      * @return The created [ValueExpressionContext] instance.
      */
-    fun createForValidation(value: Any?, parameters: Map<String, Any?>, assignValueToContext: Boolean): ValueExpressionContext {
+    fun createForValidation(value: Any?, parameters: Map<String, Any?>): ValueExpressionContext {
         val context = ValueExpressionContext(
             EvaluationType.DEFAULT,
             createOnFunctionCallForValidation(value),
             createOnGetReferenceValue(parameters)
         )
-        if (assignValueToContext) context.value = value
         return context
     }
 

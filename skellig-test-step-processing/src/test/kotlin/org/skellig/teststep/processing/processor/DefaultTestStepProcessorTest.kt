@@ -4,6 +4,9 @@ import org.mockito.kotlin.mock
 import org.mockito.Mockito.verify
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.whenever
+import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
@@ -41,7 +44,19 @@ class DefaultTestStepProcessorTest {
 
         testStepProcessor.process(testStep)
 
+        // check validation called on null result
         verify(validationDetails).validate(null)
+    }
+
+    @Test
+    fun testProcessStepWithValidationWhenFails() {
+        val (validationDetails, testStep) = createTestStep()
+        doThrow(ValidationException::class).whenever(validationDetails).validate(null)
+
+        var error : RuntimeException? = null
+        testStepProcessor.process(testStep).subscribe{_,_,e -> error = e }
+
+        assertEquals(ValidationException::class.java, error?.javaClass)
     }
 
     @Test

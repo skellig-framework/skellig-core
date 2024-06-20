@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -22,15 +23,15 @@ class FromCsvFunctionExecutorTest {
         val result = fromCsvFunctionExecutor!!.execute("fromCsv", null, arrayOf("csv/test-file.csv"))
 
         Assertions.assertAll(
-            { Assertions.assertEquals("1", ((result as List<*>?)!![0] as Map<*, *>)["id"]) },
-            { Assertions.assertEquals("n1", ((result as List<*>?)!![0] as Map<*, *>)["name"]) },
-            { Assertions.assertEquals("v1", ((result as List<*>?)!![0] as Map<*, *>)["value"]) },
-            { Assertions.assertEquals("2", ((result as List<*>?)!![1] as Map<*, *>)["id"]) },
-            { Assertions.assertEquals("n2", ((result as List<*>?)!![1] as Map<*, *>)["name"]) },
-            { Assertions.assertEquals("v2", ((result as List<*>?)!![1] as Map<*, *>)["value"]) },
-            { Assertions.assertEquals("3", ((result as List<*>?)!![2] as Map<*, *>)["id"]) },
-            { Assertions.assertEquals("n3", ((result as List<*>?)!![2] as Map<*, *>)["name"]) },
-            { Assertions.assertEquals("v3", ((result as List<*>?)!![2] as Map<*, *>)["value"]) }
+            { assertEquals("1", ((result as List<*>?)!![0] as Map<*, *>)["id"]) },
+            { assertEquals("n1", ((result as List<*>?)!![0] as Map<*, *>)["name"]) },
+            { assertEquals("v1", ((result as List<*>?)!![0] as Map<*, *>)["value"]) },
+            { assertEquals("2", ((result as List<*>?)!![1] as Map<*, *>)["id"]) },
+            { assertEquals("n2", ((result as List<*>?)!![1] as Map<*, *>)["name"]) },
+            { assertEquals("v2", ((result as List<*>?)!![1] as Map<*, *>)["value"]) },
+            { assertEquals("3", ((result as List<*>?)!![2] as Map<*, *>)["id"]) },
+            { assertEquals("n3", ((result as List<*>?)!![2] as Map<*, *>)["name"]) },
+            { assertEquals("v3", ((result as List<*>?)!![2] as Map<*, *>)["value"]) }
         )
     }
 
@@ -44,10 +45,10 @@ class FromCsvFunctionExecutorTest {
         )
 
         Assertions.assertAll(
-            { Assertions.assertEquals(1, (result as List<*>?)!!.size) },
-            { Assertions.assertEquals("2", ((result as List<*>?)!![0] as Map<*, *>)["id"]) },
-            { Assertions.assertEquals("n2", ((result as List<*>?)!![0] as Map<*, *>)["name"]) },
-            { Assertions.assertEquals("v2", ((result as List<*>?)!![0] as Map<*, *>)["value"]) }
+            { assertEquals(1, (result as List<*>?)!!.size) },
+            { assertEquals("2", ((result as List<*>?)!![0] as Map<*, *>)["id"]) },
+            { assertEquals("n2", ((result as List<*>?)!![0] as Map<*, *>)["name"]) },
+            { assertEquals("v2", ((result as List<*>?)!![0] as Map<*, *>)["value"]) }
         )
     }
 
@@ -57,5 +58,14 @@ class FromCsvFunctionExecutorTest {
         Assertions.assertThrows(FunctionExecutionException::class.java) {
             fromCsvFunctionExecutor!!.execute("fromCsv", null, arrayOf("csv/missing.csv"))
         }
+    }
+
+    @Test
+    @DisplayName("When path to file not provided")
+    fun testConvertWhenNoPathProvided() {
+        val ex = Assertions.assertThrows(FunctionExecutionException::class.java) {
+            fromCsvFunctionExecutor!!.execute("fromCsv", null, emptyArray())
+        }
+        assertEquals("Function `fromCsv` can only accept 1 or 2 arguments. Found 0", ex.message)
     }
 }

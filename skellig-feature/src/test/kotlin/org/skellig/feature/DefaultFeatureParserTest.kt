@@ -17,6 +17,13 @@ class DefaultFeatureParserTest {
     }
 
     @Test
+    @DisplayName("Parse when null path is provided Then validate empty result")
+    @Throws(URISyntaxException::class)
+    fun testParseWhenNullPath() {
+        assertTrue(defaultFeatureParser!!.parse(null).isEmpty())
+    }
+
+    @Test
     @DisplayName("Parse simple valid feature file Then validate parsing is correct")
     @Throws(URISyntaxException::class)
     fun testParseFeatureFile() {

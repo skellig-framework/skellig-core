@@ -39,11 +39,12 @@ internal abstract class BaseValidationNode : ValidationNode {
         parameters: Map<String, Any?>
     ): ValueExpressionContext {
         return if (valueExpression?.javaClass == AlphanumericValueExpression::class.java ||
+            valueExpression?.javaClass == StringValueExpression::class.java ||
             valueExpression?.javaClass == CallChainExpression::class.java ||
             valueExpression?.javaClass == FunctionCallExpression::class.java
         ) {
             valueExpressionContextFactory.createForValidationAsCallChain(value, parameters)
-        } else valueExpressionContextFactory.createForValidation(value, parameters, true)
+        } else valueExpressionContextFactory.createForValidation(value, parameters)
     }
 
     protected fun createContextForExpectedValue(
@@ -51,7 +52,7 @@ internal abstract class BaseValidationNode : ValidationNode {
         value: Any?,
         parameters: Map<String, Any?>
     ): ValueExpressionContext {
-        return valueExpressionContextFactory.createForValidation(value, parameters, false)
+        return valueExpressionContextFactory.createForValidation(value, parameters)
     }
 }
 
@@ -185,7 +186,7 @@ internal class SingleValidationNode(
             if (!evaluated)
                 throw ValidationException(
                     "Validation failed for '$expected'!\n" +
-                            "Expected: $evaluated" +
+                            "Expected: $evaluated\n" +
                             "Actual: false"
                 )
             else log.debug {

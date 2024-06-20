@@ -326,6 +326,18 @@ open class SkelligTestContext : Closeable {
         }
     }
 
-    private fun getPackageToScan() = config?.getString("packageToScan")?.split(',')?.toSet() ?: emptySet()
+    private fun getPackageToScan(): Set<String> {
+        var packagesToScan = emptySet<String>()
+        if (config?.hasPath("packageToScan") == true) {
+            packagesToScan = config?.getString("packageToScan")?.split(',')?.toSet() ?: emptySet()
+        } else {
+            log.warn(
+                "No definition found for the property 'packageToScan' in Skellig Config file." +
+                        "If you defined custom Test Step Processors or Functions then you should define this property" +
+                        " by setting packages, comma-separated, where the respective configs for Test Step Processors and Functions are located."
+            )
+        }
+        return packagesToScan
+    }
 
 }

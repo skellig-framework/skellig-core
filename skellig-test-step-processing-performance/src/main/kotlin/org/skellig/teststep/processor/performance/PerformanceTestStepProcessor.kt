@@ -3,6 +3,7 @@ package org.skellig.teststep.processor.performance
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processor.performance.exception.PerformanceTestStepException
 import org.skellig.teststep.processor.performance.metrics.MetricsFactory
 import org.skellig.teststep.processor.performance.model.LongRunResponse
 import org.skellig.teststep.processor.performance.model.PerformanceTestStep
@@ -14,9 +15,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  * The processing of [PerformanceTestStep] does the following steps:
  * 1) Runs test steps defined in [PerformanceTestStep.testStepsToRunBefore]
  * 2) Runs test steps defined in [PerformanceTestStep.run] in a separated task
- * 3) Runs test steps defined in [PerformanceTestStep.testStepsToRunAfter]
+ * 3) Runs test steps defined in [PerformanceTestStep.testStepsToRunAfter] and return any errors happened in execution.
+ * Each step will be awaited for completion before the processing is finished.
  * 4) Register time series for the whole run
- * 5) Notifies the subscribers with [LongRunResponse]
+ * 5) Notifies the subscribers with [LongRunResponse] and [PerformanceTestStepException] if any errors received from [PerformanceTestStep.testStepsToRunAfter].
  *
  */
 open class PerformanceTestStepProcessor protected constructor(
@@ -28,25 +30,25 @@ open class PerformanceTestStepProcessor protected constructor(
     internal var isClosed = AtomicBoolean(false)
 
     override fun process(testStep: PerformanceTestStep): TestStepProcessor.TestStepRunResult {
+        val result = TestStepProcessor.TestStepRunResult(testStep)
         val response = LongRunResponse()
+        var errorsAfter: Map<TestStep, RuntimeException>? = null
 
         if (!isClosed.get()) {
-            runTestSteps(testStep.testStepsToRunBefore, response)
-
+            runTestStepsBefore(testStep.testStepsToRunBefore, response)
             val periodicRunner = PeriodicRunner(this, testStep, testStepRegistry, metricsFactory)
             val timeSeries = periodicRunner.run { testStepProcessor.process(it) }
 
-            runTestSteps(testStep.testStepsToRunAfter, response)
+            errorsAfter = runTestStepsAfter(testStep.testStepsToRunAfter)
 
             response.registerTimeSeriesFor(testStep.name, timeSeries)
         }
+        errorsAfter?.let { result.notify(response, PerformanceTestStepException(it)) } ?: result.notify(response, null)
 
-        val result = TestStepProcessor.TestStepRunResult(testStep)
-        result.notify(response, null)
         return result
     }
 
-    private fun runTestSteps(
+    private fun runTestStepsBefore(
         testSteps: List<(testStepRegistry: TestStepRegistry) -> TestStep>,
         response: LongRunResponse
     ) {
@@ -62,6 +64,20 @@ open class PerformanceTestStepProcessor protected constructor(
                     }
             }
         }
+    }
+
+    private fun runTestStepsAfter(testSteps: List<(testStepRegistry: TestStepRegistry) -> TestStep>)
+            : Map<TestStep, RuntimeException> {
+        return if (!isClosed.get()) {
+            testSteps.mapNotNull {
+                val testStep = it(testStepRegistry)
+                val result = testStepProcessor.process(testStep)
+                var error: RuntimeException? = null
+                result.subscribe { _, _, ex -> error = ex }
+                result.awaitResult()
+                if (error != null) testStep to error!! else null
+            }.toMap()
+        } else emptyMap()
     }
 
     override fun close() {

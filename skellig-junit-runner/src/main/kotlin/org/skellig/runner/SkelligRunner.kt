@@ -158,10 +158,4 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         }
     }
 
-    private class RunSkellig(private val runFeatures: Statement) : Statement() {
-        @Throws(Throwable::class)
-        override fun evaluate() {
-            runFeatures.evaluate()
-        }
-    }
 }

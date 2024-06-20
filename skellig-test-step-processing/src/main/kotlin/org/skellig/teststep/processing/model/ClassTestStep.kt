@@ -19,7 +19,6 @@ class ClassTestStep(
     val getId: String = id
         get() = field.ifEmpty { name }
 
-
     override fun toString(): String {
         return "test step instance = ${testStepDefInstance.javaClass.simpleName}\n" +
                 "method name = ${testStepMethod.name}\n" +

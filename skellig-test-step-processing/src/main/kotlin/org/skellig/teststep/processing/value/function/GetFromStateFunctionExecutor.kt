@@ -53,7 +53,7 @@ class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : F
                 )
             }
 
-            else -> throw FunctionExecutionException("Function `get` can only accept 1 or 3 arguments. Found ${args.size}")
+            else -> throw FunctionExecutionException("Function `${getFunctionName()}` can only accept 1, 2 or 3 arguments. Found ${args.size}")
         }
     }
 

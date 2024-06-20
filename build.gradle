@@ -175,6 +175,7 @@ subprojects {
             dependency group: 'org.freemarker', name: 'freemarker', version: "${freemarkerVersion}"
             dependency group: 'org.mockito.kotlin', name: 'mockito-kotlin', version: "${ktMockitoVersion}"
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter', version: "${junitApiVersion}"
+            dependency group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: "${junitApiVersion}"
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "${junitApiVersion}"
             dependency group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitApiVersion}"
             dependency group: 'org.junit.platform', name: 'junit-platform-runner', version: "${junitPlatformVersion}"
@@ -202,7 +203,7 @@ subprojects {
 
     test {
         useJUnitPlatform {
-            excludeTags "component-test"
+            excludeTags "integration-test"
             testLogging {
                 events "failed"
 
@@ -215,9 +216,9 @@ subprojects {
         }
     }
 
-    tasks.register("componentTest", Test) {
+    tasks.register("integrationTest", Test) {
         useJUnitPlatform {
-            includeTags "component-test"
+            includeTags "integration-test"
         }
     }
 }

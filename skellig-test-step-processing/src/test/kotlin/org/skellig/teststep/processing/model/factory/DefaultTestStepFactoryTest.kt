@@ -1,14 +1,15 @@
 package org.skellig.teststep.processing.model.factory
 
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.skellig.teststep.processing.model.DefaultTestStep
+import org.skellig.teststep.processing.model.*
 import org.skellig.teststep.processing.model.GroupedValidationNode
 import org.skellig.teststep.processing.model.PairValidationNode
 import org.skellig.teststep.processing.model.ValidationNodes
@@ -70,6 +71,7 @@ class DefaultTestStepFactoryTest {
 
         assertAll(
             { assertTrue((testStep.testData as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
+            { assertEquals(TestStepExecutionType.SYNC, testStep.execution) },
             { assertEquals(generatedId, testStep.values!!["id"]) },
             { assertTrue((testStep.values!!["names"] as List<*>?)!!.containsAll(listOf("n1", "n2"))) },
             { assertEquals("100", testStep.values!!["amount"]) }
@@ -362,8 +364,12 @@ class DefaultTestStepFactoryTest {
                     mapOf(
                         Pair(AlphanumericValueExpression("i"), NumberValueExpression("1")),
                         Pair(MathOperationExpression("+", AlphanumericValueExpression("n_"), PropertyValueExpression("i")), NumberValueExpression("2")),
-                        Pair(MathOperationExpression("+", AlphanumericValueExpression("x_"),
-                            PropertyValueExpression(MathOperationExpression("+", AlphanumericValueExpression("n_"), PropertyValueExpression("i")))), NumberValueExpression("3")),
+                        Pair(
+                            MathOperationExpression(
+                                "+", AlphanumericValueExpression("x_"),
+                                PropertyValueExpression(MathOperationExpression("+", AlphanumericValueExpression("n_"), PropertyValueExpression("i")))
+                            ), NumberValueExpression("3")
+                        ),
                     )
                 )
             )
@@ -516,5 +522,25 @@ class DefaultTestStepFactoryTest {
             { assertEquals("a = \${amt}.toBigDecimal()", testStep.scenarioStateUpdaters!![0].toString()) },
             { assertEquals("b = get(a) + 500", testStep.scenarioStateUpdaters!![1].toString()) },
         )
+    }
+
+
+    @ParameterizedTest
+    @ValueSource(strings = ["async", "sync"])
+    @DisplayName("With execution type as Async")
+    fun testCreateTestStepWithAsyncExecutionType(type : String) {
+        val rawTestStep = mapOf<ValueExpression, ValueExpression?>(
+            Pair(AlphanumericValueExpression("execution"), AlphanumericValueExpression(type))
+        )
+
+        val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap())
+
+        assertEquals(TestStepExecutionType.fromName(type), testStep.execution)
+    }
+
+    @Test
+    @DisplayName("Then constructable check always returns true")
+    fun testVerifyConstructableCheck() {
+        assertTrue(testStepFactory!!.isConstructableFrom(emptyMap()))
     }
 }

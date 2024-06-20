@@ -14,7 +14,7 @@ import java.time.temporal.ChronoUnit
 import java.util.regex.Pattern
 
 @DisplayName("Convert to current date")
-class CurrentDateTimeCompareFunctionExecutorTest {
+class CurrentDateTimeFunctionExecutorTest {
 
     private var valueConverter = CurrentDateTimeFunctionExecutor()
 

@@ -17,7 +17,9 @@ class PerformanceTestStepProcessorConfig : TestStepProcessorConfig<PerformanceTe
 
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<PerformanceTestStep> {
         val metricsFactory =
-            if (details.config.getString("performance.metrics") == "prometheus") PrometheusMetricsFactory()
+            if (details.config.hasPath("performance.metrics") &&
+                details.config.getString("performance.metrics") == "prometheus"
+            ) PrometheusMetricsFactory()
             else DefaultMetricsFactory()
 
         return ConfiguredTestStepProcessorDetails(

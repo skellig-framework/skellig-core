@@ -198,7 +198,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
      * @param parameters The parameters used in evaluating the execution type.
      * @return The execution type of the test step.
      */
-    protected open fun getExecutionType(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): TestStepExecutionType? {
+    protected open fun getExecutionType(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): TestStepExecutionType {
         return if (rawTestStep.containsKey(EXECUTION_KEYWORD)) {
             TestStepExecutionType.fromName(convertValue<String>(rawTestStep[EXECUTION_KEYWORD], parameters))
         } else TestStepExecutionType.SYNC

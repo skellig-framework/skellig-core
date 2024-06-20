@@ -22,5 +22,5 @@ dependencies {
 
     testImplementation 'org.testcontainers:testcontainers'
     testImplementation "org.testcontainers:junit-jupiter"
-    testImplementation "org.testcontainers:cassandra:1.19.4"
+    testImplementation "org.testcontainers:cassandra:1.19.7"
 }

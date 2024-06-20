@@ -7,11 +7,13 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -72,14 +74,9 @@ internal class CassandraUpdateRequestExecutorTest {
 
         val databaseRequest = DatabaseRequest("update", "t1", data)
         whenever(selectRequestExecutor.execute(any())).thenReturn(emptyList<String>())
-        whenever(insertRequestExecutor.execute(argThat { o ->
-            o.table == databaseRequest.table &&
-                    o.columnValuePairs!!["c1"] == "v1" &&
-                    o.columnValuePairs!!["c3"] == "v3" &&
-                    o.columnValuePairs!!["c4"] == "v4"
-        })).thenReturn(1)
 
-        assertEquals(1, updateExecutor.execute(databaseRequest))
+        val ex = assertThrows<TestStepProcessingException> { updateExecutor.execute(databaseRequest) }
+        assertEquals("Failed to update the table 't1' in Cassandra DB because no record found with column values: '{c1=v1, c4=v4}'", ex.message)
     }
 
     @Test
@@ -100,7 +97,7 @@ internal class CassandraUpdateRequestExecutorTest {
     fun testUpdateUsingCommandWithoutData() {
         val databaseRequest = DatabaseRequest("update", "t1", null)
 
-        val ex = assertThrows(IllegalStateException::class.java) { updateExecutor.execute(databaseRequest) }
+        val ex = assertThrows<IllegalStateException> { updateExecutor.execute(databaseRequest) }
 
         assertEquals("Cannot update empty data in table t1", ex.message)
     }

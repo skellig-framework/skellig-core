@@ -3,7 +3,6 @@ package org.skellig.teststep.processing.value.function
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.beans.IntrospectionException
 import java.beans.Introspector
-import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.util.regex.Pattern
 
@@ -44,7 +43,7 @@ class FromObjectFunctionExecutor : FunctionValueExecutor {
                 }
                 return newValue
             } else throw FunctionExecutionException("Name of property or method is mandatory if you need to call it from the value: '$value'")
-        } else throw FunctionExecutionException("Cannot extract '${args.firstOrNull() ?: ""}' from null value")
+        } else throw FunctionExecutionException("Cannot extract '$name' from null value")
     }
 
     private fun extractValueFromMap(value: Any, key: String, args: Array<Any?>): Any? {
@@ -56,18 +55,16 @@ class FromObjectFunctionExecutor : FunctionValueExecutor {
         }
     }
 
-    private fun extractValueFromObject(propertyName: String, actualResult: Any?, args: Array<Any?>): Any {
+    private fun extractValueFromObject(propertyName: String, actualResult: Any?, args: Array<Any?>): Any? {
         val propertyGetter = getPropertyGetter(propertyName, actualResult!!.javaClass)
         val result = if (propertyGetter != null) {
             try {
                 propertyGetter.invoke(actualResult)
-            } catch (e: IllegalAccessException) {
-                throw FunctionExecutionException("Failed to call property getter `$propertyName` of `$actualResult`", e)
-            } catch (e: InvocationTargetException) {
+            } catch (e: Exception) {
                 throw FunctionExecutionException("Failed to call property getter `$propertyName` of `$actualResult`", e)
             }
         } else executeMethod(propertyName, actualResult, args)
-        return result ?: throw FunctionExecutionException("Failed to find property or method `$propertyName` of `${actualResult.javaClass}`")
+        return result
     }
 
     private fun executeMethod(methodName: String, actualResult: Any, args: Array<Any?>): Any? {
@@ -75,12 +72,12 @@ class FromObjectFunctionExecutor : FunctionValueExecutor {
         return if (method != null) {
             try {
                 method.invoke(actualResult, *args)
-            } catch (e: IllegalAccessException) {
-                throw FunctionExecutionException("Failed to call function `$methodName` of `$actualResult`", e)
-            } catch (e: InvocationTargetException) {
+            } catch (e: Exception) {
                 throw FunctionExecutionException("Failed to call function `$methodName` of `$actualResult`", e)
             }
-        } else throw FunctionExecutionException("No function or property `$methodName` found in the result `$actualResult` with argument pairs (${args.map { it?.javaClass }.joinToString(",")})")
+        } else throw FunctionExecutionException("No function or property `$methodName` found in the result `$actualResult` " +
+                "with argument pairs (${args.map { it?.javaClass?.simpleName }.joinToString(",")})"
+        )
     }
 
     private fun findMethod(name: String, resultClass: Class<*>, paramsTypes: Array<Class<*>>): Method? =
@@ -91,7 +88,7 @@ class FromObjectFunctionExecutor : FunctionValueExecutor {
 
     private fun isSameOrSubclass(paramType: Class<*>, methodParam: Class<*>): Boolean {
         return paramType == methodParam ||
-                ((paramType.isPrimitive || methodParam.isPrimitive) && paramType.simpleName.equals(methodParam.simpleName, true)) ||
+                ((paramType.isPrimitive || methodParam.isPrimitive) && paramType.simpleName.startsWith(methodParam.simpleName, true)) ||
                 methodParam.isInterface && paramType.interfaces.toSet().contains(methodParam) ||
                 (paramType.superclass != null && isSameOrSubclass(paramType.superclass, methodParam))
     }

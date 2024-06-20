@@ -29,7 +29,7 @@ class ToJsonFunctionExecutor : FunctionValueExecutor {
             jsonSerializer.writeValueAsString(value)
         } else if (args.size == 1) {
             val argValue = args[0]
-            if (argValue !is String) jsonSerializer.writeValueAsString(argValue)
+            if (argValue != null && argValue !is String) jsonSerializer.writeValueAsString(argValue)
             else argValue
         } else {
             throw FunctionExecutionException("Function `${getFunctionName()}` can only accept 1 argument. Found ${args.size}")

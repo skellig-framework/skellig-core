@@ -29,7 +29,7 @@ import org.skellig.teststep.processor.db.model.DatabaseTestStep
  */
 open class JdbcTestStep protected constructor(id: String?,
                                               name: String,
-                                              execution: TestStepExecutionType?,
+                                              execution: TestStepExecutionType,
                                               timeout: Int,
                                               delay: Int,
                                               attempts: Int,
