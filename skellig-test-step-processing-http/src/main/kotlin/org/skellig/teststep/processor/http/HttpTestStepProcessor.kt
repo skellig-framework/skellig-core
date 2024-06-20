@@ -1,9 +1,10 @@
 package org.skellig.teststep.processor.http
 
 import com.typesafe.config.Config
-import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
-import org.skellig.teststep.processing.exception.TestStepProcessorInitException
+import kotlinx.coroutines.*
+import org.skellig.task.TaskUtils
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.exception.TestStepProcessorInitException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -14,6 +15,7 @@ import org.skellig.teststep.processor.http.model.HttpMethodName
 import org.skellig.teststep.processor.http.model.HttpRequestDetails
 import org.skellig.teststep.processor.http.model.HttpResponse
 import org.skellig.teststep.processor.http.model.HttpTestStep
+import java.util.concurrent.TimeoutException
 
 /**
  * The HttpTestStepProcessor class is responsible for processing HTTP test steps
@@ -52,20 +54,24 @@ class HttpTestStepProcessor(
                 services = httpServices.keys
             }
         }
-        log.info(testStep, "Start to run HTTP query of test step '${testStep.name}' in $services services")
+        log.info(testStep, "Start to run HTTP request of test step '${testStep.name}' in $services services")
 
         val tasks = services.associateWith {
             {
                 val request = buildHttpRequestDetails(testStep)
-                log.debug(testStep) { "Run HTTP request $request" }
+                log.info(testStep, "Run HTTP request on service '$it': $request")
 
-                val response = getHttpService(it).send(request)
-                log.debug(testStep) { "Received HTTP response from ${request.url}: $response" }
-
-                response
+                try {
+                    val response = getHttpService(it).send(request)
+                    log.info(testStep, "Received HTTP response from $it[${request.url}]:\n$response")
+                    response
+                } catch (ex: TestStepProcessingException) {
+                    log.warn("Return a null response because the service '$it' fails to get the result from url '${request.url}' due to: ${ex.cause?.message}")
+                    null
+                }
             }
         }
-        val results = runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+        val results = runTasksAsyncAndWait(tasks, testStep)
         return if (isResultForSingleService(results, testStep)) results.values.first() else results
     }
 
@@ -81,7 +87,8 @@ class HttpTestStepProcessor(
 
     private fun buildHttpRequestDetails(httpTestStep: HttpTestStep): HttpRequestDetails {
         val testData = httpTestStep.testData
-        return HttpRequestDetails.Builder(HttpMethodName.valueOf(httpTestStep.method!!))
+        return HttpRequestDetails.Builder(HttpMethodName.valueOf(httpTestStep.method))
+            .withTimeout(httpTestStep.timeout)
             .withUrl(httpTestStep.url)
             .withHeaders(httpTestStep.headers)
             .withQueryParam(httpTestStep.query)

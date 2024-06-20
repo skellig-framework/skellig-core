@@ -1,10 +1,7 @@
 package org.skellig.teststep.processor.http
 
-import org.mockito.kotlin.argThat
-import org.mockito.kotlin.mock
 import org.junit.jupiter.api.*
-import org.mockito.kotlin.any
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processor.http.model.HttpResponse
 import org.skellig.teststep.processor.http.model.HttpTestStep
@@ -72,6 +69,14 @@ class HttpTestStepProcessorTest {
                 }
 
             Assertions.assertTrue(isPassed.get())
+        }
+
+        @Test
+        @DisplayName("Close processor and HTTP clients")
+        fun testClose() {
+            processor!!.close()
+
+            verify(httpChannel).close()
         }
     }
 

@@ -4,7 +4,6 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
-import org.skellig.teststep.processing.util.PropertyFormatUtils
 import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.createIndent
 
 /**
@@ -42,7 +41,7 @@ class HttpTestStep(
     scenarioStateUpdaters: List<ScenarioStateUpdater>?,
     val url: String?,
     val services: Collection<String>?,
-    val method: String?,
+    val method: String,
     val username: String?,
     val password: String?,
     val headers: Map<String, String?>?,
@@ -52,14 +51,14 @@ class HttpTestStep(
 
     override fun toString(): String {
         return super.toString() +
-                "services = $services\n" +
+                (if (services?.isNotEmpty() == true) "services = $services\n" else "") +
                 "url = $url\n" +
                 "method = $method\n" +
                 (username?.let { "username = $username\n" } ?: "") +
                 (password?.let { "password = $password\n" } ?: "") +
-                headers?.let { it.entries.joinToString("\n", "headers {\n", "\n}\n") { n -> "${createIndent(1)}$n" } } +
-                query?.let { it.entries.joinToString("\n", "query {\n", "\n}\n") { n -> "${createIndent(1)}$n" } } +
-                form?.let { it.entries.joinToString("\n", "form {\n", "\n}\n") { n -> "${createIndent(1)}$n" } }
+                (headers?.let { it.entries.joinToString("\n", "headers {\n", "\n}\n") { n -> "${createIndent(1)}$n" } } ?: "") +
+                (query?.let { it.entries.joinToString("\n", "query {\n", "\n}\n") { n -> "${createIndent(1)}$n" } } ?: "") +
+                (form?.let { it.entries.joinToString("\n", "form {\n", "\n}\n") { n -> "${createIndent(1)}$n" } } ?: "")
     }
 
     class Builder : DefaultTestStep.Builder<HttpTestStep>() {
@@ -107,8 +106,11 @@ class HttpTestStep(
 
         override fun build(): HttpTestStep {
             return HttpTestStep(
-                id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails,
-                scenarioStateUpdaters, url, services, method, username, password, headers, query, form
+                id, name!!,
+                execution, timeout, delay, attempts, values, testData, validationDetails,
+                scenarioStateUpdaters, url, services,
+                method ?: error("HTTP method is mandatory for HTTP Test Step"),
+                username, password, headers, query, form
             )
         }
     }

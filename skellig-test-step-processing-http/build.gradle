@@ -14,6 +14,7 @@ dependencies {
     api group: 'com.typesafe', name: 'config'
     implementation group: 'org.junit.platform', name: 'junit-platform-runner'
     implementation group: 'com.squareup.okhttp3', name: 'okhttp'
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core'
 
     api project(':skellig-test-step-processing')
 
@@ -21,4 +22,5 @@ dependencies {
     testImplementation group: 'org.mockito.kotlin', name: 'mockito-kotlin'
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+    testImplementation group: 'org.wiremock', name: 'wiremock', version: '3.5.4'
 }
