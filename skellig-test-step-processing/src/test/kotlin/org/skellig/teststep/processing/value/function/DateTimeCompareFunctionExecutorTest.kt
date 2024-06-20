@@ -28,6 +28,7 @@ class DateTimeCompareFunctionExecutorTest {
         assertTrue(comparator.execute("between", LocalDateTime.now().minusMinutes(32), arrayOf("1 hour ago", "30 minutes ago")))
         assertTrue(comparator.execute("between", LocalDateTime.now().minusHours(23), arrayOf("yesterday", "now")))
         assertTrue(comparator.execute("between", LocalDateTime.now().plusHours(23), arrayOf("now", "tomorrow")))
+        assertTrue(comparator.execute("between", java.sql.Date.valueOf(LocalDate.now()), arrayOf("now", "now")))
         assertTrue(comparator.execute("between", LocalDate.now().plusDays(1), arrayOf("yesterday", "tomorrow")))
         assertTrue(comparator.execute("between", LocalDate.of(2020, 12, 10), arrayOf("01/12/2020", "01/01/2021", "dd/MM/yyyy")))
         assertTrue(comparator.execute("between", LocalDate.of(2020, 12, 10), arrayOf(LocalDate.of(2020, 12, 1), LocalDate.of(2021, 1, 1))))

@@ -83,12 +83,12 @@ class DateTimeCompareFunctionExecutor : FunctionValueExecutor {
     override fun execute(name: String, value: Any?, args: Array<Any?>): Boolean {
         val format = if (args.size >= 3) args[2]?.toString() else null
         val timezone = if (args.size == 4) args[3]?.toString() else null
-        val min = getDateFromString(args[0], format, timezone)
-        val max = getDateFromString(args[1], format, timezone)
+        val min = getDateFrom(args[0], format, timezone)
+        val max = getDateFrom(args[1], format, timezone)
         return when (value) {
             is LocalDate -> isDateBetween(value, min.toLocalDate(), max.toLocalDate())
             is LocalDateTime -> isBetween(value, min, max)
-            is java.sql.Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(value.time), UTC), min, max)
+            is java.sql.Date -> isDateBetween(value.toLocalDate(), min.toLocalDate(), max.toLocalDate())
             is Timestamp -> isBetween(LocalDateTime.ofInstant(value.toInstant(), UTC), min, max)
             is Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(value.time), UTC), min, max)
             is Instant -> isBetween(LocalDateTime.ofInstant(value, UTC), min, max)
@@ -132,7 +132,7 @@ class DateTimeCompareFunctionExecutor : FunctionValueExecutor {
     private fun isDateBetween(value: LocalDate, min: LocalDate, max: LocalDate) =
         (value.isAfter(min) || value == min) && (value.isBefore(max) || value == max)
 
-    private fun getDateFromString(date: Any?, format: String?, timezone: String?): LocalDateTime =
+    private fun getDateFrom(date: Any?, format: String?, timezone: String?): LocalDateTime =
         when (date) {
             is String -> {
                 when (date) {

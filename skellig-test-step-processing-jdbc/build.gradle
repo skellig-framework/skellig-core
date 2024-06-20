@@ -22,7 +22,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
 
-    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.7.1'
+    testImplementation group: 'org.postgresql', name: 'postgresql', version: '42.7.3'
     testImplementation group: 'org.testcontainers', name: 'testcontainers'
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter'
     testImplementation group: 'org.testcontainers', name: 'postgresql'

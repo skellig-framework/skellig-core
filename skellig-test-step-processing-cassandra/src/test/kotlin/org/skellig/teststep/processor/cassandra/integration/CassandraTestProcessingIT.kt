@@ -29,28 +29,25 @@ class CassandraTestProcessingIT {
         internal const val TABLE = "books.book"
     }
 
-    private val cassandraContainer = CassandraContainer("cassandra:3.0")
-        .withReuse(true)
-        .withExposedPorts(9042)
-    private val cassandraContainer2 = CassandraContainer("cassandra:4.0.12")
-        .withReuse(true)
-        .withExposedPorts(9042)
-    private val cassandraContainer3 = CassandraContainer("cassandra:5.0")
-        .withReuse(true)
-        .withExposedPorts(9042)
+    private val cassandraContainers =
+        listOf(
+            createContainer("3.0"),
+            createContainer("4.0.12"),
+            createContainer("5.0")
+        )
 
     private var processingDetails: List<Pair<TestStepFactory<CassandraTestStep>, TestStepProcessor<CassandraTestStep>>>? = null
 
     @BeforeAll
     fun setUpDb() {
-        getCassandraContainers().parallelStream().forEach { it.start() }
+        cassandraContainers.parallelStream().forEach { it.start() }
         initDatabase()
     }
 
     @AfterAll
     fun tearDown() {
         processingDetails!!.parallelStream().forEach { it.second.close() }
-        getCassandraContainers().parallelStream().forEach { it.close() }
+        cassandraContainers.parallelStream().forEach { it.close() }
     }
 
     @Test
@@ -267,12 +264,8 @@ class CassandraTestProcessingIT {
 
     }
 
-    private fun getCassandraContainers(): List<CassandraContainer<*>> {
-        return listOf(cassandraContainer, cassandraContainer2, cassandraContainer3)
-    }
-
     private fun initDatabase() {
-        processingDetails = getCassandraContainers().parallelStream().map { container ->
+        processingDetails = cassandraContainers.map { container ->
             val cluster = container.cluster
             cluster.connect().use { session ->
                 session.execute(
@@ -314,5 +307,9 @@ class CassandraTestProcessingIT {
             Pair(config.testStepFactory, config.testStepProcessor)
         }.toList()
     }
+
+    private fun createContainer(version: String) = CassandraContainer("cassandra:$version")
+        .withReuse(true)
+        .withExposedPorts(9042)
 
 }

@@ -40,7 +40,7 @@ open class DatabaseTestStep protected constructor(id: String?,
     : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
 
     override fun toString(): String {
-        return super.toString() + (query?.let { "servers = $servers\nquery=$query" }
+        return super.toString() + (query?.let { "servers = $servers\nquery=$query\n" }
             ?: "servers = $servers\ncommand = $command\ntable = $table\n")
     }
 
