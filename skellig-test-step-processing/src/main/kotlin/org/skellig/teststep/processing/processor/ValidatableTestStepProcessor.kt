@@ -47,12 +47,8 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(protected val t
         }
 
     protected open fun validate(testStep: T, expectedResult: ValidationNode, actualResult: Any?) {
-        try {
-            log.info(testStep, "Start to validate the result of processed test step '${testStep.name}'")
-            expectedResult.validate(actualResult)
-        } catch (ex: ValidationException) {
-            throw ValidationException(ex.message)
-        }
+        log.info(testStep, "Start to validate the result of processed test step '${testStep.name}'")
+        expectedResult.validate(actualResult)
     }
 
 }

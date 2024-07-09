@@ -149,5 +149,11 @@ class RmqTestStepProcessorTest {
 
             verify(rmqChannel, Mockito.times(0)).send(testStep.testData, testStep.routingKey)
         }
+
+        @Test
+        @DisplayName("Verify correct test step class linked to the processor")
+        fun testGetTestStepClass() {
+            assertEquals(RmqTestStep::class.java, processor!!.getTestStepClass())
+        }
     }
 }

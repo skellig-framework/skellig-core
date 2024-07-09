@@ -53,13 +53,6 @@ class RmqExchangeDetails(val name: String,
             this.parameters = parameters
         }
 
-        fun parameter(name: String, value: Any) = apply {
-            if (parameters == null) {
-                parameters = hashMapOf()
-            }
-            parameters!![name] = value
-        }
-
         fun build(): RmqExchangeDetails {
             return RmqExchangeDetails(name!!, type, isDurable, isAutoDelete, createIfNew, parameters)
         }

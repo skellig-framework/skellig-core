@@ -72,6 +72,29 @@ class ValidationNodeTest {
     }
 
     @Test
+    @DisplayName("When numbers are negative")
+    fun testValidateWhenNumbersAreNegative() {
+        PairValidationNode(
+            NumberValueExpression("-10"),
+            NumberValueExpression("-10"), emptyMap(), valueExpressionContextFactory
+        ).validate("this value won't be used")
+
+        PairValidationNode(
+            ValueComparisonExpression("<", NumberValueExpression("-10"), NumberValueExpression("1")),
+            BooleanValueExpression("true"), emptyMap(), valueExpressionContextFactory
+        ).validate("this value won't be used")
+    }
+
+    @Test
+    @DisplayName("When numbers are different types")
+    fun testValidateWhenNumbersDifferentType() {
+        PairValidationNode(
+            CallChainExpression(listOf(FunctionCallExpression("size"))),
+            NumberValueExpression("4"), emptyMap(), valueExpressionContextFactory
+        ).validate("data")
+    }
+
+    @Test
     @DisplayName("When actual is boolean expression with references to result")
     fun testValidateWhenActualIsBooleanExpressionWithReferencesToResult() {
         PairValidationNode(

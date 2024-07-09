@@ -6,7 +6,7 @@ import org.junit.jupiter.api.assertThrows
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
 class XPathFunctionExecutorTest {
-    private val extractor = XPathFunctionExecutor()
+    private val functionExecutor = XPathFunctionExecutor()
 
     @Test
     fun `extract by simple xpath`() {
@@ -71,30 +71,30 @@ class XPathFunctionExecutorTest {
             </Root>
         """.trimIndent()
 
-        assertEquals("data 1", extractor.execute("xpath", xml, arrayOf("/Root/Samples/Item[@id='id1']")))
+        assertEquals("data 1", functionExecutor.execute("xpath", xml, arrayOf("/Root/Samples/Item[@id='id1']")))
     }
 
     @Test
     fun `extract by xpath from null value`() {
-        val ex = assertThrows<FunctionExecutionException> { extractor.execute("", null, arrayOf("/Root/Sample")) }
+        val ex = assertThrows<FunctionExecutionException> { functionExecutor.execute("", null, arrayOf("/Root/Sample")) }
         assertEquals("Cannot extract value by xpath '/Root/Sample' from null value", ex.message)
     }
 
     @Test
     fun `extract by xpath with no xpath provided`() {
-        val ex = assertThrows<FunctionExecutionException> { extractor.execute("", "xml", emptyArray()) }
+        val ex = assertThrows<FunctionExecutionException> { functionExecutor.execute("", "xml", emptyArray()) }
         assertEquals("Function `xpath` can only accept 1 String argument. Found 0", ex.message)
     }
 
     @Test
     fun `extract by null xpath`() {
-        val ex = assertThrows<IllegalStateException> { extractor.execute("", "xml", arrayOf(null)) }
+        val ex = assertThrows<IllegalStateException> { functionExecutor.execute("", "xml", arrayOf(null)) }
         assertEquals("XPath cannot be null in the function 'xpath'", ex.message)
     }
 
     @Test
     fun `extract from invalid xml`() {
-        val ex = assertThrows<FunctionExecutionException> { extractor.execute("", "xml", arrayOf("/a/b/")) }
+        val ex = assertThrows<FunctionExecutionException> { functionExecutor.execute("", "xml", arrayOf("/a/b/")) }
         assertEquals("Failed to execute function 'xpath(/a/b/)'", ex.message)
     }
 }

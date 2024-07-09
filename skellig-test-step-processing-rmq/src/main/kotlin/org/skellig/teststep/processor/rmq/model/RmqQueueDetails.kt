@@ -68,13 +68,6 @@ class RmqQueueDetails(val id: String,
             this.parameters = parameters
         }
 
-        fun parameter(name: String, value: Any) = apply {
-            if (parameters == null) {
-                parameters = hashMapOf()
-            }
-            parameters!![name] = value
-        }
-
         fun build(): RmqQueueDetails {
             return RmqQueueDetails(id ?: name ?: "",
                                    name?:error("RMQ Queue name cannot be null"),

@@ -3,7 +3,7 @@ package org.skellig.teststep.processing.value.function
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 
 /**
- * Execute the "getValues" function on [Collection] or [Map] 'value', but otherwise returns the same 'value'.
+ * Execute the "getValues" function on [Collection] or [Map] 'value', but otherwise returns the same 'value' wrapped in [List].
  *
  * Supported args:
  * - getValues()
@@ -15,7 +15,7 @@ class GetValuesFunctionExecutor : FunctionValueExecutor {
             return when(value) {
                 is Collection<*>, is Array<*> -> value
                 is Map<*, *> -> value.values
-                else -> value
+                else -> listOf(value)
             }
         } ?: throw FunctionExecutionException("Cannot get values from null value")
     }

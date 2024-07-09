@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.rmq
 
 import com.rabbitmq.client.AMQP
-import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -49,6 +48,8 @@ open class RmqTestStepProcessor(
                 if (isValid(testStep, response)) {
                     log.info(testStep, "Respond to received message to RMQ queues '$respondTo'")
                     send(testStep, respondTo, routingKey, testStep.getAmqpProperties())
+                } else {
+                    log.warn("Can't respond to '{}' queues because the response is not valid: {}", respondTo, response)
                 }
             }
         }
@@ -65,13 +66,7 @@ open class RmqTestStepProcessor(
                 message
             }
         }
-        return runTasksAsyncAndWait(
-            tasks,
-            { isValid(testStep, it) },
-            testStep.delay,
-            testStep.attempts,
-            testStep.timeout
-        )
+        return runTasksAsyncAndWait(tasks, testStep)
     }
 
     private fun send(testStep: RmqTestStep, channels: Set<String>, routingKey: String?, properties: AMQP.BasicProperties?) {
@@ -84,7 +79,7 @@ open class RmqTestStepProcessor(
                 "sent"
             }
         }
-        runTasksAsyncAndWait(tasks)
+        runTasksAsyncAndWait(tasks, testStep)
     }
 
     override fun close() {

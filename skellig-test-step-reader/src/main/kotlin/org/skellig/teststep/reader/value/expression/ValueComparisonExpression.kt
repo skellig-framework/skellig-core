@@ -1,6 +1,7 @@
 package org.skellig.teststep.reader.value.expression
 
 import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * Represents a value comparison expression that compares two value expressions using a specified operator
@@ -15,6 +16,34 @@ class ValueComparisonExpression(
     private val rightExpression: ValueExpression
 ) : ValueExpression {
 
+    companion object {
+        fun compare(operator: String, left: Any?, right: Any?): Boolean {
+            val evaluatedLeft = convertToBigDecimal(left)
+            val evaluatedRight = convertToBigDecimal(right)
+            return when (operator) {
+                ">" -> evaluatedLeft > evaluatedRight
+                ">=" -> evaluatedLeft >= evaluatedRight
+                "<" -> evaluatedLeft < evaluatedRight
+                "<=" -> evaluatedLeft <= evaluatedRight
+                "==" -> evaluatedLeft == evaluatedRight
+                "!=" -> evaluatedLeft != evaluatedRight
+                else -> throw IllegalArgumentException("Invalid comparison operator for numeric values: $operator")
+            }
+        }
+
+        private fun convertToBigDecimal(value: Any?): BigDecimal {
+            return when (value) {
+                is BigDecimal -> value
+                is Int -> BigDecimal(value)
+                is Long -> BigDecimal(value)
+                is Double -> BigDecimal(value)
+                is Float -> BigDecimal(value.toDouble())
+                is BigInteger -> BigDecimal(value)
+                else -> BigDecimal(value.toString())
+            }
+        }
+    }
+
     override fun evaluate(context: ValueExpressionContext): Any {
         var evaluatedLeft = leftExpression.evaluate(context)
         var evaluatedRight = rightExpression.evaluate(context)
@@ -25,19 +54,7 @@ class ValueComparisonExpression(
                 else -> throw IllegalArgumentException("Invalid comparison operator for String values: $operator")
             }
         } else {
-            if (!(evaluatedLeft is BigDecimal && evaluatedRight is BigDecimal)) {
-                evaluatedLeft = evaluatedLeft.toString().toBigDecimal()
-                evaluatedRight = evaluatedRight.toString().toBigDecimal()
-            }
-            when (operator) {
-                ">" -> evaluatedLeft > evaluatedRight
-                ">=" -> evaluatedLeft >= evaluatedRight
-                "<" -> evaluatedLeft < evaluatedRight
-                "<=" -> evaluatedLeft <= evaluatedRight
-                "==" -> evaluatedLeft == evaluatedRight
-                "!=" -> evaluatedLeft != evaluatedRight
-                else -> throw IllegalArgumentException("Invalid comparison operator for numeric values: $operator")
-            }
+            compare(operator, evaluatedLeft, evaluatedRight)
         }
     }
 

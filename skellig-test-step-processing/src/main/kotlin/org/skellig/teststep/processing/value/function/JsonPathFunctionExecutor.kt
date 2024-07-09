@@ -17,7 +17,7 @@ class JsonPathFunctionExecutor : FunctionValueExecutor {
             return value?.let {
                 try {
                     val json = JsonPath.from(it as String)
-                    json.getString(args[0]?.toString())
+                    json.get<Any>(args[0]?.toString())
                 } catch (ex: Exception) {
                     if (args.size == 1 || (args.size == 2 && args[1]?.toString()?.trim() != "true")) {
                         throw FunctionExecutionException("Failed to extract jsonPath '${args[0]}' from value '$value'. Reason ${ex.message}")
