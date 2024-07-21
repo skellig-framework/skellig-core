@@ -56,6 +56,12 @@ internal class IbmMqTestStepProcessorTest {
         Assertions.assertEquals("IBMMQ queue 'host3' was not registered in IBM MQ Test Step Processor", ref.get().message)
     }
 
+    @Test
+    @DisplayName("Verify correct test step class")
+    fun testGetTestStepClass() {
+        Assertions.assertEquals(IbmMqTestStep::class.java, processor!!.getTestStepClass())
+    }
+
     @Nested
     internal inner class SendAndReceiveTest {
         @Test

@@ -45,16 +45,16 @@ class ValueComparisonExpression(
     }
 
     override fun evaluate(context: ValueExpressionContext): Any {
-        var evaluatedLeft = leftExpression.evaluate(context)
-        var evaluatedRight = rightExpression.evaluate(context)
-        return if (evaluatedLeft is String || evaluatedRight is String) {
+        val evaluatedLeft = leftExpression.evaluate(context)
+        val evaluatedRight = rightExpression.evaluate(context)
+        return if (evaluatedLeft is Number || evaluatedRight is Number) {
+            compare(operator, evaluatedLeft, evaluatedRight)
+        } else {
             when (operator) {
-                "==" -> evaluatedLeft.toString() == evaluatedRight.toString()
-                "!=" -> evaluatedLeft.toString() != evaluatedRight.toString()
+                "==" -> evaluatedLeft == evaluatedRight
+                "!=" -> evaluatedLeft != evaluatedRight
                 else -> throw IllegalArgumentException("Invalid comparison operator for String values: $operator")
             }
-        } else {
-            compare(operator, evaluatedLeft, evaluatedRight)
         }
     }
 

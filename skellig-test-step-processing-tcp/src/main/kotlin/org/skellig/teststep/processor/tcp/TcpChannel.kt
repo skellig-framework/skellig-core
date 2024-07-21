@@ -1,5 +1,9 @@
 package org.skellig.teststep.processor.tcp
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
@@ -13,6 +17,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Represents a TCP channel that allows sending data over a TCP connection and receiving responses.
@@ -85,15 +90,11 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
     /**
      * Consumes data from a TCP channel.
      *
-     * @param response the response to send, can be null
      * @param timeout the timeout in milliseconds for reading data from the channel. If 0 then default timeout 30 sec is applied.
      * @param bufferSize the size of the buffer used for reading data
      * @param responseHandler the handler function to process the received response
      */
-    fun consume(response: Any?, timeout: Int, bufferSize: Int, responseHandler: (message: Any?) -> Unit) {
-//        if (consumerThread != null) {
-//            close()
-//        }
+    fun consume(timeout: Int, bufferSize: Int, responseHandler: (message: Any?) -> Unit) {
         if (consumerThread == null || consumerThread!!.isShutdown) {
             consumerThread = Executors.newCachedThreadPool()
         }
@@ -101,13 +102,14 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         log.info("Start listener for TCP channel: $tcpDetails")
         consumerThread?.execute {
             initTimeout(timeout)
-            while (!consumerThread!!.isShutdown) {
-                val bytes = readAllBytes(bufferSize)
-                responseHandler(bytes)
-                response?.let {
-                    log.debug { "Reply with '$it' to TCP address '${getRemoteAddressAsString()}'" }
-                    send(it)
+            val consumerCallbackJob = ConsumerCallbackJob(responseHandler)
+            try {
+                while (!consumerThread!!.isShutdown) {
+                    val data = readAllBytes(bufferSize)
+                    consumerCallbackJob.execute(data)
                 }
+            } finally {
+                log.debug { "Stopped message consumer of TCP address '${getRemoteAddressAsString()}'" }
             }
         }
     }
@@ -190,4 +192,14 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
 
     private fun getRemoteAddressAsString() = socket?.let { "'${socket!!.inetAddress}:${socket!!.port}'" } ?: ""
 
+    private class ConsumerCallbackJob(val callback: (message: Any?) -> Unit) : CoroutineScope {
+        private var job: Job = Job()
+
+        override val coroutineContext: CoroutineContext
+            get() = Dispatchers.IO + job
+
+        fun execute(body: Any?) = launch {
+            callback(body)
+        }
+    }
 }

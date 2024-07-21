@@ -58,18 +58,15 @@ open class TcpConsumableTestStepProcessor(
         channels.forEachIndexed { index, id ->
             val channel = tcpChannels[id] ?: error(getChannelNotExistErrorMessage(id))
             channel.consume(
-                if (respondTo != null) null else response,
                 testStep.timeout, testStep.readBufferSize
             ) { receivedMessage ->
                 log.debug(testStep) { "Received message from TCP channel '$id': $receivedMessage" }
                 var error: RuntimeException? = null
                 try {
                     validate(testStep, receivedMessage)
-                    respondTo?.let {
-                        response?.let {
-                            log.debug(testStep) { "Respond to received message to TCP channels '$respondTo'" }
-                            send(response, respondTo[index])
-                        }
+                    if (respondTo != null && response != null) {
+                        log.debug(testStep) { "Respond to received data to TCP channels '$respondTo'" }
+                        send(response, respondTo[index])
                     }
                 } catch (ex: Exception) {
                     error = when (ex) {

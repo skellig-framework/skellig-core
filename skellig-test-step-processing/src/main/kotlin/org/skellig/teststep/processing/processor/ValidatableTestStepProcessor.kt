@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.error
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
@@ -48,6 +49,7 @@ abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(protected val t
 
     protected open fun validate(testStep: T, expectedResult: ValidationNode, actualResult: Any?) {
         log.info(testStep, "Start to validate the result of processed test step '${testStep.name}'")
+        log.debug(testStep) { "Result to validate: '$actualResult'" }
         expectedResult.validate(actualResult)
     }
 

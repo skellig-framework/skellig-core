@@ -9,14 +9,16 @@ package org.skellig.teststep.processor.ibmmq.model
  * @property port The port number of the IBM MQ Manager.
  * @property userCredentials The user credentials for authentication with the IBM MQ Manager. Can be null.
  */
-class IbmMqManagerDetails private constructor(val name: String,
-                                              val channel: String,
-                                              val host: String,
-                                              val port: Int,
-                                              val userCredentials: IbmMqUserCredentials?) {
+class IbmMqManagerDetails private constructor(
+    val name: String,
+    val channel: String,
+    val host: String,
+    val port: Int,
+    val userCredentials: IbmMqUserCredentials?
+) {
 
     override fun toString(): String {
-        return "(name = '$name', channel = '$channel', host = '$host', port = $port, userCredentials $userCredentials)"
+        return "(name = '$name', channel = '$channel', host = '$host', port = $port${userCredentials?.let { ", userCredentials = $userCredentials" } ?: ""})"
     }
 
     class Builder {
@@ -48,10 +50,12 @@ class IbmMqManagerDetails private constructor(val name: String,
         }
 
         fun build(): IbmMqManagerDetails {
-            return IbmMqManagerDetails(name ?: error("MQ Manager name cannot be null"),
-                    channel ?: error("MQ Manager channel cannot be null"),
-                    host ?: error("MQ Manager host cannot be null"),
-                    port, userCredentials)
+            return IbmMqManagerDetails(
+                name ?: error("MQ Manager name cannot be null"),
+                channel ?: error("MQ Manager channel cannot be null"),
+                host ?: error("MQ Manager host cannot be null"),
+                port, userCredentials
+            )
         }
     }
 

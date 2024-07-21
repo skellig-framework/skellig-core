@@ -8,6 +8,12 @@ import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.value.expression.*
+import org.skellig.teststep.reader.value.expression.ValueExpressionObject.alphaNum
+import org.skellig.teststep.reader.value.expression.ValueExpressionObject.bool
+import org.skellig.teststep.reader.value.expression.ValueExpressionObject.callChain
+import org.skellig.teststep.reader.value.expression.ValueExpressionObject.compare
+import org.skellig.teststep.reader.value.expression.ValueExpressionObject.num
+import org.skellig.teststep.reader.value.expression.ValueExpressionObject.ref
 
 @DisplayName("Validate result")
 class ValidationNodeTest {
@@ -31,6 +37,7 @@ class ValidationNodeTest {
                     "Expected: null\n" +
                     "Actual: data", ex.message
         )
+
     }
 
     @Test
@@ -47,6 +54,9 @@ class ValidationNodeTest {
                     "Expected: null\n" +
                     "Actual: v1", ex.message
         )
+
+        PairValidationNode(AlphanumericValueExpression("f1"), AlphanumericValueExpression("null"), emptyMap(), valueExpressionContextFactory)
+            .validate(mapOf(Pair("f1", null)))
     }
 
     @Test
@@ -98,10 +108,39 @@ class ValidationNodeTest {
     @DisplayName("When actual is boolean expression with references to result")
     fun testValidateWhenActualIsBooleanExpressionWithReferencesToResult() {
         PairValidationNode(
-            ValueComparisonExpression(">", CallChainExpression(listOf(AlphanumericValueExpression("$"), AlphanumericValueExpression("num"))),
-                NumberValueExpression("1")),
+            ValueComparisonExpression(
+                ">", CallChainExpression(listOf(AlphanumericValueExpression("$"), AlphanumericValueExpression("num"))),
+                NumberValueExpression("1")
+            ),
             BooleanValueExpression("true"), emptyMap(), valueExpressionContextFactory
         ).validate(mapOf(Pair("num", 100)))
+    }
+
+    @Test
+    @DisplayName("When actual is something and verify it's not null")
+    fun testValidateWhenActualIsSomethingAndVerifyNotNull() {
+        PairValidationNode(
+            compare("!=", alphaNum("$"), alphaNum("null")),
+            bool("true"), emptyMap(), valueExpressionContextFactory
+        ).validate(mapOf(Pair("num", 100)))
+    }
+
+    @Test
+    @DisplayName("When compare actual as number and expected as string")
+    fun testValidateWhenActualIsNumberAndExpectedString() {
+        PairValidationNode(
+            compare("==", num("10"), callChain(alphaNum("$"), alphaNum("num"))),
+            bool("true"), emptyMap(), valueExpressionContextFactory
+        ).validate(mapOf(Pair("num", "10")))
+    }
+
+    @Test
+    @DisplayName("When compare actual as object and expected as object")
+    fun testValidateWhenActualAndExpectedAnyObject() {
+        PairValidationNode(
+            compare("==", ref("a"), callChain(alphaNum("$"), alphaNum("b"))),
+            bool("true"), mapOf(Pair("a", listOf(1, 2, 3))), valueExpressionContextFactory
+        ).validate(mapOf(Pair("b", listOf(1, 2, 3))))
     }
 
     @Test
@@ -575,7 +614,7 @@ class ValidationNodeTest {
                         "    }\n" +
                         "\n" +
                         "  }\n\n" +
-                        "  data:   {\n"+
+                        "  data:   {\n" +
                         "    $.contains(v1)\n" +
                         "  }\n" +
                         "\n" +

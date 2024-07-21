@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.ibmmq
 
-import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
@@ -58,22 +57,20 @@ open class IbmMqConsumableTestStepProcessor(
         val response = testStep.testData
         channels.forEachIndexed { index, channelName ->
             val channel = ibmMqChannels[channelName] ?: error(getChannelNotExistErrorMessage(channelName))
-            channel.consume(if (respondTo != null) null else response, testStep.timeout)
+            channel.consume(testStep.timeout)
             { receivedMessage ->
                 log.debug(testStep) { "Received data from IBMMQ queue '${channelName}': $receivedMessage" }
                 var error: RuntimeException? = null
                 try {
                     validate(testStep, receivedMessage)
-                    respondTo?.let {
-                        response?.let {
-                            log.debug(testStep) { "Respond to received data to IBMMQ queues '$respondTo'" }
-                            send(response, respondTo[index])
-                        }
+                    if (respondTo != null && response != null) {
+                        log.debug(testStep) { "Respond to received data to IBMMQ queues '$respondTo'" }
+                        send(response, respondTo[index])
                     }
                 } catch (ex: Exception) {
                     error = when (ex) {
-                        is ValidationException, is TestStepProcessingException -> ex as RuntimeException
-                        else -> TestStepProcessingException(ex.message, ex)
+                        !is ValidationException -> ValidationException(ex.message, ex)
+                        else -> ex
                     }
                 } finally {
                     result.notify(receivedMessage, error)
@@ -88,6 +85,7 @@ open class IbmMqConsumableTestStepProcessor(
     }
 
     override fun close() {
+        ibmMqChannels.values.forEach { it.disconnectQueue() }
         ibmMqChannels.values.forEach { it.close() }
     }
 

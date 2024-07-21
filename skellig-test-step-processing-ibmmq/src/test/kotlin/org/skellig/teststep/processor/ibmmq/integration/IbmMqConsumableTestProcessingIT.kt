@@ -1,4 +1,4 @@
-package org.skellig.teststep.processor.rmq.integration
+package org.skellig.teststep.processor.ibmmq.integration
 
 import com.typesafe.config.ConfigFactory
 import org.junit.jupiter.api.*
@@ -14,13 +14,14 @@ import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
-import org.skellig.teststep.processor.rmq.config.RmqConsumableTestStepProcessorConfig
-import org.skellig.teststep.processor.rmq.config.RmqTestStepProcessorConfig
-import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
-import org.skellig.teststep.processor.rmq.model.RmqTestStep
+import org.skellig.teststep.processor.ibmmq.config.IbmMqConsumableTestStepProcessorConfig
+import org.skellig.teststep.processor.ibmmq.config.IbmMqTestStepProcessorConfig
+import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
+import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.alphaNum
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.bool
+import org.skellig.teststep.reader.value.expression.ValueExpressionObject.boolOp
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.callChain
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.compare
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.funcCall
@@ -35,13 +36,13 @@ import java.util.concurrent.TimeUnit
 
 @Tag("integration-test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class RmqConsumableTestProcessingIT {
+internal class IbmMqConsumableTestProcessingIT {
 
-    private lateinit var testStepConsumableProcessor: TestStepProcessor<RmqConsumableTestStep>
-    private lateinit var testStepConsumableFactory: TestStepFactory<RmqConsumableTestStep>
-    private lateinit var testStepProcessor: TestStepProcessor<RmqTestStep>
-    private lateinit var testStepFactory: TestStepFactory<RmqTestStep>
-    private val versions = arrayOf(/*"3.5.0", */"3.13.3")
+    private lateinit var testStepConsumableProcessor: TestStepProcessor<IbmMqConsumableTestStep>
+    private lateinit var testStepConsumableFactory: TestStepFactory<IbmMqConsumableTestStep>
+    private lateinit var testStepProcessor: TestStepProcessor<IbmMqTestStep>
+    private lateinit var testStepFactory: TestStepFactory<IbmMqTestStep>
+    private val versions = arrayOf("9.2.3.0-r1")
     private val containers = versions.associateWith { createContainer(it) }
 
     @BeforeAll
@@ -62,9 +63,8 @@ internal class RmqConsumableTestProcessingIT {
         val n = 5
         (1..n).forEach {
             val rawTestStep: Map<ValueExpression, ValueExpression> = mapOf(
-                Pair(alphaNum("protocol"), alphaNum("rmq")),
-                Pair(alphaNum("sendTo"), list(string("queue1"), string("queue2"))),
-                Pair(alphaNum("routingKey"), string("#")),
+                Pair(alphaNum("protocol"), alphaNum("ibmmq")),
+                Pair(alphaNum("sendTo"), list(string("DEV.QUEUE.1"), string("DEV.QUEUE.2"))),
                 Pair(
                     alphaNum("data"), map(
                         Pair(alphaNum("id"), callChain(num(it.toString()), funcCall("toInt"))),
@@ -77,8 +77,9 @@ internal class RmqConsumableTestProcessingIT {
         }
 
         val rawTestStep = mapOf<ValueExpression, ValueExpression>(
-            Pair(alphaNum("protocol"), alphaNum("rmq")),
-            Pair(alphaNum("consumeFrom"), list(string("queue1"), string("queue2"))),
+            Pair(alphaNum("protocol"), alphaNum("ibmmq")),
+            Pair(alphaNum("timeout"), num("200")),
+            Pair(alphaNum("consumeFrom"), list(string("DEV.QUEUE.1"), string("DEV.QUEUE.2"))),
             Pair(
                 alphaNum("validate"), map(
                     Pair(
@@ -102,7 +103,7 @@ internal class RmqConsumableTestProcessingIT {
 
         countDownLatch.await(5, TimeUnit.SECONDS)
 
-        assertTrue(testStepConsumableFactory.isConstructableFrom(rawTestStep), "Consumable Rmq Test Step must be constructable for its factory")
+        assertTrue(testStepConsumableFactory.isConstructableFrom(rawTestStep), "Consumable IbmMq Test Step must be constructable for its factory")
         assertEquals(0, countDownLatch.count, "Not all valid data received from the consumer")
     }
 
@@ -111,9 +112,8 @@ internal class RmqConsumableTestProcessingIT {
         val expectedValue = "10000"
         testStepProcessor.process(testStepFactory.create(
             "t1", mapOf(
-                Pair(alphaNum("protocol"), alphaNum("rmq")),
-                Pair(alphaNum("sendTo"), list(string("queue1"))),
-                Pair(alphaNum("routingKey"), string("#")),
+                Pair(alphaNum("protocol"), alphaNum("ibmmq")),
+                Pair(alphaNum("sendTo"), list(string("DEV.QUEUE.1"))),
                 Pair(
                     alphaNum("data"), map(
                         Pair(alphaNum("id"), callChain(num(expectedValue), funcCall("toInt"))),
@@ -124,12 +124,21 @@ internal class RmqConsumableTestProcessingIT {
 
         val consumeTestStep = testStepConsumableFactory.create(
             "t2", mapOf(
-                Pair(alphaNum("protocol"), alphaNum("rmq")),
-                Pair(alphaNum("consumeFrom"), list(string("queue1"))),
-                Pair(alphaNum("respondTo"), list(string("queue2"))),
+                Pair(alphaNum("protocol"), alphaNum("ibmmq")),
+                Pair(alphaNum("timeout"), num("1000")),
+                Pair(alphaNum("consumeFrom"), list(string("DEV.QUEUE.1"))),
+                Pair(alphaNum("respondTo"), list(string("DEV.QUEUE.3"))),
                 Pair(
-                    alphaNum("response"), map(
+                    alphaNum("data"), map(
                         Pair(alphaNum("id"), callChain(num("-$expectedValue"), funcCall("toInt"))),
+                    )
+                ),
+                Pair(
+                    alphaNum("validate"), map(
+                        Pair(
+                            compare("!=", alphaNum("$"), alphaNum("null")),
+                            bool("true")
+                        )
                     )
                 )
             ), emptyMap()
@@ -142,17 +151,18 @@ internal class RmqConsumableTestProcessingIT {
                 countDownLatch.countDown()
             }
 
-        countDownLatch.await(3, TimeUnit.SECONDS)
+        countDownLatch.await(10, TimeUnit.SECONDS)
 
         testStepProcessor.process(testStepFactory.create(
             "t3", mapOf(
-                Pair(alphaNum("protocol"), alphaNum("rmq")),
-                Pair(alphaNum("readFrom"), list(string("queue2"))),
-                Pair(alphaNum("routingKey"), string("#")),
+                Pair(alphaNum("protocol"), alphaNum("ibmmq")),
+                Pair(alphaNum("timeout"), num("5000")),
+                Pair(alphaNum("attempts"), num("3")),
+                Pair(alphaNum("readFrom"), list(string("DEV.QUEUE.3"))),
                 Pair(
                     alphaNum("validate"), map(
                         Pair(
-                            callChain(alphaNum("queue2"), funcCall("toString"), funcCall("jsonPath", arrayOf(alphaNum("id")))),
+                            callChain(string("DEV.QUEUE.3"), funcCall("toString"), funcCall("jsonPath", arrayOf(alphaNum("id")))),
                             num("-$expectedValue")
                         )
                     )
@@ -168,10 +178,10 @@ internal class RmqConsumableTestProcessingIT {
     private fun init() {
         val state = DefaultTestScenarioState()
         // some dependencies are mocked because they won't be used in the test
-        val config = RmqTestStepProcessorConfig().config(
+        val config = IbmMqTestStepProcessorConfig().config(
             TestStepProcessorConfigDetails(
                 state,
-                ConfigFactory.load(this.javaClass.classLoader, "rmq-integration-test.conf"),
+                ConfigFactory.load(this.javaClass.classLoader, "ibmmq-integration-test.conf"),
                 mock<TestStepRegistry>(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
@@ -186,10 +196,10 @@ internal class RmqConsumableTestProcessingIT {
         testStepFactory = config.testStepFactory
         testStepProcessor = config.testStepProcessor
 
-        val config2 = RmqConsumableTestStepProcessorConfig().config(
+        val config2 = IbmMqConsumableTestStepProcessorConfig().config(
             TestStepProcessorConfigDetails(
                 state,
-                ConfigFactory.load(this.javaClass.classLoader, "rmq-integration-test.conf"),
+                ConfigFactory.load(this.javaClass.classLoader, "ibmmq-integration-test.conf"),
                 mock<TestStepRegistry>(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
@@ -206,6 +216,10 @@ internal class RmqConsumableTestProcessingIT {
     }
 
     private fun createContainer(version: String) =
-        GenericContainer(DockerImageName.parse("rabbitmq:$version"))
-            .withExposedPorts(5672)
+        GenericContainer(DockerImageName.parse("ibmcom/mq:$version"))
+            .withExposedPorts(1414)
+            .withExposedPorts(9443)
+            .withEnv("LICENSE", "accept")
+            .withEnv("MQ_QMGR_NAME", "QM1")
+            .withEnv("MQ_APP_PASSWORD", "admin")
 }

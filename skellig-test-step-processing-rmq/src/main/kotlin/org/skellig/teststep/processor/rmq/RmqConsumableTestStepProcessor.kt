@@ -60,6 +60,10 @@ open class RmqConsumableTestStepProcessor(
                 var error: RuntimeException? = null
                 try {
                     validate(testStep, receivedMessage)
+                    if (respondTo != null && response != null) {
+                        log.debug(testStep) { "Respond to received message to RMQ queues '$respondTo'" }
+                        send(response, respondTo[index], testStep.routingKey, testStep.getAmqpProperties())
+                    }
                 } catch (ex: Throwable) {
                     error = when (ex) {
                         !is ValidationException -> ValidationException(ex.message, ex)
@@ -67,11 +71,6 @@ open class RmqConsumableTestStepProcessor(
                     }
                 } finally {
                     result.notify(receivedMessage, error)
-                }
-
-                if (error == null && respondTo != null && response != null) {
-                    log.debug(testStep) { "Respond to received message to RMQ queues '$respondTo'" }
-                    send(response, respondTo[index], testStep.routingKey, testStep.getAmqpProperties())
                 }
             }
         }
