@@ -16,9 +16,9 @@ import org.skellig.teststep.processor.unix.model.factory.UnixShellTestStepFactor
  */
 class UnixShellTestStepProcessorConfig : TestStepProcessorConfig<UnixShellTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<UnixShellTestStep>? {
-        return if (details.config.hasPath("unix")) ConfiguredTestStepProcessorDetails(
+        return if (details.config.hasPath("unix-shell")) ConfiguredTestStepProcessorDetails(
             UnixShellTestStepProcessor.Builder()
-                .withHost(details.config)
+                .withHosts(details.config)
                 .withTestScenarioState(details.state)
                 .build(),
             UnixShellTestStepFactory(

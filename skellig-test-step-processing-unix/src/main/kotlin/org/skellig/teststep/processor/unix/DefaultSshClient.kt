@@ -15,13 +15,16 @@ import java.util.concurrent.TimeUnit
  * @property port The port number of the SSH server.
  * @property user The username used for authentication. Can be null for password-less authentication with SSH keys.
  * @property password The password used for password-based authentication. Ignored if SSH keys are used for authentication.
- * @property privateSshKeyPath The file path of the SSH private key, used for key-based authentication. Ignored if password-based authentication is used.
+ * @property publicSshKeyPath The file path of the SSH public key, used for key-based authentication. Ignored if password is provided.
  */
-class DefaultSshClient private constructor(private val host: String,
-                                           private val port: Int,
-                                           private val user: String?,
-                                           private val password: String?,
-                                           private val privateSshKeyPath: String?) : SSHClient() {
+open class DefaultSshClient protected constructor(
+    internal val host: String,
+    internal val port: Int,
+    internal val user: String?,
+    internal val password: String?,
+    internal val publicSshKeyPath: String?,
+    internal val fingerprint: String = "",
+) : SSHClient() {
 
     private val logger = logger<DefaultSshClient>()
 
@@ -76,12 +79,10 @@ class DefaultSshClient private constructor(private val host: String,
     private fun startSshSessionLazy() {
         if (sshSession == null || !sshSession!!.isOpen) {
             try {
-                if (!(isConnected && isAuthenticated)) {
-                    createAndConnectSshClient()
-                }
+                createAndConnectSshClient()
                 logger.info("Start new SSH session for '$host:$port'")
-                sshSession = super.startSession()
-                sshSession?.allocateDefaultPTY()
+                sshSession = startSession()
+                sshSession!!.allocateDefaultPTY()
             } catch (ex: Exception) {
                 throw TestStepProcessingException(ex.message, ex)
             }
@@ -91,12 +92,12 @@ class DefaultSshClient private constructor(private val host: String,
     @Throws(IOException::class)
     private fun createAndConnectSshClient() {
         logger.info("Create new SSH connection to '$host:$port' with username '$user' and password '$password'")
-        addHostKeyVerifier("")
+        addHostKeyVerifier(fingerprint)
         connect(host, port)
 
-        privateSshKeyPath?.let {
-            logger.info("Authenticate SSH connection to '$host:$port' with private key '$privateSshKeyPath'")
-            authPublickey(user, privateSshKeyPath)
+        publicSshKeyPath?.let {
+            logger.info("Authenticate SSH connection to '$host:$port' with public key '$publicSshKeyPath'")
+            authPublickey(user, publicSshKeyPath)
         } ?: this.authPassword(user, password)
     }
 
@@ -107,6 +108,7 @@ class DefaultSshClient private constructor(private val host: String,
         private var user: String? = null
         private var password: String? = null
         private var privateSshKeyPath: String? = null
+        private var fingerprint: String? = null
 
         fun withHost(host: String?) = apply {
             this.host = host
@@ -128,8 +130,12 @@ class DefaultSshClient private constructor(private val host: String,
             this.privateSshKeyPath = privateSshKeyPath
         }
 
+        fun withFingerprint(fingerprint: String?) = apply {
+            this.fingerprint = fingerprint
+        }
+
         fun build(): DefaultSshClient {
-            return DefaultSshClient(host!!, port, user, password, privateSshKeyPath)
+            return DefaultSshClient(host!!, port, user, password, privateSshKeyPath, fingerprint ?: "")
         }
     }
 }

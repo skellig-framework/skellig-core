@@ -1,11 +1,12 @@
 package org.skellig.teststep.processor.unix
 
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 
 internal class UnixShellTestStepProcessorTest {
@@ -18,7 +19,8 @@ internal class UnixShellTestStepProcessorTest {
     fun setUp() {
         val hosts = mapOf(
             Pair("h1", sshClient),
-            Pair("h2", sshClient2))
+            Pair("h2", sshClient2)
+        )
 
         processor = UnixShellTestStepProcessor(mock(), hosts)
     }
@@ -33,8 +35,10 @@ internal class UnixShellTestStepProcessorTest {
 
         processor!!.process(testStep)
             .subscribe { _, _, e ->
-                Assertions.assertEquals("No hosts were provided to run a command." +
-                                                " Registered hosts are: [h1, h2]", e!!.message)
+                assertEquals(
+                    "No hosts were provided to run a command." +
+                            " Registered hosts are: [h1, h2]", e!!.message
+                )
             }
     }
 
@@ -53,7 +57,7 @@ internal class UnixShellTestStepProcessorTest {
 
         processor!!.process(testStep)
             .subscribe { _, r, _ ->
-                Assertions.assertEquals("r1", r)
+                assertEquals("r1", r)
             }
     }
 
@@ -67,8 +71,10 @@ internal class UnixShellTestStepProcessorTest {
 
         processor!!.process(testStep)
             .subscribe { _, _, e ->
-                Assertions.assertEquals("No hosts was registered for host name 'h3'." +
-                                                " Registered hosts are: [h1, h2]", e!!.message)
+                assertEquals(
+                    "No hosts was registered for host name 'h3'." +
+                            " Registered hosts are: [h1, h2]", e!!.message
+                )
             }
     }
 
@@ -84,10 +90,10 @@ internal class UnixShellTestStepProcessorTest {
         processor!!.process(testStep)
             .subscribe { _, r, _ ->
                 val result = r as Map<*, *>
-                Assertions.assertEquals(1, result.size)
-                Assertions.assertEquals("r1", result["h1"])
+                assertEquals(1, result.size)
+                assertEquals("r1", result["h1"])
             }
-        Mockito.verifyNoInteractions(sshClient2)
+        verifyNoInteractions(sshClient2)
     }
 
     @Test
@@ -107,8 +113,20 @@ internal class UnixShellTestStepProcessorTest {
         processor!!.process(testStep)
             .subscribe { _, r, _ ->
                 val result = r as Map<*, *>
-                Assertions.assertEquals("r1", result["h1"])
-                Assertions.assertEquals("r2", result["h2"])
+                assertEquals("r1", result["h1"])
+                assertEquals("r2", result["h2"])
             }
+    }
+
+    @Test
+    fun testGetClass() {
+        assertEquals(UnixShellTestStep::class.java, processor!!.getTestStepClass())
+    }
+
+    @Test
+    fun testClose() {
+        processor!!.close()
+        verify(sshClient).close()
+        verify(sshClient2).close()
     }
 }

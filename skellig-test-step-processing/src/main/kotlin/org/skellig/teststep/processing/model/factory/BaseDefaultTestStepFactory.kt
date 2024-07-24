@@ -116,7 +116,8 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         parameters: Map<String, Any?>
     ): Collection<String>? {
         return rawTestStep[propertyName]?.let {
-            return when (val value = it.evaluate(valueExpressionContextFactory.create(parameters))) {
+            val context = valueExpressionContextFactory.create(parameters)
+            return when (val value = it.evaluate(context)) {
                 is String -> listOf(value)
                 is Collection<*> -> value.map { v -> v.toString() }.toList()
                 is Array<*> -> value.map { v -> v.toString() }.toList()

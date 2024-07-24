@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.unix
 
 import com.typesafe.config.Config
-import org.skellig.task.async.AsyncTaskUtils
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -27,9 +26,9 @@ import org.skellig.teststep.processor.unix.model.UnixShellTestStep
  * @param testScenarioState The test scenario state.
  * @param hosts The map of host names and their corresponding [DefaultSshClient] instances.
  */
-open class UnixShellTestStepProcessor(
+class UnixShellTestStepProcessor(
     testScenarioState: TestScenarioState,
-    private val hosts: Map<String, DefaultSshClient>
+    internal val hosts: Map<String, DefaultSshClient>
 ) : BaseTestStepProcessor<UnixShellTestStep>(testScenarioState) {
 
     private val log = logger<UnixShellTestStepProcessor>()
@@ -57,13 +56,7 @@ open class UnixShellTestStepProcessor(
                 response
             }
         }
-        val results = AsyncTaskUtils.runTasksAsyncAndWait(
-            tasks,
-            { isValid(testStep, it) },
-            testStep.delay,
-            testStep.attempts,
-            testStep.timeout
-        )
+        val results = runTasksAsyncAndWait(tasks, testStep)
         return if (isResultForSingleService(results, testStep)) results.values.first() else results
     }
 
@@ -100,13 +93,14 @@ open class UnixShellTestStepProcessor(
         private val hosts = hashMapOf<String, DefaultSshClient>()
         private val unixShellConfigReader = UnixShellConfigReader()
 
-        fun withHost(unixShellHostDetails: UnixShellHostDetails) = apply {
+        fun withHosts(unixShellHostDetails: UnixShellHostDetails) = apply {
             hosts[unixShellHostDetails.hostName] = DefaultSshClient.Builder()
                 .withHost(unixShellHostDetails.hostAddress)
                 .withPort(unixShellHostDetails.port)
                 .withUser(unixShellHostDetails.userName)
                 .withPassword(unixShellHostDetails.password)
-                .withPassword(unixShellHostDetails.sshKeyPath)
+                .withPrivateSshKeyPath(unixShellHostDetails.sshKeyPath)
+                .withFingerprint(unixShellHostDetails.fingerprint)
                 .build()
         }
 
@@ -117,8 +111,8 @@ open class UnixShellTestStepProcessor(
          * @param config The Skellig Config containing the configuration of Unix Shell Processor (see [UnixShellConfigReader]).
          * @return The modified builder instance.
          */
-        fun withHost(config: Config) = apply {
-            unixShellConfigReader.read(config).forEach { withHost(it) }
+        fun withHosts(config: Config) = apply {
+            unixShellConfigReader.read(config).forEach { withHosts(it) }
         }
 
         override fun build(): TestStepProcessor<UnixShellTestStep> {
