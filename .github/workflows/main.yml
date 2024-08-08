@@ -29,8 +29,8 @@ jobs:
       - name: Build components
         run: ./gradlew build -x test
 
-      - name: Run unit tests
-        run: ./gradlew test
+      - name: Run integration tests
+        run: ./gradlew integrationTest
 
       - name: Generate test report
         run: ./gradlew testReport

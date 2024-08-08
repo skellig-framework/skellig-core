@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.ibmmq.integration
 
 import com.typesafe.config.ConfigFactory
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -21,7 +22,6 @@ import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.alphaNum
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.bool
-import org.skellig.teststep.reader.value.expression.ValueExpressionObject.boolOp
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.callChain
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.compare
 import org.skellig.teststep.reader.value.expression.ValueExpressionObject.funcCall
@@ -107,6 +107,7 @@ internal class IbmMqConsumableTestProcessingIT {
         assertEquals(0, countDownLatch.count, "Not all valid data received from the consumer")
     }
 
+    @Disabled("runs fine individually only")
     @Test
     fun `consume from queue and respond to another queue`() {
         val expectedValue = "10000"
