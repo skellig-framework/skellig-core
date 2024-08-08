@@ -63,8 +63,8 @@ open class SkelligPerformanceRunner(clazz: Class<*>) : ParentRunner<PerformanceT
             skelligTestContext.use {
                 testStepRunner.run(child.testName)
                     .subscribe { _, r, e ->
-                        val longRunResult = r as LongRunResponse
-                        longRunResult.getTimeSeries().forEach {
+                        val longRunResult = r as? LongRunResponse
+                        longRunResult?.getTimeSeries()?.forEach {
                             log.info("Start writing time series data into file '${it.key}'")
 
                             val file = File("${it.key}.$PTS_EXTENSION")
@@ -77,7 +77,7 @@ open class SkelligPerformanceRunner(clazz: Class<*>) : ParentRunner<PerformanceT
                                 if (e is PerformanceTestStepException)
                                     e.aggregate().forEach { ex -> fireTestFailure(notifier, childDescription, ex) }
                             }
-                        }
+                        }?: error("The test '${child.testName}' has been notified with no result")
                     }
             }
         } catch (e: Throwable) {
