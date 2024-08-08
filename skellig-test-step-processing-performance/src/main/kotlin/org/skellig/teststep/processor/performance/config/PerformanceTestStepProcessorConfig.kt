@@ -15,23 +15,25 @@ import org.skellig.teststep.processor.performance.model.factory.PerformanceTestS
  */
 class PerformanceTestStepProcessorConfig : TestStepProcessorConfig<PerformanceTestStep> {
 
-    override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<PerformanceTestStep> {
-        val metricsFactory =
-            if (details.config.hasPath("performance.metrics") &&
-                details.config.getString("performance.metrics") == "prometheus"
-            ) PrometheusMetricsFactory()
-            else DefaultMetricsFactory()
+    override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<PerformanceTestStep>? {
+        return if (details.config.hasPath("performance")) {
+            val metricsFactory =
+                if (details.config.hasPath("performance.metrics") &&
+                    details.config.getString("performance.metrics") == "prometheus"
+                ) PrometheusMetricsFactory()
+                else DefaultMetricsFactory()
 
-        return ConfiguredTestStepProcessorDetails(
-            PerformanceTestStepProcessor.Builder()
-                .metricsFactory(metricsFactory)
-                .testStepRegistry(details.testStepRegistry)
-                .testStepProcessor(details.testStepProcessor)
-                .build(),
-            PerformanceTestStepFactory(
-                details.testStepFactory,
-                details.valueExpressionContextFactory
+            ConfiguredTestStepProcessorDetails(
+                PerformanceTestStepProcessor.Builder()
+                    .metricsFactory(metricsFactory)
+                    .testStepRegistry(details.testStepRegistry)
+                    .testStepProcessor(details.testStepProcessor)
+                    .build(),
+                PerformanceTestStepFactory(
+                    details.testStepFactory,
+                    details.valueExpressionContextFactory
+                )
             )
-        )
+        } else null
     }
 }

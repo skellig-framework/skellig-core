@@ -14,7 +14,7 @@ open class MessageReceptionDefaultMetric(private val name: String) : MessageRece
     private val timeSeriesSuccessfulReceptions = ConcurrentHashMap<Long, AtomicInteger>()
     private val timeSeriesFailedReceptions = ConcurrentHashMap<Long, AtomicInteger>()
 
-    override fun registerMessageReception() {
+    override fun registerMessageSuccess() {
         timeSeriesSuccessfulReceptions.computeIfAbsent(getCurrentTimeInSeconds()) { AtomicInteger(0) }.incrementAndGet()
     }
 
@@ -30,9 +30,7 @@ open class MessageReceptionDefaultMetric(private val name: String) : MessageRece
         recordConsumer("\ntotal failed: ${getTotalFailedRequests()}")
     }
 
-    private fun getTotalRequests() = timeSeriesSuccessfulReceptions.values.sumOf { it.get() }
-
-    private fun getTotalPassedRequests() = getTotalRequests() - getTotalFailedRequests()
+    private fun getTotalPassedRequests() = timeSeriesSuccessfulReceptions.values.sumOf { it.get() }
 
     private fun getTotalFailedRequests() = timeSeriesFailedReceptions.values.sumOf { it.get() }
 

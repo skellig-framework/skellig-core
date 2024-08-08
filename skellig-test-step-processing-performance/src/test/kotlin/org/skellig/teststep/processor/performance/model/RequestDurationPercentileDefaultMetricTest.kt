@@ -32,6 +32,61 @@ class RequestDurationPercentileDefaultMetricTest {
         (15 until 30).forEach { assertNotNull(timeSeries.timeSeriesItems[it].percentiles) }
     }
 
+    @Test
+    fun `close metric`() {
+        val timeSeries = RequestDurationPercentileDefaultMetric("")
+
+        val createPercentileBucket = timeSeries.createPercentileBucket() as RequestDurationDefaultMetric
+
+        timeSeries.close()
+
+        // verify compress method called before closure
+        assertTrue(createPercentileBucket.percentiles?.all { it == 0L } ?: false, "Invalid items in percentiles")
+    }
+
+
+    @Test
+    fun `record failed request and verify correct value returned`() {
+        val timeSeries = RequestDurationPercentileDefaultMetric("")
+
+        val createPercentileBucket = timeSeries.createPercentileBucket() as RequestDurationDefaultMetric
+
+        createPercentileBucket.recordRequestStatus(false)
+
+        assertEquals(1, createPercentileBucket.getTotalRequestsFailed())
+    }
+
+    @Test
+    fun `record failed and success request and verify correct value returned for success ones`() {
+        val timeSeries = RequestDurationPercentileDefaultMetric("")
+
+        val createPercentileBucket = timeSeries.createPercentileBucket() as RequestDurationDefaultMetric
+
+        createPercentileBucket.recordTime(10)
+        createPercentileBucket.recordRequestStatus(false)
+        createPercentileBucket.recordRequestStatus(false)
+
+        assertEquals(2, createPercentileBucket.getTotalRequestsFailed())
+        assertEquals(1, createPercentileBucket.getTotalRequests())
+    }
+
+    @Test
+    fun `record success requests and consume time series records then verify correct values`() {
+        val timeSeries = RequestDurationPercentileDefaultMetric("metric1")
+
+        val timeSeriesItem = timeSeries.createPercentileBucket() as RequestDurationDefaultMetric
+        (0 until 11).forEach { timeSeriesItem.recordTime(10 * it.toLong()) }
+        timeSeriesItem.compress()
+
+        var log = ""
+        timeSeries.consumeTimeSeriesRecords {  log += it }
+
+        assertTrue(log.matches(Regex("\nname: metric1\n" +
+                "start: \\d+\n" +
+                "buckets: 0.0,10.0,25.0,50.0,70.0,80.0,90.0,95.0,99.9,99.99,100.0\n" +
+                "11=0,10,20,50,70,80,90,100,100,100,100")))
+    }
+
     @DisplayName("Verify time series item compression")
     @Nested
     inner class PercentilePercentileTimeSeriesItemTest {

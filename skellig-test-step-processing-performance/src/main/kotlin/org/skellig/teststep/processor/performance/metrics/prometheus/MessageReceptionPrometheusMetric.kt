@@ -34,7 +34,7 @@ open class MessageReceptionPrometheusMetric(private val name: String,
         return ceil((System.currentTimeMillis() - startTime) / 1000.0)
     }
 
-    override fun registerMessageReception() {
+    override fun registerMessageSuccess() {
         registerStartTimeIfRequired()
         totalSuccessfulMessages.increment()
     }

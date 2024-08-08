@@ -32,7 +32,7 @@ open class PerformanceTestStepProcessor protected constructor(
     override fun process(testStep: PerformanceTestStep): TestStepProcessor.TestStepRunResult {
         val result = TestStepProcessor.TestStepRunResult(testStep)
         val response = LongRunResponse()
-        var errorsAfter: Map<TestStep, RuntimeException>? = null
+        var errorsAfter: Map<TestStep, RuntimeException> = emptyMap()
 
         if (!isClosed.get()) {
             runTestStepsBefore(testStep.testStepsToRunBefore, response)
@@ -43,7 +43,7 @@ open class PerformanceTestStepProcessor protected constructor(
 
             response.registerTimeSeriesFor(testStep.name, timeSeries)
         }
-        errorsAfter?.let { result.notify(response, PerformanceTestStepException(it)) } ?: result.notify(response, null)
+        result.notify(response, if (errorsAfter.isNotEmpty()) PerformanceTestStepException(errorsAfter) else null)
 
         return result
     }
@@ -59,7 +59,7 @@ open class PerformanceTestStepProcessor protected constructor(
                 response.registerTimeSeriesFor(testStep.name, timeSeries)
                 testStepProcessor.process(testStep)
                     .subscribe { _, _, ex ->
-                        if (ex == null) timeSeries.registerMessageReception()
+                        if (ex == null) timeSeries.registerMessageSuccess()
                         else timeSeries.registerMessageFailed()
                     }
             }
@@ -68,7 +68,7 @@ open class PerformanceTestStepProcessor protected constructor(
 
     private fun runTestStepsAfter(testSteps: List<(testStepRegistry: TestStepRegistry) -> TestStep>)
             : Map<TestStep, RuntimeException> {
-        return if (!isClosed.get()) {
+        return if (!isClosed.get() && testSteps.isNotEmpty()) {
             testSteps.mapNotNull {
                 val testStep = it(testStepRegistry)
                 val result = testStepProcessor.process(testStep)
