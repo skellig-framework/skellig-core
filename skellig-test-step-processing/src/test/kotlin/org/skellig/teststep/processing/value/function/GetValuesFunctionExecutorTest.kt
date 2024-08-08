@@ -50,7 +50,7 @@ class GetValuesFunctionExecutorTest {
     fun `get value from string`() {
         val value = "I'm just a string"
         val result = getValuesFunctionExecutor.execute("getValues", value, emptyArray())
-        assertEquals(value, result)
+        assertEquals(listOf(value), result)
     }
 
     @Test

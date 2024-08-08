@@ -389,7 +389,7 @@ class ValueExpressionContextFactoryTest {
             val value = SimpleObject(mapOf(Pair("data", """{ "a": 1 }""".toByteArray())))
 
             assertEquals(
-                "1",
+                1,
                 CallChainExpression(
                     listOf(
                         PropertyValueExpression("data", null),
@@ -411,6 +411,7 @@ class ValueExpressionContextFactoryTest {
                         StringValueExpression("data"),
                         FunctionCallExpression("toString", arrayOf(AlphanumericValueExpression("utf8"))),
                         FunctionCallExpression("jsonPath", arrayOf(AlphanumericValueExpression("a"))),
+                        FunctionCallExpression("toString", emptyArray()),
                         FunctionCallExpression("concat", arrayOf(AlphanumericValueExpression("_._"))),
 
                         )
