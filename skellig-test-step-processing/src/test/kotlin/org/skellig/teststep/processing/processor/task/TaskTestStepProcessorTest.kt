@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.skellig.task.async.AsyncTaskUtils
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TaskTestStep
@@ -75,10 +74,10 @@ class TaskTestStepProcessorTest {
             val testStepRunResult = BaseTestStepProcessor.DefaultTestStepRunResult(defaultTestStep)
             when (n) {
                 "test B" -> {
-                    AsyncTaskUtils.runTaskAsync {
+                    Thread {
                         Thread.sleep(2000)
                         testStepRunResult.notify("response from test B", null)
-                    }
+                    }.start()
                 }
 
                 else -> testStepRunResult.notify("response", null)

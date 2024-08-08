@@ -24,7 +24,6 @@ dependencies {
     implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core'
     api group: 'com.typesafe', name: 'config'
 
-    api project(':skellig-task')
     api project(':skellig-test-step-reader-sts')
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'

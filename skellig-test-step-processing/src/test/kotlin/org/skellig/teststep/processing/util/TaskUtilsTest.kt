@@ -1,9 +1,9 @@
-package org.skellig.task
+package org.skellig.teststep.processing.util
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.skellig.task.TaskUtils.Companion.runTask
+import org.skellig.teststep.processing.util.TaskUtils.runTask
 import java.util.concurrent.atomic.AtomicInteger
 
 @DisplayName("Run task")

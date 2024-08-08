@@ -1,12 +1,12 @@
 package org.skellig.runner.config
 
-import org.skellig.task.TaskUtils.Companion.runTask
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.config.ConfiguredTestStepProcessorDetails
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.TaskUtils.runTask
 import java.util.*
 
 class SimpleMessageTestStepProcessor private constructor(testScenarioState: TestScenarioState?) : BaseTestStepProcessor<SimpleMessageTestStep>(testScenarioState!!) {

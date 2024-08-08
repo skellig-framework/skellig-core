@@ -1,7 +1,6 @@
 package org.skellig.teststep.processing.processor
 
 import kotlinx.coroutines.*
-import org.skellig.task.async.AsyncTaskUtils.Companion.runTaskAsync
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
@@ -12,7 +11,11 @@ import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logTestStepResult
 import org.skellig.teststep.processing.util.logger
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+
+private const val DEFAULT_GRACEFUL_SHUTDOWN_WAIT_SEC = 30L
 
 /**
  * Base processor for [DefaultTestStep].
@@ -27,13 +30,14 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
 
     private val log = logger<BaseTestStepProcessor<*>>()
     private val asyncTaskGroupExecutor = AsyncTaskGroupExecutor()
+    private val asyncTaskExecutor = Executors.newCachedThreadPool()
 
     override fun process(testStep: T): TestStepRunResult {
         val testStepRunResult = DefaultTestStepRunResult(testStep)
         testScenarioState.set(testStep.getId, testStep)
 
         when (testStep.execution) {
-            TestStepExecutionType.ASYNC -> runTaskAsync {
+            TestStepExecutionType.ASYNC -> asyncTaskExecutor.execute {
                 log.debug(testStep) { "Run the test step asynchronously" }
                 processAndValidate(testStep, testStepRunResult)
             }
@@ -57,6 +61,17 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
      * @see TestStepRunResult.notify
      */
     protected abstract fun processTestStep(testStep: T): Any?
+
+    override fun close() {
+        var isGracefullyShutdown = false
+        try {
+            isGracefullyShutdown = asyncTaskExecutor.awaitTermination(DEFAULT_GRACEFUL_SHUTDOWN_WAIT_SEC, TimeUnit.SECONDS)
+        } catch (ex: InterruptedException) {
+            Thread.currentThread().interrupt()
+        } finally {
+            if (!isGracefullyShutdown) asyncTaskExecutor.shutdownNow()
+        }
+    }
 
     private fun processAndValidate(testStep: T, testStepRunResult: TestStepRunResult) {
         var result: Any? = null

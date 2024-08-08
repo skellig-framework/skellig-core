@@ -1,8 +1,6 @@
 package org.skellig.teststep.processor.http
 
 import com.typesafe.config.Config
-import kotlinx.coroutines.*
-import org.skellig.task.TaskUtils
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.TestStepProcessorInitException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor

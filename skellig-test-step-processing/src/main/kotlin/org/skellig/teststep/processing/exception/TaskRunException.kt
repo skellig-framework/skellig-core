@@ -1,4 +1,4 @@
-package org.skellig.task.exception
+package org.skellig.teststep.processing.exception
 
 class TaskRunException(message: String?, cause: Throwable?) : RuntimeException(message, cause) {
 
