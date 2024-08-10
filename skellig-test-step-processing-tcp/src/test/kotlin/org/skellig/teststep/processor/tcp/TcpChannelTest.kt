@@ -2,8 +2,8 @@ package org.skellig.teststep.processor.tcp
 
 import org.apache.commons.lang3.StringUtils
 import org.junit.jupiter.api.*
-import org.skellig.task.TaskUtils.Companion.runTask
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.util.TaskUtils.runTask
 import org.skellig.teststep.processor.tcp.model.TcpDetails
 import org.slf4j.LoggerFactory
 import java.io.DataInputStream

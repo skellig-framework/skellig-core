@@ -13,7 +13,7 @@ interface MessageReceptionMetric : TimeSeries {
      *
      * @see MessageReceptionMetric
      */
-    fun registerMessageReception()
+    fun registerMessageSuccess()
 
     /**
      * Registers a failed message reception in the message reception metric.

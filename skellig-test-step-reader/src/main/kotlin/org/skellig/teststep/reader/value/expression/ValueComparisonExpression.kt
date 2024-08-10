@@ -1,6 +1,7 @@
 package org.skellig.teststep.reader.value.expression
 
 import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * Represents a value comparison expression that compares two value expressions using a specified operator
@@ -15,21 +16,11 @@ class ValueComparisonExpression(
     private val rightExpression: ValueExpression
 ) : ValueExpression {
 
-    override fun evaluate(context: ValueExpressionContext): Any {
-        var evaluatedLeft = leftExpression.evaluate(context)
-        var evaluatedRight = rightExpression.evaluate(context)
-        return if (evaluatedLeft is String || evaluatedRight is String) {
-            when (operator) {
-                "==" -> evaluatedLeft.toString() == evaluatedRight.toString()
-                "!=" -> evaluatedLeft.toString() != evaluatedRight.toString()
-                else -> throw IllegalArgumentException("Invalid comparison operator for String values: $operator")
-            }
-        } else {
-            if (!(evaluatedLeft is BigDecimal && evaluatedRight is BigDecimal)) {
-                evaluatedLeft = evaluatedLeft.toString().toBigDecimal()
-                evaluatedRight = evaluatedRight.toString().toBigDecimal()
-            }
-            when (operator) {
+    companion object {
+        fun compare(operator: String, left: Any?, right: Any?): Boolean {
+            val evaluatedLeft = convertToBigDecimal(left)
+            val evaluatedRight = convertToBigDecimal(right)
+            return when (operator) {
                 ">" -> evaluatedLeft > evaluatedRight
                 ">=" -> evaluatedLeft >= evaluatedRight
                 "<" -> evaluatedLeft < evaluatedRight
@@ -37,6 +28,32 @@ class ValueComparisonExpression(
                 "==" -> evaluatedLeft == evaluatedRight
                 "!=" -> evaluatedLeft != evaluatedRight
                 else -> throw IllegalArgumentException("Invalid comparison operator for numeric values: $operator")
+            }
+        }
+
+        private fun convertToBigDecimal(value: Any?): BigDecimal {
+            return when (value) {
+                is BigDecimal -> value
+                is Int -> BigDecimal(value)
+                is Long -> BigDecimal(value)
+                is Double -> BigDecimal(value)
+                is Float -> BigDecimal(value.toDouble())
+                is BigInteger -> BigDecimal(value)
+                else -> BigDecimal(value.toString())
+            }
+        }
+    }
+
+    override fun evaluate(context: ValueExpressionContext): Any {
+        val evaluatedLeft = leftExpression.evaluate(context)
+        val evaluatedRight = rightExpression.evaluate(context)
+        return if (evaluatedLeft is Number || evaluatedRight is Number) {
+            compare(operator, evaluatedLeft, evaluatedRight)
+        } else {
+            when (operator) {
+                "==" -> evaluatedLeft == evaluatedRight
+                "!=" -> evaluatedLeft != evaluatedRight
+                else -> throw IllegalArgumentException("Invalid comparison operator for String values: $operator")
             }
         }
     }

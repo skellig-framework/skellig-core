@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
 import org.skellig.teststep.processing.exception.ValidationException
+import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.sql.Timestamp
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -22,7 +23,7 @@ import java.util.regex.Pattern
  * - [java.sql.Date]
  *
  * Supported args:
- * - between(`<min>`, `<max>`) - for example:
+ * - between(`<min>`, `<max>`) - where 'min' and 'max' values can be: [String], [LocalDateTime], [LocalDate] or [Instant], for example:
  *   ```
  *    between(now, 1 second after)
  *    between(5 minutes ago, 2 days ago)
@@ -82,12 +83,12 @@ class DateTimeCompareFunctionExecutor : FunctionValueExecutor {
     override fun execute(name: String, value: Any?, args: Array<Any?>): Boolean {
         val format = if (args.size >= 3) args[2]?.toString() else null
         val timezone = if (args.size == 4) args[3]?.toString() else null
-        val min = getDateFromString(args[0].toString(), format, timezone)
-        val max = getDateFromString(args[1].toString(), format, timezone)
+        val min = getDateFrom(args[0], format, timezone)
+        val max = getDateFrom(args[1], format, timezone)
         return when (value) {
             is LocalDate -> isDateBetween(value, min.toLocalDate(), max.toLocalDate())
             is LocalDateTime -> isBetween(value, min, max)
-            is java.sql.Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(value.time), UTC), min, max)
+            is java.sql.Date -> isDateBetween(value.toLocalDate(), min.toLocalDate(), max.toLocalDate())
             is Timestamp -> isBetween(LocalDateTime.ofInstant(value.toInstant(), UTC), min, max)
             is Date -> isBetween(LocalDateTime.ofInstant(Instant.ofEpochMilli(value.time), UTC), min, max)
             is Instant -> isBetween(LocalDateTime.ofInstant(value, UTC), min, max)
@@ -131,37 +132,50 @@ class DateTimeCompareFunctionExecutor : FunctionValueExecutor {
     private fun isDateBetween(value: LocalDate, min: LocalDate, max: LocalDate) =
         (value.isAfter(min) || value == min) && (value.isBefore(max) || value == max)
 
-    private fun getDateFromString(date: String, format: String?, timezone: String?): LocalDateTime =
-        when (date.trim()) {
-            NOW -> LocalDateTime.now()
-            YESTERDAY -> LocalDateTime.now().minusDays(1)
-            TOMORROW -> LocalDateTime.now().plusDays(1)
-            else -> {
-                val matcher = TIME_DIFF_PATTERN.matcher(date.trim())
-                var dateTime: LocalDateTime? = null
-                if (matcher.find()) {
-                    val amount = matcher.group(1).toLong()
-                    val unit = matcher.group(2)
-                    val operation = matcher.group(3)
+    private fun getDateFrom(date: Any?, format: String?, timezone: String?): LocalDateTime =
+        when (date) {
+            is String -> {
+                when (date) {
+                    NOW -> LocalDateTime.now()
+                    YESTERDAY -> LocalDateTime.now().minusDays(1)
+                    TOMORROW -> LocalDateTime.now().plusDays(1)
+                    else -> {
+                        val matcher = TIME_DIFF_PATTERN.matcher(date.trim())
+                        var dateTime: LocalDateTime? = null
+                        if (matcher.find()) {
+                            val amount = matcher.group(1).toLong()
+                            val unit = matcher.group(2)
+                            val operation = matcher.group(3)
 
-                    dateTime = TIME_OPERATION[operation]?.invoke(
-                        LocalDateTime.now(),
-                        amount,
-                        CHRONO_UNIT[unit] ?: error("Invalid Chrono unit $unit. Supported are: ${CHRONO_UNIT.keys}")
-                    )
+                            dateTime = TIME_OPERATION[operation]?.invoke(
+                                LocalDateTime.now(),
+                                amount,
+                                CHRONO_UNIT[unit] ?: error("Invalid Chrono unit $unit. Supported are: ${CHRONO_UNIT.keys}")
+                            )
 
-                } else if (format != null) {
-                    dateTime = convertToLocalDateTime(date.trim(), format, timezone)
+                        } else if (format != null) {
+                            dateTime = convertToLocalDateTime(date.trim(), format, timezone)
+                        }
+
+                        if (dateTime == null) {
+                            throw ValidationException(
+                                "Cannot process date '${date.trim()}' in `between` comparator as it is not parseable to date or time.\n" +
+                                        "Supported formats are: $NOW, $YESTERDAY, $TOMORROW or should match $TIME_DIFF_PATTERN."
+                            )
+                        }
+                        dateTime
+                    }
                 }
-
-                if (dateTime == null) {
-                    throw ValidationException(
-                        "Cannot process date '${date.trim()}' in `between` comparator as it is not parseable to date or time.\n" +
-                                "Supported formats are: $NOW, $YESTERDAY, $TOMORROW or should match $TIME_DIFF_PATTERN."
-                    )
-                }
-                dateTime
             }
+
+            is LocalDateTime -> date
+            is LocalDate -> date.atStartOfDay()
+            is Instant -> LocalDateTime.ofInstant(date, UTC)
+
+            else -> throw FunctionExecutionException(
+                "Failed to execute function '${getFunctionName()}'. " +
+                        "Invalid argument type '${date?.javaClass?.simpleName}'. Expected: String, LocalDateTime, LocalDate or Instant"
+            )
         }
 
     private fun convertToLocalDateTime(value: String, format: String?, timezone: String?) =

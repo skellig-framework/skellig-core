@@ -3,6 +3,7 @@ package org.skellig.teststep.processor.ibmmq
 import com.ibm.mq.*
 import com.ibm.mq.constants.CMQC
 import com.ibm.mq.constants.MQConstants
+import kotlinx.coroutines.*
 import org.apache.commons.lang3.StringUtils
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.util.debug
@@ -14,6 +15,7 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Represents an IBM MQ Channel for sending and receiving messages.
@@ -70,18 +72,18 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
 
             getMessageBody(message)
         } catch (e: Exception) {
-            log.error("Failed to read a message from IBMMQ queue '${ibmMqQueueDetails.id}'", e)
+            if (queue?.isOpen() == true && (e !is MQException || (e.reason != CMQC.MQRC_NO_MSG_AVAILABLE)))
+                log.error("Failed to read a message from IBMMQ queue '${ibmMqQueueDetails.id}'", e)
             null
         }
 
     /**
      * Consumes messages from an IBM MQ queue and invokes a response handler for each received message.
      *
-     * @param response The response message to send to the same queue on each consumed message. It can be null if no response is required.
      * @param timeout The timeout value in milliseconds for reading messages from the queue.
      * @param responseHandler The callback function to handle the received message.
      */
-    fun consume(response: Any?, timeout: Int, responseHandler: (message: Any?) -> Unit) {
+    fun consume(timeout: Int, responseHandler: (message: Any?) -> Unit) {
         /*
          TODO: consider this later
          val cf = MQQueueConnectionFactory()
@@ -109,15 +111,16 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
         if (consumerThread == null || consumerThread!!.isShutdown) {
             consumerThread = Executors.newCachedThreadPool()
         }
-        log.info("Start listener for IBMMQ queue: ${ibmMqQueueDetails.id}")
         consumerThread?.execute {
-            while (!consumerThread!!.isShutdown) {
-                val data = read(timeout)
-                responseHandler(data)
-                response?.let {
-                    log.debug { "Respond with '$response' to IBMMQ queue '${ibmMqQueueDetails.id}'" }
-                    send(it)
+            log.info("Start message consumer from IBMMQ queue: ${ibmMqQueueDetails.id}")
+            val consumerCallbackJob = ConsumerCallbackJob(responseHandler)
+            try {
+                while (queue?.isOpen() == true) {
+                    val data = read(timeout)
+                    consumerCallbackJob.execute(data)
                 }
+            } finally {
+                log.debug { "Stopped message consumer of IBMMQ queue '${ibmMqQueueDetails.id}'" }
             }
         }
     }
@@ -164,11 +167,28 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
     override fun close() {
         try {
             consumerThread?.shutdownNow()
-            queueManager!!.disconnect()
-            queueManager!!.close()
-            queue!!.close()
+            disconnectQueue()
+            queueManager?.disconnect()
+            queueManager?.close()
         } catch (e: Exception) {
             log.warn("Could not safely close IBMMQ queue ${ibmMqQueueDetails.id}. Reason: ${e.message}")
+        }
+    }
+
+    fun disconnectQueue() {
+        if (queue?.isOpen() == true) {
+            queue?.close()
+        }
+    }
+
+    private class ConsumerCallbackJob(val callback: (message: Any?) -> Unit) : CoroutineScope {
+        private var job: Job = Job()
+
+        override val coroutineContext: CoroutineContext
+            get() = Dispatchers.IO + job
+
+        fun execute(body: Any?) = launch {
+            callback(body)
         }
     }
 

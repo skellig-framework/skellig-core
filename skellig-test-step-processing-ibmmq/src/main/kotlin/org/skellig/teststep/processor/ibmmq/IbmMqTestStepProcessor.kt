@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.ibmmq
 
-import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -65,13 +64,7 @@ open class IbmMqTestStepProcessor protected constructor(
                 message
             }
         }
-        return runTasksAsyncAndWait(
-            tasks,
-            { isValid(testStep, it) },
-            testStep.delay,
-            testStep.attempts,
-            testStep.timeout
-        )
+        return runTasksAsyncAndWait(tasks, testStep)
     }
 
     private fun send(testStep: IbmMqTestStep, channels: Set<String>) {
@@ -84,7 +77,7 @@ open class IbmMqTestStepProcessor protected constructor(
                     log.debug(testStep) { "Message has sent to IBMMQ queue '$it'" }
                 }
             }
-            runTasksAsyncAndWait(tasks)
+            runTasksAsyncAndWait(tasks, testStep)
         }
     }
 

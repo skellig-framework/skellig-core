@@ -28,7 +28,7 @@ import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStri
 open class DefaultTestStep(
     val id: String? = null,
     override val name: String,
-    val execution: TestStepExecutionType? = TestStepExecutionType.SYNC,
+    val execution: TestStepExecutionType = TestStepExecutionType.SYNC,
     val timeout: Int = 0,
     val delay: Int = 0,
     val attempts: Int = 0,
@@ -69,7 +69,7 @@ open class DefaultTestStep(
         protected var values: Map<String, Any?>? = null,
         protected var testData: Any? = null,
         protected var validationDetails: ValidationNode? = null,
-        protected var execution: TestStepExecutionType? = null,
+        protected var execution: TestStepExecutionType = TestStepExecutionType.SYNC,
         protected var timeout: Int = 0,
         protected var delay: Int = 0,
         protected var attempts: Int = 0,
@@ -86,7 +86,7 @@ open class DefaultTestStep(
 
         fun withValues(values: Map<String, Any?>?) = apply { this.values = values }
 
-        fun withExecution(execution: TestStepExecutionType?) = apply { this.execution = execution }
+        fun withExecution(execution: TestStepExecutionType) = apply { this.execution = execution }
 
         fun withTimeout(timeout: Int) = apply { this.timeout = timeout }
 

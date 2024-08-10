@@ -99,7 +99,7 @@ class IncrementFunctionExecutor : FunctionValueExecutor {
                     writeNewValueInFile(key, newValue, pathToFile)
                 }
             }
-        } catch (ex: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -118,7 +118,6 @@ class IncrementFunctionExecutor : FunctionValueExecutor {
             }
         }
         Files.write(pathToFile, newLines)
-
     }
 
     override fun getFunctionName(): String = "inc"

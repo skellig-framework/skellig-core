@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.processor
 
-import org.skellig.task.async.AsyncTaskUtils.Companion.runTaskAsync
+import kotlinx.coroutines.*
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
@@ -9,11 +9,13 @@ import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
-import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logTestStepResult
 import org.skellig.teststep.processing.util.logger
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+
+private const val DEFAULT_GRACEFUL_SHUTDOWN_WAIT_SEC = 30L
 
 /**
  * Base processor for [DefaultTestStep].
@@ -27,14 +29,16 @@ import org.slf4j.LoggerFactory
 abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: TestScenarioState) : ValidatableTestStepProcessor<T>(testScenarioState) {
 
     private val log = logger<BaseTestStepProcessor<*>>()
+    private val asyncTaskGroupExecutor = AsyncTaskGroupExecutor()
+    private val asyncTaskExecutor = Executors.newCachedThreadPool()
 
     override fun process(testStep: T): TestStepRunResult {
         val testStepRunResult = DefaultTestStepRunResult(testStep)
         testScenarioState.set(testStep.getId, testStep)
 
         when (testStep.execution) {
-            TestStepExecutionType.ASYNC -> runTaskAsync {
-                log.debug(testStep) {"Run the test step asynchronously" }
+            TestStepExecutionType.ASYNC -> asyncTaskExecutor.execute {
+                log.debug(testStep) { "Run the test step asynchronously" }
                 processAndValidate(testStep, testStepRunResult)
             }
 
@@ -58,6 +62,17 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
      */
     protected abstract fun processTestStep(testStep: T): Any?
 
+    override fun close() {
+        var isGracefullyShutdown = false
+        try {
+            isGracefullyShutdown = asyncTaskExecutor.awaitTermination(DEFAULT_GRACEFUL_SHUTDOWN_WAIT_SEC, TimeUnit.SECONDS)
+        } catch (ex: InterruptedException) {
+            Thread.currentThread().interrupt()
+        } finally {
+            if (!isGracefullyShutdown) asyncTaskExecutor.shutdownNow()
+        }
+    }
+
     private fun processAndValidate(testStep: T, testStepRunResult: TestStepRunResult) {
         var result: Any? = null
         var error: RuntimeException? = null
@@ -79,6 +94,71 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
         }
     }
 
+    protected fun <R> runTasksAsyncAndWait(tasks: Map<*, () -> R>, testStep: T): Map<Any?, R?> {
+        return asyncTaskGroupExecutor.runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+    }
+
+    class AsyncTaskGroupExecutor {
+
+        private val log = logger<AsyncTaskGroupExecutor>()
+
+        fun <R> runTasksAsyncAndWait(
+            tasks: Map<*, () -> R>,
+            stopCondition: (Map<*, R?>) -> Boolean = { true },
+            delay: Int = 0, attempts: Int = 0, timeout: Int = 0
+        ): Map<Any?, R?> {
+            return runBlocking {
+                withContext(Dispatchers.IO) {
+                    forEachAsync(tasks, stopCondition, delay, attempts, timeout, mapOf<Any, R?>())
+                }
+            }
+        }
+
+        private suspend fun <R> forEachAsync(
+            tasks: Map<*, () -> R>,
+            stopCondition: (Map<*, R?>) -> Boolean = { true },
+            delay: Int = 0, attempts: Int = 0, timeout: Int,
+            previousResults: Map<*, R?>
+        ): Map<Any?, R?> {
+            return coroutineScope {
+                val newAttempt = attempts - 1
+                val futures = tasks.map {
+                    it.key to async { it.value.invoke() }
+                }.toMap()
+
+                val finalResult = futures.map {
+                    // if result is null then try to get non-null value from previous result if exists
+                    it.key to (waitAndGetResult(it.value, timeout) ?: previousResults[it.key])
+                }.toMap()
+
+                if (newAttempt <= 0 || stopCondition(finalResult)) {
+                    finalResult
+                } else {
+                    delay(delay.toLong())
+                    forEachAsync(tasks, stopCondition, delay, newAttempt, timeout, finalResult)
+                }
+            }
+        }
+
+        private suspend fun <R> waitAndGetResult(taskResult: Deferred<R?>, timeout: Int) =
+            try {
+                if (timeout > 0) {
+                    withTimeout(timeout.toLong()) {
+                        taskResult.await()
+                    }
+                } else taskResult.await()
+            } catch (ex: Exception) {
+                taskResult.cancel(ex.message ?: "", ex)
+                when (ex) {
+                    is InterruptedException, is TimeoutException, is TimeoutCancellationException -> {
+                        log.error("Failed to wait for the response of the task as it exceeded the timeout of $timeout ms. Return null instead")
+                        null
+                    }
+                    // in case if exception comes from the task then throw it
+                    else -> ex.cause?.let { throw it } ?: throw ex
+                }
+            }
+    }
 
     abstract class Builder<T : TestStep> {
         protected var testScenarioState: TestScenarioState? = null

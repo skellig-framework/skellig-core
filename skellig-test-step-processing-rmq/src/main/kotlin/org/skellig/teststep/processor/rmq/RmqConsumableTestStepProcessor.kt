@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.rmq
 
 import com.rabbitmq.client.AMQP
-import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
@@ -32,7 +31,7 @@ open class RmqConsumableTestStepProcessor(
         testScenarioState.set(testStep.getId, testStep)
 
         log.info(testStep, "Start to consume messages for test step '${testStep.name}' from RMQ queues ${testStep.consumeFrom}")
-        consume(testStep, testStep.consumeFrom, testStepRunResult)
+        consume(testStep, testStepRunResult)
 
         return testStepRunResult
     }
@@ -46,37 +45,32 @@ open class RmqConsumableTestStepProcessor(
      * and consume process is resumed.
      *
      * @param testStep The RMQ consumable test step.
-     * @param channels The list of queues to consume data from.
      * @param result The test step run result. Used to notify subscribers for each consume result.
      */
     private fun consume(
         testStep: RmqConsumableTestStep,
-        channels: List<String>,
         result: TestStepProcessor.TestStepRunResult
     ) {
         val respondTo = testStep.respondTo
         val response = testStep.testData
-        channels.forEachIndexed { index, channelName ->
+        testStep.consumeFrom.forEachIndexed { index, channelName ->
             val channel = rmqChannels[channelName] ?: error(getChannelNotExistErrorMessage(channelName))
             channel.consume(if (respondTo != null) null else response) { receivedMessage ->
-                log.debug(testStep) { "Received message from RMQ queue '${channelName}': $receivedMessage" }
+                log.debug(testStep) { "Received message from RMQ queue '${channelName}': ${String(receivedMessage)}" }
                 var error: RuntimeException? = null
                 try {
                     validate(testStep, receivedMessage)
-                } catch (ex: Exception) {
-                    error = when (ex) {
-                        is ValidationException, is TestStepProcessingException -> ex as RuntimeException
-                        else -> TestStepProcessingException(ex.message, ex)
-                    }
-                } finally {
-                    result.notify(receivedMessage, error)
-                }
-
-                respondTo?.let {
-                    response?.let {
+                    if (respondTo != null && response != null) {
                         log.debug(testStep) { "Respond to received message to RMQ queues '$respondTo'" }
                         send(response, respondTo[index], testStep.routingKey, testStep.getAmqpProperties())
                     }
+                } catch (ex: Throwable) {
+                    error = when (ex) {
+                        !is ValidationException -> ValidationException(ex.message, ex)
+                        else -> ex
+                    }
+                } finally {
+                    result.notify(receivedMessage, error)
                 }
             }
         }
@@ -92,7 +86,7 @@ open class RmqConsumableTestStepProcessor(
     }
 
     private fun getChannelNotExistErrorMessage(channelId: String) =
-        "Channel '$channelId' was not registered in RMQ Test Step Processor"
+        "Channel '$channelId' was not registered in RMQ Consumable Test Step Processor"
 
     override fun getTestStepClass(): Class<RmqConsumableTestStep> {
         return RmqConsumableTestStep::class.java

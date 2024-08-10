@@ -39,11 +39,20 @@ internal abstract class BaseValidationNode : ValidationNode {
         parameters: Map<String, Any?>
     ): ValueExpressionContext {
         return if (valueExpression?.javaClass == AlphanumericValueExpression::class.java ||
+            valueExpression?.javaClass == StringValueExpression::class.java ||
             valueExpression?.javaClass == CallChainExpression::class.java ||
             valueExpression?.javaClass == FunctionCallExpression::class.java
         ) {
+            // There are other types of valueExpression which can be used in validation,
+            // however not all of them can be recognised as genuine expression for validation
+            // without an explicit use of special '$' char, indicating a reference to the current value in the hierarchy of
+            // a validation node.
+            // For example, for comparison like validation: '$.toString().jsonPath(n) > 0 = true', usage of '$'
+            // before 'toString()' is mandatory because the ValueComparisonExpression(s) are considered as complex expressions
+            // (ex. along with MathOperationExpression) which may have many operators thus must explicitly use '$'
+            // to form the correct CallChainExpression for which the actual value is extracted.
             valueExpressionContextFactory.createForValidationAsCallChain(value, parameters)
-        } else valueExpressionContextFactory.createForValidation(value, parameters, true)
+        } else valueExpressionContextFactory.createForValidation(value, parameters)
     }
 
     protected fun createContextForExpectedValue(
@@ -51,7 +60,7 @@ internal abstract class BaseValidationNode : ValidationNode {
         value: Any?,
         parameters: Map<String, Any?>
     ): ValueExpressionContext {
-        return valueExpressionContextFactory.createForValidation(value, parameters, false)
+        return valueExpressionContextFactory.createForValidation(value, parameters)
     }
 }
 
@@ -144,17 +153,27 @@ internal class PairValidationNode(
 
         val actualEvaluated = actual.evaluate(contextForActual)
         val expectedEvaluated = expected?.evaluate(contextForExpected)
-        if (actualEvaluated != expectedEvaluated)
-            throw ValidationException(
-                "Validation failed for '$actual = $expected'!\n" +
+        if (actualEvaluated is Number || expectedEvaluated is Number) {
+            if (ValueComparisonExpression.compare("!=", actualEvaluated, expectedEvaluated)) {
+                throwValidationException(expectedEvaluated, actualEvaluated)
+            }
+        } else {
+            if (actualEvaluated != expectedEvaluated)
+                throwValidationException(expectedEvaluated, actualEvaluated)
+            else log.debug {
+                "Verify that '$actual' is '$expected'\n" +
                         "Expected: $expectedEvaluated\n" +
-                        "Actual: $actualEvaluated"
-            )
-        else log.debug {
-            "Verify that '$actual' is '$expected'\n" +
-                    "Expected: $expectedEvaluated\n" +
-                    "Actual: $actualEvaluated\n"
+                        "Actual: $actualEvaluated\n"
+            }
         }
+    }
+
+    private fun throwValidationException(expectedEvaluated: Any?, actualEvaluated: Any?) {
+        throw ValidationException(
+            "Validation failed for '$actual = $expected'!\n" +
+                    "Expected: $expectedEvaluated\n" +
+                    "Actual: $actualEvaluated"
+        )
     }
 
     override fun toString(indent: Int): String {
@@ -185,7 +204,7 @@ internal class SingleValidationNode(
             if (!evaluated)
                 throw ValidationException(
                     "Validation failed for '$expected'!\n" +
-                            "Expected: $evaluated" +
+                            "Expected: $evaluated\n" +
                             "Actual: false"
                 )
             else log.debug {

@@ -6,20 +6,20 @@ import java.nio.charset.Charset
 
 class ToStringFunctionExecutorTest {
 
-    private val extractor = ToStringFunctionExecutor()
+    private val functionExecutor = ToStringFunctionExecutor()
 
     @Test
     fun testToStringByteArray() {
         val expectedValue = "hello"
 
-        assertEquals(expectedValue, extractor.execute("toString", expectedValue.toByteArray(), emptyArray()))
+        assertEquals(expectedValue, functionExecutor.execute("toString", expectedValue.toByteArray(), emptyArray()))
     }
 
     @Test
     fun testToStringObject() {
         val expectedValue = Any()
 
-        assertEquals(expectedValue.toString(), extractor.execute("toString", expectedValue, emptyArray()))
+        assertEquals(expectedValue.toString(), functionExecutor.execute("toString", expectedValue, emptyArray()))
     }
 
     @Test
@@ -27,6 +27,11 @@ class ToStringFunctionExecutorTest {
         val charset = Charset.forName("utf16")
         val expectedValue = "hello".toByteArray(charset)
 
-        assertEquals(expectedValue.toString(charset), extractor.execute("toString", expectedValue, arrayOf("utf16")))
+        assertEquals(expectedValue.toString(charset), functionExecutor.execute("toString", expectedValue, arrayOf("utf16")))
+    }
+
+    @Test
+    fun testToStringNullValue() {
+        assertEquals("null", functionExecutor.execute("toString", null, emptyArray()))
     }
 }

@@ -29,7 +29,7 @@ import org.skellig.teststep.processing.model.ValidationNode
 open class UnixShellTestStep protected constructor(
     id: String?,
     name: String?,
-    execution: TestStepExecutionType?,
+    execution: TestStepExecutionType,
     timeout: Int,
     delay: Int,
     attempts: Int,

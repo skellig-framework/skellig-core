@@ -37,19 +37,41 @@ internal class TcpTestStepProcessorTest {
         processor = TcpTestStepProcessor(tcpChannels, testScenarioState)
     }
 
+
     @Test
     @DisplayName("Send data to non-registered channel Then verify exception is captured")
     fun testSendToChannelNotRegistered() {
         val testStep = TcpTestStep.Builder()
-                .sendTo(setOf("host3"))
-                .withTestData("hi")
-                .withName("n1")
-                .build()
+            .sendTo(setOf("host3"))
+            .withTestData("hi")
+            .withName("n1")
+            .build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
 
         Assertions.assertEquals("Channel 'host3' was not registered in TCP Test Step Processor", ref.get().message)
+    }
+
+    @Test
+    @DisplayName("Read data from non-registered channel Then verify exception is captured")
+    fun testReadFromChannelNotRegistered() {
+        val testStep = TcpTestStep.Builder()
+            .readFrom(setOf("host3"))
+            .withTestData("hi")
+            .withName("n1")
+            .build()
+        val ref: AtomicReference<Exception> = AtomicReference<Exception>()
+
+        processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
+
+        Assertions.assertEquals("Channel 'host3' was not registered in TCP Test Step Processor", ref.get().message)
+    }
+
+    @Test
+    @DisplayName("Verify test step class")
+    fun testTestStepClass() {
+        Assertions.assertEquals(TcpTestStep::class.java, processor!!.getTestStepClass())
     }
 
     @Nested
@@ -58,10 +80,10 @@ internal class TcpTestStepProcessorTest {
         @DisplayName("Send data Then verify tcp channel is called")
         fun testSendData() {
             val testStep = TcpTestStep.Builder()
-                    .sendTo(setOf(CHANNEL_ID))
-                    .withTestData("hi")
-                    .withName("n1")
-                    .build()
+                .sendTo(setOf(CHANNEL_ID))
+                .withTestData("hi")
+                .withName("n1")
+                .build()
 
             val result = processor!!.process(testStep)
 
@@ -74,26 +96,26 @@ internal class TcpTestStepProcessorTest {
         fun testSendAndReceive() {
             val response = "yo"
             val testStep = TcpTestStep.Builder()
-                    .sendTo(setOf(CHANNEL_ID))
-                    .readFrom(setOf(CHANNEL_ID))
-                    .withTestData("hi")
-                    .withName("n1")
-                    .build()
+                .sendTo(setOf(CHANNEL_ID))
+                .readFrom(setOf(CHANNEL_ID))
+                .withTestData("hi")
+                .withName("n1")
+                .build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(response)
 
             val isPassed = AtomicBoolean()
             processor!!.process(testStep)
-                    .subscribe { _, r, _ ->
-                        Assertions.assertEquals(response, (r as Map<*,*>)[CHANNEL_ID])
-                        isPassed.set(true)
-                    }
+                .subscribe { _, r, _ ->
+                    Assertions.assertEquals(response, (r as Map<*, *>)[CHANNEL_ID])
+                    isPassed.set(true)
+                }
 
             assertAll(
-                    { assertTrue(isPassed.get()) },
-                    {
-                        verify(testScenarioState!!).set(eq(testStep.getId + "_result"),
-                                argThat { args -> (args as Map<*, *>).containsKey(CHANNEL_ID) })
-                    }
+                { assertTrue(isPassed.get()) },
+                {
+                    verify(testScenarioState!!).set(eq(testStep.getId + "_result"),
+                        argThat { args -> (args as Map<*, *>).containsKey(CHANNEL_ID) })
+                }
             )
         }
 
@@ -101,11 +123,11 @@ internal class TcpTestStepProcessorTest {
         @DisplayName("Receive and respond to different channel Then verify tcp channel is called to respond")
         fun testReceiveAndRespondToDifferentChannel() {
             val testStep = TcpTestStep.Builder()
-                    .respondTo(setOf(CHANNEL_ID_2))
-                    .readFrom(setOf(CHANNEL_ID))
-                    .withTestData("hi")
-                    .withName("n1")
-                    .build()
+                .respondTo(setOf(CHANNEL_ID_2))
+                .readFrom(setOf(CHANNEL_ID))
+                .withTestData("hi")
+                .withName("n1")
+                .build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(Optional.of("yo"))
 
             processor!!.process(testStep)
@@ -119,12 +141,12 @@ internal class TcpTestStepProcessorTest {
             val response = "yo"
             val expectedResult = mock<ValidationNode>()
             val testStep = TcpTestStep.Builder()
-                    .respondTo(setOf(CHANNEL_ID))
-                    .readFrom(setOf(CHANNEL_ID))
-                    .withTestData("hi")
-                    .withName("n1")
-                    .withValidationDetails(expectedResult)
-                    .build()
+                .respondTo(setOf(CHANNEL_ID))
+                .readFrom(setOf(CHANNEL_ID))
+                .withTestData("hi")
+                .withName("n1")
+                .withValidationDetails(expectedResult)
+                .build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(response)
             doThrow(ValidationException("oops")).whenever(expectedResult)
                 .validate(argThat { args -> (args as Map<*, *>)[CHANNEL_ID] == response })

@@ -21,13 +21,6 @@ abstract class BaseIbmMqTestStepFactory<T : DefaultTestStep>(
 
     }
 
-    private fun toSet(channel: Any?): Set<String>? {
-        return when (channel) {
-            is Collection<*> -> channel.map { it.toString() }.toSet()
-            else -> channel?.let { setOf(channel.toString()) }
-        }
-    }
-
     internal fun getConsumeFromKeyword() = CONSUME_FROM_KEYWORD
 
     internal fun hasIbmMqRequiredData(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean =

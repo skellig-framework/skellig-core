@@ -1,10 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalQuery
 
@@ -25,9 +22,9 @@ abstract class BaseToDateTimeFunctionExecutor : FunctionValueExecutor {
     }
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
-        return if (args.isNotEmpty()) {
-            when (value) {
-                is String -> {
+        return when (value) {
+            is String -> {
+                if (args.isNotEmpty()) {
                     var timezone: String? = null
                     val pattern = args[0]?.toString()?.trim()
                     if (args.size == 2) {
@@ -36,10 +33,19 @@ abstract class BaseToDateTimeFunctionExecutor : FunctionValueExecutor {
                     pattern?.let {
                         parseDate(value, timezone, pattern, getTemporalQuery())
                     } ?: throw FunctionExecutionException("Date/Time pattern is mandatory for '${getFunctionName()}' function")
-                }
-                else -> value
+                } else throw FunctionExecutionException("Function `${getFunctionName()}` can only accept 1 or 2 String arguments. Found ${args.size}")
             }
-        } else throw FunctionExecutionException("Function `${getFunctionName()}` can only accept 1 or 2 String arguments. Found ${args.size}")
+
+            is Instant -> {
+                try {
+                    getTemporalQuery().queryFrom(value)
+                } catch (ex: DateTimeException) {
+                    throw FunctionExecutionException("Failed to execute function '${getFunctionName()}'", ex)
+                }
+            }
+
+            else -> value
+        }
     }
 
     protected abstract fun getTemporalQuery(): TemporalQuery<*>;

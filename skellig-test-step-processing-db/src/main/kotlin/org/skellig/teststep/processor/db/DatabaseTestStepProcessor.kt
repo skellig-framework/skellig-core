@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.db
 
 import com.typesafe.config.Config
-import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -43,7 +42,7 @@ abstract class DatabaseTestStepProcessor<T : DatabaseRequestExecutor, TS : Datab
         log.info(testStep, "Start to run DB query of test step '${testStep.name}' in $servers servers")
 
         val tasks = servers.associateWith { { getDatabaseServer(it).execute(getDatabaseRequest(testStep)) } }
-        val results = runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+        val results = runTasksAsyncAndWait(tasks, testStep)
         return if (isResultForSingleDbServer(results, testStep)) results.values.first() else results
     }
 

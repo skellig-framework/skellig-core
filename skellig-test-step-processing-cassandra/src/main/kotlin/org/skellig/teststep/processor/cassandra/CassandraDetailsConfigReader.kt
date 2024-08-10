@@ -53,8 +53,8 @@ internal class CassandraDetailsConfigReader {
 
     private fun createNode(rawExchangeDetails: Map<*, *>): InetSocketAddress {
         val host = rawExchangeDetails["host"] ?: error("Host was not declared for Cassandra node")
-        val port = rawExchangeDetails["port"] ?: error("Port was not declared for Cassandra node")
+        val port = rawExchangeDetails["port"]?.toString() ?: error("Port was not declared for Cassandra node")
 
-        return InetSocketAddress(host as String, port as Int)
+        return InetSocketAddress(host as String, port.toInt())
     }
 }

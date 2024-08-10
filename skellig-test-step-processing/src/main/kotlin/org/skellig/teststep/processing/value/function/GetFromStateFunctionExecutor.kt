@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
-import org.skellig.task.TaskUtils.Companion.runTask
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.TaskUtils.runTask
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
@@ -53,7 +53,7 @@ class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : F
                 )
             }
 
-            else -> throw FunctionExecutionException("Function `get` can only accept 1 or 3 arguments. Found ${args.size}")
+            else -> throw FunctionExecutionException("Function `${getFunctionName()}` can only accept 1, 2 or 3 arguments. Found ${args.size}")
         }
     }
 

@@ -18,7 +18,8 @@ class UnixShellHostDetails private constructor(
     val port: Int,
     val sshKeyPath: String?,
     val userName: String?,
-    val password: String?
+    val password: String?,
+    val fingerprint: String?
 ) {
 
     class Builder {
@@ -29,6 +30,7 @@ class UnixShellHostDetails private constructor(
         private var sshKeyPath: String? = null
         private var userName: String? = null
         private var password: String? = null
+        private val fingerprint: String? = null
 
         fun withHostName(name: String?) = apply {
             hostName = name
@@ -57,7 +59,7 @@ class UnixShellHostDetails private constructor(
         fun build(): UnixShellHostDetails {
             return UnixShellHostDetails(
                 hostName ?: error("Host name must not be null. Please set any unique name"),
-                hostAddress ?: error("Host address must not be null"), port, sshKeyPath, userName, password
+                hostAddress ?: error("Host address must not be null"), port, sshKeyPath, userName, password, fingerprint
             )
         }
     }

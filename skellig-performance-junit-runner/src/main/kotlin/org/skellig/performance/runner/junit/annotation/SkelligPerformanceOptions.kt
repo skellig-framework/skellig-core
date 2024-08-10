@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
  * @property config Path to Skellig Config file relative to the current 'resources' folder.
  * @property context The subclass of SkelligTestContext to be used (default is SkelligTestContext).
  */
-@Target(AnnotationTarget.TYPE)
+@Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @Inherited
 annotation class SkelligPerformanceOptions(val testName: String,

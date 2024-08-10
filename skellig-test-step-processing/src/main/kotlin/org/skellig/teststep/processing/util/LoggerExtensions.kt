@@ -4,7 +4,7 @@ import org.skellig.teststep.processing.model.TestStep
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-inline fun <reified T:Any> logger(): Logger = LoggerFactory.getLogger(T::class.java)
+inline fun <reified T : Any> logger(): Logger = LoggerFactory.getLogger(T::class.java)
 
 fun Logger.logTestStepResult(testStep: TestStep, result: Any?, error: Throwable?) {
     if (error == null) this.info(testStep, "Processing of test step '${testStep.name}' finished with result: $result")

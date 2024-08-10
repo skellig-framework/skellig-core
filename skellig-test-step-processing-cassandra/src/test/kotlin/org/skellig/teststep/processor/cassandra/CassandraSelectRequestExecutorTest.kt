@@ -6,10 +6,12 @@ import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.*
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.kotlin.whenever
+import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processor.db.model.DatabaseRequest
 import java.util.function.Consumer
 
@@ -53,6 +55,38 @@ internal class CassandraSelectRequestExecutorTest {
         val response = executor.execute(DatabaseRequest("select", "t1", filter)) as List<Map<*, *>>
 
         Assertions.assertEquals(1, response.size)
+    }
+
+    @Test
+    fun `select query with comparator`() {
+        val sql = "SELECT * FROM t1 WHERE c1 = ? AND c2< ? ALLOW FILTERING"
+        val filter = hashMapOf(
+            Pair("c1", "v1"),
+            Pair(
+                "c2", mapOf(
+                    Pair("comparator", "<"),
+                    Pair("value", 20),
+                )
+            )
+        )
+
+        val resultSet = createResultSet()
+        makeSessionReturnResultSet(sql, filter.size, resultSet)
+        val response = executor.execute(DatabaseRequest("select", "t1", filter)) as List<Map<*, *>>
+
+        Assertions.assertEquals(1, response.size)
+    }
+
+    @Test
+    fun `select query when session fails to execute it`() {
+        doThrow(RuntimeException("session failed"))
+            .whenever(session).execute(ArgumentMatchers.any(SimpleStatement::class.java))
+
+        val ex = assertThrows<TestStepProcessingException> {
+            executor.execute(DatabaseRequest("select", "t1"))
+        }
+
+        Assertions.assertEquals("session failed", ex.message)
     }
 
     private fun makeSessionReturnResultSet(sql: String, parametersCount: Int, resultSet: ResultSet) {

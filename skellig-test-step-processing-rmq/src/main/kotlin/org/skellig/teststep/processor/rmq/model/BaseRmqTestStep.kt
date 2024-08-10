@@ -11,7 +11,7 @@ import java.util.*
 open class BaseRmqTestStep protected constructor(
     id: String?,
     name: String?,
-    execution: TestStepExecutionType?,
+    execution: TestStepExecutionType,
     timeout: Int,
     delay: Int,
     attempts: Int,
@@ -34,7 +34,7 @@ open class BaseRmqTestStep protected constructor(
 
     override fun toString(): String {
         return super.toString() + "routingKey = $routingKey\n" +
-                properties?.let { toStringCollection(it.entries, "properties {", "}", 0) }
+                (properties?.let { toStringCollection(it.entries, "properties {", "}", 0) } ?: "")
     }
 
     abstract class Builder<T : BaseRmqTestStep> : DefaultTestStep.Builder<T>() {

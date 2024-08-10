@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.tcp
 
-import org.skellig.task.async.AsyncTaskUtils.Companion.runTasksAsyncAndWait
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -64,13 +63,7 @@ open class TcpTestStepProcessor(
                 message
             }
         }
-        return runTasksAsyncAndWait(
-            tasks,
-            { isValid(testStep, it) },
-            testStep.delay,
-            testStep.attempts,
-            testStep.timeout
-        )
+        return runTasksAsyncAndWait(tasks, testStep)
     }
 
     private fun send(testStep: TcpTestStep, channels: Set<String>) {
@@ -83,7 +76,7 @@ open class TcpTestStepProcessor(
                 "sent"
             }
         }
-        runTasksAsyncAndWait(tasks)
+        runTasksAsyncAndWait(tasks, testStep)
     }
 
     override fun getTestStepClass(): Class<TcpTestStep> {

@@ -116,7 +116,8 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
         parameters: Map<String, Any?>
     ): Collection<String>? {
         return rawTestStep[propertyName]?.let {
-            return when (val value = it.evaluate(valueExpressionContextFactory.create(parameters))) {
+            val context = valueExpressionContextFactory.create(parameters)
+            return when (val value = it.evaluate(context)) {
                 is String -> listOf(value)
                 is Collection<*> -> value.map { v -> v.toString() }.toList()
                 is Array<*> -> value.map { v -> v.toString() }.toList()
@@ -198,7 +199,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
      * @param parameters The parameters used in evaluating the execution type.
      * @return The execution type of the test step.
      */
-    protected open fun getExecutionType(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): TestStepExecutionType? {
+    protected open fun getExecutionType(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): TestStepExecutionType {
         return if (rawTestStep.containsKey(EXECUTION_KEYWORD)) {
             TestStepExecutionType.fromName(convertValue<String>(rawTestStep[EXECUTION_KEYWORD], parameters))
         } else TestStepExecutionType.SYNC

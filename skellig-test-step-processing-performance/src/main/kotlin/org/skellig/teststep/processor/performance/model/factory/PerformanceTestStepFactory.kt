@@ -8,6 +8,7 @@ import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.performance.model.PerformanceTestStep
 import org.skellig.teststep.reader.value.expression.*
+import org.skellig.teststep.reader.value.expression.ValueExpressionObject.alphaNum
 import java.math.BigDecimal
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -60,8 +61,11 @@ class PerformanceTestStepFactory(
         rawListOfTestSteps?.let {
             rawListOfTestSteps.map {
                 when (it) {
-                    is MapValueExpression -> createAsTestStepDelegate(getName(it.value), parameters)
-                    is StringValueExpression -> createAsTestStepDelegate(it.toString(), emptyMap())
+                    is MapValueExpression -> {
+                        createAsTestStepDelegate(getName(it.value), getParameters(it.value, parameters))
+                    }
+
+                    is StringValueExpression -> createAsTestStepDelegate(it.toString(), parameters)
                     else -> throw TestStepCreationException(
                         "Invalid data type of '${propertyName}' in test step '${testStepName}'. " +
                                 "Must have a list of test steps to run with parameters or without"
@@ -72,13 +76,22 @@ class PerformanceTestStepFactory(
 
     private fun getRps(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Int {
         val rps = rawTestStep[RPS]
-        return convertValue<BigDecimal>(rps, parameters)?.toInt()
-            ?: error("Invalid RPS value '$rps' for the test '${getName(rawTestStep)}'. The value must be Int")
+        try {
+            return convertValue<BigDecimal>(rps, parameters)?.toInt()
+                ?: error("The value of 'RPS' property must not be null")
+        } catch (ex: Exception) {
+            throw TestStepCreationException("Failed to parse 'RPS' property", ex)
+        }
     }
 
     private fun getTimeToRun(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): LocalTime {
-        val timeToRun = convertValue<String>(rawTestStep[TIME_TO_RUN], parameters)
-        return LocalTime.parse(timeToRun, TIME_PATTERN)
+        try {
+            val timeToRun = convertValue<String>(rawTestStep[TIME_TO_RUN], parameters)
+                ?: error("The value of 'timeToRun' property must not be null")
+            return LocalTime.parse(timeToRun as CharSequence, TIME_PATTERN)
+        } catch (ex: Exception) {
+            throw TestStepCreationException("Failed to parse 'timeToRun' property", ex)
+        }
     }
 
     private fun createAsTestStepDelegate(testStepName: String, parameters: Map<String, Any?>): (testStepRegistry: TestStepRegistry) -> TestStep =
@@ -87,6 +100,12 @@ class PerformanceTestStepFactory(
                 ?: error("Test step '$testStepName' is not found in any of test data files or classes indicated in the runner")
             testStepFactory.create(testStepName, rawTestStepToRun, parameters)
         }
+
+    private fun getParameters(rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): Map<String, Any?> {
+        val innerParameters = convertValue<Map<String, Any?>>(rawTestStep[alphaNum("parameters")], parameters)
+        return if (innerParameters != null) parameters + innerParameters
+        else parameters
+    }
 
     override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean =
         rawTestStep.containsKey(RPS) &&
