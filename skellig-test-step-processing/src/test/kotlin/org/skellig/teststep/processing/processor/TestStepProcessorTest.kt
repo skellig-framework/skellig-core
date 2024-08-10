@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.processor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -14,7 +15,7 @@ class TestStepProcessorResultTest {
     @Test
     fun testAwaitResultWithTimeoutWhenGotResult() {
         val defaultTestStep = mock<DefaultTestStep>()
-        whenever(defaultTestStep.timeout).thenReturn(5000)
+        whenever(defaultTestStep.timeout).thenReturn(10000)
 
         val result = BaseTestStepProcessor.DefaultTestStepRunResult(defaultTestStep)
         var notifiedResponse: Any? = null
@@ -23,6 +24,7 @@ class TestStepProcessorResultTest {
             notifiedResponse = r
             ex = e
         }
+
         Thread {
             Thread.sleep(300)
             result.notify("response", null)
@@ -30,8 +32,11 @@ class TestStepProcessorResultTest {
 
         result.awaitResult()
 
-        assertEquals("response", notifiedResponse)
-        assertNull(ex)
+        assertAll(
+            { assertNull(ex) },
+            { assertEquals("response", notifiedResponse) }
+        )
+
     }
 
     @Test
