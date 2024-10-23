@@ -11,7 +11,7 @@
     <artifactId>skellig-test-step-processing-jdbc</artifactId>
 
     <properties>
-        <testcontainers.version>1.15.0</testcontainers.version>
+        <postgresql.version>42.7.3</postgresql.version>
     </properties>
 
     <dependencies>
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.3</version>
+            <version>${postgresql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

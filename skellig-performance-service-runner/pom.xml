@@ -12,6 +12,7 @@
     <artifactId>skellig-performance-service-runner</artifactId>
     <properties>
         <spring-boot.version>3.2.2</spring-boot.version>
+        <thymeleaf-spring.version>3.1.2.RELEASE</thymeleaf-spring.version>
     </properties>
 
     <dependencies>
@@ -28,7 +29,7 @@
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf-spring6</artifactId>
-            <version>3.1.2.RELEASE</version>
+            <version>${thymeleaf-spring.version}</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
@@ -73,12 +74,10 @@
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_servlet</artifactId>
-            <version>0.16.0</version>
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.12.3</version>
         </dependency>
         <dependency>
             <groupId>org.freemarker</groupId>

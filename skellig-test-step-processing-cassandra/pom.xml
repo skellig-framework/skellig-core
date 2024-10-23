@@ -9,6 +9,10 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-cassandra</artifactId>
+    <properties>
+        <cassandra-test-container.version>1.19.7</cassandra-test-container.version>
+        <cassandra-driver-core.version>4.17.0</cassandra-driver-core.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -19,7 +23,7 @@
         <dependency>
             <groupId>com.datastax.oss</groupId>
             <artifactId>java-driver-core</artifactId>
-            <version>4.17.0</version>
+            <version>${cassandra-driver-core.version}</version>
         </dependency>
 
         <dependency>
@@ -60,7 +64,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>cassandra</artifactId>
-            <version>1.19.7</version>
+            <version>${cassandra-test-container.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
