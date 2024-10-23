@@ -1,0 +1,24 @@
+<configuration>
+    <branches>
+        <branch>
+            <pattern>master</pattern>
+            <versionFormat>${version.major}.${version.minor}.${version.patch}</versionFormat>
+        </branch>
+        <branch>
+            <pattern>.*</pattern>
+            <versionFormat>${branch}-SNAPSHOT</versionFormat>
+        </branch>
+    </branches>
+    <tags>
+        <tag>
+            <pattern>.*</pattern>
+            <versionFormat>${tag}</versionFormat>
+        </tag>
+    </tags>
+    <commit>
+        <versionFormat>${commit}</versionFormat>
+    </commit>
+
+    <propertiesFile>version.properties</propertiesFile>
+    <includeProperties>true</includeProperties>
+</configuration>
