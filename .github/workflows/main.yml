@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     name: Build and test
+    env:
+      MAVEN_OPTS: "-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+      MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
@@ -16,37 +19,20 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v1
         with:
           java-version: '17'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build components
-        run: ./gradlew build -x test
+      - name: Build and package components
+        run: mvn ${MAVEN_CLI_OPTS} package -DskipITs=true -DskipTests
 
       - name: Run unit tests
-        run: ./gradlew test
+        run: mvn ${MAVEN_CLI_OPTS} test -DskipITs=true
 
-      - name: Generate test report
-        run: ./gradlew testReport
-
-      - name: Publish test report
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: reports
-          path: build/reports
-
-      - name: Generate code coverage
-        run: ./gradlew codeCoverageReport
-
-      - name: Upload code coverage
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: build/reports/jacoco/report.xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
