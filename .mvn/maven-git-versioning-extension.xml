@@ -1,24 +1,26 @@
-<configuration>
-    <branches>
-        <branch>
-            <pattern>master</pattern>
-            <versionFormat>${version.major}.${version.minor}.${version.patch}</versionFormat>
-        </branch>
-        <branch>
-            <pattern>.*</pattern>
-            <versionFormat>${branch}-SNAPSHOT</versionFormat>
-        </branch>
-    </branches>
-    <tags>
-        <tag>
-            <pattern>.*</pattern>
-            <versionFormat>${tag}</versionFormat>
-        </tag>
-    </tags>
-    <commit>
-        <versionFormat>${commit}</versionFormat>
-    </commit>
+<configuration xmlns="https://github.com/qoomon/maven-git-versioning-extension"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="https://github.com/qoomon/maven-git-versioning-extension https://qoomon.github.io/maven-git-versioning-extension/configuration-9.4.0.xsd">
 
-    <propertiesFile>version.properties</propertiesFile>
-    <includeProperties>true</includeProperties>
+    <refs>
+        <ref type="branch">
+            <pattern>master</pattern>
+            <version>${ref}-2.1.1</version>
+        </ref>
+
+        <ref type="branch">
+            <pattern>.+</pattern>
+            <version>${ref}-2.1.1-SNAPSHOT</version>
+        </ref>
+
+        <ref type="tag">
+            <pattern><![CDATA[v(?<version>.*)]]></pattern>
+            <version>${ref.version}</version>
+        </ref>
+    </refs>
+
+    <rev>
+        <version>${commit}</version>
+    </rev>
+
 </configuration>
