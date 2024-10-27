@@ -29,8 +29,34 @@
         <module>skellig-performance-service-runner</module>
     </modules>
 
+    <url>https://skelligframework.org</url>
+    <scm>
+        <url>https://github.com/skellig-framework/skellig-core</url>
+        <connection>https://github.com/skellig-framework/skellig-core.git</connection>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Shendor</name>
+            <url>shendor1988@gmail.com</url>
+            <roles>
+                <role>Author</role>
+            </roles>
+        </developer>
+    </developers>
+
     <properties>
+        <release.version>2.1.1</release.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+        <skipITs>true</skipITs>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -49,7 +75,7 @@
         <fastcsv.version>1.0.3</fastcsv.version>
         <antlr4.version>4.13.1</antlr4.version>
         <classgraph.version>4.8.157</classgraph.version>
-        <testcontainers.version>1.15.0</testcontainers.version>
+        <testcontainers.version>1.20.3</testcontainers.version>
         <mockito-kotlin.version>5.4.0</mockito-kotlin.version>
         <mockito-core.version>5.14.2</mockito-core.version>
         <mockito-junit-jupiter.version>2.18.0</mockito-junit-jupiter.version>
@@ -57,6 +83,8 @@
         <prometheus.version>0.16.0</prometheus.version>
         <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.10.1</maven-javadoc-plugin.version>
     </properties>
 
     <dependencies>
@@ -252,7 +280,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${maven-source-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -260,11 +288,34 @@
                             <goal>jar</goal>
                         </goals>
                     </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <executions>
                     <execution>
                         <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jetbrains.dokka</groupId>
+                <artifactId>dokka-maven-plugin</artifactId>
+                <version>1.9.20</version>
+                <executions>
+                    <execution>
+                        <id>javadoc-jar</id>
+                        <goals>
+                            <goal>javadocJar</goal>
+                        </goals>
+                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -341,7 +392,7 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
+                <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <dependencies>
                     <dependency>
@@ -359,24 +410,21 @@
                         <id>unit-tests</id>
                         <phase>test</phase>
                         <goals>
-                            <goal>test</goal>
+                            <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <excludes>
-                                <exclude>**/IT*.kt</exclude>
-                            </excludes>
+                            <excludedGroups>integration-test</excludedGroups>
                         </configuration>
                     </execution>
                     <execution>
                         <id>integration-tests</id>
                         <phase>integration-test</phase>
                         <goals>
-                            <goal>test</goal>
+                            <goal>integration-test</goal>
                         </goals>
                         <configuration>
-                            <includes>
-                                <include>**/IT*.kt</include>
-                            </includes>
+                            <groups>integration-test</groups>
+                            <skipITs>${skipITs}</skipITs>
                         </configuration>
                     </execution>
                 </executions>
@@ -388,25 +436,32 @@
                 <version>${jacoco-maven-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>unit-test</id>
+                        <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
-                        <configuration>
-                            <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
-                            <propertyName>surefireArgLine</propertyName>
-                        </configuration>
                     </execution>
-
                     <execution>
-                        <id>post-unit-test</id>
-                        <phase>test</phase>
+                        <id>report</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
+                    </execution>
+                    <execution>
                         <configuration>
-                            <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
-                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+                            <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>it-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                        <configuration>
+                            <dataFileIncludes>**/jacoco-it.exec</dataFileIncludes>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
