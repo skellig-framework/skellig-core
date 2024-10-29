@@ -13,7 +13,7 @@ jobs:
       MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
     strategy:
       matrix:
-        os: [ windows-latest ]
+        os: [ ubuntu-latest, windows-latest ]
 
     runs-on: ${{ matrix.os }}
 
@@ -27,8 +27,8 @@ jobs:
           maven-version: 3.9.6
           java-distribution: 'oracle'
 
-#      - name: Build and package components
-#        run: mvn package -DskipITs=true -DskipTests
+      - name: Build and package components
+        run: mvn package -DskipITs=true -DskipTests
 
       - name: Run unit tests
         run: mvn test -DskipITs=true
