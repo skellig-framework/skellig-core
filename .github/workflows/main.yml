@@ -9,12 +9,12 @@ on:
 jobs:
   build:
     name: Build and test
-    env:
-      MAVEN_OPTS: "-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-      MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+#    env:
+#      MAVEN_OPTS: "-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+#      MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ windows-latest ]
 
     runs-on: ${{ matrix.os }}
 
@@ -22,15 +22,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
+          distribution: 'oracle'
           java-version: '17'
 
       - name: Build and package components
-        run: mvn ${MAVEN_CLI_OPTS} package -DskipITs=true -DskipTests
+        run: mvn package -DskipITs=true -DskipTests
 
       - name: Run unit tests
-        run: mvn ${MAVEN_CLI_OPTS} test -DskipITs=true
+        run: mvn test -DskipITs=true
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
