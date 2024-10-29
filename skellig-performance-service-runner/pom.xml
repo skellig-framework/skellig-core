@@ -10,6 +10,8 @@
     </parent>
 
     <artifactId>skellig-performance-service-runner</artifactId>
+    <description>Web-service (Spring-Boot) runner for Skellig performance tests</description>
+
     <properties>
         <spring-boot.version>3.2.2</spring-boot.version>
         <thymeleaf-spring.version>3.1.2.RELEASE</thymeleaf-spring.version>

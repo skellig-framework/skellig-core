@@ -9,6 +9,7 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-tcp</artifactId>
+    <description>Processing functionality for TCP-based Skellig Test Step</description>
 
     <dependencies>
         <dependency>

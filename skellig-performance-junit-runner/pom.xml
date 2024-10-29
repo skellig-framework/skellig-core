@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>skellig-performance-junit-runner</artifactId>
-
+    <description>JUnit runner for Skellig performance tests</description>
     <dependencies>
         <dependency>
             <groupId>org.skelligframework</groupId>

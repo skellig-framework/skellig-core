@@ -9,6 +9,7 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-jdbc</artifactId>
+    <description>Processing functionality for JDBC-based Skellig Test Step</description>
 
     <properties>
         <postgresql.version>42.7.3</postgresql.version>

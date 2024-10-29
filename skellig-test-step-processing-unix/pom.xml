@@ -9,6 +9,8 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-unix</artifactId>
+    <description>Processing functionality for UNIX-Shell-based Skellig Test Step</description>
+
     <properties>
         <sshj.version>0.38.0</sshj.version>
         <expectit-core.version>0.9.0</expectit-core.version>

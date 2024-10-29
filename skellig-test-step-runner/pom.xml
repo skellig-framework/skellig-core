@@ -9,6 +9,7 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-runner</artifactId>
+    <description>Functionality for running Skellig Test Step from name. Contains Skellig Test Context class responsible for registering and configuring the framework</description>
 
     <dependencies>
         <dependency>

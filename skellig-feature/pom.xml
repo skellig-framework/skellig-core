@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>skellig-feature</artifactId>
-
+    <description>Reader and domain classes for Skellig Feature file</description>
     <dependencies>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

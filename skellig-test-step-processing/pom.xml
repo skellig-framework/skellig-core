@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>skellig-test-step-processing</artifactId>
+    <description>Basic and abstract processing classes for Skellig Test Steps, including functions, result validators and test scenario state</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
