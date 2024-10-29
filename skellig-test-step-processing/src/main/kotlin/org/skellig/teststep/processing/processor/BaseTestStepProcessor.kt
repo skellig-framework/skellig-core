@@ -65,6 +65,7 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
     override fun close() {
         var isGracefullyShutdown = false
         try {
+            asyncTaskExecutor.shutdown()
             isGracefullyShutdown = asyncTaskExecutor.awaitTermination(DEFAULT_GRACEFUL_SHUTDOWN_WAIT_SEC, TimeUnit.SECONDS)
         } catch (ex: InterruptedException) {
             Thread.currentThread().interrupt()

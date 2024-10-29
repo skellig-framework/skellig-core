@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     name: Build and test
+    env:
+      MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
@@ -16,37 +18,24 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v1
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.15.0
         with:
-          java-version: '17'
+          java-version: 17
+          maven-version: 3.9.6
+          java-distribution: 'oracle'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build components
-        run: ./gradlew build -x test
+      - name: Build and package components
+        run: mvn package -DskipITs=true -DskipTests
 
       - name: Run unit tests
-        run: ./gradlew test
+        run: mvn test -DskipITs=true
 
-      - name: Generate test report
-        run: ./gradlew testReport
-
-      - name: Publish test report
-        uses: actions/upload-artifact@v2
-        if: always()
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          name: reports
-          path: build/reports
-
-      - name: Generate code coverage
-        run: ./gradlew codeCoverageReport
-
-      - name: Upload code coverage
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: build/reports/jacoco/report.xml
+          file: target/site/jacoco/report.xml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

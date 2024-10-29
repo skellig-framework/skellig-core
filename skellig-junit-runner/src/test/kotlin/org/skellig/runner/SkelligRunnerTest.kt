@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.runner.RunWith
 import org.junit.runner.manipulation.Sorter
 import org.mockito.kotlin.mock
 import org.skellig.runner.annotation.SkelligOptions
@@ -37,6 +36,7 @@ class SkelligRunnerTest {
         val testScenarios = mutableListOf<TestScenarioRunner>()
         val sorter = createTestSorter(features, testScenarios)
         skelligRunner.sort(sorter)
+        System.setProperty("skellig.includeTags", "")
 
         assertEquals(1, features.size)
         features[0].sort(sorter)

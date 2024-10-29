@@ -63,6 +63,26 @@ class BaseTestStepProcessorTest {
         verify(scenarioStateUpdater).update(resultValue, testScenarioState)
     }
 
+    @Test
+    fun `process async and close then verify it waits for the result with timeout`() {
+        val processor = AsyncBaseTestStepProcessorForTest(testScenarioState)
+        val scenarioStateUpdater = mock<ScenarioStateUpdater>()
+        val testStep = DefaultTestStep.DefaultTestStepBuilder()
+            .withName("n1")
+            .withExecution(TestStepExecutionType.ASYNC)
+            .withScenarioStateUpdater(listOf(scenarioStateUpdater))
+            .build()
+
+        val result = processor.process(testStep)
+        var resultValue: Any? = null
+        result.subscribe { _, r, _ ->
+            resultValue = r
+        }
+        processor.close()
+
+        verify(scenarioStateUpdater).update(resultValue, testScenarioState)
+    }
+
     @Nested
     inner class SyncTestProcessingTest {
         private val processor = BaseTestStepProcessorForTest(testScenarioState)

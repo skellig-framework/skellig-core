@@ -68,8 +68,8 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         val featureParser = DefaultFeatureParser()
         val hookRunner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(skelligOptions.testSteps.toList(), classInstanceRegistry))
 
-        val includeTags = System.getProperty("skellig.includeTags")?.split(",")?.map { it.trim() }?.toSet() ?: skelligOptions.includeTags.toSet()
-        val excludeTags = System.getProperty("skellig.excludeTags")?.split(",")?.map { it.trim() }?.toSet() ?: skelligOptions.excludeTags.toSet()
+        val includeTags = readTags(skelligOptions.includeTags.toSet(), "skellig.includeTags")
+        val excludeTags = readTags(skelligOptions.excludeTags.toSet(), "skellig.excludeTags")
         val tagsFilter = TagsFilter(includeTags, excludeTags)
 
         skelligOptions.features
@@ -143,6 +143,9 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         val property = System.getProperty(key, "")
         return config.replace("\${$key}", property)
     }
+
+    private fun readTags(tagsFromOptions: Set<String>, propertyName: String): Set<String> =
+        System.getProperty(propertyName)?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }?.toSet() ?: tagsFromOptions
 
     private fun throwNoFeaturesFoundError(featureResourcePath: String, includeTags: Set<String>, excludeTags: Set<String>) {
         error("No features were found in '${featureResourcePath}' with the included tags '${includeTags}' and excluded tags '${excludeTags}')")
