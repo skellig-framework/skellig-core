@@ -13,7 +13,7 @@ jobs:
       MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ windows-latest ]
 
     runs-on: ${{ matrix.os }}
 
@@ -27,13 +27,15 @@ jobs:
           maven-version: 3.9.6
           java-distribution: 'oracle'
 
-      - name: Build and package components
-        run: mvn package -DskipITs=true -DskipTests
+#      - name: Build and package components
+#        run: mvn package -DskipITs=true -DskipTests
 
       - name: Run unit tests
         run: mvn test -DskipITs=true
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
+        with:
+          file: target/site/jacoco/report.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
