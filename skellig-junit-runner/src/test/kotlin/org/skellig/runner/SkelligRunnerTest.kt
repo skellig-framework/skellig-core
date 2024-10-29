@@ -36,7 +36,7 @@ class SkelligRunnerTest {
         val testScenarios = mutableListOf<TestScenarioRunner>()
         val sorter = createTestSorter(features, testScenarios)
         skelligRunner.sort(sorter)
-//        System.setProperty("skellig.includeTags", "")
+        System.setProperty("skellig.includeTags", "")
 
         assertEquals(1, features.size)
         features[0].sort(sorter)
