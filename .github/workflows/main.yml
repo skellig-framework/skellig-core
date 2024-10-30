@@ -34,8 +34,9 @@ jobs:
       - name: Run unit tests
         run: mvn test -DskipITs=true
 
-      - name: Upload code coverage
-        uses: codecov/codecov-action@v2
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: target/site/jacoco/jacoco.xml
+          file: target/site/jacoco/jacoco.xml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
