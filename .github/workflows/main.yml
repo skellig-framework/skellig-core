@@ -28,11 +28,11 @@ jobs:
           maven-version: 3.9.6
           java-distribution: 'oracle'
 
-#      - name: Build and package components
-#        run: mvn package -DskipITs=true -DskipTests
+      - name: Build and package components
+        run: mvn package -DskipITs=true -DskipTests
 
       - name: Run unit tests
-        run: mvn install -DskipITs=true
+        run: mvn test -DskipITs=true
 
       - name: Upload code coverage
         uses: codecov/codecov-action@v2
