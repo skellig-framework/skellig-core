@@ -46,7 +46,7 @@ class CassandraTestProcessingIT {
 
     @AfterAll
     fun tearDown() {
-        processingDetails!!.parallelStream().forEach { it.second.close() }
+        processingDetails?.parallelStream()?.forEach { it.second.close() }
         cassandraContainers.parallelStream().forEach { it.close() }
     }
 

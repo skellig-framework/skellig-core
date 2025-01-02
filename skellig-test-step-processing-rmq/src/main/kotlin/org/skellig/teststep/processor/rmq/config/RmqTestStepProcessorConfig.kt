@@ -19,7 +19,7 @@ private const val RMQ_TEST_DATA_CONVERTER = "rmq.testData.converter"
  */
 class RmqTestStepProcessorConfig : TestStepProcessorConfig<RmqTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<RmqTestStep>? {
-        return if (details.config.hasPath("rmq"))
+        return if (hasRmqConfig(details))
             ConfiguredTestStepProcessorDetails(
                 RmqTestStepProcessor.Builder()
                     .rmqChannels(details.config)
@@ -34,8 +34,6 @@ class RmqTestStepProcessorConfig : TestStepProcessorConfig<RmqTestStep> {
         else null
     }
 
-
-
 }
 
 /**
@@ -44,7 +42,7 @@ class RmqTestStepProcessorConfig : TestStepProcessorConfig<RmqTestStep> {
  */
 class RmqConsumableTestStepProcessorConfig : TestStepProcessorConfig<RmqConsumableTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<RmqConsumableTestStep>? {
-        return if (details.config.hasPath("rmq"))
+        return if (hasRmqConfig(details))
             ConfiguredTestStepProcessorDetails(
                 RmqConsumableTestStepProcessor.Builder()
                     .rmqChannels(details.config)
@@ -60,6 +58,8 @@ class RmqConsumableTestStepProcessorConfig : TestStepProcessorConfig<RmqConsumab
     }
 
 }
+
+private fun hasRmqConfig(details: TestStepProcessorConfigDetails) = details.config.hasPath("rmq")
 
 private fun getDefaultTestDataConverter(config: Config): String? {
     return if (config.hasPath(RMQ_TEST_DATA_CONVERTER)) config.getString(RMQ_TEST_DATA_CONVERTER)

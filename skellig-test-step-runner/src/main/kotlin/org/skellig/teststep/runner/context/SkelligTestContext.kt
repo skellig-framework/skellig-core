@@ -50,14 +50,16 @@ private const val DEFAULT_PACKAGE_TO_SCAN = "org.skellig.teststep.processor"
  * for convenience of working with other tasks, such as: reading properties of Skellig Config, taking out a raw Test Step
  * from registry or evaluating [ValueExpression] in the code using [ValueExpressionContextFactory].
  *
- * When [SkelligTestContext.initialize] is called, it scans the Skellig [Config] file, paths to Test Step files and
- * instantiate all required interfaces and Test Step processors, configured by implementing [TestStepProcessorConfig].
+ * When [SkelligTestContext.initialize] is called, it does the following:
+ * 1) Scans the Skellig [Config] file, paths to Test Step files
+ * 2) Scans for [FunctionsConfig] implementations to initialize built-in and user-created functions for Skellig Test Steps.
+ * 3) Scans for [TestStepProcessorConfig] implementations to initialize built-in and user-created test processors for Skellig Test Steps.
  * After initialization is completed, it returns the [TestStepRunner] - the main interface to run test steps.
  *
  * SkelligTestContext implements [Closeable] interface and by calling method [Closeable.close], it will close all active
  * Test Step processors and release all opened resources. By calling this method you won't be able to run test steps anymore
  * as there will be no active Test Step processors to process them. You must call [SkelligTestContext.initialize] method
- * again or create a new instance of SkelligTestContext.
+ * again or create a new instance of [TestStepRunner].
  *
  * @constructor Creates a new instance of SkelligTestContext.
  */
@@ -68,7 +70,6 @@ open class SkelligTestContext : Closeable {
     private var testScenarioState: TestScenarioState? = null
     private var rootTestStepProcessor: CompositeTestStepProcessor? = null
     private var rootTestStepFactory: CompositeTestStepFactory? = null
-    private var testStepsRegistry: TestStepRegistry? = null
 
     fun initialize(
         classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null,
@@ -80,7 +81,7 @@ open class SkelligTestContext : Closeable {
         )
         val newClassInstanceRegistry = classInstanceRegistry ?: ConcurrentHashMap<Class<*>, Any>()
 
-        config = createConfig(classLoader, configPath)
+        config = getConfig(classLoader, configPath)
 
         testScenarioState = createTestScenarioState()
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
@@ -159,10 +160,6 @@ open class SkelligTestContext : Closeable {
         testStepClassPaths: Collection<String>,
         classInstanceRegistry: MutableMap<Class<*>, Any>
     ): CachedTestStepsRegistry {
-        val paths = extractTestStepPaths(testStepPaths, classLoader)
-        val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader)
-        testStepsRegistry.registerFoundTestStepsInPath(paths)
-
         val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths, classInstanceRegistry)
         classTestStepsRegistry.getTestSteps().forEach { testStep ->
             testStep.values
@@ -170,27 +167,14 @@ open class SkelligTestContext : Closeable {
                 .filterIsInstance<SkelligTestContextAware>()
                 .forEach { it.setSkelligTestContext(this) }
         }
-        return CachedTestStepsRegistry(listOf(testStepsRegistry, classTestStepsRegistry))
+        return CachedTestStepsRegistry(listOf(getTestStepRegistry(testStepPaths, classLoader, testStepReader), classTestStepsRegistry))
     }
+
 
     private fun extractTestStepPackages(testStepPaths: Collection<String>): Collection<String> {
         return testStepPaths
             .filter { !it.contains("/") }
             .toSet()
-    }
-
-    private fun extractTestStepPaths(testStepPaths: Collection<String>?, classLoader: ClassLoader): Collection<URI> {
-        return testStepPaths
-            ?.map {
-                try {
-                    val resource = classLoader.getResource(it)
-                    return@map resource?.let { resource.toURI() }
-                } catch (e: URISyntaxException) {
-                    throw TestStepRegistryException(e.message, e)
-                }
-            }
-            ?.filterNotNull()
-            ?.toSet() ?: emptySet()
     }
 
     /**
@@ -248,15 +232,6 @@ open class SkelligTestContext : Closeable {
             .withClassPaths(testStepClassPaths)
             .withTestScenarioState(testScenarioState)
             .build()
-    }
-
-    protected open fun createConfig(classLoader: ClassLoader, configPath: String?): Config? {
-        return configPath?.let {
-            if (classLoader.getResource(configPath) == null) {
-                throw IllegalArgumentException("Path to config file $configPath does not exist")
-            }
-            ConfigFactory.load(classLoader, configPath)
-        }
     }
 
     /**
@@ -340,4 +315,48 @@ open class SkelligTestContext : Closeable {
         return packagesToScan
     }
 
+
+    /**
+     * Static resources for each context
+     */
+    companion object {
+        private var config: Config? = null
+        private var testStepsRegistry: TestStepRegistry? = null
+
+        @Synchronized
+        private fun getConfig(classLoader: ClassLoader, configPath: String?): Config {
+            if (config == null) {
+                config = configPath?.let {
+                    if (classLoader.getResource(configPath) == null) {
+                        throw IllegalArgumentException("Path to config file $configPath does not exist")
+                    }
+                    ConfigFactory.load(classLoader, configPath)
+                }
+            }
+            return config!!
+        }
+
+        @Synchronized
+        private fun getTestStepRegistry(testStepPaths: List<String>, classLoader: ClassLoader, testStepReader: TestStepReader): TestStepRegistry {
+            if (testStepsRegistry == null) {
+                testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader)
+                (testStepsRegistry as TestStepsRegistry).registerFoundTestStepsInPath(extractTestStepPaths(testStepPaths, classLoader))
+            }
+            return testStepsRegistry!!
+        }
+
+        private fun extractTestStepPaths(testStepPaths: Collection<String>?, classLoader: ClassLoader): Collection<URI> {
+            return testStepPaths
+                ?.map {
+                    try {
+                        val resource = classLoader.getResource(it)
+                        return@map resource?.let { resource.toURI() }
+                    } catch (e: URISyntaxException) {
+                        throw TestStepRegistryException(e.message, e)
+                    }
+                }
+                ?.filterNotNull()
+                ?.toSet() ?: emptySet()
+        }
+    }
 }
