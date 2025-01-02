@@ -15,7 +15,7 @@ fun Logger.logTestStepResult(testStep: TestStep, result: Any?, error: Throwable?
 
 fun Logger.info(testStep: TestStep, message: String) = this.info("[${testStep.hashCode()}]: $message")
 
-fun Logger.error(testStep: TestStep, message: String) = this.info("[${testStep.hashCode()}]: $message")
+fun Logger.error(testStep: TestStep, message: String) = this.error("[${testStep.hashCode()}]: $message")
 
 fun Logger.debug(lazyMessage: () -> String) {
     if (this.isDebugEnabled) this.debug(lazyMessage())
