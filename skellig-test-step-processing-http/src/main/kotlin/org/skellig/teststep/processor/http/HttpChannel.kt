@@ -67,6 +67,7 @@ open class HttpChannel(baseUrl: String, defaultTimeoutMs: Long) {
 
     fun close() {
         httpClient.connectionPool.evictAll()
-        httpClient.dispatcher.executorService.shutdown()
+        httpClient.dispatcher.executorService.shutdownNow()
+        httpClient.cache?.close()
     }
 }
