@@ -6,6 +6,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.*
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
+import org.skellig.feature.event.SkelligTestEventDispatcher
 import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestScenario
@@ -17,7 +18,7 @@ class TestScenarioRunnerTest {
     private val hookRunner = mock<SkelligHookRunner>()
     private val testStepRunner = mock<TestStepRunner>()
     private val testScenario = createScenarioWithBeforeAndAfterSteps()
-    private val scenarioRunner = TestScenarioRunner.create(testScenario, testStepRunner, hookRunner, mock())
+    private val scenarioRunner = TestScenarioRunner.create(testScenario, 0, testStepRunner, hookRunner, mock(), mock())
 
     @Test
     fun testRunAndVerifyFeatureBeforeAndAfterTestStepsRun() {

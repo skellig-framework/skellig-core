@@ -13,6 +13,6 @@ class TestStepWrapperTest {
         val testStep = mock<TestStep>()
         whenever(testStep.getEntityName()).thenReturn("name A")
 
-        assertEquals(testStep.getEntityName(), TestStepWrapper(testStep).getEntityName())
+        assertEquals(testStep.getEntityName(), TestStepWrapper(testStep, 0, 0).getEntityName())
     }
 }

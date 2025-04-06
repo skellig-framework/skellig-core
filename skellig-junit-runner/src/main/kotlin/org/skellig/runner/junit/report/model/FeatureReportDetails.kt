@@ -14,11 +14,11 @@ package org.skellig.runner.junit.report.model
 class FeatureReportDetails(
     val name: String?,
     val tags: Set<String>?,
-    val beforeHooksReportDetails: List<HookReportDetails>?,
-    val afterHooksReportDetails: List<HookReportDetails>?,
-    val beforeReportDetails: List<TestStepReportDetails<*>>?,
-    val afterReportDetails: List<TestStepReportDetails<*>>?,
-    val testScenarioReportDetails: List<TestScenarioReportDetails>?
+    val beforeHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
+    val afterHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
+    val beforeReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf(),
+    val afterReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf(),
+    val testScenarioReportDetails: MutableMap<Any, TestScenarioReportDetails> = mutableMapOf(),
 ) {
 
     private var totalTestSteps = -1
@@ -27,8 +27,8 @@ class FeatureReportDetails(
     fun getTotalTestSteps(): Int {
         if (totalTestSteps == -1) {
             totalTestSteps = testScenarioReportDetails
-                ?.map { item: TestScenarioReportDetails -> item.testStepReportDetails!!.size }
-                ?.reduce { a, b -> Integer.sum(a, b) } ?: 0
+                .map { item -> item.value.testStepReportDetails.size }
+                .reduce { a, b -> Integer.sum(a, b) } ?: 0
         }
         return totalTestSteps
     }
@@ -36,51 +36,51 @@ class FeatureReportDetails(
     fun getTotalPassedTestSteps(): Int {
         if (totalPassedTestSteps == -1) {
             totalPassedTestSteps = testScenarioReportDetails
-                ?.map { obj: TestScenarioReportDetails -> obj.getTotalPassedTestSteps() }
-                ?.reduce { acc, a -> Integer.sum(a, acc) } ?: 0
+                .map { obj -> obj.value.getTotalPassedTestSteps() }
+                .reduce { acc, a -> Integer.sum(a, acc) } ?: 0
         }
         return totalPassedTestSteps
     }
 
-    fun getHooksReportDetails(): List<HookReportDetails>? {
-        return beforeHooksReportDetails?.plus(afterHooksReportDetails?: emptyList())
+    fun getHooksReportDetails(): List<HookReportDetails> {
+        return beforeHooksReportDetails.plus(afterHooksReportDetails)
     }
 
     fun getBeforeHooksDurationFormatted(): String {
         return getFormattedDuration(
-            (beforeHooksReportDetails?.sumOf { it.duration } ?: 0)
+            (beforeHooksReportDetails.sumOf { it.result.duration } ?: 0)
         )
     }
 
     fun getAfterHooksDurationFormatted(): String {
         return getFormattedDuration(
-            (afterHooksReportDetails?.sumOf { it.duration } ?: 0)
+            (afterHooksReportDetails.sumOf { it.result.duration } ?: 0)
         )
     }
 
     fun getBeforeFeatureDurationFormatted(): String {
         return getFormattedDuration(
-            (beforeReportDetails?.sumOf { it.duration } ?: 0)
+            beforeReportDetails.values.sumOf { it.duration }
         )
     }
 
     fun getAfterFeatureDurationFormatted(): String {
         return getFormattedDuration(
-            (afterReportDetails?.sumOf { it.duration } ?: 0)
+            afterReportDetails.values.sumOf { it.duration }
         )
     }
 
     private fun getTotalHooksDuration() =
-        (getHooksReportDetails()?.sumOf { it.duration } ?: 0)
+        getHooksReportDetails().sumOf { it.result.duration }
 
     fun getTotalDuration(): String {
         return getFormattedDuration(
-            (testScenarioReportDetails?.sumOf { it.getScenarioDuration() } ?: 0) +
+            testScenarioReportDetails.values.sumOf { it.getScenarioDuration() } +
                     getTotalHooksDuration())
     }
 
     fun isPassed(): Boolean {
-        return testScenarioReportDetails?.any { it.isPassed() } == true
+        return testScenarioReportDetails.any { it.value.isPassed() }
     }
 
     fun getTotalPassedPercentage(): Float {

@@ -7,10 +7,9 @@ import org.junit.runner.notification.RunNotifier
 import org.junit.runner.notification.StoppedByUserException
 import org.junit.runners.ParentRunner
 import org.skellig.feature.SkelligTestEntity
+import org.skellig.feature.event.*
 import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.runner.junit.report.TestStepLogger
-import org.skellig.runner.junit.report.model.HookReportDetails
-import org.skellig.runner.junit.report.model.TestStepReportDetails
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.TestStepRunner
@@ -21,14 +20,11 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     protected val testStepRunner: TestStepRunner?,
     protected val testStepLogger: TestStepLogger,
     protected val beforeHookType: Class<out Annotation>,
-    protected val afterHookType: Class<out Annotation>
+    protected val afterHookType: Class<out Annotation>,
+    protected val eventDispatcher: SkelligTestEventDispatcher
 ) : ParentRunner<T>(testEntity::class.java), SkelligTestEntity {
 
     protected val log = logger<BaseSkelligTestEntityRunner<T>>()
-    protected val beforeHookReportDetails = mutableListOf<HookReportDetails>()
-    protected val afterHookReportDetails = mutableListOf<HookReportDetails>()
-    protected var beforeTestStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
-    protected var afterTestStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
     protected var testStepRunResults = mutableListOf<TestStepProcessor.TestStepRunResult>()
     private var childDescriptions = mutableMapOf<Int, Description>()
     private var isTestFailed = false
@@ -62,54 +58,62 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     }
 
     open fun runBeforeHooks(notifier: RunNotifier) {
-        runHooks(beforeHookType, beforeHookReportDetails)
+        runHooks(beforeHookType)
     }
 
     open fun runAfterHooks(notifier: RunNotifier) {
-        runHooks(afterHookType, afterHookReportDetails)
+        runHooks(afterHookType)
     }
 
     private fun runHooks(
-        hookType: Class<out Annotation>,
-        hookReportDetails: MutableList<HookReportDetails>
+        hookType: Class<out Annotation>
     ) {
         hookRunner.run(testEntity.getEntityTags(), hookType) { hookName, e, duration ->
-            hookReportDetails.add(createHookReportDetails(hookName, e, duration))
+            dispatchHookFinishedEvent(hookName, duration, e, hookType)
             if (e != null) {
                 throw e
             }
         }
     }
 
+    protected abstract fun dispatchHookFinishedEvent(hookName: String, duration: Long, e: Throwable?, hookType: Class<out Annotation>)
+
     protected fun runTestStep(
         child: TestStepWrapper,
         childDescription: Description,
-        notifier: RunNotifier,
-        testStepsDataReport: MutableList<TestStepReportDetails.Builder>
+        notifier: RunNotifier
     ): TestStepProcessor.TestStepRunResult? {
 
-        val testStepReportBuilder =
-            TestStepReportDetails.Builder()
-                .withName(child.testStep.name)
-                .withParameters(child.testStep.parameters)
+        eventDispatcher.dispatch(TestStepStartedEvent(child.testStep, child.parentFeatureId, child.parentTestScenarioId, child.testStep.parameters, child.executionSequenceType))
+        val testStepFinishedEvent = TestStepFinishedEvent(child.testStep.getId(), child.parentFeatureId, child.parentTestScenarioId, child.executionSequenceType)
+
         var runResult: TestStepProcessor.TestStepRunResult? = null
         if (isTestFailed) {
             notifier.fireTestIgnored(childDescription)
-            testStepsDataReport.add(testStepReportBuilder)
+            eventDispatcher.dispatch(testStepFinishedEvent)
         } else {
             notifier.fireTestStarted(childDescription)
             testStepLogger.clear()
+            val startTime = System.currentTimeMillis()
             try {
-                val startTime = System.currentTimeMillis()
                 val parameters = child.testStep.parameters ?: emptyMap()
                 runResult = testStepRunner!!.run(child.testStep.name, parameters)
 
                 // subscribe for result from test step. Usually needed for async test step
                 // however if it's sync, then the function will be called anyway.
                 runResult.subscribe { t, r, e ->
-                    testStepReportBuilder.withOriginalTestStep(t)
-                        .withResult(r)
-                        .withDuration((System.currentTimeMillis() - startTime))
+
+                    eventDispatcher.dispatch(
+                        TestStepProcessingFinishedEvent(
+                            child.testStep.getId(),
+                            child.parentFeatureId,
+                            child.parentTestScenarioId,
+                            Result(System.currentTimeMillis() - startTime, e, r),
+                            t?.getFullInfo()?: emptyMap(),
+                            child.executionSequenceType
+                        )
+                    )
+
                     if (e != null) {
                         /*
                           if test step is sync, then the thrown exception will be caught in runChild
@@ -117,19 +121,21 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
                           it will fail on 'run' method while waiting for the result and the error will be
                           registered in the report
                         */
-                        testStepReportBuilder.withErrorLog(attachStackTrace(e))
                         throw e
                     }
                 }
             } catch (e: StoppedByUserException) {
                 throw e
             } catch (e: Throwable) {
-                testStepReportBuilder.withOriginalTestStep(child.testStep.name).withErrorLog(attachStackTrace(e))
                 fireFailureEvent(notifier, childDescription, e)
+                testStepFinishedEvent.executionStatus = TestExecutionStatus.FAILED
             } finally {
-                testStepsDataReport.add(testStepReportBuilder.withLogRecords(testStepLogger.getLogsAndClean()))
+                testStepFinishedEvent.executionStatus = TestExecutionStatus.PASSED
+                testStepFinishedEvent.logRecords = testStepLogger.getLogsAndClean()
                 runResult?.let { testStepRunResults.add(it) }
+
                 notifier.fireTestFinished(childDescription)
+                eventDispatcher.dispatch(testStepFinishedEvent)
             }
         }
         return runResult
@@ -139,9 +145,6 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
         val id = step.testStep.getId()
         return childDescriptions.computeIfAbsent(id) { Description.createTestDescription(name, step.testStep.name, id) }
     }
-
-    private fun createHookReportDetails(name: String, e: Throwable?, duration: Long) =
-        HookReportDetails(name, e?.message, testStepLogger.getLogsAndClean(), duration)
 
     protected fun awaitForTestStepRunResults(testStepRunResults: MutableList<TestStepProcessor.TestStepRunResult>, notifier: RunNotifier) {
         try {
@@ -160,7 +163,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
         }
     }
 
-    private fun attachStackTrace(e: Throwable): String = e.stackTraceToString()
+    private fun getStackTrace(e: Throwable): String = e.stackTraceToString()
 
     private fun fireFailureEvent(notifier: RunNotifier, childDescription: Description, e: Throwable) {
         notifier.fireTestFailure(Failure(childDescription, e))

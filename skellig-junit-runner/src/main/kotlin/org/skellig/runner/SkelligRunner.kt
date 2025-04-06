@@ -7,6 +7,7 @@ import org.junit.runners.ParentRunner
 import org.junit.runners.model.RunnerScheduler
 import org.junit.runners.model.Statement
 import org.skellig.feature.Feature
+import org.skellig.feature.event.*
 import org.skellig.feature.hook.DefaultSkelligHookRunner
 import org.skellig.feature.hook.DefaultSkelligTestHooksRegistry
 import org.skellig.feature.metadata.TagsFilter
@@ -15,13 +16,12 @@ import org.skellig.runner.annotation.SkelligOptions
 import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.runner.junit.report.CustomAppender
 import org.skellig.runner.junit.report.DefaultTestStepLogger
-import org.skellig.runner.junit.report.SkelligReportGenerator
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.full.createInstance
-
+import kotlin.reflect.jvm.jvmErasure
 
 
 /**
@@ -43,12 +43,14 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
 
     private val log = logger<SkelligRunner>()
     private val children = mutableListOf<FeatureRunner>()
-    private var reportGenerator = SkelligReportGenerator()
     private var skelligTestContext: SkelligTestContext
+    private val eventDispatcher = DefaultSkelligTestEventDispatcher()
 
     init {
         log.info("Start to initialize Skellig Runner")
         val skelligOptions = clazz.getDeclaredAnnotation(SkelligOptions::class.java) as SkelligOptions
+
+        initPlugins(clazz)
 
         log.info("Reading the config from file '${skelligOptions.config}'")
         val config = getConfig(skelligOptions.config)
@@ -90,7 +92,8 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
                                     testScenarioState,
                                     testStepLogger,
                                     hookRunner,
-                                    tagsFilter,
+                                    eventDispatcher,
+                                    tagsFilter
                                 )
                             }
                             .toCollection(children)
@@ -100,8 +103,27 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
                     throw FeatureRunnerException("Failed to read features from path: $featureResourcePath", e)
                 }
             }
-        log.info("Skellig Runner initialized successfully with test steps from '${skelligOptions.testSteps.joinToString(",")}' " +
-                "and features from '${skelligOptions.features.joinToString(",")}'")
+        log.info(
+            "Skellig Runner initialized successfully with test steps from '${skelligOptions.testSteps.joinToString(",")}' " +
+                    "and features from '${skelligOptions.features.joinToString(",")}'"
+        )
+    }
+
+    private fun initPlugins(clazz: Class<*>) {
+        clazz.getDeclaredAnnotationsByType(SkelligOptions.Plugin::class.java).forEach { skelligPluginOptions ->
+            skelligPluginOptions.name.constructors
+                .filter { constructor ->
+                    if (constructor.parameters.size == skelligPluginOptions.args.size) {
+                        constructor.parameters.filterIndexed { index, p ->
+                            skelligPluginOptions.args[index]::class == p.type.jvmErasure
+                        }.any()
+                    } else false
+                }
+                .forEach { constructor ->
+                    val skelligPlugin = constructor.call(*skelligPluginOptions.args)
+                    skelligPlugin.init(eventDispatcher)
+                }
+        }
     }
 
     override fun runChild(child: FeatureRunner, notifier: RunNotifier) {
@@ -113,7 +135,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
             super.run(notifier)
         } finally {
             log.info("Start to generate report out of the collected run results for all features")
-            reportGenerator.generate(getChildren().map { it.getFeatureReportDetails() }.toList())
+            eventDispatcher.dispatch(TestRunFinishedEvent())
             skelligTestContext.close()
         }
     }

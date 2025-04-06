@@ -81,7 +81,7 @@
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>
-                                                <pre class="small-text-panel failed-content-color">${hook.errorLog?html?trim}</pre>
+                                                <pre class="small-text-panel failed-content-color">${hook.result.errorLog?html?trim}</pre>
                                             </#if>
                                             <#if hook.logRecords?? && hook.logRecords?has_content>
                                                 <div class="card card-body">
@@ -126,7 +126,7 @@
                         <div id="beforeFeaturePanel" role="tablist" aria-multiselectable="true"
                              class="collapse" aria-labelledby="beforeFeatureHeader">
                             <div class="card-body">
-                                <#list feature.beforeReportDetails as step>
+                                <#list feature.beforeReportDetails?values as step>
                                     <#assign i = step?index />
                                     <div class="card card-plain">
                                         <div class="card-header" id="beforeFeatureStepHeader${i}">
@@ -178,7 +178,7 @@
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>
-                                                <pre class="small-text-panel failed-content-color">${step.errorLog?html?trim}</pre>
+                                                <pre class="small-text-panel failed-content-color">${step.result.errorLog?html?trim}</pre>
                                             </#if>
                                             <#if step.logRecords?? && step.logRecords?has_content>
                                                 <div class="medium-text-panel">
@@ -216,7 +216,7 @@
                 </div>
             </#if>
 
-            <#list feature.testScenarioReportDetails as tsrd>
+            <#list feature.testScenarioReportDetails?values as tsrd>
                 <#assign i = tsrd?index />
                 <div id="featurePanel${i}" role="tablist" aria-multiselectable="true"
                      class="card-collapse">
@@ -292,7 +292,7 @@
                                                                     <div class="medium-text-panel failed-content-color">
                                                                         ${errorTitle}
                                                                     </div>
-                                                                    <pre class="small-text-panel failed-content-color">${hook.errorLog?html?trim}</pre>
+                                                                    <pre class="small-text-panel failed-content-color">${hook.result.errorLog?html?trim}</pre>
                                                                 </#if>
                                                                 <#if hook.logRecords?? && hook.logRecords?has_content>
                                                                     <div class="card card-body">
@@ -337,7 +337,7 @@
                                             <div id="beforeScenarioPanel${i}" role="tablist" aria-multiselectable="true"
                                                  class="collapse" aria-labelledby="beforeScenarioHeader${i}">
                                                 <div class="card-body">
-                                                    <#list tsrd.beforeReportDetails as step>
+                                                    <#list tsrd.beforeReportDetails?values as step>
                                                         <#assign bsi = step?index />
                                                         <div class="card card-plain">
                                                             <div class="card-header"
@@ -393,7 +393,7 @@
                                                                     <div class="medium-text-panel failed-content-color">
                                                                         ${errorTitle}
                                                                     </div>
-                                                                    <pre class="small-text-panel failed-content-color">${step.errorLog?html?trim}</pre>
+                                                                    <pre class="small-text-panel failed-content-color">${step.result.errorLog?html?trim}</pre>
                                                                 </#if>
                                                                 <#if step.logRecords?? && step.logRecords?has_content>
                                                                     <div class="medium-text-panel">
@@ -433,7 +433,7 @@
                                     </div>
                                 </#if>
 
-                                <#list tsrd.testStepReportDetails as step>
+                                <#list tsrd.testStepReportDetails?values as step>
                                     <#assign si = i +"_"+step?index />
                                     <div class="card card-plain">
                                         <div class="card-header" id="testStepHeader${si}">
@@ -485,7 +485,7 @@
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>
-                                                <pre class="small-text-panel failed-content-color">${step.errorLog?html?trim}</pre>
+                                                <pre class="small-text-panel failed-content-color">${step.result.errorLog?html?trim}</pre>
                                             </#if>
                                             <#if step.logRecords?? && step.logRecords?has_content>
                                                 <div class="medium-text-panel">
@@ -534,7 +534,7 @@
                                             <div id="afterScenarioPanel${i}" role="tablist" aria-multiselectable="true"
                                                  class="collapse" aria-labelledby="afterScenarioHeader${i}">
                                                 <div class="card-body">
-                                                    <#list tsrd.afterReportDetails as step>
+                                                    <#list tsrd.afterReportDetails?values as step>
                                                         <#assign asi = step?index />
                                                         <div class="card card-plain">
                                                             <div class="card-header"
@@ -590,7 +590,7 @@
                                                                     <div class="medium-text-panel failed-content-color">
                                                                         ${errorTitle}
                                                                     </div>
-                                                                    <pre class="small-text-panel failed-content-color">${step.errorLog?html?trim}</pre>
+                                                                    <pre class="small-text-panel failed-content-color">${step.result.errorLog?html?trim}</pre>
                                                                 </#if>
                                                                 <#if step.logRecords?? && step.logRecords?has_content>
                                                                     <div class="medium-text-panel">
@@ -676,7 +676,7 @@
                                                                     <div class="medium-text-panel failed-content-color">
                                                                         ${errorTitle}
                                                                     </div>
-                                                                    <pre class="small-text-panel failed-content-color">${hook.errorLog?html?trim}</pre>
+                                                                    <pre class="small-text-panel failed-content-color">${hook.result.errorLog?html?trim}</pre>
                                                                 </#if>
                                                                 <#if hook.logRecords?? && hook.logRecords?has_content>
                                                                     <div class="card card-body">
@@ -727,7 +727,7 @@
                         <div id="afterFeaturePanel" role="tablist" aria-multiselectable="true"
                              class="collapse" aria-labelledby="afterFeatureHeader">
                             <div class="card-body">
-                                <#list feature.afterReportDetails as step>
+                                <#list feature.afterReportDetails?values as step>
                                     <#assign i = step?index />
                                     <div class="card card-plain">
                                         <div class="card-header" id="afterFeatureStepHeader${i}">
@@ -779,7 +779,7 @@
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>
-                                                <pre class="small-text-panel failed-content-color">${step.errorLog?html?trim}</pre>
+                                                <pre class="small-text-panel failed-content-color">${step.result.errorLog?html?trim}</pre>
                                             </#if>
                                             <#if step.logRecords?? && step.logRecords?has_content>
                                                 <div class="medium-text-panel">
@@ -855,7 +855,7 @@
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>
-                                                <pre class="small-text-panel failed-content-color">${hook.errorLog?html?trim}</pre>
+                                                <pre class="small-text-panel failed-content-color">${hook.result.errorLog?html?trim}</pre>
                                             </#if>
                                             <#if hook.logRecords?? && hook.logRecords?has_content>
                                                 <div class="card card-body">

@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.model
 
+import org.skellig.teststep.processing.util.PropertyFormatUtils
 import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStringCollection
 
 /**
@@ -51,6 +52,13 @@ open class DefaultTestStep(
                 execution, timeout, delay, 0, values, testData, validationDetails, scenarioStateUpdaters
             )
         }
+    }
+
+    override fun getFullInfo(): Map<String, String> {
+        val info = super.getFullInfo().toMutableMap()
+        validationDetails?.let { info["Validation Details"] = it.toString() }
+        testData?.let { info["Test Data"] = PropertyFormatUtils.toString(it, 0) }
+        return info
     }
 
     override fun toString(): String {

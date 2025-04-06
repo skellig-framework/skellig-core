@@ -1,5 +1,6 @@
 package org.skellig.runner.annotation
 
+import org.skellig.runner.plugin.SkelligPlugin
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
@@ -18,10 +19,16 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @Inherited
-annotation class SkelligOptions(val features: Array<String>,
-                                val testSteps: Array<String>,
-                                val config: String = "",
-                                val context: KClass<out SkelligTestContext> = SkelligTestContext::class,
-                                val includeTags: Array<String> = [],
-                                val excludeTags: Array<String> = ["@Ignore"],
-    )
+annotation class SkelligOptions(
+    val features: Array<String>,
+    val testSteps: Array<String>,
+    val config: String = "",
+    val context: KClass<out SkelligTestContext> = SkelligTestContext::class,
+    val includeTags: Array<String> = [],
+    val excludeTags: Array<String> = ["@Ignore"]
+) {
+    @Retention(AnnotationRetention.RUNTIME)
+    @Target(AnnotationTarget.CLASS)
+    @Repeatable
+    annotation class Plugin(val name: KClass<out SkelligPlugin>, val args: Array<String> = [])
+}

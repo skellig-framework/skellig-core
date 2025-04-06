@@ -45,11 +45,10 @@ internal class DefaultTestStepRunnerTest {
     fun testRunTestStepWhenNoFound() {
         val testStepName = "test1"
         initializeTestSteps(testStepName, emptyMap<String, String>())
-        testStepRunner = DefaultTestStepRunner.Builder()
+        testStepRunner = DefaultTestStepRunner()
                 .withTestStepFactory(testStepFactory)
                 .withTestStepProcessor(testStepProcessor)
                 .withTestStepsRegistry(createTestStepsRegistry("wrong path"))
-                .build()
 
         Assertions.assertThrows(IllegalStateException::class.java) { testStepRunner!!.run(testStepName) }
 
@@ -79,11 +78,10 @@ internal class DefaultTestStepRunnerTest {
     }
 
     private fun initializeTestStepRunner() {
-        testStepRunner = DefaultTestStepRunner.Builder()
+        testStepRunner = DefaultTestStepRunner()
                 .withTestStepFactory(testStepFactory)
                 .withTestStepProcessor(testStepProcessor)
                 .withTestStepsRegistry(createTestStepsRegistry("steps"))
-                .build()
     }
 
     private fun createTestStepsRegistry(testStepsPath: String): TestStepsRegistry {

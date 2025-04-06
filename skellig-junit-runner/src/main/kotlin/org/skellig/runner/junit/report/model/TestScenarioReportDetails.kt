@@ -14,19 +14,19 @@ package org.skellig.runner.junit.report.model
 class TestScenarioReportDetails(
     val name: String?,
     val tags: Set<String>?,
-    val beforeHooksReportDetails: List<HookReportDetails>?,
-    val afterHooksReportDetails: List<HookReportDetails>?,
-    val beforeReportDetails: List<TestStepReportDetails<*>>?,
-    val afterReportDetails: List<TestStepReportDetails<*>>?,
-    val testStepReportDetails: List<TestStepReportDetails<*>>?
+    val beforeHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
+    val afterHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
+    val beforeReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf(),
+    val afterReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf(),
+    val testStepReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf()
 ) {
 
     fun getTotalPassedTestSteps(): Int {
-        return testStepReportDetails?.count { it.isPassed() } ?: 0
+        return testStepReportDetails?.count { it.value.isPassed() } ?: 0
     }
 
     fun isPassed(): Boolean {
-        return testStepReportDetails?.any { it.isPassed() } ?: true
+        return testStepReportDetails?.any { it.value.isPassed() } ?: true
     }
 
     fun getTagsLine(): String? {
@@ -34,47 +34,47 @@ class TestScenarioReportDetails(
     }
 
     fun getTotalTestSteps(): Int {
-        return testStepReportDetails?.size ?: 0
+        return testStepReportDetails.size
     }
 
     fun getTotalFailedTestSteps(): Int {
-        return (testStepReportDetails?.size ?: 0) - getTotalPassedTestSteps()
+        return testStepReportDetails.size - getTotalPassedTestSteps()
     }
 
     fun getScenarioDuration(): Long {
-        return testStepReportDetails?.sumOf { it.duration } ?: 0
+        return testStepReportDetails.values.sumOf { it.duration } ?: 0
     }
 
     fun getScenarioDurationFormatted(): String {
-        return getFormattedDuration(testStepReportDetails?.sumOf { it.duration } ?: 0)
+        return getFormattedDuration(testStepReportDetails.values.sumOf { it.duration } ?: 0)
     }
 
     fun getBeforeScenarioDurationFormatted(): String {
         return getFormattedDuration(
-            (beforeReportDetails?.sumOf { it.duration } ?: 0)
+            (beforeReportDetails.values.sumOf { it.duration } ?: 0)
         )
     }
 
     fun getAfterScenarioDurationFormatted(): String {
         return getFormattedDuration(
-            (afterReportDetails?.sumOf { it.duration } ?: 0)
+            (afterReportDetails.values.sumOf { it.duration } ?: 0)
         )
     }
 
     fun getBeforeHooksDurationFormatted(): String {
         return getFormattedDuration(
-            (beforeHooksReportDetails?.sumOf { it.duration } ?: 0)
+            (beforeHooksReportDetails.sumOf { it.result.duration } ?: 0)
         )
     }
 
     fun getAfterHooksDurationFormatted(): String {
         return getFormattedDuration(
-            (afterHooksReportDetails?.sumOf { it.duration } ?: 0)
+            (afterHooksReportDetails.sumOf { it.result.duration } ?: 0)
         )
     }
 
     fun getTotalPassedPercentage(): Float {
-        return if (testStepReportDetails?.isNotEmpty() == true)
+        return if (testStepReportDetails.isNotEmpty())
             getTotalPassedTestSteps().toFloat() / testStepReportDetails.size * 100
         else 0f
     }

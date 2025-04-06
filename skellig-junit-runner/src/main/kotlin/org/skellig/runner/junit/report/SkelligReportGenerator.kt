@@ -19,7 +19,7 @@ import java.nio.file.attribute.BasicFileAttributes
  *
  * @see ReportGenerator
  */
-class SkelligReportGenerator : ReportGenerator {
+class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
 
     companion object {
         private const val JAR_URL_TYPE = "jar"
@@ -45,7 +45,7 @@ class SkelligReportGenerator : ReportGenerator {
     override fun generate(testReportDetails: List<FeatureReportDetails>?) {
         log.info("Start to generate a Skellig Test Report")
         try {
-            val htmlReport = prepareReportFoldersAndFiles(REPORT_ROOT_FOLDER_NAME, "index")
+            val htmlReport = prepareReportFoldersAndFiles(reportDir + REPORT_ROOT_FOLDER_NAME, "index")
             val dataModel = mutableMapOf<String, Any?>()
             dataModel["featuresReportDetails"] = testReportDetails
             dataModel["featureTitle"] = "Feature"

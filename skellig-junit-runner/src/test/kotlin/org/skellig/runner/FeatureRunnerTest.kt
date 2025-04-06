@@ -1,9 +1,8 @@
 package org.skellig.runner
 
 import org.junit.Test
-import org.junit.internal.AssumptionViolatedException
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 import org.junit.runner.notification.RunNotifier
 import org.junit.runner.notification.StoppedByUserException
 import org.mockito.Mockito
@@ -12,6 +11,7 @@ import org.mockito.kotlin.*
 import org.skellig.feature.Feature
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
+import org.skellig.feature.event.*
 import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
@@ -30,8 +30,9 @@ class FeatureRunnerTest {
     private val hookRunner = mock<SkelligHookRunner>()
     private val testStepRunner = mock<TestStepRunner>()
     private val testStepLogger = mock<TestStepLogger>()
+    private val eventDispatcher = mock<SkelligTestEventDispatcher>()
     private val featureRunner = FeatureRunner.create(
-        feature, testStepRunner, testScenarioState, testStepLogger, hookRunner, TagsFilter(emptySet(), emptySet())
+        feature, testStepRunner, testScenarioState, testStepLogger, hookRunner, eventDispatcher, TagsFilter(emptySet(), emptySet())
     )
 
     @Test
@@ -53,9 +54,7 @@ class FeatureRunnerTest {
 
         featureRunner.run(mock<RunNotifier>())
 
-        val testStepReportDetails = featureRunner.getFeatureReportDetails().testScenarioReportDetails!![0].testStepReportDetails!![0]
-
-        assertEquals(expectedLogRecords, testStepReportDetails.logRecords)
+        verify(eventDispatcher).dispatch(argThat { e -> (e as TestStepFinishedEvent).logRecords == expectedLogRecords })
     }
 
     @Test
@@ -71,12 +70,12 @@ class FeatureRunnerTest {
 
         featureRunner.run(mock<RunNotifier>())
 
-        val testStepReportDetails = featureRunner.getFeatureReportDetails().testScenarioReportDetails!![0].testStepReportDetails!![0]
-
-        assertAll(
-            { assertNotNull(testStepReportDetails.errorLog) },
-            { assertEquals(expectedLogRecords, testStepReportDetails.logRecords) }
-        )
+        verify(eventDispatcher).dispatch(argThat { e ->
+            (e as TestStepFinishedEvent).logRecords == expectedLogRecords
+        })
+        verify(eventDispatcher).dispatch(argThat { e ->
+            (e as TestStepProcessingFinishedEvent).result.errorLog != null
+        })
     }
 
     @Test
@@ -89,15 +88,15 @@ class FeatureRunnerTest {
         featureRunner.run(mock<RunNotifier>())
         testStepRunResult.notify(expectedResponse, null)
 
-        val testStepReportDetails = featureRunner.getFeatureReportDetails().testScenarioReportDetails!![0].testStepReportDetails!![0]
-
-        assertAll(
-            { assertEquals(feature.scenarios!![0].steps!![0].name, testStepReportDetails.name) },
-            { assertEquals(expectedResponse, testStepReportDetails.result) },
-            { assertEquals(testStep, testStepReportDetails.originalTestStep) },
-            { assertNull(testStepReportDetails.errorLog) },
-            { assertTrue(testStepReportDetails.duration > 0) },
-        )
+        verify(eventDispatcher).dispatch(argThat { e ->
+            (e as TestStepStartedEvent).testStep.name == feature.scenarios!![0].steps!![0].name
+        })
+        verify(eventDispatcher).dispatch(argThat { e ->
+            (e as TestStepProcessingFinishedEvent).result.errorLog == null &&
+                    e.testStepInfo["Properties"] == testStep.toString() &&
+                    e.result.duration > 0
+            e.result.result == expectedResponse
+        })
     }
 
     @Test
@@ -106,10 +105,9 @@ class FeatureRunnerTest {
         whenever(testStepRunner.run(feature.scenarios!![0].steps!![0].name, emptyMap())).thenReturn(testStepRunResult)
 
         featureRunner.run(mock<RunNotifier>())
-        org.junit.jupiter.api.assertThrows<RuntimeException> { testStepRunResult.notify(null, RuntimeException("Error")) }
+        assertThrows<RuntimeException> { testStepRunResult.notify(null, RuntimeException("Error")) }
 
-        val testStepReportDetails = featureRunner.getFeatureReportDetails().testScenarioReportDetails!![0].testStepReportDetails!![0]
-        assertTrue(testStepReportDetails.errorLog?.startsWith("java.lang.RuntimeException: Error") == true)
+        verify(eventDispatcher).dispatch(argThat { e -> (e as TestStepProcessingFinishedEvent).result.errorLog?.startsWith("java.lang.RuntimeException: Error") == true })
     }
 
     @Test
@@ -153,19 +151,22 @@ class FeatureRunnerTest {
 
         featureRunner.run(mock<RunNotifier>())
 
-        val beforeHooksReportDetails = featureRunner.getFeatureReportDetails().beforeHooksReportDetails!!
-        val afterHooksReportDetails = featureRunner.getFeatureReportDetails().afterHooksReportDetails!!
-
         assertAll(
-            { assertEquals(1, beforeHooksReportDetails.size) },
-            { assertEquals(expectedBeforeMethodName, beforeHooksReportDetails[0].methodName) },
-            { assertNull(beforeHooksReportDetails[0].errorLog) },
-            { assertEquals(expectedBeforeDuration, beforeHooksReportDetails[0].duration) },
+            {
+                verify(eventDispatcher).dispatch(argThat { e ->
+                    (e as HookFinishedEvent).methodName == expectedBeforeMethodName &&
+                            e.result.errorLog == null &&
+                            e.result.duration == expectedBeforeDuration
+                })
+            },
 
-            { assertEquals(1, afterHooksReportDetails.size) },
-            { assertEquals(expectedAfterMethodName, afterHooksReportDetails[0].methodName) },
-            { assertNull(afterHooksReportDetails[0].errorLog) },
-            { assertEquals(expectedAfterDuration, afterHooksReportDetails[0].duration) }
+            {
+                verify(eventDispatcher).dispatch(argThat { e ->
+                    (e as HookFinishedEvent).methodName == expectedAfterMethodName &&
+                            e.result.errorLog == null &&
+                            e.result.duration == expectedAfterDuration
+                })
+            }
         )
     }
 
@@ -178,9 +179,7 @@ class FeatureRunnerTest {
         val notifier = mock<RunNotifier>()
         featureRunner.run(notifier)
 
-        val beforeHooksReportDetails = featureRunner.getFeatureReportDetails().beforeHooksReportDetails!!
-
-        assertEquals("error", beforeHooksReportDetails[0].errorLog)
+        verify(eventDispatcher).dispatch(argThat { e -> (e as HookFinishedEvent).result.errorLog == "error" })
         verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == feature.name })
     }
 
@@ -202,7 +201,7 @@ class FeatureRunnerTest {
         val feature = createFeatureWithBeforeAndAfterSteps()
         val featureRunner = FeatureRunner(
             feature, testScenarioState, TagsFilter(emptySet(), emptySet()),
-            hookRunner, testStepRunner, mock<TestStepLogger>()
+            hookRunner, testStepRunner, mock<TestStepLogger>(), eventDispatcher
         )
         val result1 = mock<TestStepProcessor.TestStepRunResult>()
         val result2 = mock<TestStepProcessor.TestStepRunResult>()
@@ -239,7 +238,7 @@ class FeatureRunnerTest {
         val feature = createFeatureWithBeforeAndAfterSteps()
         val featureRunner = FeatureRunner(
             feature, testScenarioState, TagsFilter(emptySet(), emptySet()),
-            hookRunner, testStepRunner, mock<TestStepLogger>()
+            hookRunner, testStepRunner, mock<TestStepLogger>(), eventDispatcher
         )
 
         val result1 = mock<TestStepProcessor.TestStepRunResult>()
