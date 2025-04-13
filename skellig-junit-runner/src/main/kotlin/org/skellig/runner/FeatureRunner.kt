@@ -60,7 +60,7 @@ open class FeatureRunner(
             feature.beforeSteps?.let {
                 testScenarioRunners!!.add(
                     TestScenarioRunner.create(
-                        TestScenarioWrapper(feature.filePath, getBeforeFeatureName(), it, null),
+                        TestScenarioWrapper(feature.filePath + ":$BEFORE_FEATURE_NAME", BEFORE_FEATURE_NAME, it, null),
                         testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher
                     )
                 )
@@ -73,7 +73,7 @@ open class FeatureRunner(
             feature.afterSteps?.let {
                 testScenarioRunners!!.add(
                     TestScenarioRunner.create(
-                        TestScenarioWrapper(feature.filePath, getAfterFeatureName(), null, it),
+                        TestScenarioWrapper(feature.filePath + ":$AFTER_FEATURE_NAME", AFTER_FEATURE_NAME, null, it),
                         testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher
                     )
                 )
@@ -109,8 +109,12 @@ open class FeatureRunner(
     private fun getAfterFeatureName() = "$name:$AFTER_FEATURE_NAME"
 
     override fun dispatchHookFinishedEvent(hookName: String, duration: Long, e: Throwable?, hookType: Class<out Annotation>) {
-        eventDispatcher.dispatch(HookFinishedEvent(hookName, testEntity.getId(), null, testStepLogger.getLogsAndClean(), Result(duration, e, null),
-            if(hookType == BeforeTestFeature::class.java) ExecutionSequenceType.BEFORE else ExecutionSequenceType.AFTER))
+        eventDispatcher.dispatch(
+            HookFinishedEvent(
+                hookName, testEntity.getId(), null, testStepLogger.getLogsAndClean(), Result(duration, e, null),
+                if (hookType == BeforeTestFeature::class.java) ExecutionSequenceType.BEFORE else ExecutionSequenceType.AFTER
+            )
+        )
     }
 
     companion object {

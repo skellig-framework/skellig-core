@@ -10,7 +10,7 @@ class TestScenarioReportDetailsTest {
 
     @Test
     fun `return total passed test steps`() {
-        val mockedTestStepReportDetails = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails.isPassed()).thenReturn(true)
 
         val testScenarioReportDetails = TestScenarioReportDetails(
@@ -25,7 +25,7 @@ class TestScenarioReportDetailsTest {
 
     @Test
     fun `return passed scenario`() {
-        val mockedTestStepReportDetails = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails.isPassed()).thenReturn(true)
 
         val testScenarioReportDetails = TestScenarioReportDetails(
@@ -39,7 +39,7 @@ class TestScenarioReportDetailsTest {
 
     @Test
     fun `return total test steps`() {
-        val mockedTestStepReportDetails = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails = mock<TestStepReportDetails>()
 
         val testScenarioReportDetails = TestScenarioReportDetails(
             name = "Test scenario",
@@ -72,10 +72,10 @@ class TestScenarioReportDetailsTest {
 
     @Test
     fun `return total failed test steps`() {
-        val mockedTestStepReportDetails1 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails1 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails1.isPassed()).thenReturn(true)
 
-        val mockedTestStepReportDetails2 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails2 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails2.isPassed()).thenReturn(false)
 
         val testScenarioReportDetails = TestScenarioReportDetails(
@@ -89,10 +89,10 @@ class TestScenarioReportDetailsTest {
 
     @Test
     fun `return total passed percentage`() {
-        val mockedTestStepReportDetails1 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails1 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails1.isPassed()).thenReturn(true)
 
-        val mockedTestStepReportDetails2 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails2 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails2.isPassed()).thenReturn(false)
 
         val testScenarioReportDetails = TestScenarioReportDetails(
@@ -106,13 +106,13 @@ class TestScenarioReportDetailsTest {
 
     @Test
     fun `return formatted scenario duration`() {
-        val mockedTestStepReportDetails1 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails1 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails1.duration).thenReturn(1000) // 1 second
 
-        val mockedTestStepReportDetails2 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails2 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails2.duration).thenReturn(2000) // 2 seconds
 
-        val mockedTestStepReportDetails3 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails3 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails3.duration).thenReturn(15789) // Approx. 15.789 seconds
 
         val testScenarioReportDetails = TestScenarioReportDetails(
@@ -129,10 +129,10 @@ class TestScenarioReportDetailsTest {
 
     @Test
     fun `return formatted scenario duration for before scenario`() {
-        val mockedTestStepReportDetails1 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails1 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails1.duration).thenReturn(1000) // 1 second
 
-        val mockedTestStepReportDetails2 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails2 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails2.duration).thenReturn(2000) // 2 seconds
 
         val testScenarioReportDetails = TestScenarioReportDetails(
@@ -146,10 +146,10 @@ class TestScenarioReportDetailsTest {
 
     @Test
     fun `return formatted scenario duration for after scenario`() {
-        val mockedTestStepReportDetails1 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails1 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails1.duration).thenReturn(5350) // 5 seconds 350 ms
 
-        val mockedTestStepReportDetails2 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails2 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails2.duration).thenReturn(2010) // 2 seconds 10 ms
 
         val testScenarioReportDetails = TestScenarioReportDetails(
@@ -163,10 +163,10 @@ class TestScenarioReportDetailsTest {
 
     @Test
     fun `return formatted scenario duration in minutes for after scenario`() {
-        val mockedTestStepReportDetails1 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails1 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails1.duration).thenReturn(1000 * 60) // 1 min
 
-        val mockedTestStepReportDetails2 = mock<org.skellig.runner.plugin.TestStepReportDetails>()
+        val mockedTestStepReportDetails2 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails2.duration).thenReturn(1000 * 30) // 30 seconds
 
         val testScenarioReportDetails = TestScenarioReportDetails(

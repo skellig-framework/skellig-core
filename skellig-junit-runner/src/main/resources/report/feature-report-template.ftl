@@ -77,7 +77,7 @@
                                         </div>
                                         <div id="beforeHookPanel${i}" class="collapse" role="tabpanel"
                                              aria-labelledby="beforeHookHeader${i}">
-                                            <#if !hook.passed>
+                                            <#if hook.failed>
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>
@@ -115,7 +115,7 @@
                             <a data-toggle="collapse"
                                href="#beforeFeaturePanel" aria-expanded="false"
                                aria-controls="beforeFeaturePanel" data-parent="#beforeFeatureParentPanel"
-                               class="collapsed <#if feature.passed>passed-color<#else>failed-color</#if>">
+                               class="collapsed <#if feature.ignored>ignored-color<#elseif feature.passed>passed-color<#else>failed-color</#if>">
                                 ${beforeTitle}
                                 <div class="duration">
                                     ${feature.beforeFeatureDurationFormatted}
@@ -149,18 +149,18 @@
                                                 </div>
                                                 <pre class="small-text-panel">${parameters?html?trim}</pre>
                                             </#if>
-                                            <#assign testStepDetails = step.properties?html?trim />
+                                            <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
                                             <#if testStepDetails?? && testStepDetails?has_content>
                                                 <div class="medium-text-panel">
                                                     ${propertiesTitle}
                                                 </div>
                                                 <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
                                             </#if>
-                                            <#if step.testData?? && step.testData?trim?has_content>
+                                            <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
                                                 <div class="medium-text-panel">
                                                     ${testDataTitle}
                                                 </div>
-                                                <pre class="small-text-panel">${step.testData?html?trim}</pre>
+                                                <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
                                             </#if>
                                             <#if step.result?? && step.result?trim?has_content>
                                                 <div class="medium-text-panel">
@@ -168,13 +168,13 @@
                                                 </div>
                                                 <pre class="small-text-panel">${step.result?html?trim}</pre>
                                             </#if>
-                                            <#if step.validationDetails?? && step.validationDetails?trim?has_content>
+                                            <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
                                                 <div class="medium-text-panel">
                                                     ${validationTitle?html?trim}
                                                 </div>
-                                                <pre class="small-text-panel">${step.validationDetails?html?trim}</pre>
+                                                <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
                                             </#if>
-                                            <#if !step.passed>
+                                            <#if step.failed>
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>
@@ -225,7 +225,7 @@
                             <a data-toggle="collapse" data-parent="#featurePanel${i}"
                                href="#testStepsPanel${i}" aria-expanded="false"
                                aria-controls="testStepsPanel${i}"
-                               class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
+                               class="collapsed <#if tsrd.ignored>ignored-color<#elseif tsrd.passed>passed-color<#else>failed-color</#if>">
                                 ${tsrd.name}
                                 <div class="duration">
                                     ${tsrd.scenarioDurationFormatted}
@@ -278,7 +278,7 @@
                                                                    href="#beforeScenarioHookPanel${i}_${shi}"
                                                                    aria-expanded="false"
                                                                    aria-controls="beforeScenarioHookPanel${i}_${shi}"
-                                                                   class="collapsed <#if hook.passed>passed-color<#else>failed-color</#if>">
+                                                                   class="collapsed <#if hook.ignored>ignored-color<#elseif hook.passed>passed-color<#else>failed-color</#if>">
                                                                     ${hook.methodName}
                                                                     <div class="duration">
                                                                         ${hook.durationFormatted}
@@ -288,7 +288,7 @@
                                                             <div id="beforeScenarioHookPanel${i}_${shi}"
                                                                  class="collapse" role="tabpanel"
                                                                  aria-labelledby="beforeScenarioHookHeader${i}_${shi}">
-                                                                <#if !hook.passed>
+                                                                <#if hook.failed>
                                                                     <div class="medium-text-panel failed-content-color">
                                                                         ${errorTitle}
                                                                     </div>
@@ -326,7 +326,7 @@
                                                    href="#beforeScenarioPanel${i}" aria-expanded="false"
                                                    aria-controls="beforeScenarioPanel${i}"
                                                    data-parent="#beforeScenarioParentPanel${i}"
-                                                   class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
+                                                   class="collapsed <#if tsrd.ignored>ignored-color<#elseif tsrd.passed>passed-color<#else>failed-color</#if>">
                                                     ${beforeTitle}
                                                     <div class="duration">
                                                         ${tsrd.beforeScenarioDurationFormatted}
@@ -364,18 +364,18 @@
                                                                     </div>
                                                                     <pre class="small-text-panel">${parameters?html?trim}</pre>
                                                                 </#if>
-                                                                <#assign testStepDetails = step.properties?html?trim />
+                                                                <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
                                                                 <#if testStepDetails?? && testStepDetails?has_content>
                                                                     <div class="medium-text-panel">
                                                                         ${propertiesTitle}
                                                                     </div>
                                                                     <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
                                                                 </#if>
-                                                                <#if step.testData?? && step.testData?trim?has_content>
+                                                                <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
                                                                     <div class="medium-text-panel">
                                                                         ${testDataTitle}
                                                                     </div>
-                                                                    <pre class="small-text-panel">${step.testData?html?trim}</pre>
+                                                                    <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
                                                                 </#if>
                                                                 <#if step.result?? && step.result?trim?has_content>
                                                                     <div class="medium-text-panel">
@@ -383,13 +383,13 @@
                                                                     </div>
                                                                     <pre class="small-text-panel">${step.result?html?trim}</pre>
                                                                 </#if>
-                                                                <#if step.validationDetails?? && step.validationDetails?trim?has_content>
+                                                                <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
                                                                     <div class="medium-text-panel">
                                                                         ${validationTitle?html?trim}
                                                                     </div>
-                                                                    <pre class="small-text-panel">${step.validationDetails?html?trim}</pre>
+                                                                    <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
                                                                 </#if>
-                                                                <#if !step.passed>
+                                                                <#if step.failed>
                                                                     <div class="medium-text-panel failed-content-color">
                                                                         ${errorTitle}
                                                                     </div>
@@ -456,18 +456,18 @@
                                                 </div>
                                                 <pre class="small-text-panel">${parameters?html?trim}</pre>
                                             </#if>
-                                            <#assign testStepDetails = step.properties?html?trim />
+                                            <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
                                             <#if testStepDetails?? && testStepDetails?has_content>
                                                 <div class="medium-text-panel">
                                                     ${propertiesTitle}
                                                 </div>
                                                 <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
                                             </#if>
-                                            <#if step.testData?? && step.testData?trim?has_content>
+                                            <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
                                                 <div class="medium-text-panel">
                                                     ${testDataTitle}
                                                 </div>
-                                                <pre class="small-text-panel">${step.testData?html?trim}</pre>
+                                                <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
                                             </#if>
                                             <#if step.result?? && step.result?trim?has_content>
                                                 <div class="medium-text-panel">
@@ -475,13 +475,13 @@
                                                 </div>
                                                 <pre class="small-text-panel">${step.result?html?trim}</pre>
                                             </#if>
-                                            <#if step.validationDetails?? && step.validationDetails?trim?has_content>
+                                            <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
                                                 <div class="medium-text-panel">
                                                     ${validationTitle?html?trim}
                                                 </div>
-                                                <pre class="small-text-panel">${step.validationDetails?html?trim}</pre>
+                                                <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
                                             </#if>
-                                            <#if !step.passed>
+                                            <#if step.failed>
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>
@@ -523,7 +523,7 @@
                                                    href="#afterScenarioPanel${i}" aria-expanded="false"
                                                    aria-controls="afterScenarioStepsPanel${i}"
                                                    data-parent="#afterScenarioParentPanel${i}"
-                                                   class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
+                                                   class="collapsed <#if tsrd.ignored>ignored-color<#elseif tsrd.passed>passed-color<#else>failed-color</#if>">
                                                     ${afterTitle}
                                                     <div class="duration">
                                                         ${tsrd.afterScenarioDurationFormatted}
@@ -561,18 +561,18 @@
                                                                     </div>
                                                                     <pre class="small-text-panel">${parameters?html?trim}</pre>
                                                                 </#if>
-                                                                <#assign testStepDetails = step.properties?html?trim />
+                                                                <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
                                                                 <#if testStepDetails?? && testStepDetails?has_content>
                                                                     <div class="medium-text-panel">
                                                                         ${propertiesTitle}
                                                                     </div>
                                                                     <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
                                                                 </#if>
-                                                                <#if step.testData?? && step.testData?trim?has_content>
+                                                                <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
                                                                     <div class="medium-text-panel">
                                                                         ${testDataTitle}
                                                                     </div>
-                                                                    <pre class="small-text-panel">${step.testData?html?trim}</pre>
+                                                                    <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
                                                                 </#if>
                                                                 <#if step.result?? && step.result?trim?has_content>
                                                                     <div class="medium-text-panel">
@@ -580,13 +580,13 @@
                                                                     </div>
                                                                     <pre class="small-text-panel">${step.result?html?trim}</pre>
                                                                 </#if>
-                                                                <#if step.validationDetails?? && step.validationDetails?trim?has_content>
+                                                                <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
                                                                     <div class="medium-text-panel">
                                                                         ${validationTitle?html?trim}
                                                                     </div>
-                                                                    <pre class="small-text-panel">${step.validationDetails?html?trim}</pre>
+                                                                    <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
                                                                 </#if>
-                                                                <#if !step.passed>
+                                                                <#if step.failed>
                                                                     <div class="medium-text-panel failed-content-color">
                                                                         ${errorTitle}
                                                                     </div>
@@ -640,7 +640,7 @@
                                                    href="#afterScenarioHooksPanel${i}" aria-expanded="false"
                                                    aria-controls="afterScenarioHooksPanel${i}"
                                                    data-parent="#afterScenarioHooksParentPanel${i}"
-                                                   class="collapsed <#if tsrd.passed>passed-color<#else>failed-color</#if>">
+                                                   class="collapsed <#if tsrd.ignored>ignored-color<#elseif tsrd.passed>passed-color<#else>failed-color</#if>">
                                                     ${hooksTitle}
                                                     <div class="duration">
                                                         ${tsrd.afterHooksDurationFormatted}
@@ -662,7 +662,7 @@
                                                                    href="#afterScenarioHookPanel${i}_${shi}"
                                                                    aria-expanded="false"
                                                                    aria-controls="afterScenarioHookPanel${i}_${shi}"
-                                                                   class="collapsed <#if hook.passed>passed-color<#else>failed-color</#if>">
+                                                                   class="collapsed <#if tsrd.ignored>ignored-color<#elseif tsrd.passed>passed-color<#else>failed-color</#if>">
                                                                     ${hook.methodName}
                                                                     <div class="duration">
                                                                         ${hook.durationFormatted}
@@ -672,7 +672,7 @@
                                                             <div id="afterScenarioHookPanel${i}_${shi}" class="collapse"
                                                                  role="tabpanel"
                                                                  aria-labelledby="afterScenarioHookHeader${i}_${shi}">
-                                                                <#if !hook.passed>
+                                                                <#if hook.failed>
                                                                     <div class="medium-text-panel failed-content-color">
                                                                         ${errorTitle}
                                                                     </div>
@@ -716,7 +716,7 @@
                             <a data-toggle="collapse"
                                href="#afterFeaturePanel" aria-expanded="false"
                                aria-controls="testStepsPanel" data-parent="#afterFeatureParentPanel"
-                               class="collapsed <#if feature.passed>passed-color<#else>failed-color</#if>">
+                               class="collapsed  <#if feature.ignored>ignored-color<#elseif feature.passed>passed-color<#else>failed-color</#if>">
                                 ${afterTitle}
                                 <div class="duration">
                                     ${feature.afterFeatureDurationFormatted}
@@ -750,18 +750,18 @@
                                                 </div>
                                                 <pre class="small-text-panel">${parameters?html?trim}</pre>
                                             </#if>
-                                            <#assign testStepDetails = step.properties?html?trim />
+                                            <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
                                             <#if testStepDetails?? && testStepDetails?has_content>
                                                 <div class="medium-text-panel">
                                                     ${propertiesTitle}
                                                 </div>
                                                 <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
                                             </#if>
-                                            <#if step.testData?? && step.testData?trim?has_content>
+                                            <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
                                                 <div class="medium-text-panel">
                                                     ${testDataTitle}
                                                 </div>
-                                                <pre class="small-text-panel">${step.testData?html?trim}</pre>
+                                                <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
                                             </#if>
                                             <#if step.result?? && step.result?trim?has_content>
                                                 <div class="medium-text-panel">
@@ -769,13 +769,13 @@
                                                 </div>
                                                 <pre class="small-text-panel">${step.result?html?trim}</pre>
                                             </#if>
-                                            <#if step.validationDetails?? && step.validationDetails?trim?has_content>
+                                            <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
                                                 <div class="medium-text-panel">
                                                     ${validationTitle?html?trim}
                                                 </div>
-                                                <pre class="small-text-panel">${step.validationDetails?html?trim}</pre>
+                                                <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
                                             </#if>
-                                            <#if !step.passed>
+                                            <#if step.failed>
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>
@@ -824,7 +824,7 @@
                             <a data-toggle="collapse"
                                href="#afterHooksPanel" aria-expanded="false"
                                aria-controls="afterHooksPanel" data-parent="#afterHooksParentPanel"
-                               class="collapsed <#if feature.passed>passed-color<#else>failed-color</#if>">
+                               class="collapsed <#if feature.ignored>ignored-color<#elseif feature.passed>passed-color<#else>failed-color</#if>">
                                 ${hooksTitle}
                                 <div class="duration">
                                     ${feature.afterHooksDurationFormatted}
@@ -842,7 +842,7 @@
                                             <a data-toggle="collapse" data-parent="#afterHookPanel${i}"
                                                href="#afterHookPanel${i}" aria-expanded="false"
                                                aria-controls="afterHookPanel${i}"
-                                               class="collapsed <#if hook.passed>passed-color<#else>failed-color</#if>">
+                                               class="collapsed<#if hook.ignored>ignored-color<#elseif hook.passed>passed-color<#else>failed-color</#if>">
                                                 ${hook.methodName}
                                                 <div class="duration">
                                                     ${hook.durationFormatted}
@@ -851,7 +851,7 @@
                                         </div>
                                         <div id="afterHookPanel${i}" class="collapse" role="tabpanel"
                                              aria-labelledby="afterHookHeader${i}">
-                                            <#if !hook.passed>
+                                            <#if hook.failed>
                                                 <div class="medium-text-panel failed-content-color">
                                                     ${errorTitle}
                                                 </div>

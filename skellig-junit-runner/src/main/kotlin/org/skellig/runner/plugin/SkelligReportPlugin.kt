@@ -1,13 +1,12 @@
 package org.skellig.runner.plugin
 
-import org.apache.commons.lang3.time.DurationFormatUtils
 import org.skellig.feature.event.*
 import org.skellig.runner.junit.report.ReportGenerator
 import org.skellig.runner.junit.report.SkelligReportGenerator
 import org.skellig.runner.junit.report.model.FeatureReportDetails
 import org.skellig.runner.junit.report.model.HookReportDetails
 import org.skellig.runner.junit.report.model.TestScenarioReportDetails
-import org.skellig.teststep.processing.util.PropertyFormatUtils
+import org.skellig.runner.junit.report.model.TestStepReportDetails
 import java.util.concurrent.ConcurrentHashMap
 
 class SkelligReportPlugin(reportDir: String) : SkelligPlugin {
@@ -78,10 +77,7 @@ class SkelligReportPlugin(reportDir: String) : SkelligPlugin {
             executedFeaturesReportDetails[e.featureId]?.let { executedFeaturesReportDetails ->
                 val testStepReportDetails = getTestStepReportDetails(e, executedFeaturesReportDetails)
                 testStepReportDetails?.let {
-                    //TODO: assign test step info and extract data from map in the FTL
-                    it.testData = e.testStepInfo["Test Data"]
-                    it.properties = e.testStepInfo["Properties"]
-                    it.validationDetails = e.testStepInfo["Validation Details"]
+                    it.testStepInfo = e.testStepInfo
                     it.result = e.result.result
                     it.errorLog = e.result.errorLog
                     it.duration = e.result.duration
@@ -112,56 +108,4 @@ class SkelligReportPlugin(reportDir: String) : SkelligPlugin {
     }
 
     override fun getName(): String = "skelligReport"
-}
-
-open class TestStepReportDetails(
-    val name: String,
-    val parameters: Map<String, Any?>?,
-    var testData: Any?,
-    var properties: String?,
-    var validationDetails: Any?,
-    var result: Any?,
-    var executionStatus: TestExecutionStatus,
-    var errorLog: String?,
-    var logRecords: List<String>?,
-    var duration: Long
-) {
-
-    constructor(name: String, parameters: Map<String, Any?>?) : this(name, parameters, null, null, null, null, TestExecutionStatus.RUNNING, null, null, 0)
-
-    fun isPassed(): Boolean {
-        return errorLog == null || errorLog == ""
-    }
-
-    fun isIgnored(): Boolean {
-        return testData == null && result == null
-    }
-
-    fun getTestData(): String {
-        return PropertyFormatUtils.toString(testData ?: "", 0)
-    }
-
-    fun getValidationDetails(): String {
-        return validationDetails?.toString() ?: ""
-    }
-
-    fun getDurationFormatted(): String {
-        return getFormattedDuration(duration)
-    }
-
-    fun getParameters(): String {
-        return parameters?.map { "${it.key} = ${it.value}" }?.joinToString("\n") ?: ""
-    }
-
-    fun getResult(): String {
-        return PropertyFormatUtils.toString(result, 0)
-    }
-}
-
-fun getFormattedDuration(duration: Long): String {
-    return if (duration > 60000) {
-        DurationFormatUtils.formatDuration(duration, "mm.ss.SSS") + " min."
-    } else if (duration >= 1000) {
-        DurationFormatUtils.formatDuration(duration, "ss.SSS") + " sec."
-    } else DurationFormatUtils.formatDuration(duration, "SSS") + " ms."
 }

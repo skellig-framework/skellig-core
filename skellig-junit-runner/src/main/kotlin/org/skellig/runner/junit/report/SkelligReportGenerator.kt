@@ -5,7 +5,6 @@ import freemarker.template.Configuration
 import freemarker.template.Template
 import org.skellig.runner.junit.report.model.FeatureReportDetails
 import org.skellig.teststep.processing.util.logger
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -29,9 +28,9 @@ class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
         private const val SRC_FOLDER = "src"
         private const val REPORT_FTL = "report/index.ftl"
         private const val FEATURE_REPORT_FTL = "report/feature-report-template.ftl"
-        private const val REPORT_ROOT_FOLDER_NAME = "skellig-report"
-        private const val FEATURE_REPORT_ROOT_FOLDER_NAME = "$REPORT_ROOT_FOLDER_NAME/feature-reports"
-        private const val REPORT_SRC_PATH = "report/$REPORT_ROOT_FOLDER_NAME"
+        private const val REPORT_ROOT_FOLDER_PATH = "/skellig-report"
+        private const val FEATURE_REPORT_ROOT_FOLDER_NAME = "$REPORT_ROOT_FOLDER_PATH/feature-reports"
+        private const val REPORT_SRC_PATH = "report/$REPORT_ROOT_FOLDER_PATH"
     }
 
     private val log = logger<SkelligReportGenerator>()
@@ -45,7 +44,7 @@ class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
     override fun generate(testReportDetails: List<FeatureReportDetails>?) {
         log.info("Start to generate a Skellig Test Report")
         try {
-            val htmlReport = prepareReportFoldersAndFiles(reportDir + REPORT_ROOT_FOLDER_NAME, "index")
+            val htmlReport = prepareReportFoldersAndFiles(reportDir + REPORT_ROOT_FOLDER_PATH, "index")
             val dataModel = mutableMapOf<String, Any?>()
             dataModel["featuresReportDetails"] = testReportDetails
             dataModel["featureTitle"] = "Feature"
@@ -61,7 +60,7 @@ class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
     }
 
     private fun generateFeatureReports(featureReportDetails: FeatureReportDetails) {
-        val htmlScenarioReport = prepareReportFoldersAndFiles(FEATURE_REPORT_ROOT_FOLDER_NAME, featureReportDetails.name ?: "")
+        val htmlScenarioReport = prepareReportFoldersAndFiles(reportDir + FEATURE_REPORT_ROOT_FOLDER_NAME, featureReportDetails.name ?: "")
         val dataModel = mutableMapOf<String, Any?>()
         dataModel["feature"] = featureReportDetails
         dataModel["featureTitle"] = "Feature"
@@ -78,23 +77,23 @@ class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
         constructFromTemplate(loadFtlTemplate(FEATURE_REPORT_FTL), dataModel, htmlScenarioReport)
     }
 
-    private fun prepareReportFoldersAndFiles(reportRootFolder: String, testScenarioName: String): File {
+    private fun prepareReportFoldersAndFiles(reportRootFolder: String, fileName: String): File {
         val uri = getUrl(REPORT_SRC_PATH).toURI()
         if (uri.scheme == JAR_URL_TYPE) {
             FileSystems.newFileSystem(uri, mapOf<String, String>()).use {
-                return createHtmlReport(it.getPath("/$REPORT_SRC_PATH"), reportRootFolder, testScenarioName)
+                return createHtmlReport(it.getPath("/$REPORT_SRC_PATH"), reportRootFolder, fileName)
             }
         } else {
-            return createHtmlReport(Paths.get(uri), reportRootFolder, testScenarioName)
+            return createHtmlReport(Paths.get(uri), reportRootFolder, fileName)
         }
     }
 
-    private fun createHtmlReport(copyFrom: Path, reportRootFolder: String, testScenarioName: String): File {
+    private fun createHtmlReport(copyFrom: Path, reportRootFolder: String, fileName: String): File {
         val reportRootDir = getReportFolderPath(Paths.get(getUrl("").toURI()))
 
         Files.walkFileTree(copyFrom, CopyFileVisitor(File(reportRootDir.toFile(), "/$reportRootFolder").toPath()))
 
-        val htmlReport = File(reportRootDir.toFile(), "$reportRootFolder/${testScenarioName}.html")
+        val htmlReport = File(reportRootDir.toFile(), "$reportRootFolder/${fileName}.html")
         htmlReport.createNewFile()
 
         return htmlReport

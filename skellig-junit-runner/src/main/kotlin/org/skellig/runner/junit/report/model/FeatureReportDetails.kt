@@ -16,8 +16,8 @@ class FeatureReportDetails(
     val tags: Set<String>?,
     val beforeHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
     val afterHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
-    val beforeReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf(),
-    val afterReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf(),
+    val beforeReportDetails: MutableMap<Any, TestStepReportDetails> = mutableMapOf(),
+    val afterReportDetails: MutableMap<Any, TestStepReportDetails> = mutableMapOf(),
     val testScenarioReportDetails: MutableMap<Any, TestScenarioReportDetails> = mutableMapOf(),
 ) {
 
@@ -81,6 +81,14 @@ class FeatureReportDetails(
 
     fun isPassed(): Boolean {
         return testScenarioReportDetails.any { it.value.isPassed() }
+    }
+
+    fun isFailed(): Boolean {
+        return testScenarioReportDetails.any { it.value.isFailed() }
+    }
+
+    fun isIgnored(): Boolean {
+        return testScenarioReportDetails.any { it.value.isIgnored() }
     }
 
     fun getTotalPassedPercentage(): Float {

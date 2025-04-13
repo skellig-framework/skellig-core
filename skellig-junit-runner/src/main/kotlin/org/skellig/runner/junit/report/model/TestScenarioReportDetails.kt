@@ -16,17 +16,25 @@ class TestScenarioReportDetails(
     val tags: Set<String>?,
     val beforeHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
     val afterHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
-    val beforeReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf(),
-    val afterReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf(),
-    val testStepReportDetails: MutableMap<Any, org.skellig.runner.plugin.TestStepReportDetails> = mutableMapOf()
+    val beforeReportDetails: MutableMap<Any,TestStepReportDetails> = mutableMapOf(),
+    val afterReportDetails: MutableMap<Any, TestStepReportDetails> = mutableMapOf(),
+    val testStepReportDetails: MutableMap<Any, TestStepReportDetails> = mutableMapOf()
 ) {
 
     fun getTotalPassedTestSteps(): Int {
-        return testStepReportDetails?.count { it.value.isPassed() } ?: 0
+        return testStepReportDetails.count { it.value.isPassed() }
     }
 
     fun isPassed(): Boolean {
-        return testStepReportDetails?.any { it.value.isPassed() } ?: true
+        return true
+    }
+
+    fun isFailed(): Boolean {
+        return false
+    }
+
+    fun isIgnored(): Boolean {
+        return testStepReportDetails.any { it.value.isIgnored() }
     }
 
     fun getTagsLine(): String? {

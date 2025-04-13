@@ -22,6 +22,14 @@ class HookReportDetails(
         return result.executionStatus == TestExecutionStatus.PASSED
     }
 
+    fun isFailed(): Boolean {
+        return result.executionStatus == TestExecutionStatus.FAILED
+    }
+
+    fun isIgnored(): Boolean {
+        return result.executionStatus == TestExecutionStatus.IGNORED
+    }
+
     fun getDurationFormatted(): String {
         return getFormattedDuration(result.duration)
     }
