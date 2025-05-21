@@ -1,7 +1,7 @@
 package org.skellig.feature.event
 
-import org.skellig.feature.SkelligTestEntity
+import org.skellig.feature.Feature
 
 class FeatureStartedEvent(
-    val feature: SkelligTestEntity,
+    val feature: Feature,
 ) : SkelligTimedEvent()

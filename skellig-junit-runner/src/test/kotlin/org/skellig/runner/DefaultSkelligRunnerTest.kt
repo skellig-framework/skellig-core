@@ -1,8 +1,9 @@
 package org.skellig.runner
 
 import org.junit.runner.RunWith
+import org.skellig.plugin.report.SkelligReportPlugin
+import org.skellig.plugin.report.SkelligToCucumberReportPlugin
 import org.skellig.runner.annotation.SkelligOptions
-import org.skellig.runner.plugin.SkelligReportPlugin
 
 @RunWith(SkelligRunner::class)
 @SkelligOptions(
@@ -11,4 +12,5 @@ import org.skellig.runner.plugin.SkelligReportPlugin
     config = "test.conf"
 )
 @SkelligOptions.Plugin(name = SkelligReportPlugin::class, args = ["target/report"])
+@SkelligOptions.Plugin(name = SkelligToCucumberReportPlugin::class, args = ["target/report/", "cucumber"])
 class DefaultSkelligRunnerTest

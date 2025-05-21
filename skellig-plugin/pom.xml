@@ -9,8 +9,8 @@
         <version>0.0.0</version>
     </parent>
 
-    <artifactId>skellig-junit-runner</artifactId>
-    <description>JUnit runner for Skellig tests</description>
+    <artifactId>skellig-plugin</artifactId>
+
     <dependencies>
         <dependency>
             <groupId>org.skelligframework</groupId>
@@ -18,26 +18,21 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.skelligframework</groupId>
-            <artifactId>skellig-plugin</artifactId>
-            <version>${project.parent.version}</version>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.skelligframework</groupId>
-            <artifactId>skellig-test-step-runner</artifactId>
-            <version>${project.parent.version}</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-runner</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-reflect</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -63,22 +58,10 @@
             <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+        </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-junit47</artifactId>
-                        <version>${maven-surefire-plugin.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
 </project>

@@ -1,8 +1,8 @@
-package org.skellig.runner.junit.report
+package org.skellig.plugin.report
 
 /**
  * The TestStepLogger interface provides methods for logging and retrieving log records during test step executions.
- * These logs are used by [ReportGenerator] to display logs captured per each Test Step run.
+ * These logs are used by [org.skellig.runner.junit.report.ReportGenerator] to display logs captured per each Test Step run.
  */
 interface TestStepLogger {
 

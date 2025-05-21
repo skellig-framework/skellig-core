@@ -1,8 +1,7 @@
-package org.skellig.runner.junit.report.model
+package org.skellig.plugin.report.model
 
 import org.apache.commons.lang3.time.DurationFormatUtils
 import org.skellig.feature.event.TestExecutionStatus
-import org.skellig.teststep.processing.util.PropertyFormatUtils
 
 open class TestStepReportDetails(
     val name: String,
@@ -35,10 +34,6 @@ open class TestStepReportDetails(
 
     fun getParameters(): String {
         return parameters?.map { "${it.key} = ${it.value}" }?.joinToString("\n") ?: ""
-    }
-
-    fun getResult(): String {
-        return PropertyFormatUtils.toString(result, 0)
     }
 }
 

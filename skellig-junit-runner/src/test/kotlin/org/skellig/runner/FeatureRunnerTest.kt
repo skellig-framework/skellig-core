@@ -17,9 +17,10 @@ import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestScenario
 import org.skellig.feature.metadata.TagsFilter
-import org.skellig.runner.junit.report.TestStepLogger
+import org.skellig.plugin.report.TestStepLogger
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.PropertyFormatUtils
 import org.skellig.teststep.runner.TestStepRunner
 
 
@@ -54,7 +55,7 @@ class FeatureRunnerTest {
 
         featureRunner.run(mock<RunNotifier>())
 
-        verify(eventDispatcher).dispatch(argThat { e -> (e as TestStepFinishedEvent).logRecords == expectedLogRecords })
+        verify(eventDispatcher).dispatch(argThat { e -> e is TestStepFinishedEvent && e.logRecords == expectedLogRecords })
     }
 
     @Test
@@ -71,17 +72,19 @@ class FeatureRunnerTest {
         featureRunner.run(mock<RunNotifier>())
 
         verify(eventDispatcher).dispatch(argThat { e ->
-            (e as TestStepFinishedEvent).logRecords == expectedLogRecords
+            e is TestStepFinishedEvent && e.logRecords == expectedLogRecords
         })
         verify(eventDispatcher).dispatch(argThat { e ->
-            (e as TestStepProcessingFinishedEvent).result.errorLog != null
+            e is TestStepProcessingFinishedEvent && e.result.errorLog != null
         })
     }
 
     @Test
     fun testRunAndVerifyReportHasAllData() {
-        val expectedResponse = "response"
+        val expectedResponse = listOf(mapOf(Pair("a", "1010")))
         val testStep = mock<org.skellig.teststep.processing.model.TestStep>()
+        whenever(testStep.getFullInfo()).thenReturn(mock())
+
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
         whenever(testStepRunner.run(feature.scenarios!![0].steps!![0].name, emptyMap())).thenReturn(testStepRunResult)
 
@@ -89,13 +92,13 @@ class FeatureRunnerTest {
         testStepRunResult.notify(expectedResponse, null)
 
         verify(eventDispatcher).dispatch(argThat { e ->
-            (e as TestStepStartedEvent).testStep.name == feature.scenarios!![0].steps!![0].name
+            e is TestStepStartedEvent && e.testStep.name == feature.scenarios!![0].steps!![0].name
         })
         verify(eventDispatcher).dispatch(argThat { e ->
-            (e as TestStepProcessingFinishedEvent).result.errorLog == null &&
-                    e.testStepInfo["Properties"] == testStep.toString() &&
-                    e.result.duration > 0
-            e.result.result == expectedResponse
+            e is TestStepProcessingFinishedEvent && e.result.errorLog == null &&
+                    e.testStepInfo == testStep.getFullInfo() &&
+                    e.result.duration > 0 &&
+                    e.result.result == PropertyFormatUtils.toString(expectedResponse, 0)
         })
     }
 
@@ -107,7 +110,7 @@ class FeatureRunnerTest {
         featureRunner.run(mock<RunNotifier>())
         assertThrows<RuntimeException> { testStepRunResult.notify(null, RuntimeException("Error")) }
 
-        verify(eventDispatcher).dispatch(argThat { e -> (e as TestStepProcessingFinishedEvent).result.errorLog?.startsWith("java.lang.RuntimeException: Error") == true })
+        verify(eventDispatcher).dispatch(argThat { e -> e is TestStepProcessingFinishedEvent && e.result.errorLog?.startsWith("java.lang.RuntimeException: Error") == true })
     }
 
     @Test
@@ -154,7 +157,7 @@ class FeatureRunnerTest {
         assertAll(
             {
                 verify(eventDispatcher).dispatch(argThat { e ->
-                    (e as HookFinishedEvent).methodName == expectedBeforeMethodName &&
+                    e is HookFinishedEvent && e.methodName == expectedBeforeMethodName &&
                             e.result.errorLog == null &&
                             e.result.duration == expectedBeforeDuration
                 })
@@ -162,7 +165,7 @@ class FeatureRunnerTest {
 
             {
                 verify(eventDispatcher).dispatch(argThat { e ->
-                    (e as HookFinishedEvent).methodName == expectedAfterMethodName &&
+                    e is HookFinishedEvent && e.methodName == expectedAfterMethodName &&
                             e.result.errorLog == null &&
                             e.result.duration == expectedAfterDuration
                 })
@@ -179,7 +182,7 @@ class FeatureRunnerTest {
         val notifier = mock<RunNotifier>()
         featureRunner.run(notifier)
 
-        verify(eventDispatcher).dispatch(argThat { e -> (e as HookFinishedEvent).result.errorLog == "error" })
+        verify(eventDispatcher).dispatch(argThat { e -> e is HookFinishedEvent && e.result.errorLog?.contains("error") == true })
         verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == feature.name })
     }
 
@@ -216,10 +219,10 @@ class FeatureRunnerTest {
         featureRunner.run(notifier)
 
         val orderVerifier = Mockito.inOrder(notifier)
-        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.beforeSteps!![0].name}(${feature.name}:Before Feature)" })
-        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.beforeSteps!![1].name}(${feature.name}:Before Feature)" })
-        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.afterSteps!![0].name}(${feature.name}:After Feature)" })
-        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.afterSteps!![1].name}(${feature.name}:After Feature)" })
+        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.beforeSteps!![0].name}(Before Feature)" })
+        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.beforeSteps!![1].name}(Before Feature)" })
+        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.afterSteps!![0].name}(After Feature)" })
+        orderVerifier.verify(notifier, times(1)).fireTestStarted(argThat { o -> o.displayName == "${feature.afterSteps!![1].name}(After Feature)" })
 
         assertAll(
             { verify(result1).subscribe(argThat { true }) },
@@ -261,8 +264,8 @@ class FeatureRunnerTest {
             { verify(result2).awaitResult() },
             { verify(result3).awaitResult() },
             { verify(result4).awaitResult() },
-            { verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == "${feature.name}:Before Feature" }) },
-            { verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == "${feature.name}:After Feature" }) },
+            { verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == "Before Feature" }) },
+            { verify(notifier).fireTestFailure(argThat { i -> i.description.displayName == "After Feature" }) },
             { verify(notifier).fireTestFailure(argThat { i -> i.message == "internal error" }) },
             { verify(notifier).fireTestFailure(argThat { i -> i.message == "internal error 2" }) }
         )

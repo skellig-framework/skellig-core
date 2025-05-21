@@ -1,10 +1,10 @@
-package org.skellig.runner.junit.report
+package org.skellig.plugin.report
 
 import freemarker.cache.URLTemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.Template
-import org.skellig.runner.junit.report.model.FeatureReportDetails
-import org.skellig.teststep.processing.util.logger
+import org.skellig.plugin.report.model.FeatureReportDetails
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -33,13 +33,13 @@ class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
         private const val REPORT_SRC_PATH = "report/$REPORT_ROOT_FOLDER_PATH"
     }
 
-    private val log = logger<SkelligReportGenerator>()
+    private val log = LoggerFactory.getLogger(SkelligReportGenerator::class.java)
 
     /**
      * Generates a Skellig Test Report with the provided test report details. If any exception occurs, it's ignored but logged
      * as an error and report is not generated.
      *
-     * @param testReportDetails The list of [FeatureReportDetails] containing the details of the test report.
+     * @param testReportDetails The list of [org.skellig.runner.junit.report.model.FeatureReportDetails] containing the details of the test report.
      */
     override fun generate(testReportDetails: List<FeatureReportDetails>?) {
         log.info("Start to generate a Skellig Test Report")

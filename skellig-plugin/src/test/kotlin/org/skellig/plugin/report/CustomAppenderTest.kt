@@ -1,22 +1,22 @@
-package org.skellig.runner.junit.report
+package org.skellig.plugin.report
 
 import org.apache.log4j.spi.LocationInfo
 import org.apache.log4j.spi.LoggingEvent
 import org.junit.Test
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.mockito.Mockito.mock
+import org.junit.jupiter.api.Assertions.*
+import org.mockito.Mockito
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.Instant
 import java.time.LocalDateTime
-import java.util.*
+import java.util.TimeZone
 
 class CustomAppenderTest {
 
     @Test
     fun testLog() {
-        val testStepLogger = mock<TestStepLogger>()
-        val event = mock<LoggingEvent>()
+        val testStepLogger = Mockito.mock<TestStepLogger>()
+        val event = Mockito.mock<LoggingEvent>()
 
         whenever(event.getTimeStamp()).thenReturn(System.currentTimeMillis())
         whenever(event.message).thenReturn("text")
@@ -34,7 +34,7 @@ class CustomAppenderTest {
 
     @Test
     fun testClose() {
-        val testStepLogger = mock<TestStepLogger>()
+        val testStepLogger = Mockito.mock<TestStepLogger>()
         CustomAppender(testStepLogger).close()
 
         verify(testStepLogger).getLogsAndClean()
@@ -43,6 +43,6 @@ class CustomAppenderTest {
     @Test
     fun testRequiresLayout() {
         // false by default
-        assertFalse(CustomAppender(mock()).requiresLayout())
+        assertFalse(CustomAppender(Mockito.mock()).requiresLayout())
     }
 }

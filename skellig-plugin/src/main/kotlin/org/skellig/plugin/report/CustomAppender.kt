@@ -1,4 +1,4 @@
-package org.skellig.runner.junit.report
+package org.skellig.plugin.report
 
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.spi.LoggingEvent
@@ -12,11 +12,11 @@ import java.util.*
 /**
  * Appends log events to a [TestStepLogger] which are used in report generation.
  *
- * @see [ReportGenerator]
+ * @see [org.skellig.runner.junit.report.ReportGenerator]
  *
  * @property testStepLogger The TestStepLogger instance to which log events are appended
  */
-internal class CustomAppender(private val testStepLogger: TestStepLogger) : AppenderSkeleton() {
+class CustomAppender(private val testStepLogger: TestStepLogger) : AppenderSkeleton() {
 
     companion object {
         internal val DATE_TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS")

@@ -12,10 +12,10 @@ import org.skellig.feature.hook.DefaultSkelligHookRunner
 import org.skellig.feature.hook.DefaultSkelligTestHooksRegistry
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.feature.parser.DefaultFeatureParser
+import org.skellig.plugin.report.CustomAppender
+import org.skellig.plugin.report.DefaultTestStepLogger
 import org.skellig.runner.annotation.SkelligOptions
 import org.skellig.runner.exception.FeatureRunnerException
-import org.skellig.runner.junit.report.CustomAppender
-import org.skellig.runner.junit.report.DefaultTestStepLogger
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.nio.file.Paths

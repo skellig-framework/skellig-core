@@ -1,6 +1,6 @@
 package org.skellig.runner.annotation
 
-import org.skellig.runner.plugin.SkelligPlugin
+import org.skellig.plugin.SkelligPlugin
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.lang.annotation.Inherited
 import kotlin.reflect.KClass

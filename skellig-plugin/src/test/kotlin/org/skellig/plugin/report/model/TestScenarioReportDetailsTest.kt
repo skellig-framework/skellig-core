@@ -1,10 +1,12 @@
-package org.skellig.runner.junit.report.model
+package org.skellig.plugin.report.model
 
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
+import org.skellig.feature.event.Result
 
 class TestScenarioReportDetailsTest {
 
@@ -22,6 +24,22 @@ class TestScenarioReportDetailsTest {
         assertEquals(1, testScenarioReportDetails.getTotalPassedTestSteps())
     }
 
+    @Test
+    fun `check if failed when at least one test step is failed`() {
+        val mockedTestStepReportDetails1 = mock<TestStepReportDetails>()
+        whenever(mockedTestStepReportDetails1.isPassed()).thenReturn(true)
+
+        val mockedTestStepReportDetails2 = mock<TestStepReportDetails>()
+        whenever(mockedTestStepReportDetails2.isPassed()).thenReturn(false)
+
+        val testScenarioReportDetails = TestScenarioReportDetails(
+            name = "Test scenario",
+            tags = emptySet(),
+            testStepReportDetails = mutableMapOf(Pair(1, mockedTestStepReportDetails1), Pair(2, mockedTestStepReportDetails2))
+        )
+
+        assertTrue(testScenarioReportDetails.isFailed())
+    }
 
     @Test
     fun `return passed scenario`() {
@@ -105,6 +123,17 @@ class TestScenarioReportDetailsTest {
     }
 
     @Test
+    fun `return total passed percentage if no steps recorded`() {
+        val testScenarioReportDetails = TestScenarioReportDetails(
+            name = "Test scenario",
+            tags = emptySet(),
+            testStepReportDetails = mutableMapOf()
+        )
+
+        assertEquals(0.0f, testScenarioReportDetails.getTotalPassedPercentage())
+    }
+
+    @Test
     fun `return formatted scenario duration`() {
         val mockedTestStepReportDetails1 = mock<TestStepReportDetails>()
         whenever(mockedTestStepReportDetails1.duration).thenReturn(1000) // 1 second
@@ -181,9 +210,13 @@ class TestScenarioReportDetailsTest {
     @Test
     fun `return formatted duration for before hooks`() {
         val mockedTestStepReportDetails1 = mock<HookReportDetails>()
+        val result1 = mock<Result>()
+        whenever(mockedTestStepReportDetails1.result).thenReturn(result1)
         whenever(mockedTestStepReportDetails1.result.duration).thenReturn(5000) // 5 seconds
 
         val mockedTestStepReportDetails2 = mock<HookReportDetails>()
+        val result2 = mock<Result>()
+        whenever(mockedTestStepReportDetails2.result).thenReturn(result2)
         whenever(mockedTestStepReportDetails2.result.duration).thenReturn(3000) // 3 seconds
 
         val testScenarioReportDetails = TestScenarioReportDetails(
@@ -198,10 +231,14 @@ class TestScenarioReportDetailsTest {
     @Test
     fun `return formatted duration for after hooks`() {
         val mockedTestStepReportDetails1 = mock<HookReportDetails>()
-        whenever(mockedTestStepReportDetails1.result.duration).thenReturn(4000) // 4 seconds
+        val result1 = mock<Result>()
+        whenever(mockedTestStepReportDetails1.result).thenReturn(result1)
+        whenever(result1.duration).thenReturn(4000) // 4 seconds
 
         val mockedTestStepReportDetails2 = mock<HookReportDetails>()
-        whenever(mockedTestStepReportDetails2.result.duration).thenReturn(6000) // 6 seconds
+        val result2 = mock<Result>()
+        whenever(mockedTestStepReportDetails2.result).thenReturn(result2)
+        whenever(result2.duration).thenReturn(6000) // 6 seconds
 
         val testScenarioReportDetails = TestScenarioReportDetails(
             name = "Test scenario",

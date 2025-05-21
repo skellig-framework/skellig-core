@@ -1,4 +1,4 @@
-package org.skellig.runner.junit.report.model
+package org.skellig.plugin.report.model
 
 /**
  * Represents the report details for a test scenario.
@@ -26,11 +26,11 @@ class TestScenarioReportDetails(
     }
 
     fun isPassed(): Boolean {
-        return true
+        return getTotalFailedTestSteps() == 0
     }
 
     fun isFailed(): Boolean {
-        return false
+        return getTotalFailedTestSteps() > 0
     }
 
     fun isIgnored(): Boolean {
@@ -50,34 +50,34 @@ class TestScenarioReportDetails(
     }
 
     fun getScenarioDuration(): Long {
-        return testStepReportDetails.values.sumOf { it.duration } ?: 0
+        return testStepReportDetails.values.sumOf { it.duration }
     }
 
     fun getScenarioDurationFormatted(): String {
-        return getFormattedDuration(testStepReportDetails.values.sumOf { it.duration } ?: 0)
+        return getFormattedDuration(testStepReportDetails.values.sumOf { it.duration })
     }
 
     fun getBeforeScenarioDurationFormatted(): String {
         return getFormattedDuration(
-            (beforeReportDetails.values.sumOf { it.duration } ?: 0)
+            beforeReportDetails.values.sumOf { it.duration }
         )
     }
 
     fun getAfterScenarioDurationFormatted(): String {
         return getFormattedDuration(
-            (afterReportDetails.values.sumOf { it.duration } ?: 0)
+            afterReportDetails.values.sumOf { it.duration }
         )
     }
 
     fun getBeforeHooksDurationFormatted(): String {
         return getFormattedDuration(
-            (beforeHooksReportDetails.sumOf { it.result.duration } ?: 0)
+            beforeHooksReportDetails.sumOf { it.result.duration }
         )
     }
 
     fun getAfterHooksDurationFormatted(): String {
         return getFormattedDuration(
-            (afterHooksReportDetails.sumOf { it.result.duration } ?: 0)
+            afterHooksReportDetails.sumOf { it.result.duration }
         )
     }
 

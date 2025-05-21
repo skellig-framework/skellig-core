@@ -7,7 +7,7 @@ import org.skellig.feature.event.*
 import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestScenario
-import org.skellig.runner.junit.report.TestStepLogger
+import org.skellig.plugin.report.TestStepLogger
 import org.skellig.teststep.runner.TestStepRunner
 
 

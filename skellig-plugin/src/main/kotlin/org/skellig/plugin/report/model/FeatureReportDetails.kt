@@ -1,4 +1,4 @@
-package org.skellig.runner.junit.report.model
+package org.skellig.plugin.report.model
 
 /**
  * Represents the details of a feature report which includes a list of [TestScenarioReportDetails]

@@ -9,8 +9,9 @@ import org.junit.runners.ParentRunner
 import org.skellig.feature.SkelligTestEntity
 import org.skellig.feature.event.*
 import org.skellig.feature.hook.SkelligHookRunner
-import org.skellig.runner.junit.report.TestStepLogger
+import org.skellig.plugin.report.TestStepLogger
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.util.PropertyFormatUtils
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.TestStepRunner
 
@@ -108,7 +109,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
                             child.testStep.getId(),
                             child.parentFeatureId,
                             child.parentTestScenarioId,
-                            Result(System.currentTimeMillis() - startTime, e, r),
+                            Result(System.currentTimeMillis() - startTime, e, PropertyFormatUtils.toString(r, 0)),
                             t?.getFullInfo()?: emptyMap(),
                             child.executionSequenceType
                         )

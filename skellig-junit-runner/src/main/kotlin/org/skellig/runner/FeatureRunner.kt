@@ -10,7 +10,7 @@ import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.metadata.TagsFilter
-import org.skellig.runner.junit.report.TestStepLogger
+import org.skellig.plugin.report.TestStepLogger
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.runner.TestStepRunner
 
@@ -97,16 +97,12 @@ open class FeatureRunner(
 
     override fun run(notifier: RunNotifier) {
         try {
-            eventDispatcher.dispatch(FeatureStartedEvent(testEntity))
+            eventDispatcher.dispatch(FeatureStartedEvent(testEntity as Feature))
             super.run(notifier)
         } finally {
             eventDispatcher.dispatch(FeatureFinishedEvent(testEntity.getId()))
         }
     }
-
-    private fun getBeforeFeatureName() = "$name:$BEFORE_FEATURE_NAME"
-
-    private fun getAfterFeatureName() = "$name:$AFTER_FEATURE_NAME"
 
     override fun dispatchHookFinishedEvent(hookName: String, duration: Long, e: Throwable?, hookType: Class<out Annotation>) {
         eventDispatcher.dispatch(

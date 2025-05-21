@@ -1,7 +1,7 @@
-package org.skellig.runner.junit.report.model
+package org.skellig.plugin.report.model
 
-import org.skellig.feature.event.Result
 import org.skellig.feature.event.TestExecutionStatus
+import org.skellig.feature.event.Result
 
 
 /**

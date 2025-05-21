@@ -1,12 +1,11 @@
-package org.skellig.runner.plugin
+package org.skellig.plugin.report
 
 import org.skellig.feature.event.*
-import org.skellig.runner.junit.report.ReportGenerator
-import org.skellig.runner.junit.report.SkelligReportGenerator
-import org.skellig.runner.junit.report.model.FeatureReportDetails
-import org.skellig.runner.junit.report.model.HookReportDetails
-import org.skellig.runner.junit.report.model.TestScenarioReportDetails
-import org.skellig.runner.junit.report.model.TestStepReportDetails
+import org.skellig.plugin.SkelligPlugin
+import org.skellig.plugin.report.model.FeatureReportDetails
+import org.skellig.plugin.report.model.HookReportDetails
+import org.skellig.plugin.report.model.TestScenarioReportDetails
+import org.skellig.plugin.report.model.TestStepReportDetails
 import java.util.concurrent.ConcurrentHashMap
 
 class SkelligReportPlugin(reportDir: String) : SkelligPlugin {

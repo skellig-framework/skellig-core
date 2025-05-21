@@ -1,4 +1,4 @@
-package org.skellig.runner.plugin
+package org.skellig.plugin
 
 import org.skellig.feature.event.SkelligTestEventDispatcher
 
