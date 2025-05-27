@@ -31,9 +31,9 @@ internal class TcpChannelTest {
     @AfterEach
     fun tearDown() {
         executorService.shutdown()
-        tcpChannel!!.close()
+        tcpChannel?.close()
         socketRequestHandlers.forEach { it.close() }
-        server!!.close()
+        server?.close()
     }
 
     @Test
