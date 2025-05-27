@@ -103,7 +103,7 @@ class SkelligToCucumberReportPlugin(val reportFile: String) : SkelligPlugin {
 
         eventDispatcher.register(TestRunFinishedEvent::class) { e ->
             val reportFilePath = Paths.get(reportFile).absolute().toString()
-            File(reportFilePath.substringBeforeLast("\\")).mkdirs()
+            File(reportFilePath.substringBeforeLast("\\").substringBeforeLast("/")).mkdirs()
             File(reportFilePath).createNewFile()
             jsonSerializer.writeValue(File(reportFilePath), executedFeaturesReportDetails.values.toList())
         }
