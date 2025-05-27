@@ -18,17 +18,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.m2/repository
-          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}-
-
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@v1.15.0
+        uses: s4u/setup-maven-action@v1.18.0
         with:
           java-version: 17
           maven-version: 3.9.6
