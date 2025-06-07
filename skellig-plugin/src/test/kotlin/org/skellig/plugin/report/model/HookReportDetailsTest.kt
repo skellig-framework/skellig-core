@@ -2,9 +2,8 @@ package org.skellig.plugin.report.model
 
 import org.apache.commons.lang3.time.DurationFormatUtils
 import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.skellig.feature.event.Result
-import org.skellig.plugin.report.model.HookReportDetails
 
 class HookReportDetailsTest {
 

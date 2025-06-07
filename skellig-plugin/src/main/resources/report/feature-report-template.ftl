@@ -149,30 +149,31 @@
                                                 </div>
                                                 <pre class="small-text-panel">${parameters?html?trim}</pre>
                                             </#if>
-                                            <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
-                                            <#if testStepDetails?? && testStepDetails?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${propertiesTitle}
-                                                </div>
-                                                <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
-                                            </#if>
-                                            <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${testDataTitle}
-                                                </div>
-                                                <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
-                                            </#if>
-                                            <#if step.result?? && step.result?trim?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${responseTitle}
-                                                </div>
-                                                <pre class="small-text-panel">${step.result?html?trim}</pre>
-                                            </#if>
-                                            <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${validationTitle?html?trim}
-                                                </div>
-                                                <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                            <#if step.testStepInfo??>
+                                                <#if step.testStepInfo["Properties"]?? && step.testStepInfo["Properties"]?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${propertiesTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.testStepInfo["Properties"]?html?trim}</pre>
+                                                </#if>
+                                                <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${testDataTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
+                                                </#if>
+                                                <#if step.result?? && step.result?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${responseTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.result?html?trim}</pre>
+                                                </#if>
+                                                <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${validationTitle?html?trim}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                                </#if>
                                             </#if>
                                             <#if step.failed>
                                                 <div class="medium-text-panel failed-content-color">
@@ -364,30 +365,31 @@
                                                                     </div>
                                                                     <pre class="small-text-panel">${parameters?html?trim}</pre>
                                                                 </#if>
-                                                                <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
-                                                                <#if testStepDetails?? && testStepDetails?has_content>
-                                                                    <div class="medium-text-panel">
-                                                                        ${propertiesTitle}
-                                                                    </div>
-                                                                    <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
-                                                                </#if>
-                                                                <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
-                                                                    <div class="medium-text-panel">
-                                                                        ${testDataTitle}
-                                                                    </div>
-                                                                    <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
-                                                                </#if>
-                                                                <#if step.result?? && step.result?trim?has_content>
-                                                                    <div class="medium-text-panel">
-                                                                        ${responseTitle}
-                                                                    </div>
-                                                                    <pre class="small-text-panel">${step.result?html?trim}</pre>
-                                                                </#if>
-                                                                <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
-                                                                    <div class="medium-text-panel">
-                                                                        ${validationTitle?html?trim}
-                                                                    </div>
-                                                                    <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                                                <#if step.testStepInfo??>
+                                                                    <#if step.testStepInfo["Properties"]?? && step.testStepInfo["Properties"]?trim?has_content>
+                                                                        <div class="medium-text-panel">
+                                                                            ${propertiesTitle}
+                                                                        </div>
+                                                                        <pre class="small-text-panel">${step.testStepInfo["Properties"]?html?trim}</pre>
+                                                                    </#if>
+                                                                    <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
+                                                                        <div class="medium-text-panel">
+                                                                            ${testDataTitle}
+                                                                        </div>
+                                                                        <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
+                                                                    </#if>
+                                                                    <#if step.result?? && step.result?trim?has_content>
+                                                                        <div class="medium-text-panel">
+                                                                            ${responseTitle}
+                                                                        </div>
+                                                                        <pre class="small-text-panel">${step.result?html?trim}</pre>
+                                                                    </#if>
+                                                                    <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
+                                                                        <div class="medium-text-panel">
+                                                                            ${validationTitle?html?trim}
+                                                                        </div>
+                                                                        <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                                                    </#if>
                                                                 </#if>
                                                                 <#if step.failed>
                                                                     <div class="medium-text-panel failed-content-color">
@@ -456,30 +458,31 @@
                                                 </div>
                                                 <pre class="small-text-panel">${parameters?html?trim}</pre>
                                             </#if>
-                                            <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
-                                            <#if testStepDetails?? && testStepDetails?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${propertiesTitle}
-                                                </div>
-                                                <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
-                                            </#if>
-                                            <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${testDataTitle}
-                                                </div>
-                                                <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
-                                            </#if>
-                                            <#if step.result?? && step.result?trim?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${responseTitle}
-                                                </div>
-                                                <pre class="small-text-panel">${step.result?html?trim}</pre>
-                                            </#if>
-                                            <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${validationTitle?html?trim}
-                                                </div>
-                                                <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                            <#if step.testStepInfo??>
+                                                <#if step.testStepInfo["Properties"]?? && step.testStepInfo["Properties"]?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${propertiesTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.testStepInfo["Properties"]?html?trim}</pre>
+                                                </#if>
+                                                <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${testDataTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
+                                                </#if>
+                                                <#if step.result?? && step.result?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${responseTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.result?html?trim}</pre>
+                                                </#if>
+                                                <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${validationTitle?html?trim}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                                </#if>
                                             </#if>
                                             <#if step.failed>
                                                 <div class="medium-text-panel failed-content-color">
@@ -561,30 +564,31 @@
                                                                     </div>
                                                                     <pre class="small-text-panel">${parameters?html?trim}</pre>
                                                                 </#if>
-                                                                <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
-                                                                <#if testStepDetails?? && testStepDetails?has_content>
-                                                                    <div class="medium-text-panel">
-                                                                        ${propertiesTitle}
-                                                                    </div>
-                                                                    <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
-                                                                </#if>
-                                                                <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
-                                                                    <div class="medium-text-panel">
-                                                                        ${testDataTitle}
-                                                                    </div>
-                                                                    <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
-                                                                </#if>
-                                                                <#if step.result?? && step.result?trim?has_content>
-                                                                    <div class="medium-text-panel">
-                                                                        ${responseTitle}
-                                                                    </div>
-                                                                    <pre class="small-text-panel">${step.result?html?trim}</pre>
-                                                                </#if>
-                                                                <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
-                                                                    <div class="medium-text-panel">
-                                                                        ${validationTitle?html?trim}
-                                                                    </div>
-                                                                    <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                                                <#if step.testStepInfo??>
+                                                                    <#if step.testStepInfo["Properties"]?? && step.testStepInfo["Properties"]?trim?has_content>
+                                                                        <div class="medium-text-panel">
+                                                                            ${propertiesTitle}
+                                                                        </div>
+                                                                        <pre class="small-text-panel">${step.testStepInfo["Properties"]?html?trim}</pre>
+                                                                    </#if>
+                                                                    <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
+                                                                        <div class="medium-text-panel">
+                                                                            ${testDataTitle}
+                                                                        </div>
+                                                                        <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
+                                                                    </#if>
+                                                                    <#if step.result?? && step.result?trim?has_content>
+                                                                        <div class="medium-text-panel">
+                                                                            ${responseTitle}
+                                                                        </div>
+                                                                        <pre class="small-text-panel">${step.result?html?trim}</pre>
+                                                                    </#if>
+                                                                    <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
+                                                                        <div class="medium-text-panel">
+                                                                            ${validationTitle?html?trim}
+                                                                        </div>
+                                                                        <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                                                    </#if>
                                                                 </#if>
                                                                 <#if step.failed>
                                                                     <div class="medium-text-panel failed-content-color">
@@ -750,30 +754,31 @@
                                                 </div>
                                                 <pre class="small-text-panel">${parameters?html?trim}</pre>
                                             </#if>
-                                            <#assign testStepDetails = step.testStepInfo["Properties"]?html?trim />
-                                            <#if testStepDetails?? && testStepDetails?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${propertiesTitle}
-                                                </div>
-                                                <pre class="small-text-panel">${testStepDetails?html?trim}</pre>
-                                            </#if>
-                                            <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${testDataTitle}
-                                                </div>
-                                                <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
-                                            </#if>
-                                            <#if step.result?? && step.result?trim?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${responseTitle}
-                                                </div>
-                                                <pre class="small-text-panel">${step.result?html?trim}</pre>
-                                            </#if>
-                                            <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
-                                                <div class="medium-text-panel">
-                                                    ${validationTitle?html?trim}
-                                                </div>
-                                                <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                            <#if step.testStepInfo??>
+                                                <#if step.testStepInfo["Properties"]?? && step.testStepInfo["Properties"]?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${propertiesTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.testStepInfo["Properties"]?html?trim}</pre>
+                                                </#if>
+                                                <#if step.testStepInfo["Test Data"]?? && step.testStepInfo["Test Data"]?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${testDataTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.testStepInfo["Test Data"]?html?trim}</pre>
+                                                </#if>
+                                                <#if step.result?? && step.result?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${responseTitle}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.result?html?trim}</pre>
+                                                </#if>
+                                                <#if step.testStepInfo["Validation Details"]?? && step.testStepInfo["Validation Details"]?trim?has_content>
+                                                    <div class="medium-text-panel">
+                                                        ${validationTitle?html?trim}
+                                                    </div>
+                                                    <pre class="small-text-panel">${step.testStepInfo["Validation Details"]?html?trim}</pre>
+                                                </#if>
                                             </#if>
                                             <#if step.failed>
                                                 <div class="medium-text-panel failed-content-color">

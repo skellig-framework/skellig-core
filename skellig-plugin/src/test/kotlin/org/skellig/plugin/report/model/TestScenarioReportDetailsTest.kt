@@ -2,8 +2,8 @@ package org.skellig.plugin.report.model
 
 
 import org.junit.Assert.assertEquals
-import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.skellig.feature.event.Result

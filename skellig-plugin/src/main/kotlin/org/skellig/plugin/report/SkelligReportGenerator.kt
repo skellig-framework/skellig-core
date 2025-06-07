@@ -30,7 +30,7 @@ class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
         private const val FEATURE_REPORT_FTL = "report/feature-report-template.ftl"
         private const val REPORT_ROOT_FOLDER_PATH = "/skellig-report"
         private const val FEATURE_REPORT_ROOT_FOLDER_NAME = "$REPORT_ROOT_FOLDER_PATH/feature-reports"
-        private const val REPORT_SRC_PATH = "report/$REPORT_ROOT_FOLDER_PATH"
+        private const val REPORT_SRC_PATH = "report$REPORT_ROOT_FOLDER_PATH"
     }
 
     private val log = LoggerFactory.getLogger(SkelligReportGenerator::class.java)
@@ -78,22 +78,29 @@ class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
     }
 
     private fun prepareReportFoldersAndFiles(reportRootFolder: String, fileName: String): File {
-        val uri = getUrl(REPORT_SRC_PATH).toURI()
+        val uri = getResourceUrl(REPORT_SRC_PATH).toURI()
         if (uri.scheme == JAR_URL_TYPE) {
             FileSystems.newFileSystem(uri, mapOf<String, String>()).use {
-                return createHtmlReport(it.getPath("/$REPORT_SRC_PATH"), reportRootFolder, fileName)
+                val jarFileDir = File(
+                    SkelligReportGenerator::class.java
+                        .getProtectionDomain()
+                        .codeSource
+                        .location
+                        .toURI()
+                ).parentFile
+                return createHtmlReport(it.getPath("/$REPORT_SRC_PATH"), jarFileDir, reportRootFolder, fileName)
             }
         } else {
-            return createHtmlReport(Paths.get(uri), reportRootFolder, fileName)
+            val reportFolderPath = getReportFolderPath(Paths.get(getResourceUrl("").toURI()))
+            return createHtmlReport(Paths.get(uri), reportFolderPath.toFile(), reportRootFolder, fileName)
         }
     }
 
-    private fun createHtmlReport(copyFrom: Path, reportRootFolder: String, fileName: String): File {
-        val reportRootDir = getReportFolderPath(Paths.get(getUrl("").toURI()))
+    private fun createHtmlReport(copyFrom: Path, copyToDir: File, reportRootFolder: String, fileName: String): File {
+        val targetPath = File(copyToDir, "/$reportRootFolder").toPath()
+        Files.walkFileTree(copyFrom, CopyFileVisitor(targetPath))
 
-        Files.walkFileTree(copyFrom, CopyFileVisitor(File(reportRootDir.toFile(), "/$reportRootFolder").toPath()))
-
-        val htmlReport = File(reportRootDir.toFile(), "$reportRootFolder/${fileName}.html")
+        val htmlReport = File(copyToDir, "$reportRootFolder/${fileName}.html")
         htmlReport.createNewFile()
 
         return htmlReport
@@ -104,7 +111,7 @@ class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
     }
 
     private fun loadFtlTemplate(reportFtlFile: String): Template {
-        val url = getUrl(reportFtlFile)
+        val url = getResourceUrl(reportFtlFile)
         val configuration = Configuration(Configuration.VERSION_2_3_30)
         configuration.templateLoader = object : URLTemplateLoader() {
             override fun getURL(s: String): URL {
@@ -125,7 +132,7 @@ class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
         }
     }
 
-    private fun getUrl(filePath: String): URL {
+    private fun getResourceUrl(filePath: String): URL {
         return javaClass.classLoader.getResource(filePath)!!
     }
 

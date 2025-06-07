@@ -2,8 +2,8 @@ package org.skellig.plugin.report
 
 import org.apache.log4j.spi.LocationInfo
 import org.apache.log4j.spi.LoggingEvent
-import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
