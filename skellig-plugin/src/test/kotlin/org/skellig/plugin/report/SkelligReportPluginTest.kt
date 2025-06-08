@@ -1,11 +1,8 @@
 package org.skellig.plugin.report
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
 import org.skellig.feature.Feature
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep

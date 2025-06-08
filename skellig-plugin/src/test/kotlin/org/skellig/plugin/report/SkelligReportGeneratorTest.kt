@@ -4,15 +4,13 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
+import org.skellig.feature.event.Result
 import org.skellig.feature.event.TestExecutionStatus
 import org.skellig.plugin.report.model.FeatureReportDetails
 import org.skellig.plugin.report.model.HookReportDetails
 import org.skellig.plugin.report.model.TestScenarioReportDetails
 import org.skellig.plugin.report.model.TestStepReportDetails
-import org.skellig.feature.event.Result
 import java.io.File
-import java.nio.file.Path
 
 class SkelligReportGeneratorTest {
 

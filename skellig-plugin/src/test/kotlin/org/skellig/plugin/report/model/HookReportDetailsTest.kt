@@ -1,7 +1,9 @@
 package org.skellig.plugin.report.model
 
 import org.apache.commons.lang3.time.DurationFormatUtils
-import org.junit.Assert
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.skellig.feature.event.Result
 
@@ -16,28 +18,28 @@ class HookReportDetailsTest {
 
         val hookReportDetails = HookReportDetails(methodName, Result(duration, RuntimeException(errorLog), null), logRecords)
 
-        Assert.assertEquals(methodName, hookReportDetails.methodName)
-        Assert.assertEquals(true, hookReportDetails.result.errorLog?.startsWith("java.lang.RuntimeException: testError"))
-        Assert.assertEquals(logRecords, hookReportDetails.logRecords)
-        Assert.assertEquals(duration, hookReportDetails.result.duration)
+        assertEquals(methodName, hookReportDetails.methodName)
+        assertEquals(true, hookReportDetails.result.errorLog?.startsWith("java.lang.RuntimeException: testError"))
+        assertEquals(logRecords, hookReportDetails.logRecords)
+        assertEquals(duration, hookReportDetails.result.duration)
     }
 
     @Test
     fun testIsPassedWhenErrorLogIsNull() {
         val hookReportDetails = HookReportDetails(null, Result(1000L, null, null), null)
-        Assert.assertTrue(hookReportDetails.isPassed())
+        assertTrue(hookReportDetails.isPassed())
     }
 
     @Test
     fun testIsPassedWhenErrorLogIsEmpty() {
         val hookReportDetails = HookReportDetails(null, Result(1000L, null, null), null)
-        Assert.assertTrue(hookReportDetails.isPassed())
+        assertTrue(hookReportDetails.isPassed())
     }
 
     @Test
     fun testIsPassedWhenErrorLogIsNotEmpty() {
         val hookReportDetails = HookReportDetails(null, Result(1000L, RuntimeException("error"), null), null)
-        Assert.assertFalse(hookReportDetails.isPassed())
+        assertFalse(hookReportDetails.isPassed())
     }
 
     @Test
@@ -46,6 +48,6 @@ class HookReportDetailsTest {
         val expectedFormat = DurationFormatUtils.formatDuration(duration, "ss.SSS") + " sec."
         val hookReportDetails = HookReportDetails(null, Result(duration, RuntimeException("error"), null), null)
 
-        Assert.assertEquals(expectedFormat, hookReportDetails.getDurationFormatted())
+        assertEquals(expectedFormat, hookReportDetails.getDurationFormatted())
     }
 }
