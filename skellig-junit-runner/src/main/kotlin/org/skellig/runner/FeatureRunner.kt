@@ -5,12 +5,12 @@ import org.junit.runner.notification.RunNotifier
 import org.skellig.feature.Feature
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
+import org.skellig.feature.event.*
 import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.metadata.TagsFilter
-import org.skellig.runner.junit.report.TestStepLogger
-import org.skellig.runner.junit.report.model.FeatureReportDetails
+import org.skellig.plugin.report.TestStepLogger
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.runner.TestStepRunner
 
@@ -34,10 +34,11 @@ open class FeatureRunner(
     protected val tagsFilter: TagsFilter,
     hookRunner: SkelligHookRunner,
     testStepRunner: TestStepRunner?,
-    testStepLogger: TestStepLogger
+    testStepLogger: TestStepLogger,
+    eventDispatcher: SkelligTestEventDispatcher
 ) : BaseSkelligTestEntityRunner<TestScenarioRunner>(
     feature, hookRunner, testStepRunner, testStepLogger,
-    BeforeTestFeature::class.java, AfterTestFeature::class.java
+    BeforeTestFeature::class.java, AfterTestFeature::class.java, eventDispatcher
 ) {
 
     private var description: Description? = null
@@ -59,21 +60,21 @@ open class FeatureRunner(
             feature.beforeSteps?.let {
                 testScenarioRunners!!.add(
                     TestScenarioRunner.create(
-                        TestScenarioWrapper(feature.filePath, getBeforeFeatureName(), it, null),
-                        testStepRunner, hookRunner, testStepLogger
+                        TestScenarioWrapper(feature.filePath + ":$BEFORE_FEATURE_NAME", BEFORE_FEATURE_NAME, it, null),
+                        testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher
                     )
                 )
             }
 
             feature.scenarios
                 ?.filter { tagsFilter.checkTagsAreIncluded(it.tags) }
-                ?.forEach { testScenarioRunners!!.add(TestScenarioRunner.create(it, testStepRunner, hookRunner, testStepLogger)) }
+                ?.forEach { testScenarioRunners!!.add(TestScenarioRunner.create(it, testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher)) }
 
             feature.afterSteps?.let {
                 testScenarioRunners!!.add(
                     TestScenarioRunner.create(
-                        TestScenarioWrapper(feature.filePath, getAfterFeatureName(), null, it),
-                        testStepRunner, hookRunner, testStepLogger
+                        TestScenarioWrapper(feature.filePath + ":$AFTER_FEATURE_NAME", AFTER_FEATURE_NAME, null, it),
+                        testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher
                     )
                 )
             }
@@ -87,33 +88,30 @@ open class FeatureRunner(
 
     override fun runChild(child: TestScenarioRunner, notifier: RunNotifier) {
         try {
-            log.info("Run Test Scenario '${child}'")
             child.run(notifier)
-            log.info("Test Scenario '${child}' has finished")
         } finally {
             log.info("Cleanup the Test Scenario State")
             testScenarioState?.clean()
         }
     }
 
-    fun getFeatureReportDetails(): FeatureReportDetails {
-        val featureReportDetails = FeatureReportDetails(
-            name,
-            getEntityTags(),
-            beforeHookReportDetails,
-            afterHookReportDetails,
-            children?.find { it.getEntityName() == getBeforeFeatureName() }?.getTestScenarioReportDetails()?.beforeReportDetails,
-            children?.find { it.getEntityName() == getAfterFeatureName() }?.getTestScenarioReportDetails()?.afterReportDetails,
-            children
-                ?.filter { it.getEntityName() != getBeforeFeatureName() && it.getEntityName() != getAfterFeatureName() }
-                ?.map { it.getTestScenarioReportDetails() }?.toList() ?: emptyList()
-        )
-        return featureReportDetails
+    override fun run(notifier: RunNotifier) {
+        try {
+            eventDispatcher.dispatch(FeatureStartedEvent(testEntity as Feature))
+            super.run(notifier)
+        } finally {
+            eventDispatcher.dispatch(FeatureFinishedEvent(testEntity.getId()))
+        }
     }
 
-    private fun getBeforeFeatureName() = "$name:$BEFORE_FEATURE_NAME"
-
-    private fun getAfterFeatureName() = "$name:$AFTER_FEATURE_NAME"
+    override fun dispatchHookFinishedEvent(hookName: String, duration: Long, e: Throwable?, hookType: Class<out Annotation>) {
+        eventDispatcher.dispatch(
+            HookFinishedEvent(
+                hookName, testEntity.getId(), null, testStepLogger.getLogsAndClean(), Result(duration, e, null),
+                if (hookType == BeforeTestFeature::class.java) ExecutionSequenceType.BEFORE else ExecutionSequenceType.AFTER
+            )
+        )
+    }
 
     companion object {
         fun create(
@@ -122,9 +120,10 @@ open class FeatureRunner(
             testScenarioState: TestScenarioState?,
             testStepLogger: TestStepLogger,
             hookRunner: SkelligHookRunner,
+            eventDispatcher: SkelligTestEventDispatcher,
             tagsFilter: TagsFilter
         ): FeatureRunner {
-            return FeatureRunner(feature, testScenarioState, tagsFilter, hookRunner, testStepRunner, testStepLogger)
+            return FeatureRunner(feature, testScenarioState, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher)
         }
     }
 

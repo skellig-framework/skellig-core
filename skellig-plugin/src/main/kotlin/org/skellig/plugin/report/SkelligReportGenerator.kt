@@ -1,0 +1,158 @@
+package org.skellig.plugin.report
+
+import freemarker.cache.URLTemplateLoader
+import freemarker.template.Configuration
+import freemarker.template.Template
+import org.skellig.plugin.report.model.FeatureReportDetails
+import org.slf4j.LoggerFactory
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
+import java.net.URL
+import java.nio.file.*
+import java.nio.file.attribute.BasicFileAttributes
+
+
+/**
+ * SkelligReportGenerator class is responsible for generating a Skellig Test Report in HTML files.
+ *
+ * @see ReportGenerator
+ */
+class SkelligReportGenerator(val reportDir: String = "") : ReportGenerator {
+
+    companion object {
+        private const val JAR_URL_TYPE = "jar"
+        private const val TARGET_FOLDER = "target"
+        private const val OUT_FOLDER = "out"
+        private const val BUILD_FOLDER = "build"
+        private const val SRC_FOLDER = "src"
+        private const val REPORT_FTL = "report/index.ftl"
+        private const val FEATURE_REPORT_FTL = "report/feature-report-template.ftl"
+        private const val REPORT_ROOT_FOLDER_PATH = "/skellig-report"
+        private const val FEATURE_REPORT_ROOT_FOLDER_NAME = "$REPORT_ROOT_FOLDER_PATH/feature-reports"
+        private const val REPORT_SRC_PATH = "report$REPORT_ROOT_FOLDER_PATH"
+    }
+
+    private val log = LoggerFactory.getLogger(SkelligReportGenerator::class.java)
+
+    /**
+     * Generates a Skellig Test Report with the provided test report details. If any exception occurs, it's ignored but logged
+     * as an error and report is not generated.
+     *
+     * @param testReportDetails The list of [org.skellig.runner.junit.report.model.FeatureReportDetails] containing the details of the test report.
+     */
+    override fun generate(testReportDetails: List<FeatureReportDetails>?) {
+        log.info("Start to generate a Skellig Test Report")
+        try {
+            val htmlReport = prepareReportFoldersAndFiles(reportDir + REPORT_ROOT_FOLDER_PATH, "index")
+            val dataModel = mutableMapOf<String, Any?>()
+            dataModel["featuresReportDetails"] = testReportDetails
+            dataModel["featureTitle"] = "Feature"
+            constructFromTemplate(loadFtlTemplate(REPORT_FTL), dataModel, htmlReport)
+
+            testReportDetails?.forEach {
+                generateFeatureReports(it)
+            }
+            log.info("Skellig Test Report has been created")
+        } catch (e: Exception) {
+            log.error("Failed to generate a Skellig Report", e)
+        }
+    }
+
+    private fun generateFeatureReports(featureReportDetails: FeatureReportDetails) {
+        val htmlScenarioReport = prepareReportFoldersAndFiles(reportDir + FEATURE_REPORT_ROOT_FOLDER_NAME, featureReportDetails.name ?: "")
+        val dataModel = mutableMapOf<String, Any?>()
+        dataModel["feature"] = featureReportDetails
+        dataModel["featureTitle"] = "Feature"
+        dataModel["hooksTitle"] = "Hooks"
+        dataModel["beforeTitle"] = "Before"
+        dataModel["afterTitle"] = "After"
+        dataModel["parametersTitle"] = "Parameters"
+        dataModel["propertiesTitle"] = "Properties"
+        dataModel["testDataTitle"] = "Test data"
+        dataModel["validationTitle"] = "Expected response"
+        dataModel["responseTitle"] = "Response"
+        dataModel["errorTitle"] = "Error log"
+        dataModel["logTitle"] = "Log"
+        constructFromTemplate(loadFtlTemplate(FEATURE_REPORT_FTL), dataModel, htmlScenarioReport)
+    }
+
+    private fun prepareReportFoldersAndFiles(reportRootFolder: String, fileName: String): File {
+        val uri = getResourceUrl(REPORT_SRC_PATH).toURI()
+        if (uri.scheme == JAR_URL_TYPE) {
+            FileSystems.newFileSystem(uri, mapOf<String, String>()).use {
+                val jarFileDir = File(
+                    SkelligReportGenerator::class.java
+                        .getProtectionDomain()
+                        .codeSource
+                        .location
+                        .toURI()
+                ).parentFile
+                return createHtmlReport(it.getPath("/$REPORT_SRC_PATH"), jarFileDir, reportRootFolder, fileName)
+            }
+        } else {
+            val reportFolderPath = getReportFolderPath(Paths.get(getResourceUrl("").toURI()))
+            return createHtmlReport(Paths.get(uri), reportFolderPath.toFile(), reportRootFolder, fileName)
+        }
+    }
+
+    private fun createHtmlReport(copyFrom: Path, copyToDir: File, reportRootFolder: String, fileName: String): File {
+        val targetPath = File(copyToDir, "/$reportRootFolder").toPath()
+        Files.walkFileTree(copyFrom, CopyFileVisitor(targetPath))
+
+        val htmlReport = File(copyToDir, "$reportRootFolder/${fileName}.html")
+        htmlReport.createNewFile()
+
+        return htmlReport
+    }
+
+    private fun constructFromTemplate(template: Template, dataModel: Map<String, *>, reportFile: File) {
+        FileWriter(reportFile).use { outMessage -> template.process(dataModel, outMessage) }
+    }
+
+    private fun loadFtlTemplate(reportFtlFile: String): Template {
+        val url = getResourceUrl(reportFtlFile)
+        val configuration = Configuration(Configuration.VERSION_2_3_30)
+        configuration.templateLoader = object : URLTemplateLoader() {
+            override fun getURL(s: String): URL {
+                return url
+            }
+        }
+        configuration.defaultEncoding = "UTF-8"
+        return configuration.getTemplate("")
+    }
+
+    private fun getReportFolderPath(path: Path): Path {
+        return if (path.endsWith(TARGET_FOLDER) || path.endsWith(BUILD_FOLDER) || path.endsWith(OUT_FOLDER)) {
+            path
+        } else if (path.endsWith(SRC_FOLDER)) {
+            path.parent
+        } else {
+            getReportFolderPath(path.parent)
+        }
+    }
+
+    private fun getResourceUrl(filePath: String): URL {
+        return javaClass.classLoader.getResource(filePath)!!
+    }
+
+    private class CopyFileVisitor(private val targetPath: Path) : SimpleFileVisitor<Path>() {
+        private var sourcePath: Path? = null
+
+        @Throws(IOException::class)
+        override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
+            if (sourcePath == null) {
+                sourcePath = dir
+            } else {
+                Files.createDirectories(targetPath.resolve(sourcePath!!.relativize(dir).toString()))
+            }
+            return FileVisitResult.CONTINUE
+        }
+
+        @Throws(IOException::class)
+        override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+            Files.copy(file, targetPath.resolve(sourcePath!!.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING)
+            return FileVisitResult.CONTINUE
+        }
+    }
+}

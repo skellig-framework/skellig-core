@@ -94,18 +94,20 @@ open class SkelligTestContext : Closeable {
             DefaultPropertyExtractor(propertyExtractorFunction)
         )
 
-        initTestStepProcessors(valueExpressionContextFactory!!, testStepsRegistry!!)
-
-        return DefaultTestStepRunner.Builder()
+        val testStepRunner = DefaultTestStepRunner()
             .withTestStepsRegistry(testStepsRegistry!!)
-            .withTestStepProcessor(rootTestStepProcessor!!)
+
+        initTestStepProcessors(valueExpressionContextFactory!!, testStepsRegistry!!, testStepRunner)
+
+        return testStepRunner
             .withTestStepFactory(rootTestStepFactory!!)
-            .build()
+            .withTestStepProcessor(rootTestStepProcessor!!)
     }
 
     private fun initTestStepProcessors(
         valueExpressionContextFactory: ValueExpressionContextFactory,
         testStepRegistry: TestStepRegistry,
+        testStepRunner: TestStepRunner
     ) {
         rootTestStepFactory = CompositeTestStepFactory.Builder()
             .withTestDataRegistry(testStepRegistry)
@@ -116,12 +118,7 @@ open class SkelligTestContext : Closeable {
             .withValueConvertDelegate { v, p ->
                 v?.evaluate(valueExpressionContextFactory.create(p))
             }
-            .withProcessTestStepDelegate { name, parameters ->
-                val rawTestStepToRun = testStepRegistry.getByName(name)
-                    ?: error("Test step '$name' is not found in any of test data files or classes")
-                val testStep = rootTestStepFactory!!.create(name, rawTestStepToRun, parameters)
-                rootTestStepProcessor!!.process(testStep)
-            }
+            .withProcessTestStepDelegate(testStepRunner::run)
             .withTestScenarioState(testScenarioState)
             .build() as CompositeTestStepProcessor
 

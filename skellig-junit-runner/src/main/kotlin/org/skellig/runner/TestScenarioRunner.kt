@@ -3,12 +3,11 @@ package org.skellig.runner
 import org.junit.runner.Description
 import org.junit.runner.notification.RunNotifier
 import org.skellig.feature.TestScenario
+import org.skellig.feature.event.*
 import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestScenario
-import org.skellig.runner.junit.report.TestStepLogger
-import org.skellig.runner.junit.report.model.TestScenarioReportDetails
-import org.skellig.runner.junit.report.model.TestStepReportDetails
+import org.skellig.plugin.report.TestStepLogger
 import org.skellig.teststep.runner.TestStepRunner
 
 
@@ -22,37 +21,39 @@ import org.skellig.teststep.runner.TestStepRunner
  */
 open class TestScenarioRunner protected constructor(
     testScenario: TestScenario,
+    private val parentFeatureId: Int,
     testStepRunner: TestStepRunner?,
     hookRunner: SkelligHookRunner,
-    testStepLogger: TestStepLogger
+    testStepLogger: TestStepLogger,
+    eventDispatcher: SkelligTestEventDispatcher
 ) : BaseSkelligTestEntityRunner<TestStepWrapper>(
     testScenario, hookRunner, testStepRunner, testStepLogger,
-    BeforeTestScenario::class.java, AfterTestScenario::class.java
+    BeforeTestScenario::class.java, AfterTestScenario::class.java,
+    eventDispatcher
 ) {
 
     companion object {
         fun create(
-            testScenario: TestScenario, testStepRunner: TestStepRunner?,
-            hookRunner: SkelligHookRunner, testStepLogger: TestStepLogger
+            testScenario: TestScenario, parentFeatureId: Int, testStepRunner: TestStepRunner?,
+            hookRunner: SkelligHookRunner, testStepLogger: TestStepLogger, eventDispatcher: SkelligTestEventDispatcher
         ): TestScenarioRunner {
-            return TestScenarioRunner(testScenario, testStepRunner, hookRunner, testStepLogger)
+            return TestScenarioRunner(testScenario, parentFeatureId, testStepRunner, hookRunner, testStepLogger, eventDispatcher)
         }
     }
 
     private var description: Description? = null
-    protected var testStepsDataReport = mutableListOf<TestStepReportDetails.Builder>()
 
     override fun getChildren(): List<TestStepWrapper>? {
         val testScenario = testEntity as TestScenario
         var testSteps: List<TestStepWrapper>? = null
         testScenario.beforeSteps
-            ?.map { TestStepWrapper(it, TestStepRunnerType.BEFORE) }
+            ?.map { TestStepWrapper(it, parentFeatureId, testScenario.getId(), ExecutionSequenceType.BEFORE) }
             ?.let { testSteps = it }
         testScenario.steps
-            ?.map { TestStepWrapper(it) }
+            ?.map { TestStepWrapper(it, parentFeatureId, testScenario.getId()) }
             ?.let { testSteps = testSteps?.plus(it) ?: it }
         testScenario.afterSteps
-            ?.map { TestStepWrapper(it, TestStepRunnerType.AFTER) }
+            ?.map { TestStepWrapper(it, parentFeatureId, testScenario.getId(), ExecutionSequenceType.AFTER) }
             ?.let { testSteps = testSteps?.plus(it) ?: it }
         return testSteps
     }
@@ -69,23 +70,27 @@ open class TestScenarioRunner protected constructor(
         return describeTestStep(step)
     }
 
-    override fun runChild(child: TestStepWrapper, notifier: RunNotifier) {
-        val report = when (child.type) {
-            TestStepRunnerType.BEFORE -> beforeTestStepsDataReport
-            TestStepRunnerType.AFTER -> afterTestStepsDataReport
-            else -> testStepsDataReport
+    override fun run(notifier: RunNotifier) {
+        try {
+            log.info("Run Test Scenario '${this}'")
+            eventDispatcher.dispatch(TestScenarioStartedEvent(testEntity, parentFeatureId))
+            super.run(notifier)
+            log.info("Test Scenario '${this}' has finished")
+        } finally {
+            eventDispatcher.dispatch(TestScenarioFinishedEvent(testEntity, parentFeatureId))
         }
-        runTestStep(child, describeChild(child), notifier, report)
     }
 
-    fun getTestScenarioReportDetails(): TestScenarioReportDetails {
-        return TestScenarioReportDetails(
-            name, getEntityTags(),
-            beforeHookReportDetails,
-            afterHookReportDetails,
-            beforeTestStepsDataReport.map { it.build() }.toList(),
-            afterTestStepsDataReport.map { it.build() }.toList(),
-            testStepsDataReport.map { it.build() }.toList()
+    override fun runChild(child: TestStepWrapper, notifier: RunNotifier) {
+        runTestStep(child, describeChild(child), notifier)
+    }
+
+    override fun dispatchHookFinishedEvent(hookName: String, duration: Long, e: Throwable?, hookType: Class<out Annotation>) {
+        eventDispatcher.dispatch(
+            HookFinishedEvent(
+                hookName, parentFeatureId, testEntity.getId(), testStepLogger.getLogsAndClean(), Result(duration, e, null),
+                if (hookType == BeforeTestScenario::class.java) ExecutionSequenceType.BEFORE else ExecutionSequenceType.AFTER
+            )
         )
     }
 

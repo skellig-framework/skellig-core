@@ -31,9 +31,9 @@ internal class TcpChannelTest {
     @AfterEach
     fun tearDown() {
         executorService.shutdown()
-        tcpChannel!!.close()
+        tcpChannel?.close()
         socketRequestHandlers.forEach { it.close() }
-        server!!.close()
+        server?.close()
     }
 
     @Test
@@ -51,7 +51,7 @@ internal class TcpChannelTest {
         Assertions.assertEquals(DEFAULT_DATA, String((response as ByteArray?)!!))
     }
 
-    @Test
+    @RepeatedTest(value = 3, failureThreshold = 2)
     @DisplayName("Read once When Server responds only once Then response received")
     fun testRead() {
         startSocketServer(0, 1)

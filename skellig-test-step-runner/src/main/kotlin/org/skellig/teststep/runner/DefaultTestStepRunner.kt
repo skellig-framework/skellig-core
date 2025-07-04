@@ -22,11 +22,13 @@ import org.skellig.teststep.processing.util.logger
  *
  * @see TestStepRunner
  */
-internal class DefaultTestStepRunner private constructor(private val testStepProcessor: TestStepProcessor<TestStep>,
-                                                         private val testStepsRegistry: TestStepRegistry,
-                                                         private val testStepFactory: TestStepFactory<TestStep>) : TestStepRunner {
+internal class DefaultTestStepRunner : TestStepRunner {
 
     private val log = logger<DefaultTestStepRunner>()
+
+    private lateinit var testStepProcessor: TestStepProcessor<TestStep>
+    private lateinit var testStepsRegistry: TestStepRegistry
+    private lateinit var testStepFactory: TestStepFactory<TestStep>
 
     override fun run(testStepName: String): TestStepRunResult {
         return run(testStepName, emptyMap<String, String>())
@@ -40,33 +42,22 @@ internal class DefaultTestStepRunner private constructor(private val testStepPro
             log.info(testStep, "Run test step '$testStepName'")
 
             return testStepProcessor.process(testStep)
-        } ?: error("Test step '${testStepName}' is not found in any of registered test data files in resources " +
-                "or classes of the classloader")
+        } ?: error(
+            "Test step '${testStepName}' is not found in any of registered test data files in resources " +
+                    "or classes of the classloader"
+        )
     }
 
-    class Builder {
+    fun withTestStepsRegistry(testStepsRegistry: TestStepRegistry) = apply {
+        this.testStepsRegistry = testStepsRegistry
+    }
 
-        private var testStepProcessor: TestStepProcessor<TestStep>? = null
-        private var testStepFactory: TestStepFactory<TestStep>? = null
-        private var testStepsRegistry: TestStepRegistry? = null
+    fun withTestStepProcessor(testStepProcessor: TestStepProcessor<TestStep>) = apply {
+        this.testStepProcessor = testStepProcessor
+    }
 
-        fun withTestStepsRegistry(testStepsRegistry: TestStepRegistry) = apply {
-            this.testStepsRegistry = testStepsRegistry
-        }
-
-        fun withTestStepProcessor(testStepProcessor: TestStepProcessor<TestStep>) = apply {
-            this.testStepProcessor = testStepProcessor
-        }
-
-        fun withTestStepFactory(testStepFactory: TestStepFactory<TestStep>) = apply {
-            this.testStepFactory = testStepFactory
-        }
-
-        fun build(): TestStepRunner {
-            return DefaultTestStepRunner(testStepProcessor ?: error("Test Step processor is mandatory"),
-                    testStepsRegistry ?: error("Test Steps Registry is mandatory for Test Step Runner"),
-                    testStepFactory ?: error("Test Step Factory is mandatory for Test Step Runner"))
-        }
+    fun withTestStepFactory(testStepFactory: TestStepFactory<TestStep>) = apply {
+        this.testStepFactory = testStepFactory
     }
 
 }
