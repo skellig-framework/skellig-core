@@ -32,13 +32,14 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
     }
 
     private val log = logger<IbmMqTestStepProcessor>()
-    private var queueManager: MQQueueManager? = null
-    private var queue: MQQueue? = null
-    private var consumerThread: ExecutorService? = null
-
-    init {
-        connectQueue()
+    private val queueManager: MQQueueManager by lazy {
+        queueManagerFactory.getQueueManager(ibmMqQueueDetails.ibmMqManagerDetails)
     }
+    private val queueInit = lazy {
+        connectQueue(queueManager)
+    }
+    private val queue: MQQueue by queueInit
+    private var consumerThread: ExecutorService? = null
 
     /**
      * Sends a message to the IBMMQ queue.
@@ -49,7 +50,7 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
     fun send(request: Any) {
         try {
             val mqMessage = convertMqMessage(request)
-            queue!!.put(mqMessage)
+            queue.put(mqMessage)
         } catch (e: Exception) {
             log.error("Failed to send a message to IBMMQ queue '${ibmMqQueueDetails.id}'", e)
         }
@@ -68,7 +69,7 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
             options.options = MQConstants.MQGMO_WAIT
             options.waitInterval = timeout
 
-            queue!![message, options]
+            queue[message, options]
 
             getMessageBody(message)
         } catch (e: Exception) {
@@ -146,15 +147,15 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
         return buffer
     }
 
-    private fun connectQueue() {
+    private fun connectQueue(queueManager: MQQueueManager): MQQueue {
         try {
             log.debug { "Start to connect to IBMMQ queue ${ibmMqQueueDetails.id}" }
-            queueManager = queueManagerFactory.createQueueManagerFromDetails(ibmMqQueueDetails.ibmMqManagerDetails)
-            queue = queueManager!!.accessQueue(
+            val connectedQueue = queueManager.accessQueue(
                 ibmMqQueueDetails.queueName,
                 CMQC.MQOO_OUTPUT or CMQC.MQOO_INQUIRE or CMQC.MQOO_INPUT_SHARED
             )
             log.debug { "Successfully connected to IBMMQ queue ${ibmMqQueueDetails.id}" }
+            return connectedQueue
         } catch (e: MQException) {
             throw TestStepProcessingException(e.message, e)
         }
@@ -166,18 +167,21 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
      */
     override fun close() {
         try {
-            consumerThread?.shutdownNow()
-            disconnectQueue()
-            queueManager?.disconnect()
-            queueManager?.close()
+            if (queueInit.isInitialized()) {
+                log.debug { "Closing RMQ queue '$ibmMqQueueDetails'" }
+                consumerThread?.shutdownNow()
+                disconnectQueue()
+                queueManager.disconnect()
+                queueManager.close()
+            }
         } catch (e: Exception) {
             log.warn("Could not safely close IBMMQ queue ${ibmMqQueueDetails.id}. Reason: ${e.message}")
         }
     }
 
     fun disconnectQueue() {
-        if (queue?.isOpen() == true) {
-            queue?.close()
+        if (queue.isOpen()) {
+            queue.close()
         }
     }
 
@@ -196,18 +200,17 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
 
         private val queueManagers = mutableMapOf<String, MQQueueManager>()
 
-        fun createQueueManagerFromDetails(mqManagerDetails: IbmMqManagerDetails): MQQueueManager? {
+        fun getQueueManager(mqManagerDetails: IbmMqManagerDetails): MQQueueManager {
             Objects.requireNonNull(mqManagerDetails, "Queue details cannot be null")
 
             val mqManagerName = mqManagerDetails.name
             return try {
                 synchronized(queueManagers) {
-                    if (!queueManagers.containsKey(mqManagerName) || !queueManagers[mqManagerName]!!.isConnected()) {
-                        val mqManager = createQueueManagerFromProperties(mqManagerDetails)
-                        queueManagers[mqManagerName] = mqManager
+                    if (queueManagers[mqManagerName]?.isConnected() == false) {
+                        queueManagers[mqManagerName] = createQueueManagerFromProperties(mqManagerDetails)
                     }
                 }
-                queueManagers[mqManagerName]
+                queueManagers[mqManagerName]!!
             } catch (e: MQException) {
                 throw TestStepProcessingException("Could not connect to queue manager: ${mqManagerDetails.name}", e)
             }
@@ -221,12 +224,7 @@ open class IbmMqChannel(private val ibmMqQueueDetails: IbmMqQueueDetails) : Clos
             MQEnvironment.channel = mqManagerDetails.channel
 
             setUserCredentialsForMQ(mqManagerDetails)
-            return createQueueManager(mqManagerDetails.name)
-        }
-
-        @Throws(MQException::class)
-        private fun createQueueManager(name: String?): MQQueueManager {
-            return MQQueueManager(name)
+            return MQQueueManager(mqManagerDetails.name)
         }
 
         private fun setUserCredentialsForMQ(mqManagerDetails: IbmMqManagerDetails) {

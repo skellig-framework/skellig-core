@@ -58,7 +58,7 @@ internal class RmqConsumableTestProcessingIT {
     }
 
     @Test
-    fun `send data to 2 queues and consume from them then verify response is correct`() {
+    fun `send data to 2 queues and read from them then verify response is correct`() {
         val n = 5
         (1..n).forEach {
             val rawTestStep: Map<ValueExpression, ValueExpression> = mapOf(
@@ -106,14 +106,13 @@ internal class RmqConsumableTestProcessingIT {
         assertEquals(0, countDownLatch.count, "Not all valid data received from the consumer")
     }
 
-    @Disabled("runs fine individually only")
     @Test
     fun `consume from queue and respond to another queue`() {
         val expectedValue = "10000"
         testStepProcessor.process(testStepFactory.create(
             "t1", mapOf(
                 Pair(alphaNum("protocol"), alphaNum("rmq")),
-                Pair(alphaNum("sendTo"), list(string("queue1"))),
+                Pair(alphaNum("sendTo"), list(string("queue3"))),
                 Pair(alphaNum("routingKey"), string("#")),
                 Pair(
                     alphaNum("data"), map(
@@ -126,8 +125,8 @@ internal class RmqConsumableTestProcessingIT {
         val consumeTestStep = testStepConsumableFactory.create(
             "t2", mapOf(
                 Pair(alphaNum("protocol"), alphaNum("rmq")),
-                Pair(alphaNum("consumeFrom"), list(string("queue1"))),
-                Pair(alphaNum("respondTo"), list(string("queue2"))),
+                Pair(alphaNum("consumeFrom"), list(string("queue3"))),
+                Pair(alphaNum("respondTo"), list(string("queue4"))),
                 Pair(
                     alphaNum("response"), map(
                         Pair(alphaNum("id"), callChain(num("-$expectedValue"), funcCall("toInt"))),
@@ -148,12 +147,12 @@ internal class RmqConsumableTestProcessingIT {
         testStepProcessor.process(testStepFactory.create(
             "t3", mapOf(
                 Pair(alphaNum("protocol"), alphaNum("rmq")),
-                Pair(alphaNum("readFrom"), list(string("queue2"))),
+                Pair(alphaNum("readFrom"), list(string("queue4"))),
                 Pair(alphaNum("routingKey"), string("#")),
                 Pair(
                     alphaNum("validate"), map(
                         Pair(
-                            callChain(alphaNum("queue2"), funcCall("toString"), funcCall("jsonPath", arrayOf(alphaNum("id")))),
+                            callChain(alphaNum("queue4"), funcCall("toString"), funcCall("jsonPath", arrayOf(alphaNum("id")))),
                             num("-$expectedValue")
                         )
                     )

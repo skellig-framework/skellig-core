@@ -1,9 +1,6 @@
 package org.skellig.teststep.processor.tcp
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
@@ -35,9 +32,10 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
     }
 
     private val log = logger<TcpChannel>()
-    private var socket: Socket? = null
-    private var inputStream: DataInputStream? = null
-    private var outputStream: DataOutputStream? = null
+    private val socketInit = lazy { connectSocket() }
+    private val socket: Socket by socketInit
+    private val inputStream: DataInputStream by lazy { DataInputStream(socket.getInputStream()) }
+    private val outputStream: DataOutputStream by lazy { DataOutputStream(socket.getOutputStream()) }
     private var consumerThread: ExecutorService? = null
 
     /**
@@ -56,17 +54,18 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
             is String -> request.toByteArray()
             else -> null
         }
-        messageAsBytes?.let {
-            lazyConnectSocket()
+        if (messageAsBytes != null) {
             try {
-                outputStream?.let {
+                outputStream.let {
                     it.write(messageAsBytes, 0, messageAsBytes.size)
                     it.flush()
                 }
             } catch (e: Exception) {
                 log.error("Failed to send a message to TCP address '${getRemoteAddressAsString()}'", e)
             }
-        } ?: error("Request was not sent to '${getRemoteAddressAsString()}' as it must be String or Byte Array")
+        } else {
+            throw TestStepProcessingException("Request was not sent to '${getRemoteAddressAsString()}' as it must be String or Byte Array, but got ${request?.javaClass?.name}")
+        }
     }
 
     /**
@@ -77,7 +76,6 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
      * @return the response received from the channel, or null if an exception occurred during the read operation
      */
     fun read(timeout: Int, bufferSize: Int): Any? {
-        lazyConnectSocket()
         return try {
             initTimeout(timeout)
             readAllBytes(bufferSize)
@@ -98,7 +96,6 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         if (consumerThread == null || consumerThread!!.isShutdown) {
             consumerThread = Executors.newCachedThreadPool()
         }
-        lazyConnectSocket()
         log.info("Start listener for TCP channel: $tcpDetails")
         consumerThread?.execute {
             initTimeout(timeout)
@@ -115,18 +112,18 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
     }
 
     /**
-     * Closes the TCP channel, including the input and output streams and the socket connection.
+     * Closes the TCP channel, including the input and output streams and the socket connection if it was used (initialized).
      * If an exception occurs during the close operation, it's ignored but logged as a warning message with the reason.
      */
     @Synchronized
     override fun close() {
         try {
             closeConsumer()
-            if (socket?.isClosed == false) {
+            if (socketInit.isInitialized()) {
                 log.debug { "Closing TCP channel '$tcpDetails' with address '${getRemoteAddressAsString()}'" }
-                inputStream!!.close()
-                outputStream!!.close()
-                socket?.close()
+                inputStream.close()
+                outputStream.close()
+                socket.close()
             }
         } catch (e: Exception) {
             log.warn("Could not safely close TCP channel '$tcpDetails'. Reason: ${e.message}")
@@ -137,30 +134,26 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         consumerThread?.shutdownNow()
     }
 
-    private fun lazyConnectSocket() {
-        if (socket == null) {
-            log.debug { "Start to connect to TCP channel '$tcpDetails'" }
-            try {
-                socket = Socket()
-                socket!!.keepAlive = tcpDetails.isKeepAlive
-                socket!!.soTimeout = DEFAULT_TIMEOUT
-                socket!!.tcpNoDelay = tcpDetails.isKeepAlive
-                socket!!.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
-                inputStream = DataInputStream(socket!!.getInputStream())
-                outputStream = DataOutputStream(socket!!.getOutputStream())
-
-                log.debug { "Successfully connected to TCP channel '$tcpDetails'" }
-            } catch (e: IOException) {
-                throw TestStepProcessingException(e.message, e)
-            }
+    private fun connectSocket(): Socket {
+        log.debug { "Start to connect to TCP channel '$tcpDetails'" }
+        try {
+            val socket = Socket()
+            socket.keepAlive = tcpDetails.isKeepAlive
+            socket.soTimeout = DEFAULT_TIMEOUT
+            socket.tcpNoDelay = tcpDetails.isKeepAlive
+            socket.connect(InetSocketAddress(InetAddress.getByName(tcpDetails.hostName), tcpDetails.port))
+            log.debug { "Successfully connected to TCP channel '$tcpDetails'" }
+            return socket
+        } catch (e: IOException) {
+            throw TestStepProcessingException(e.message, e)
         }
     }
 
     private fun initTimeout(timeout: Int) {
         if (timeout > 0) {
-            socket?.soTimeout = timeout
+            socket.soTimeout = timeout
         } else {
-            socket?.soTimeout = DEFAULT_TIMEOUT
+            socket.soTimeout = DEFAULT_TIMEOUT
         }
     }
 
@@ -169,7 +162,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         var read: Int
         var response = ByteArray(0)
         val bytes = ByteArray(bufferSize)
-        while (inputStream!!.read(bytes).also { read = it } != -1) {
+        while (inputStream.read(bytes).also { read = it } != -1) {
             val shift = response.size
             response = response.copyOf(read + response.size)
             var i = shift
@@ -178,7 +171,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
                 response[i++] = bytes[j++]
             }
             // break the cycle if nothing remains in the stream
-            if(inputStream!!.available() <= 0){
+            if (inputStream.available() <= 0) {
                 break
             }
         }
@@ -190,7 +183,7 @@ class TcpChannel(private val tcpDetails: TcpDetails) : Closeable {
         }
     }
 
-    private fun getRemoteAddressAsString() = socket?.let { "'${socket!!.inetAddress}:${socket!!.port}'" } ?: ""
+    private fun getRemoteAddressAsString() = socket.let { "'${socket.inetAddress}:${socket.port}'" }
 
     private class ConsumerCallbackJob(val callback: (message: Any?) -> Unit) : CoroutineScope {
         private var job: Job = Job()

@@ -13,22 +13,22 @@ import org.skellig.teststep.processor.db.model.DatabaseRequest
  *
  * @property cassandraDetails The Cassandra details for connecting to the database server.
  */
-class CassandraRequestExecutor(cassandraDetails: CassandraDetails) : DatabaseRequestExecutor {
+class CassandraRequestExecutor(private val cassandraDetails: CassandraDetails) : DatabaseRequestExecutor {
 
     private val log = logger<CassandraRequestExecutor>()
-    private val factory: CassandraRequestExecutorFactory
-    private val session: CqlSession
-
-    init {
-        log.debug {"Initialize Cassandra Request Executor and Session for server '${cassandraDetails.serverName}'"}
+    private val sessionInit = lazy {
+        log.debug { "Initialize Cassandra Request Executor and Session for server '${cassandraDetails.serverName}'" }
         val sessionBuilder = CqlSession.builder()
             .withLocalDatacenter(cassandraDetails.datacenter ?: "datacenter1")
             .addContactPoints(cassandraDetails.nodes)
         cassandraDetails.userName?.let {
             sessionBuilder.withAuthCredentials(it, cassandraDetails.password ?: "")
         }
-        session = sessionBuilder.build();
-        factory = CassandraRequestExecutorFactory(session)
+        sessionBuilder.build()
+    }
+    private val session: CqlSession by sessionInit
+    private val factory: CassandraRequestExecutorFactory by lazy {
+        CassandraRequestExecutorFactory(session)
     }
 
     override fun execute(databaseRequest: DatabaseRequest): Any? {
@@ -40,6 +40,9 @@ class CassandraRequestExecutor(cassandraDetails: CassandraDetails) : DatabaseReq
      * It should be called after executing a database request and when the CassandraRequestExecutor is no longer needed.
      */
     override fun close() {
-        session.close()
+        if (sessionInit.isInitialized()) {
+            log.debug("Close Database connection to $cassandraDetails")
+            session.close()
+        }
     }
 }
