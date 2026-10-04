@@ -1,16 +1,17 @@
 package org.skellig.teststep.processing.value.function
 
-import de.siegmar.fastcsv.reader.CsvContainer
+import de.siegmar.fastcsv.reader.CsvCallbackHandler
 import de.siegmar.fastcsv.reader.CsvReader
-import de.siegmar.fastcsv.reader.CsvRow
+import de.siegmar.fastcsv.reader.CsvRecord
+import de.siegmar.fastcsv.reader.NamedCsvRecord
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.net.URISyntaxException
-import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.stream.Collectors
+
 
 /**
  * This class is responsible for executing the 'fromCsv' function which reads a CSV file and returns a [List] of [Map] - csv records.
@@ -42,11 +43,10 @@ class FromCsvFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecu
 
     private fun readCsvFile(fileName: String?, rowFilter: Predicate<Map<String, String>>): List<Map<String, String>> {
         val result = mutableListOf<Map<String, String>>()
-        val pathToFile = getPathToFile(fileName)
-        readCsvContainer(pathToFile)
-            .let { csvContainer ->
-                csvContainer?.rows?.forEach(Consumer { csvRow: CsvRow ->
-                    val row = csvRow.fieldMap.entries.stream()
+        CsvReader.builder().ofNamedCsvRecord(getPathToFile(fileName))
+            .use { csv ->
+                csv.forEach(Consumer { csvRecord: NamedCsvRecord ->
+                    val row = csvRecord.fieldsAsMap.entries.stream()
                         .collect(
                             Collectors.toMap<Map.Entry<String, String>, String, String>(
                                 { entry: Map.Entry<String, String> -> entry.key.trim { it <= ' ' } },
@@ -70,16 +70,6 @@ class FromCsvFunctionExecutor(val classLoader: ClassLoader) : FunctionValueExecu
             } catch (e: URISyntaxException) {
                 throw FunctionExecutionException(String.format("Failed to get path to '%s'", fileName), e)
             }
-        }
-    }
-
-    private fun readCsvContainer(pathToFile: Path): CsvContainer? {
-        return try {
-            val csvReader = CsvReader()
-            csvReader.setContainsHeader(true)
-            csvReader.read(pathToFile, StandardCharsets.UTF_8)
-        } catch (e: Exception) {
-            null
         }
     }
 
