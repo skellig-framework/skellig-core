@@ -1,7 +1,6 @@
 package org.skellig.teststep.processor.ibmmq
 
 import com.typesafe.config.ConfigFactory
-import org.junit.Assert
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -16,7 +15,7 @@ internal class IbmmqDetailsConfigReaderTest {
     fun testReadIbmmqDetailsWhenConfigIsNull() {
         val ex = assertThrows(NullPointerException::class.java) { reader.read(null) }
 
-        Assert.assertEquals("IBMMQ config cannot be null", ex.message)
+        assertEquals("IBMMQ config cannot be null", ex.message)
     }
 
     @Test

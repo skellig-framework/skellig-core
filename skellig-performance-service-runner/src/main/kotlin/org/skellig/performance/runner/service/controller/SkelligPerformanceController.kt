@@ -1,6 +1,5 @@
 package org.skellig.performance.runner.service.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -16,6 +15,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseBody
+import tools.jackson.databind.ObjectMapper
 import java.io.File
 import java.io.IOException
 import java.nio.charset.Charset

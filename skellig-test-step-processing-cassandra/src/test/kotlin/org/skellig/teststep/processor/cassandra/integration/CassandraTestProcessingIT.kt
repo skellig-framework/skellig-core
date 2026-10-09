@@ -31,9 +31,7 @@ class CassandraTestProcessingIT {
 
     private val cassandraContainers =
         listOf(
-            createContainer("3.0"),
-            createContainer("4.0.12"),
-            createContainer("5.0")
+            createContainer("6.0"),
         )
 
     private var processingDetails: List<Pair<TestStepFactory<CassandraTestStep>, TestStepProcessor<CassandraTestStep>>>? = null

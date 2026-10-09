@@ -54,11 +54,11 @@ internal class RmqDetailsConfigReader {
 
     private fun createRmqHostDetails(rawRmqDetails: Map<*, *>): RmqHostDetails {
         val host = rawRmqDetails["host"] as String
-        val port = rawRmqDetails["port"] as Int
+        val port = rawRmqDetails["port"]?.toString() ?: error("Port was not declared for RMQ")
         val user = rawRmqDetails["username"] as String?
         val password = rawRmqDetails["password"] as String?
 
-        return RmqHostDetails(host, port, user, password)
+        return RmqHostDetails(host, port.toInt(), user, password)
     }
 
     private fun createExchanges(rawExchangesDetails: Map<*, *>): Map<String, RmqExchangeDetails> {

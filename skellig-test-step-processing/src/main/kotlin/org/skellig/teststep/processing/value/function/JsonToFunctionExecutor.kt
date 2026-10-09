@@ -1,7 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
+import tools.jackson.databind.ObjectMapper
 
 /**
  * Executes the 'jsonToMap' function which converts JSON String to [Map]

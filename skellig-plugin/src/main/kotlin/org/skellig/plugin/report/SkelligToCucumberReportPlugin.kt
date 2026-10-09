@@ -1,8 +1,8 @@
 package org.skellig.plugin.report
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.skellig.feature.event.*
 import org.skellig.plugin.SkelligPlugin
+import tools.jackson.databind.ObjectMapper
 import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDateTime

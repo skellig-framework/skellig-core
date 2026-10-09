@@ -1,6 +1,5 @@
 package org.skellig.plugin.report
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -8,6 +7,7 @@ import org.skellig.feature.Feature
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
 import org.skellig.feature.event.*
+import tools.jackson.databind.ObjectMapper
 import java.io.File
 
 class SkelligToCucumberReportPluginTest {

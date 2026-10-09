@@ -1,9 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
+import tools.jackson.databind.ObjectMapper
 
 /**
  * Executes the 'toJson' function to convert the provided value or argument to JSON string representation.
@@ -18,11 +16,6 @@ import org.skellig.teststep.processing.value.exception.FunctionExecutionExceptio
 class ToJsonFunctionExecutor : FunctionValueExecutor {
 
     private val jsonSerializer = ObjectMapper()
-
-    init {
-        jsonSerializer.registerModule(JavaTimeModule())
-        jsonSerializer.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-    }
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
         return if (value != null) {

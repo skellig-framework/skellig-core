@@ -27,18 +27,25 @@ import org.skellig.teststep.reader.value.expression.ValueExpressionObject.string
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.utility.DockerImageName
 
+const val RMQ_PORT = 5672
+const val RMQ_CONTAINER_MAPPED_PORT = "rmq_container_mapped_port"
+const val RMQ_CONTAINER_VERSION = "4.3.6"
+
 @Tag("integration-test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class RmqTestProcessingIT {
 
     private lateinit var testStepProcessor: TestStepProcessor<RmqTestStep>
     private lateinit var testStepFactory: TestStepFactory<RmqTestStep>
-    private val versions = arrayOf(/*"3.5.0", */"3.13.3")
+    private val versions = arrayOf(RMQ_CONTAINER_VERSION)
     private val containers = versions.associateWith { createContainer(it) }
 
     @BeforeAll
     fun setUp() {
-        containers.values.parallelStream().forEach { it.start() }
+        containers.values.parallelStream().forEach {
+            it.start()
+            System.setProperty(RMQ_CONTAINER_MAPPED_PORT, it.getMappedPort(RMQ_PORT).toString())
+        }
         init()
     }
 
@@ -124,5 +131,5 @@ internal class RmqTestProcessingIT {
 
     private fun createContainer(version: String) =
         GenericContainer(DockerImageName.parse("rabbitmq:$version"))
-            .withExposedPorts(5672)
+            .withExposedPorts(RMQ_PORT)
 }
