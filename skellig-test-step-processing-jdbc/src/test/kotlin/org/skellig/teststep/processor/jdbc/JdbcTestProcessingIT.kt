@@ -43,7 +43,7 @@ internal class JdbcTestProcessingIT {
 
     private lateinit var testStepProcessor: TestStepProcessor<JdbcTestStep>
     private lateinit var testStepFactory: TestStepFactory<JdbcTestStep>
-    private val versions = arrayOf("12.18", "13.14", "14.11", "15.6", "16.2")
+    private val versions = arrayOf("15.6", "18.6")
     private val containers = versions.associateWith { createContainer(it) }
 
     @BeforeAll
@@ -195,7 +195,7 @@ internal class JdbcTestProcessingIT {
             "t3",
             mapOf(
                 Pair(alphaNum("provider"), alphaNum("cassandra")),
-                Pair(alphaNum("servers"), string("srv_${versions[2]}")),
+                Pair(alphaNum("servers"), string("srv_${versions[1]}")),
                 Pair(
                     alphaNum("query"),
                     string("SELECT description FROM skellig_info WHERE create_date = '10.10.2024'")
@@ -203,7 +203,7 @@ internal class JdbcTestProcessingIT {
                 Pair(
                     alphaNum("validate"), map(
                         Pair(
-                            string("srv_${versions[2]}"),
+                            string("srv_${versions[1]}"),
                             map(
                                 Pair(
                                     funcCall("size"),
