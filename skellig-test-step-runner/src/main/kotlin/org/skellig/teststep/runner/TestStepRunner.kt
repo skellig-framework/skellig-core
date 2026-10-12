@@ -12,6 +12,12 @@ import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunRe
  */
 interface TestStepRunner {
 
+    /** Bind subsequent synchronous steps to a scenario resource scope. */
+    fun startScenario(scenarioId: String) {}
+
+    /** Finish a scenario resource scope after all of its steps and hooks have completed. */
+    fun finishScenario(scenarioId: String) {}
+
     /**
      * Runs a test step with the given test step name and returns the result of the execution.
      *

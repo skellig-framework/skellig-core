@@ -17,6 +17,7 @@
         <module>skellig-test-step-reader-sts</module>
         <module>skellig-test-step-runner</module>
         <module>skellig-test-step-processing-http</module>
+        <module>skellig-test-step-processing-ui</module>
         <module>skellig-test-step-processing-db</module>
         <module>skellig-test-step-processing-tcp</module>
         <module>skellig-test-step-processing-rmq</module>

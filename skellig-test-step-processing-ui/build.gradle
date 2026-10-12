@@ -1,0 +1,27 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "${kotlinVersion}"
+}
+
+test {
+    exclude '**/*IT.class'
+}
+
+integrationTest {
+    dependsOn testClasses
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnit()
+    include '**/*IT.class'
+}
+
+ext.set('project_name', 'skellig-test-step-processing-ui')
+ext.set('project_description', 'Selenium UI processing for Skellig Test Steps')
+
+dependencies {
+    api project(':skellig-test-step-processing')
+    implementation 'org.seleniumhq.selenium:selenium-java:4.27.0'
+    testImplementation project(':skellig-junit-runner')
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitApiVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitApiVersion}"
+}
