@@ -6,7 +6,6 @@ import javax.xml.xpath.XPathFactory
 
 /** Runtime page definitions; resolving a control never navigates to its page. */
 internal class UiPageCatalog(config: Config) {
-    private data class Page(val path: String?, val elements: Map<String, String>)
     private val baseUrl = if (config.hasPath("base-url")) absoluteUrl(config.getString("base-url")) else null
     private val pages: Map<String, Page>
 
@@ -51,8 +50,10 @@ internal class UiPageCatalog(config: Config) {
             return uri
         }
     }
+
+    private data class Page(val path: String?, val elements: Map<String, String>)
 }
 
-private object ConfigUtil {
+internal object ConfigUtil {
     fun quote(name: String): String = com.typesafe.config.ConfigUtil.quoteString(name)
 }

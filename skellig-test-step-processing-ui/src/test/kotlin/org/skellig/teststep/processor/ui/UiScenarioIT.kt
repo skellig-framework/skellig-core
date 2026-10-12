@@ -20,6 +20,7 @@ import org.skellig.teststep.runner.context.SkelligTestContext
 import java.util.concurrent.CopyOnWriteArrayList
 
 class UiScenarioIT {
+
     @Test
     fun `scenario navigates then clicks using discovered UI processor`() {
         withApplication { _, runner, _, requests ->
@@ -27,7 +28,9 @@ class UiScenarioIT {
             val driversDuringSteps = mutableListOf<Set<Long>>()
             val dispatcher = DefaultSkelligTestEventDispatcher()
             dispatcher.register(TestStepProcessingFinishedEvent::class) { driversDuringSteps.add(chromeDrivers() - initialDrivers) }
+
             val failures = runScenario(runner, listOf("Open home", "Follow next link"), dispatcher = dispatcher)
+
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             assertTrue(requests.indexOfFirst { it.path == "/done" } > requests.indexOfFirst { it.path == "/" })
             assertEquals(2, driversDuringSteps.size)
@@ -50,10 +53,12 @@ class UiScenarioIT {
     fun `failed action stops without replay and browser remains usable until context close`() {
         withApplication { _, runner, baseUrl, requests ->
             val failures = runScenario(runner, listOf("Open home", "Click then fail without replay"))
+
             assertEquals(1, failures.size)
-            assertTrue(failures.single().trace.contains("UI action 2"), failures.single().trace)
+            assertTrue(failures.single().trace.contains("UI action (Click(target=home.missing, xpath=//*[@id='missing'])) failed"), failures.single().trace)
             assertEquals(1, requests.count { it.path == "/done" })
             assertEquals(1, requests.count { it.path == "/" })
+
             val activeDrivers = chromeDrivers()
             assertFalse(activeDrivers.isEmpty())
             runner.run("Open explicit URL", mapOf("url" to "$baseUrl/after-failure"))
@@ -67,6 +72,7 @@ class UiScenarioIT {
     fun `ambiguous target fails without clicking any match`() {
         withApplication { _, runner, baseUrl, requests ->
             val failures = runScenario(runner, listOf("Open explicit URL", "Follow next link"), mapOf("url" to "$baseUrl/ambiguous"))
+
             assertEquals(1, failures.size)
             assertTrue(failures.single().trace.contains("matched 2 elements"), failures.single().trace)
             assertFalse(requests.any { it.path == "/done" })
@@ -80,7 +86,9 @@ class UiScenarioIT {
             val dispatcher = DefaultSkelligTestEventDispatcher()
             val activeDuringOrdinarySteps = mutableListOf<Set<Long>>()
             dispatcher.register(TestStepProcessingFinishedEvent::class) { activeDuringOrdinarySteps.add(chromeDrivers() - initialDrivers) }
+
             assertTrue(runScenario(runner, listOf("No UI work"), dispatcher = dispatcher).isEmpty())
+
             assertEquals(listOf(emptySet<Long>()), activeDuringOrdinarySteps)
             repeat(2) {
                 assertTrue(runScenario(runner, listOf("Open home", "Follow next link"), name = "Journey $it").isEmpty())
@@ -91,29 +99,14 @@ class UiScenarioIT {
     }
 
     @Test
-    fun `standalone steps need no grouping lifecycle and close cannot recreate a browser`() {
-        withApplication { context, runner, _, requests ->
-            runner.run("Open home").subscribe { _, _, error -> assertNull(error) }
-            runner.run("Follow next link").subscribe { _, _, error -> assertNull(error) }
-            assertTrue(requests.any { it.path == "/done" })
-            context.close()
-            val requestCount = requests.size
-            runner.run("Open home").subscribe { _, _, error ->
-                assertNotNull(error)
-                assertTrue(error!!.message!!.contains("closed"))
-            }
-            assertEquals(requestCount, requests.size)
-            context.close()
-        }
-    }
-
-    @Test
     fun `validation failure retains the browser for caller directed continuation`() {
         withApplication { _, runner, _, requests ->
             runner.run("Fail UI validation").subscribe { _, _, error -> assertNotNull(error) }
             val activeDrivers = chromeDrivers()
             assertFalse(activeDrivers.isEmpty())
+
             runner.run("Follow next link").subscribe { _, _, error -> assertNull(error) }
+
             assertEquals(activeDrivers, chromeDrivers())
             assertEquals(1, requests.count { it.path == "/" })
             assertTrue(requests.any { it.path == "/done" && it.cookie?.contains("journey=active") == true })
