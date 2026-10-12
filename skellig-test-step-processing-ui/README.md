@@ -2,7 +2,7 @@
 
 Add `skellig-test-step-processing-ui` to your Skellig test project. Its configuration and factory are discovered by the standard processor scan when the configuration contains `ui`.
 
-This first slice supports ordered `navigate` and `click` operations in local Chrome. Other form operations, UI control snapshots, remote browser options, session limits, and screenshots belong to the subsequent UI processing tickets.
+This first slice supports ordered `navigate` and `click` operations in local Chrome. Other form operations, UI control snapshots, remote browser options, and screenshots belong to the subsequent UI processing tickets. Parallel execution, session limits, and feature-owned contexts are deferred.
 
 ```hocon
 ui {
@@ -46,7 +46,9 @@ Navigation accepts exactly one configured `page` or an absolute HTTP(S) `url`. P
 
 Click waits for a unique, visible, enabled control. Zero matches or a control that is not ready are polled until `ui.timeout`, which defaults to 30 seconds. Multiple matches fail immediately. Once the target is ready, the click is attempted once. A failed operation stops the sequence; `attempts` never replays a UI sequence. The result contains the final `url` and is saved using Skellig's usual result key.
 
-The JUnit scenario runner opens a resource scope before scenario hooks and closes it after steps and hooks finish, including failures. Chrome is created only when a UI step executes, shared across that scenario's steps, and quit at scenario completion. Non-UI scenarios never create a browser. Context shutdown also closes outstanding sessions. Programmatic callers must use `startScenario(id)` and `finishScenario(id)` on the `TestStepRunner`, with completion in a `finally` block. UI steps currently require synchronous execution; asynchronous UI scheduling is addressed by the parallel-session ticket.
+The UI processor creates Chrome only when its first UI step executes and reuses that driver until its existing `close()` method is called, normally through `SkelligTestContext.close()`. Navigation, cookies, and authentication persist across steps and sequential scenarios using the same context. Step failures leave the browser open for caller-directed continuation; the processor does not automatically discard or recreate a broken session. Contexts without UI work never create a browser. Repeated cleanup is safe, and closed processors cannot recreate a browser.
+
+Processing and step-runner modules have no feature/scenario lifecycle API. Programmatic callers execute ordinary steps directly and close the owning context in a `finally` block or `use` block. The current JUnit runner closes its context after its complete run. Higher-level callers decide context ownership; one context per feature and parallel execution are future work. UI steps currently require synchronous execution. No explicit reset/quit browser actions are provided.
 
 Chrome runs with a fresh profile. `headless` defaults to false; `mode` and `name` default to local Chrome. Selenium Manager can obtain the driver and Chrome for Testing if missing; its first run can require internet access. Existing Selenium driver configuration remains usable.
 
@@ -57,4 +59,4 @@ mvn -pl skellig-test-step-processing-ui -am package \
   -Dtest=UiScenarioIT -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
-For a compatible Gradle/JDK installation, run `:skellig-test-step-processing-ui:integrationTest`. The fixture serves deterministic pages from a local HTTP server and runs actual headless Chrome. It verifies navigation/click ordering, delayed readiness, cookie reuse and fresh scenario sessions, missing and ambiguous targets, no replay, and ChromeDriver shutdown before context closure.
+Use Maven for builds and verification. The fixture serves deterministic pages from a local HTTP server and runs actual headless Chrome. It verifies standalone execution without grouping hooks, navigation/click ordering, delayed readiness, cross-step and sequential-scenario reuse, browser retention after failure, missing and ambiguous targets, no replay, and ChromeDriver shutdown at context closure.

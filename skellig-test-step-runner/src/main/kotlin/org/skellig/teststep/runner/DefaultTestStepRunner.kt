@@ -30,10 +30,6 @@ internal class DefaultTestStepRunner : TestStepRunner {
     private lateinit var testStepsRegistry: TestStepRegistry
     private lateinit var testStepFactory: TestStepFactory<TestStep>
 
-    override fun startScenario(scenarioId: String) = testStepProcessor.startScenario(scenarioId)
-
-    override fun finishScenario(scenarioId: String) = testStepProcessor.finishScenario(scenarioId)
-
     override fun run(testStepName: String): TestStepRunResult {
         return run(testStepName, emptyMap<String, String>())
     }

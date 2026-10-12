@@ -16,7 +16,7 @@ Skellig is a Kotlin/JVM framework for functional, integration, and performance t
 | `skellig-junit-runner` | JUnit integration for executing features/scenarios through `SkelligRunner` and `SkelligOptions`. |
 | `skellig-plugin` | Execution-event plugins, logging, and reports, including Cucumber report output. |
 | `skellig-test-step-processing-http` | HTTP request construction, execution, and response handling. |
-| `skellig-test-step-processing-ui` | Selenium browser navigation and clicking with a HOCON XPath page catalog and scenario-owned local Chrome sessions. |
+| `skellig-test-step-processing-ui` | Selenium browser navigation and clicking with a HOCON XPath page catalog and one lazy local Chrome session per processor, reused until context cleanup. |
 | `skellig-test-step-processing-tcp` | TCP channels and send/read/consume operations. |
 | `skellig-test-step-processing-rmq` | RabbitMQ/AMQP channels and messaging operations. |
 | `skellig-test-step-processing-ibmmq` | IBM MQ connections, queues, and messaging operations. |

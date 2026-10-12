@@ -52,6 +52,18 @@ name("No UI work") {
     values { message = "no browser needed" }
 }
 
+name("Fail UI validation") {
+    ui-actions [
+        {
+            action = navigate
+            page = home
+        }
+    ]
+    validate {
+        url = "http://unexpected.test"
+    }
+}
+
 name("Invalid navigation") {
     ui-actions [
         {

@@ -11,7 +11,6 @@ import org.junit.runner.notification.RunNotifier
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
 import org.skellig.feature.event.DefaultSkelligTestEventDispatcher
-import org.skellig.feature.event.TestScenarioFinishedEvent
 import org.skellig.feature.event.TestStepProcessingFinishedEvent
 import org.skellig.feature.hook.DefaultSkelligHookRunner
 import org.skellig.feature.hook.DefaultSkelligTestHooksRegistry
@@ -48,13 +47,19 @@ class UiScenarioIT {
     }
 
     @Test
-    fun `failed action stops the sequence without replay and closes the scenario browser`() {
-        withApplication { _, runner, _, requests ->
+    fun `failed action stops without replay and browser remains usable until context close`() {
+        withApplication { _, runner, baseUrl, requests ->
             val failures = runScenario(runner, listOf("Open home", "Click then fail without replay"))
             assertEquals(1, failures.size)
             assertTrue(failures.single().trace.contains("UI action 2"), failures.single().trace)
             assertEquals(1, requests.count { it.path == "/done" })
             assertEquals(1, requests.count { it.path == "/" })
+            val activeDrivers = chromeDrivers()
+            assertFalse(activeDrivers.isEmpty())
+            runner.run("Open explicit URL", mapOf("url" to "$baseUrl/after-failure"))
+                .subscribe { _, _, error -> assertNull(error) }
+            assertEquals(activeDrivers, chromeDrivers(), "Failure must not replace the browser")
+            assertTrue(requests.any { it.path == "/after-failure" && it.cookie?.contains("journey=active") == true })
         }
     }
 
@@ -69,7 +74,7 @@ class UiScenarioIT {
     }
 
     @Test
-    fun `each scenario starts fresh and ordinary steps never start Chrome`() {
+    fun `browser is reused across scenarios and ordinary steps never start Chrome`() {
         withApplication { _, runner, _, requests ->
             val initialDrivers = chromeDrivers()
             val dispatcher = DefaultSkelligTestEventDispatcher()
@@ -80,7 +85,48 @@ class UiScenarioIT {
             repeat(2) {
                 assertTrue(runScenario(runner, listOf("Open home", "Follow next link"), name = "Journey $it").isEmpty())
             }
-            assertEquals(2, requests.count { it.path == "/" && it.cookie?.contains("journey=active") != true })
+            assertEquals(2, requests.count { it.path == "/" })
+            assertEquals(1, requests.count { it.path == "/" && it.cookie?.contains("journey=active") != true })
+        }
+    }
+
+    @Test
+    fun `standalone steps need no grouping lifecycle and close cannot recreate a browser`() {
+        withApplication { context, runner, _, requests ->
+            runner.run("Open home").subscribe { _, _, error -> assertNull(error) }
+            runner.run("Follow next link").subscribe { _, _, error -> assertNull(error) }
+            assertTrue(requests.any { it.path == "/done" })
+            context.close()
+            val requestCount = requests.size
+            runner.run("Open home").subscribe { _, _, error ->
+                assertNotNull(error)
+                assertTrue(error!!.message!!.contains("closed"))
+            }
+            assertEquals(requestCount, requests.size)
+            context.close()
+        }
+    }
+
+    @Test
+    fun `validation failure retains the browser for caller directed continuation`() {
+        withApplication { _, runner, _, requests ->
+            runner.run("Fail UI validation").subscribe { _, _, error -> assertNotNull(error) }
+            val activeDrivers = chromeDrivers()
+            assertFalse(activeDrivers.isEmpty())
+            runner.run("Follow next link").subscribe { _, _, error -> assertNull(error) }
+            assertEquals(activeDrivers, chromeDrivers())
+            assertEquals(1, requests.count { it.path == "/" })
+            assertTrue(requests.any { it.path == "/done" && it.cookie?.contains("journey=active") == true })
+        }
+    }
+
+    @Test
+    fun `separate contexts have independent browser state`() {
+        repeat(2) {
+            withApplication { _, runner, _, requests ->
+                runner.run("Open home").subscribe { _, _, error -> assertNull(error) }
+                assertEquals(1, requests.count { it.path == "/" && it.cookie?.contains("journey=active") != true })
+            }
         }
     }
 
@@ -98,7 +144,6 @@ class UiScenarioIT {
     fun `context fallback closes Chrome even when another extension fails to shut down`() {
         withApplication(failClose = true) { context, runner, _, _ ->
             val originalDrivers = chromeDrivers()
-            runner.startScenario("unfinished scenario")
             runner.run("Open home").subscribe { _, _, error -> assertNull(error) }
             assertEquals(1, (chromeDrivers() - originalDrivers).size)
             val error = assertThrows(IllegalStateException::class.java) { context.close() }
@@ -144,6 +189,7 @@ class UiScenarioIT {
                 }
             }
         """.trimIndent())
+        val originalDrivers = chromeDrivers()
         val context = object : SkelligTestContext() {
             override fun createConfig(classLoader: ClassLoader, configPath: String?): Config = config
         }
@@ -151,6 +197,7 @@ class UiScenarioIT {
             context.use { test(it, it.initialize(javaClass.classLoader, listOf("ui/steps.sts")), baseUrl, requests) }
         } finally {
             server.stop(0)
+            assertEquals(originalDrivers, chromeDrivers(), "Context close left a ChromeDriver process running")
         }
     }
 
@@ -166,14 +213,9 @@ class UiScenarioIT {
         notifier.addListener(object : RunListener() {
             override fun testFailure(failure: Failure) { failures.add(failure) }
         })
-        val originalDrivers = chromeDrivers()
-        val driversAtFinish = mutableListOf<Set<Long>>()
-        dispatcher.register(TestScenarioFinishedEvent::class) { driversAtFinish.add(chromeDrivers() - originalDrivers) }
         TestScenarioRunner.create(scenario.build().single(), 1, runner,
             DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("ui-no-hooks"), mutableMapOf())),
             DefaultTestStepLogger(), dispatcher).run(notifier)
-        // Inspect the external ChromeDriver process at scenario completion, before context shutdown.
-        assertEquals(listOf(emptySet<Long>()), driversAtFinish, "Scenario left a ChromeDriver process running")
         return failures
     }
 

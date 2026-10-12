@@ -46,12 +46,6 @@ interface TestStepProcessor<T : TestStep> : Closeable {
      */
     fun getTestStepClass(): Class<*>
 
-    /** Starts a scenario scope without allocating resources until a step needs them. */
-    fun startScenario(scenarioId: String) {}
-
-    /** Releases resources belonging to the completed scenario, including failure paths. */
-    fun finishScenario(scenarioId: String) {}
-
     /**
      * Close resources if needed for the processor.
      * By default, this method does nothing.

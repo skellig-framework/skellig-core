@@ -65,14 +65,6 @@ class CompositeTestStepProcessor private constructor(
         forEachProcessor { it.close() }
     }
 
-    override fun startScenario(scenarioId: String) {
-        testStepProcessors.forEach { it.startScenario(scenarioId) }
-    }
-
-    override fun finishScenario(scenarioId: String) {
-        forEachProcessor { it.finishScenario(scenarioId) }
-    }
-
     private fun forEachProcessor(action: (TestStepProcessor<in TestStep>) -> Unit) {
         var failure: Throwable? = null
         testStepProcessors.forEach {

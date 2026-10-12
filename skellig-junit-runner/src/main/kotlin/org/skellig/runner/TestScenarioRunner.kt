@@ -2,7 +2,6 @@ package org.skellig.runner
 
 import org.junit.runner.Description
 import org.junit.runner.notification.RunNotifier
-import org.junit.runner.notification.Failure
 import org.skellig.feature.TestScenario
 import org.skellig.feature.event.*
 import org.skellig.feature.hook.SkelligHookRunner
@@ -23,12 +22,12 @@ import org.skellig.teststep.runner.TestStepRunner
 open class TestScenarioRunner protected constructor(
     testScenario: TestScenario,
     private val parentFeatureId: Int,
-    private val scenarioTestStepRunner: TestStepRunner?,
+    testStepRunner: TestStepRunner?,
     hookRunner: SkelligHookRunner,
     testStepLogger: TestStepLogger,
     eventDispatcher: SkelligTestEventDispatcher
 ) : BaseSkelligTestEntityRunner<TestStepWrapper>(
-    testScenario, hookRunner, scenarioTestStepRunner, testStepLogger,
+    testScenario, hookRunner, testStepRunner, testStepLogger,
     BeforeTestScenario::class.java, AfterTestScenario::class.java,
     eventDispatcher
 ) {
@@ -72,21 +71,13 @@ open class TestScenarioRunner protected constructor(
     }
 
     override fun run(notifier: RunNotifier) {
-        val scenarioId = (testEntity as TestScenario).path
         try {
-            scenarioTestStepRunner?.startScenario(scenarioId)
             log.info("Run Test Scenario '${this}'")
             eventDispatcher.dispatch(TestScenarioStartedEvent(testEntity, parentFeatureId))
             super.run(notifier)
             log.info("Test Scenario '${this}' has finished")
         } finally {
-            try {
-                scenarioTestStepRunner?.finishScenario(scenarioId)
-            } catch (ex: Throwable) {
-                notifier.fireTestFailure(Failure(description, ex))
-            } finally {
-                eventDispatcher.dispatch(TestScenarioFinishedEvent(testEntity, parentFeatureId))
-            }
+            eventDispatcher.dispatch(TestScenarioFinishedEvent(testEntity, parentFeatureId))
         }
     }
 

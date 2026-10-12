@@ -10,7 +10,6 @@ import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.ui.model.UiAction
 import org.skellig.teststep.processor.ui.model.UiTestStep
 import java.time.Duration
-import java.util.concurrent.ConcurrentHashMap
 
 /** Executes once; readiness polling never repeats a click or the action sequence. */
 internal class UiTestStepProcessor(
@@ -18,33 +17,17 @@ internal class UiTestStepProcessor(
     private val timeout: Duration,
     private val createDriver: () -> WebDriver
 ) : BaseTestStepProcessor<UiTestStep>(state) {
-    private val scenario = ThreadLocal<String>()
-    private val sessions = ConcurrentHashMap<String, WebDriver>()
-    @Volatile private var closed = false
+    private var browser: WebDriver? = null
+    private var closed = false
 
     override fun getTestStepClass() = UiTestStep::class.java
 
-    override fun startScenario(scenarioId: String) {
+    private fun driver(): WebDriver {
         check(!closed) { "UI processor is closed" }
-        check(scenario.get() == null) { "A UI scenario scope is already active on this thread" }
-        scenario.set(scenarioId)
-    }
-
-    override fun finishScenario(scenarioId: String) {
-        try {
-            sessions.remove(scenarioId)?.quit()
-        } finally {
-            if (scenario.get() == scenarioId) scenario.remove()
-        }
+        return browser ?: createDriver().also { browser = it }
     }
 
     @Synchronized
-    private fun driver(): WebDriver {
-        check(!closed) { "UI processor is closed" }
-        val id = scenario.get() ?: error("UI steps require a scenario scope; call startScenario before running steps")
-        return sessions.computeIfAbsent(id) { createDriver() }
-    }
-
     override fun processTestStep(testStep: UiTestStep): Any {
         val driver = driver()
         testStep.actions.forEachIndexed { index, action ->
@@ -71,14 +54,14 @@ internal class UiTestStepProcessor(
 
     @Synchronized
     override fun close() {
+        if (closed) return
         closed = true
-        var failure: Throwable? = null
-        sessions.keys.toList().forEach { id ->
-            try { finishScenario(id) } catch (ex: Throwable) {
-                if (failure == null) failure = ex else failure!!.addSuppressed(ex)
-            }
+        val ownedBrowser = browser
+        browser = null
+        try {
+            ownedBrowser?.quit()
+        } finally {
+            super.close()
         }
-        super.close()
-        failure?.let { throw it }
     }
 }

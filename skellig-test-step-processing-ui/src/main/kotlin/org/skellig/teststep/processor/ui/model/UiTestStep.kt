@@ -28,7 +28,7 @@ class UiTestStep private constructor(builder: Builder) : DefaultTestStep(
         val stepStateUpdaters get() = scenarioStateUpdaters
 
         override fun build(): UiTestStep {
-            require(execution == TestStepExecutionType.SYNC) { "UI test steps currently require synchronous execution within a scenario" }
+            require(execution == TestStepExecutionType.SYNC) { "UI test steps currently require synchronous execution" }
             return UiTestStep(this)
         }
     }
