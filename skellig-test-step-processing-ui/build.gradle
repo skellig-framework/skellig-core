@@ -19,7 +19,7 @@ ext.set('project_description', 'Selenium UI processing for Skellig Test Steps')
 
 dependencies {
     api project(':skellig-test-step-processing')
-    implementation 'org.seleniumhq.selenium:selenium-java:4.27.0'
+    implementation 'org.seleniumhq.selenium:selenium-java:4.50.0'
     testImplementation project(':skellig-junit-runner')
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitApiVersion}"
