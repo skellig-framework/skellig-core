@@ -266,3 +266,11 @@ name("Invalid target") {
            }
     ]
 }
+
+name("Fail typing sensitive input") {
+    ui-actions [
+        { action = type
+          target = "home.missing"
+          value = ${password} }
+    ]
+}

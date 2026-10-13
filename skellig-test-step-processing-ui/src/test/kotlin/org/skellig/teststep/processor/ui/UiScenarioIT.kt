@@ -243,6 +243,17 @@ class UiScenarioIT {
         }
     }
 
+    @Test
+    fun `failed typing does not expose the input value in diagnostics`() {
+        withApplication { _, runner, _, _ ->
+            val secret = "sensitive-sentinel-85"
+            val failures = runScenario(runner, listOf("Open home", "Fail typing sensitive input"), mapOf("password" to secret))
+            assertEquals(1, failures.size)
+            assertTrue(failures.single().trace.contains("home.missing"), failures.single().trace)
+            assertFalse(failures.single().trace.contains(secret), "Input values must be masked in failure reports")
+        }
+    }
+
     private data class Request(val path: String, val cookie: String?, val query: String?)
 
     private fun withApplication(failClose: Boolean = false, timeout: String = "500ms", test: (SkelligTestContext, org.skellig.teststep.runner.TestStepRunner, String, List<Request>) -> Unit) {
