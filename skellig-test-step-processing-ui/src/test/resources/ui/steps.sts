@@ -73,3 +73,196 @@ name("Invalid navigation") {
         }
     ]
 }
+
+name("Fill username") {
+    ui-actions [
+        { action = navigate
+          page = form },
+        { action = type
+           target = "home.username"
+           value = ${username} },
+        { action = type
+          target = "home.username"
+          value = "@" + ${domain}
+          append = true },
+        { action = click
+          target = "home.submit" },
+        { action = wait
+          target = "home.submitted"
+          condition = present }
+    ]
+}
+
+name("Complete login") {
+    id = login
+    ui-actions [
+        { action = navigate
+          page = login },
+        { action = type
+          target = "home.username"
+          value = ${username} },
+        { action = type
+          target = "home.password"
+          value = ${password} },
+        { action = clear
+          target = "home.notes" },
+        { action = select
+          target = "home.textChoice"
+          by = text
+          value = Second },
+        { action = select
+          target = "home.valueChoice"
+          by = value
+          value = two },
+        { action = check
+          target = "home.remember"
+          value = true },
+        { action = check
+          target = "home.remember"
+          value = true },
+        { action = check
+          target = "home.remember"
+          value = false },
+        { action = check
+          target = "home.remember"
+          value = false },
+        { action = check
+          target = "home.remember"
+          value = true },
+        { action = click
+          target = "home.submit" },
+        { action = wait
+          target = "home.dashboard"
+          condition = visible }
+    ]
+}
+
+name("Wait for control") {
+    ui-actions [
+        { action = navigate
+          url = ${url} },
+        { action = wait
+          target = "home.marker"
+          condition = ${condition} },
+        { action = navigate
+          page = afterWait }
+    ]
+}
+
+name("Try type") {
+    ui-actions [
+        { action = type
+          target = ${target}
+          value = typed },
+        { action = click
+          target = "home.submit" },
+        { action = wait
+          target = "home.submitted"
+          condition = present }
+    ]
+}
+
+name("Try clear") {
+    ui-actions [
+        { action = clear
+          target = ${target}
+           },
+        { action = click
+          target = "home.submit" },
+        { action = wait
+          target = "home.submitted"
+          condition = present }
+    ]
+}
+
+name("Try select") {
+    ui-actions [
+        { action = select
+          target = ${target}
+          by = text
+          value = Second },
+        { action = click
+          target = "home.submit" },
+        { action = wait
+          target = "home.submitted"
+          condition = present }
+    ]
+}
+
+name("Try check") {
+    ui-actions [
+        { action = check
+          target = ${target}
+          value = true },
+        { action = click
+          target = "home.submit" },
+        { action = wait
+          target = "home.submitted"
+          condition = present }
+    ]
+}
+
+name("Try wait") {
+    ui-actions [
+        { action = wait
+          target = ${target}
+          condition = ${condition} },
+        { action = click
+          target = "home.submit" },
+        { action = wait
+          target = "home.submitted"
+          condition = present }
+    ]
+}
+
+name("Invalid append") {
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = type
+          target = "home.marker"
+          value = x
+          append = "yes" }
+    ]
+}
+
+name("Invalid check") {
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = check
+          target = "home.marker"
+          value = "true" }
+    ]
+}
+
+name("Invalid select") {
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = select
+          target = "home.marker"
+          by = index
+          value = two }
+    ]
+}
+
+name("Invalid wait") {
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = wait
+          target = "home.marker"
+          condition = selected }
+    ]
+}
+
+name("Invalid target") {
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = clear
+          target = "home.unknown"
+           }
+    ]
+}
