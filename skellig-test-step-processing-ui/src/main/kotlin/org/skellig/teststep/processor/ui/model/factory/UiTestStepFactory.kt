@@ -16,7 +16,12 @@ internal class UiTestStepFactory(
 ) : BaseDefaultTestStepFactory<UiTestStep>(registry, expressions) {
     private val actionFactories: Map<String, UiActionFactory<UiAction>> = listOf(
         NavigateActionFactory(pages),
-        ClickActionFactory(pages)
+        ClickActionFactory(pages),
+        TypeActionFactory(pages),
+        ClearActionFactory(pages),
+        SelectActionFactory(pages),
+        CheckActionFactory(pages),
+        WaitActionFactory(pages)
     ).associateBy { it.actionName }
 
     // Unquoted hyphenated keys are parsed as subtraction expressions by the existing value parser.

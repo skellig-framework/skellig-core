@@ -2,7 +2,7 @@
 
 Add `skellig-test-step-processing-ui` to your Skellig test project. Its configuration and factory are discovered by the standard processor scan when the configuration contains `ui`.
 
-This first slice supports ordered `navigate` and `click` operations in local Chrome. Other form operations, UI control snapshots, remote browser options, and screenshots belong to the subsequent UI processing tickets. Parallel execution, session limits, and feature-owned contexts are deferred.
+Supports ordered `navigate`, `click`, `type`, `clear`, `select`, `check`, and `wait` operations in local Chrome. UI control snapshots, remote browser options, and screenshots belong to subsequent UI processing tickets. Parallel execution, session limits, and feature-owned contexts are deferred.
 
 ```hocon
 ui {
@@ -46,6 +46,45 @@ Navigation accepts exactly one configured `page` or an absolute HTTP(S) `url`. P
 
 Click waits for a unique, visible, enabled control. Zero matches or a control that is not ready are polled until `ui.timeout`, which defaults to 30 seconds. Multiple matches fail immediately. Once the target is ready, the click is attempted once. A failed operation stops the sequence; `attempts` never replays a UI sequence. The result contains the final `url` and is saved using Skellig's usual result key.
 
+Form operations use the same readiness policy as click: wait for one visible, enabled control, then perform the interaction once. `type` accepts a string `value` (including empty strings), clears existing content by default, and preserves it with boolean `append = true`. `clear` empties an editable control. `select` targets a native HTML select with `by = text` or `by = value` and a string `value`. `check` targets a checkbox and accepts a boolean `value`; repeated requests for the same state do not toggle it. Unsupported control types are rejected by Selenium or the checkbox handler.
+
+`wait` accepts a qualified `target` and one of these `condition` values:
+
+| Condition | Completes when |
+| --- | --- |
+| `present` | Exactly one control exists, even if invisible or disabled. |
+| `absent` | No control matches. |
+| `visible` | One control exists and is displayed. |
+| `hidden` | The control is absent or is not displayed. |
+| `enabled` | One control exists and is enabled, even if invisible. |
+
+Every wait uses `ui.timeout`, including automatic readiness. Ambiguous matches fail immediately for all conditions, including `hidden` and `absent`. Synchronization never repeats an interaction. All action fields are evaluated through existing parameters/value expressions before browser execution; newly captured UI values cannot feed later actions within the same step.
+
+```sts
+name("Log in") {
+    ui-actions [
+        { action = navigate
+          page = login },
+        { action = type
+          target = "login.username"
+          value = ${username} },
+        { action = type
+          target = "login.password"
+          value = ${password} },
+        { action = check
+          target = "login.remember"
+          value = true },
+        { action = click
+          target = "login.submit" },
+        { action = wait
+          target = "dashboard.account"
+          condition = visible }
+    ]
+}
+```
+
+Define the referenced login/dashboard paths and XPath controls in HOCON. For a native select use an action such as `{ action = select ... }` with `target`, `by`, and `value` on separate lines.
+
 The UI processor creates Chrome only when its first UI step executes and reuses that driver until its existing `close()` method is called, normally through `SkelligTestContext.close()`. Navigation, cookies, and authentication persist across steps and sequential scenarios using the same context. Step failures leave the browser open for caller-directed continuation; the processor does not automatically discard or recreate a broken session. Contexts without UI work never create a browser. Repeated cleanup is safe, and closed processors cannot recreate a browser.
 
 Processing and step-runner modules have no feature/scenario lifecycle API. Programmatic callers execute ordinary steps directly and close the owning context in a `finally` block or `use` block. The current JUnit runner closes its context after its complete run. Higher-level callers decide context ownership; one context per feature and parallel execution are future work. UI steps currently require synchronous execution. No explicit reset/quit browser actions are provided.
@@ -59,4 +98,4 @@ mvn -pl skellig-test-step-processing-ui -am package \
   -Dtest=UiScenarioIT -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
-Use Maven for builds and verification. The fixture serves deterministic pages from a local HTTP server and runs actual headless Chrome. It verifies standalone execution without grouping hooks, navigation/click ordering, delayed readiness, cross-step and sequential-scenario reuse, browser retention after failure, missing and ambiguous targets, no replay, and ChromeDriver shutdown at context closure.
+Use Maven for builds and verification. The fixture serves deterministic pages from a local HTTP server and runs actual headless Chrome. It verifies standalone execution without grouping hooks, navigation/click ordering, form replacement/append/clear, native selects, desired checkbox state, explicit waits, malformed fields, delayed readiness, timeouts and ambiguity for every operation, cross-step and sequential-scenario reuse, browser retention after failure, missing and ambiguous targets, no replay, and ChromeDriver shutdown at context closure.

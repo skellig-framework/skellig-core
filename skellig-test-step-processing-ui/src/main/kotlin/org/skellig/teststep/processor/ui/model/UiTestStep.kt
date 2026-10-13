@@ -5,8 +5,19 @@ import org.skellig.teststep.processing.model.TestStepExecutionType
 
 internal sealed class UiAction {
     data class Navigate(val url: String) : UiAction()
+    data class Type(val target: String, val xpath: String, val value: String, val append: Boolean) : UiAction() {
+        override fun toString() = "Type(target=$target, xpath=$xpath, value=<redacted>, append=$append)"
+    }
+    data class Clear(val target: String, val xpath: String) : UiAction()
+    data class Select(val target: String, val xpath: String, val by: SelectBy, val value: String) : UiAction()
+    data class Check(val target: String, val xpath: String, val value: Boolean) : UiAction()
+    data class Wait(val target: String, val xpath: String, val condition: WaitCondition) : UiAction()
     data class Click(val target: String, val xpath: String) : UiAction()
 }
+
+internal enum class WaitCondition { PRESENT, ABSENT, VISIBLE, HIDDEN, ENABLED }
+
+internal enum class SelectBy { TEXT, VALUE }
 
 /** Ordered browser operations, evaluated from STS parameters before execution. */
 class UiTestStep private constructor(builder: Builder) : DefaultTestStep(
