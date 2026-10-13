@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.*
@@ -38,6 +39,32 @@ class CompositeTestStepProcessorTest {
         compositeProcessor.close()
 
         verify(testStepProcessor).close()
+    }
+
+    @Test
+    fun testCloseContinuesAfterFailuresAndSuppressesSubsequentFailures() {
+        val firstFailure = IllegalStateException("First processor failed to close")
+        val secondFailure = IllegalArgumentException("Second processor failed to close")
+        val firstProcessor = mock<TestStepProcessor<TestStep>>()
+        val secondProcessor = mock<TestStepProcessor<TestStep>>()
+        val lastProcessor = mock<TestStepProcessor<TestStep>>()
+        listOf(firstProcessor, secondProcessor, lastProcessor).forEach {
+            whenever(it.getTestStepClass()).thenReturn(TestStep::class.java)
+            compositeProcessor.registerTestStepProcessor(it)
+        }
+        doThrow(firstFailure).whenever(firstProcessor).close()
+        doThrow(secondFailure).whenever(secondProcessor).close()
+
+        val thrown = assertThrows(IllegalStateException::class.java) {
+            compositeProcessor.close()
+        }
+
+        assertSame(firstFailure, thrown)
+        assertEquals(1, thrown.suppressed.size)
+        assertSame(secondFailure, thrown.suppressed.single())
+        verify(firstProcessor).close()
+        verify(secondProcessor).close()
+        verify(lastProcessor).close()
     }
 
     @Test
