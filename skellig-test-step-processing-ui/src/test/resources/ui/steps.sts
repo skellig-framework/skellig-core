@@ -1,0 +1,75 @@
+name("Open home") {
+    id = open
+    ui-actions [
+        {
+            action = navigate
+            page = home
+        }
+    ]
+}
+
+name("Follow next link") {
+    id = follow
+    ui-actions [
+        {
+            action = click
+            target = "home.next"
+        }
+    ]
+}
+
+name("Open explicit URL") {
+    id = explicit
+    ui-actions [
+        {
+            action = navigate
+            url = ${url}
+        }
+    ]
+}
+
+name("Click then fail without replay") {
+    id = failure
+    attempts = 3
+    ui-actions [
+        {
+            action = click
+            target = "home.next"
+        },
+        {
+            action = click
+            target = "home.missing"
+        },
+        {
+            action = navigate
+            page = home
+        }
+    ]
+}
+
+name("No UI work") {
+    id = ordinary
+    values { message = "no browser needed" }
+}
+
+name("Fail UI validation") {
+    ui-actions [
+        {
+            action = navigate
+            page = home
+        }
+    ]
+    validate {
+        url = "http://unexpected.test"
+    }
+}
+
+name("Invalid navigation") {
+    ui-actions [
+        {
+            action = navigate
+            page = home
+            url = "http://example.test"
+        }
+    ]
+}
