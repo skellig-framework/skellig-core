@@ -268,16 +268,18 @@ class UiScenarioIT {
     }
 
     @Test
-    fun `nested static validation captures only referenced controls without navigating catalog pages`() {
+    fun `captures only action targets without navigating unused catalog pages`() {
         withApplication(extraUi = """
             pages.unused { path = "/never-visit", elements.danger = "//*" }
             pages.home.elements.unused = "//*"
+            pages.secondary.elements.next = "//*[@id='next']"
         """) { context, runner, _, requests ->
             val failures = runScenario(runner, listOf("Scoped nested observations"), mapOf("expectedText" to "Next"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             val result = context.getTestScenarioState().get("scoped_result") as Map<*, *>
             val pages = result["pages"] as Map<*, *>
-            assertEquals(setOf("home"), pages.keys)
+            assertEquals(setOf("home", "secondary"), pages.keys)
+            assertEquals(setOf("next"), (pages["secondary"] as Map<*, *>).keys)
             assertEquals(setOf("next", "missing"), (pages["home"] as Map<*, *>).keys)
             assertFalse(requests.any { it.path == "/never-visit" })
         }
@@ -297,7 +299,7 @@ class UiScenarioIT {
     }
 
     @Test
-    fun `state is captured before failed validation and both consumers share one detached observation`() {
+    fun `repeated action targets are captured once before state updates and failed validation`() {
         withApplication { context, runner, baseUrl, requests ->
             assertTrue(runScenario(runner, listOf("Open explicit URL"), mapOf("url" to "$baseUrl/probe")).isEmpty())
             val started = System.nanoTime()
@@ -353,6 +355,16 @@ class UiScenarioIT {
             val failures = runScenario(runner, listOf("Capture using saved result key", "Capture whole saved result", "Capture implicit result"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             assertEquals("Next", context.getTestScenarioState().get("selfText"))
+        }
+    }
+
+    @Test
+    fun `navigation alone captures no controls`() {
+        withApplication(extraUi = "pages.home.elements.unused = \"//*\"") { context, runner, _, _ ->
+            val failures = runScenario(runner, listOf("Open home"))
+            assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
+            val result = context.getTestScenarioState().get("open_result") as Map<*, *>
+            assertEquals(emptyMap<String, Any?>(), result["pages"])
         }
     }
 

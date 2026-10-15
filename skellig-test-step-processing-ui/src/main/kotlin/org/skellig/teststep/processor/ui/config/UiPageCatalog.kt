@@ -38,11 +38,6 @@ internal class UiPageCatalog(config: Config) {
         return pages[page]?.elements?.get(control) ?: error("Unknown UI control '$target'; expected page.control")
     }
 
-    fun targets(page: String? = null): Set<String> {
-        val selected = if (page == null) pages else mapOf(page to (pages[page] ?: error("Unknown UI page '$page'")))
-        return selected.flatMap { (name, definition) -> definition.elements.keys.map { "$name.$it" } }.toSet()
-    }
-
     private fun resolveUrl(path: String): String {
         val uri = URI(path)
         return absoluteUrl(if (uri.isAbsolute) path else (baseUrl ?: error("ui.base-url is required for relative page paths")).resolve(uri).toString()).toString()

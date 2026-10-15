@@ -279,7 +279,10 @@ name("Capture next control") {
     id = observed
     ui-actions [
         { action = navigate
-          page = home }
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present }
     ]
     state {
         captured = $result.pages.home.next
@@ -304,7 +307,16 @@ name("Scoped nested observations") {
     id = scoped
     ui-actions [
         { action = navigate
-          page = home }
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present },
+        { action = wait
+          target = "home.missing"
+          condition = absent },
+        { action = wait
+          target = "secondary.next"
+          condition = present }
     ]
     validate {
         pages {
@@ -323,8 +335,8 @@ name("Scoped nested observations") {
 name("Capture missing control") {
     ui-actions [
         { action = wait
-          target = "home.next"
-          condition = present }
+          target = "home.missing"
+          condition = absent }
     ]
     state { missingControl = $result.pages.home.missing }
     validate {
@@ -346,6 +358,9 @@ name("Capture probe then fail") {
     ui-actions [
         { action = wait
           target = "home.probe"
+          condition = present },
+        { action = wait
+          target = "home.probe"
           condition = present }
     ]
     state { probeValue = $result.pages.home.probe.value }
@@ -362,7 +377,10 @@ name("Validate failed snapshot") {
 name("Capture via extractor") {
     ui-actions [
         { action = navigate
-          page = home }
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present }
     ]
     state {
         extractedUiText = $result.toJson().jsonPath(${path})
@@ -378,6 +396,11 @@ name("Capture ambiguous control") {
     attempts = 3
     ui-actions [
         { action = navigate
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present },
+        { action = navigate
           url = ${url} }
     ]
     state { ambiguousControl = $result.pages.home.next }
@@ -392,7 +415,13 @@ name("Capture edited form") {
           value = alice },
         { action = check
           target = "home.remember"
-          value = true }
+          value = true },
+        { action = wait
+          target = "home.invisible"
+          condition = present },
+        { action = wait
+          target = "home.disabled"
+          condition = present }
     ]
     state { formSnapshot = $result.pages.home }
     validate {
@@ -410,7 +439,10 @@ name("Capture using saved result key") {
     id = self
     ui-actions [
         { action = navigate
-          page = home }
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present }
     ]
     state { selfText = get(self_result).pages.home.next.text }
     validate { get(self_result).pages.home.next.text = get(selfText) }
@@ -431,7 +463,10 @@ name("Capture whole saved result") {
     id = whole
     ui-actions [
         { action = navigate
-          page = home }
+          page = home },
+        { action = wait
+          target = "home.missing"
+          condition = absent }
     ]
     state { wholeSnapshot = get(whole_result) }
     validate { get(wholeSnapshot).pages.home.missing.present = false }
@@ -440,7 +475,10 @@ name("Capture whole saved result") {
 name("Capture implicit result") {
     ui-actions [
         { action = navigate
-          page = home }
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present }
     ]
     state { implicitSnapshot = get("Capture implicit result_result") }
     validate { get(implicitSnapshot).pages.home.next.text = Next }
