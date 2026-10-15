@@ -36,35 +36,33 @@ internal class UiObservationPlanner(private val pages: UiPageCatalog) {
                     val grouped = expected is MapValueExpression || expected is ListValueExpression
                     val childScope = expression(actual, scope, !grouped)
                     if (grouped) validation(expected, childScope)
-                    else expression(expected, null)
+                    else expression(expected, null, currentScope = scope)
                 }
                 is ListValueExpression -> node.value.forEach { validation(it, scope) }
                 else -> expression(node, scope)
             }
         }
 
-        fun expression(node: ValueExpression?, scope: List<String>?, observe: Boolean = true): List<String>? {
+        fun expression(
+            node: ValueExpression?, scope: List<String>?, observe: Boolean = true,
+            currentScope: List<String>? = scope
+        ): List<String>? {
             when (node) {
                 is CallChainExpression -> {
                     var path = scope
                     node.callChain.forEach { part ->
-                        path = segment(part, path)
+                        path = segment(part, path, currentScope)
                     }
                     if (observe) path?.let { include(it) }
                     return path
                 }
-                is AlphanumericValueExpression, is StringValueExpression -> {
-                    val path = segment(node, scope)
+                is AlphanumericValueExpression, is StringValueExpression, is FunctionCallExpression -> {
+                    val path = segment(node, scope, currentScope)
                     if (observe) path?.let { include(it) }
                     return path
                 }
-                is FunctionCallExpression -> {
-                    val path = segment(node, scope)
-                    if (observe) path?.let { include(it) }
-                    return path
-                }
-                is MapValueExpression -> node.value.forEach { (key, value) -> expression(key, null); expression(value, null) }
-                is ListValueExpression -> node.value.forEach { expression(it, null) }
+                is MapValueExpression -> node.value.forEach { (key, value) -> expression(key, null, currentScope = currentScope); expression(value, null, currentScope = currentScope) }
+                is ListValueExpression -> node.value.forEach { expression(it, null, currentScope = currentScope) }
                 is PropertyValueExpression -> {
                     // A simple parameter lookup cannot read this step's result; compound keys remain conservative.
                     if (!parameterReference.matches(node.toString())) include(scope ?: emptyList())
@@ -76,15 +74,15 @@ internal class UiObservationPlanner(private val pages: UiPageCatalog) {
             return null
         }
 
-        private fun segment(node: ValueExpression?, scope: List<String>?): List<String>? {
+        private fun segment(node: ValueExpression?, scope: List<String>?, currentScope: List<String>?): List<String>? {
             return when (node) {
                 is AlphanumericValueExpression, is StringValueExpression -> when (val name = node.toString()) {
-                    "$" -> scope ?: emptyList()
+                    "$" -> currentScope ?: emptyList()
                     "\$result" -> emptyList()
                     else -> scope?.plus(name)
                 }
                 is FunctionCallExpression -> {
-                    node.args.forEach { expression(it, null) }
+                    node.args.forEach { expression(it, null, currentScope = currentScope) }
                     if (node.name == "get") {
                         val key = node.args.firstOrNull()
                         if (key is AlphanumericValueExpression || key is StringValueExpression) {

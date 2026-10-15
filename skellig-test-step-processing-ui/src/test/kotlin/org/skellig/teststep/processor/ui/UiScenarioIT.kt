@@ -278,7 +278,7 @@ class UiScenarioIT {
             val result = context.getTestScenarioState().get("scoped_result") as Map<*, *>
             val pages = result["pages"] as Map<*, *>
             assertEquals(setOf("home"), pages.keys)
-            assertEquals(setOf("next"), (pages["home"] as Map<*, *>).keys)
+            assertEquals(setOf("next", "missing"), (pages["home"] as Map<*, *>).keys)
             assertFalse(requests.any { it.path == "/never-visit" })
         }
     }

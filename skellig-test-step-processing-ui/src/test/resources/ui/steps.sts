@@ -309,7 +309,12 @@ name("Scoped nested observations") {
     validate {
         pages {
             home {
-                next { $.text = ${expectedText} }
+                next {
+                    $.text = ${expectedText}
+                    text = $.text
+                    value = null
+                }
+                next.selected = $.missing.present
             }
         }
     }
