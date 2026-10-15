@@ -5,6 +5,7 @@ import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.ui.config.UiPageCatalog
+import org.skellig.teststep.processor.ui.observation.UiObservationPlanner
 import org.skellig.teststep.processor.ui.model.UiAction
 import org.skellig.teststep.processor.ui.model.UiTestStep
 import org.skellig.teststep.reader.value.expression.ValueExpression
@@ -14,6 +15,7 @@ internal class UiTestStepFactory(
     expressions: ValueExpressionContextFactory,
     pages: UiPageCatalog
 ) : BaseDefaultTestStepFactory<UiTestStep>(registry, expressions) {
+    private val observationPlanner = UiObservationPlanner(pages)
     private val actionFactories: Map<String, UiActionFactory<UiAction>> = listOf(
         NavigateActionFactory(pages),
         ClickActionFactory(pages),
@@ -43,6 +45,6 @@ internal class UiTestStepFactory(
                 ?: error("Unsupported UI action '$operation' at position ${definition.position}")
             factory.create(definition)
         }
-        return UiTestStep.Builder(actions)
+        return UiTestStep.Builder(actions) { resultKey -> observationPlanner.plan(rawTestStep, resultKey) }
     }
 }

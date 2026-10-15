@@ -2,6 +2,7 @@ package org.skellig.teststep.processor.ui.model
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.processor.TestStepProcessor
 
 internal sealed class UiAction {
     data class Navigate(val url: String) : UiAction()
@@ -25,9 +26,10 @@ class UiTestStep private constructor(builder: Builder) : DefaultTestStep(
     builder.stepTimeout, builder.stepDelay, builder.stepAttempts, builder.stepValues,
     builder.stepData, builder.stepValidation, builder.stepStateUpdaters
 ) {
+    internal val observationTargets = builder.observationTargets(getId + TestStepProcessor.RESULT_SAVE_SUFFIX).toMap()
     internal val actions = builder.actions.toList()
 
-    internal class Builder(val actions: List<UiAction>) : DefaultTestStep.Builder<UiTestStep>() {
+    internal class Builder(val actions: List<UiAction>, val observationTargets: (String) -> Map<String, String>) : DefaultTestStep.Builder<UiTestStep>() {
         val stepId get() = id
         val stepName get() = name ?: error("UI test step name is required")
         val stepTimeout get() = timeout
