@@ -5,7 +5,7 @@ import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.ui.handler.CompositeUiActionHandler
 import org.skellig.teststep.processor.ui.model.UiTestStep
-import org.skellig.teststep.processor.ui.observation.UiObservationCapture
+import org.skellig.teststep.processor.ui.observation.PageElementsStateCollector
 import java.time.Duration
 
 /** Executes once; readiness polling never repeats a click or the action sequence. */
@@ -23,7 +23,7 @@ internal class UiTestStepProcessor(
     override fun processTestStep(testStep: UiTestStep): Any {
         val driver = driver()
         testStep.actions.forEach { action -> uiActionsHandler.handle(action, driver) }
-        val observations = UiObservationCapture.capture(driver, testStep.observationTargets)
+        val observations = PageElementsStateCollector.collect(driver, testStep.observationTargets)
         return mapOf("url" to driver.currentUrl, "pages" to observations)
     }
 
