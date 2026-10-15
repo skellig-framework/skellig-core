@@ -105,7 +105,7 @@ name("Capture account") {
 }
 ```
 
-Each captured control is a plain map with `present`, `visible`, `enabled`, `selected`, `text`, and `value`. `value` is the current DOM property, so it reflects edits rather than the original HTML attribute. For an absent control, `present` and `visible` are false and the other properties are null. Multiple XPath matches fail immediately during capture. Capture never waits; use a `wait` action for synchronization.
+Each captured control is a `UiElementState` object with `present`, `visible`, `enabled`, `selected`, `text`, and `value`. `value` is the current DOM property, so it reflects edits rather than the original HTML attribute. For an absent control, `present` and `visible` are false and the other properties are null. Multiple XPath matches fail immediately during capture. Capture never waits; use a `wait` action for synchronization.
 
 After all actions finish, their `target` and `xpath` values are collected into a map. Repeated targets are captured once; navigation actions contribute no targets. All six properties are materialized for each target and grouped by page. Only controls referenced by actions are captured, regardless of state or validation expressions. To include another control, add a `wait` action for it with the appropriate condition. Every lookup reads the current document and never navigates to a configured page.
 

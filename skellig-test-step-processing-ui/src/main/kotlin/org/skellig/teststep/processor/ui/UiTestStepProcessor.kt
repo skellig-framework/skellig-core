@@ -5,7 +5,6 @@ import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.ui.handler.CompositeUiActionHandler
 import org.skellig.teststep.processor.ui.model.UiTestStep
-import org.skellig.teststep.processor.ui.observation.PageElementsStateCollector
 import java.time.Duration
 
 /** Executes once; readiness polling never repeats a click or the action sequence. */

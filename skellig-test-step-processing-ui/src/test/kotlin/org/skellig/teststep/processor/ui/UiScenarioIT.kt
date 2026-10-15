@@ -263,8 +263,7 @@ class UiScenarioIT {
             saved = context.getTestScenarioState().get("captured")
             assertEquals(1, requests.count { it.path == "/" })
         }
-        assertEquals(mapOf("present" to true, "visible" to true, "enabled" to true,
-            "selected" to false, "text" to "Next", "value" to null), saved)
+        assertEquals(PageElementsStateCollector.UiElementState(true, true, true, false, "Next", null), saved)
     }
 
     @Test
@@ -293,8 +292,7 @@ class UiScenarioIT {
             val failures = runScenario(runner, listOf("Capture missing control"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             assertTrue(System.nanoTime() - started < 2_000_000_000L, "Observation capture must not wait for an absent control")
-            assertEquals(mapOf("present" to false, "visible" to false, "enabled" to null,
-                "selected" to null, "text" to null, "value" to null), context.getTestScenarioState().get("missingControl"))
+            assertEquals(PageElementsStateCollector.UiElementState(false, false, null, null, null, null), context.getTestScenarioState().get("missingControl"))
         }
     }
 
@@ -342,10 +340,11 @@ class UiScenarioIT {
             val failures = runScenario(runner, listOf("Capture edited form"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             val form = context.getTestScenarioState().get("formSnapshot") as Map<*, *>
-            assertEquals("alice", (form["username"] as Map<*, *>)["value"])
-            assertEquals(true, (form["remember"] as Map<*, *>)["selected"])
-            assertEquals(false, (form["invisible"] as Map<*, *>)["visible"])
-            assertEquals(false, (form["disabled"] as Map<*, *>)["enabled"])
+
+            assertEquals("alice", (form["username"] as PageElementsStateCollector.UiElementState).value)
+            assertEquals(true, (form["remember"] as PageElementsStateCollector.UiElementState).selected)
+            assertEquals(false, (form["invisible"] as PageElementsStateCollector.UiElementState).visible)
+            assertEquals(false, (form["disabled"] as PageElementsStateCollector.UiElementState).enabled)
         }
     }
 
