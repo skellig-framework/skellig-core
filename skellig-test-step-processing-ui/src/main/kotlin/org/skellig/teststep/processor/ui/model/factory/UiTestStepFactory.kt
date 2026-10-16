@@ -24,8 +24,6 @@ internal class UiTestStepFactory(
         WaitActionFactory(pages)
     ).associateBy { it.actionName }
 
-    // Unquoted hyphenated keys are parsed as subtraction expressions by the existing value parser.
-    // Match their spelling without evaluating them, and also accept a quoted literal key.
     private fun actionsKey(rawTestStep: Map<ValueExpression, ValueExpression?>) =
         rawTestStep.keys.firstOrNull { it.toString().replace(" ", "") == "ui-actions" }
 
@@ -35,6 +33,7 @@ internal class UiTestStepFactory(
         val definitions = convertValue<Any>(rawTestStep[actionsKey(rawTestStep)], parameters) as? List<*>
             ?: error("ui-actions must be an ordered array of action maps")
         require(definitions.isNotEmpty()) { "ui-actions must contain at least one operation" }
+
         val actions = definitions.mapIndexed { index, value ->
             val fields = value as? Map<*, *> ?: error("UI action ${index + 1} must be a map")
             val definition = UiActionDefinition(fields, index + 1)

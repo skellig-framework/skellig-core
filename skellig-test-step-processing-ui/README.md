@@ -2,7 +2,7 @@
 
 Add `skellig-test-step-processing-ui` to your Skellig test project. Its configuration and factory are discovered by the standard processor scan when the configuration contains `ui`.
 
-Supports ordered `navigate`, `click`, `type`, `clear`, `select`, `check`, and `wait` operations in local Chrome. UI control snapshots, remote browser options, and screenshots belong to subsequent UI processing tickets. Parallel execution, session limits, and feature-owned contexts are deferred.
+Supports ordered `navigate`, `click`, `type`, `clear`, `select`, `check`, and `wait` operations in local Chrome. UI control snapshots are available to state and validation. Remote browser options and screenshots belong to subsequent UI processing tickets. Parallel execution, session limits, and feature-owned contexts are deferred.
 
 ```hocon
 ui {
@@ -84,6 +84,32 @@ name("Log in") {
 ```
 
 Define the referenced login/dashboard paths and XPath controls in HOCON. For a native select use an action such as `{ action = select ... }` with `target`, `by`, and `value` on separate lines.
+
+After actions, the result contains the final `url` and a detached `pages` map. Refer to controls as `$result.pages.<page>.<control>` in `state`, or `pages.<page>.<control>` in `validate`:
+
+```sts
+name("Capture account") {
+    id = account
+    ui-actions [
+        { action = wait
+          target = "dashboard.account"
+          condition = visible }
+    ]
+    state {
+        accountName = $result.pages.dashboard.account.text
+    }
+    validate {
+        pages.dashboard.account.text = get(accountName)
+        pages.dashboard.account.text.contains("Account") = true
+    }
+}
+```
+
+Each captured control is a `UiElementState` object with `present`, `visible`, `enabled`, `selected`, `text`, and `value`. `value` is the current DOM property, so it reflects edits rather than the original HTML attribute. For an absent control, `present` and `visible` are false and the other properties are null. Multiple XPath matches fail immediately during capture. Capture never waits; use a `wait` action for synchronization.
+
+After all actions finish, their `target` and `xpath` values are collected into a map. Repeated targets are captured once; navigation actions contribute no targets. All six properties are materialized for each target and grouped by page. Only controls referenced by actions are captured, regardless of state or validation expressions. To include another control, add a `wait` action for it with the appropriate condition. Every lookup reads the current document and never navigates to a configured page.
+
+The order remains actions → capture → result storage → state updates → one immediate validation evaluation. Both state and validation read the same materialized data. Results use the existing `<id>_result` key (the step name when `id` is omitted), including references through `get(...)`. Captured values can feed later steps with `get(accountName)`; they cannot feed later actions within the same step. Results and values saved in state remain usable after navigation and context cleanup; they contain no WebDriver or WebElement references. A failed validation retains both the stored snapshot and completed state updates and does not replay actions or recapture observations.
 
 The UI processor creates Chrome only when its first UI step executes and reuses that driver until its existing `close()` method is called, normally through `SkelligTestContext.close()`. Navigation, cookies, and authentication persist across steps and sequential scenarios using the same context. Step failures leave the browser open for caller-directed continuation; the processor does not automatically discard or recreate a broken session. Contexts without UI work never create a browser. Repeated cleanup is safe, and closed processors cannot recreate a browser.
 

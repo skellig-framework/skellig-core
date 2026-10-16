@@ -22,7 +22,8 @@ internal class UiTestStepProcessor(
     override fun processTestStep(testStep: UiTestStep): Any {
         val driver = driver()
         testStep.actions.forEach { action -> uiActionsHandler.handle(action, driver) }
-        return mapOf("url" to driver.currentUrl)
+
+        return mapOf("url" to driver.currentUrl, "pages" to PageElementsStateCollector.collect(driver, testStep.actions))
     }
 
     @Synchronized

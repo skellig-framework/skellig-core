@@ -274,3 +274,212 @@ name("Fail typing sensitive input") {
           value = ${password} }
     ]
 }
+
+name("Capture next control") {
+    id = observed
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present }
+    ]
+    state {
+        captured = $result.pages.home.next
+    }
+    validate {
+        pages.home.next {
+            text = Next
+            present = true
+        }
+        get(captured).text = Next
+    }
+}
+
+name("Validate saved UI control") {
+    validate {
+        get(captured).text = Next
+        get(observed_result).pages.home.next.visible = true
+    }
+}
+
+name("Scoped nested observations") {
+    id = scoped
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present },
+        { action = wait
+          target = "home.missing"
+          condition = absent },
+        { action = wait
+          target = "secondary.next"
+          condition = present }
+    ]
+    validate {
+        pages {
+            home {
+                next {
+                    $.text = ${expectedText}
+                    text = $.text
+                    value = null
+                }
+                next.selected = $.missing.present
+            }
+        }
+    }
+}
+
+name("Capture missing control") {
+    ui-actions [
+        { action = wait
+          target = "home.missing"
+          condition = absent }
+    ]
+    state { missingControl = $result.pages.home.missing }
+    validate {
+        pages.home.missing {
+            present = false
+            visible = false
+            enabled = null
+            selected = null
+            text = null
+            value = null
+        }
+    }
+}
+
+name("Capture probe then fail") {
+    id = probe
+    attempts = 3
+    delay = 3000
+    ui-actions [
+        { action = wait
+          target = "home.probe"
+          condition = present },
+        { action = wait
+          target = "home.probe"
+          condition = present }
+    ]
+    state { probeValue = $result.pages.home.probe.value }
+    validate {
+        pages.home.probe { value = get(probeValue) }
+        pages.home.probe.value = "never-match"
+    }
+}
+
+name("Validate failed snapshot") {
+    validate { get(probe_result).pages.home.probe.value = get(probeValue) }
+}
+
+name("Capture via extractor") {
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present }
+    ]
+    state {
+        extractedUiText = $result.toJson().jsonPath(${path})
+    }
+    validate {
+        toJson().jsonPath(${path}).contains("ext") = true
+        pages.home.next.text.match("N.*") = true
+        pages.home.next.text.fromRegex("(N.*)") = Next
+    }
+}
+
+name("Capture ambiguous control") {
+    attempts = 3
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present },
+        { action = navigate
+          url = ${url} }
+    ]
+    state { ambiguousControl = $result.pages.home.next }
+}
+
+name("Capture edited form") {
+    ui-actions [
+        { action = navigate
+          page = login },
+        { action = type
+          target = "home.username"
+          value = alice },
+        { action = check
+          target = "home.remember"
+          value = true },
+        { action = wait
+          target = "home.invisible"
+          condition = present },
+        { action = wait
+          target = "home.disabled"
+          condition = present }
+    ]
+    state { formSnapshot = $result.pages.home }
+    validate {
+        pages.home.username.value = alice
+        pages.home.remember.selected = true
+        pages.home.invisible {
+            present = true
+            visible = false
+        }
+        pages.home.disabled.enabled = false
+    }
+}
+
+name("Capture using saved result key") {
+    id = self
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present }
+    ]
+    state { selfText = get(self_result).pages.home.next.text }
+    validate { get(self_result).pages.home.next.text = get(selfText) }
+}
+
+name("Use saved UI value") {
+    ui-actions [
+        { action = navigate
+          page = form },
+        { action = type
+          target = "home.username"
+          value = get(captured).text }
+    ]
+    validate { pages.home.username.value = Next }
+}
+
+name("Capture whole saved result") {
+    id = whole
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = wait
+          target = "home.missing"
+          condition = absent }
+    ]
+    state { wholeSnapshot = get(whole_result) }
+    validate { get(wholeSnapshot).pages.home.missing.present = false }
+}
+
+name("Capture implicit result") {
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = wait
+          target = "home.next"
+          condition = present }
+    ]
+    state { implicitSnapshot = get("Capture implicit result_result") }
+    validate { get(implicitSnapshot).pages.home.next.text = Next }
+}
