@@ -6,9 +6,10 @@ import org.skellig.teststep.processor.ui.model.UiAction
 
 object PageElementsStateCollector {
 
-    fun collect(driver: WebDriver, actions: List<UiAction>): Map<String, Map<String, UiElementState>> {
+    fun collect(driver: WebDriver, actions: List<UiAction>, beforeCapture: (String, String) -> Unit = { _, _ -> }): Map<String, Map<String, UiElementState>> {
         val pages = linkedMapOf<String, MutableMap<String, UiElementState>>()
         extractUiElementNamesAndXPaths(actions).forEach { (target, xpath) ->
+            beforeCapture(target, xpath)
             val elements = driver.findElements(By.xpath(xpath))
             require(elements.size <= 1) { "Ambiguous UI control '$target': XPath '$xpath' matched ${elements.size} elements during observation capture" }
 

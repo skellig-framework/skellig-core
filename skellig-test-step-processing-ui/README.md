@@ -2,7 +2,7 @@
 
 Add `skellig-test-step-processing-ui` to your Skellig test project. Its configuration and factory are discovered by the standard processor scan when the configuration contains `ui`.
 
-Supports ordered `navigate`, `click`, `type`, `clear`, `select`, `check`, and `wait` operations in local Chrome or remote WebDriver sessions. UI control snapshots are available to state and validation. Screenshots belong to a subsequent UI processing ticket. Parallel execution, session limits, and feature-owned contexts are deferred.
+Supports ordered `navigate`, `click`, `type`, `clear`, `select`, `check`, and `wait` operations in local Chrome or remote WebDriver sessions. UI control snapshots are available to state and validation. Failure screenshots and contextual diagnostics are retained. Parallel execution, session limits, and feature-owned contexts are deferred.
 
 ```hocon
 ui {
@@ -172,3 +172,17 @@ mvn -pl skellig-test-step-processing-ui -am package \
 Use Maven for builds and verification. The fixture serves deterministic pages from a local HTTP server and runs actual headless Chrome. It verifies standalone execution without grouping hooks, navigation/click ordering, form replacement/append/clear, native selects, desired checkbox state, explicit waits, malformed fields, delayed readiness, timeouts and ambiguity for every operation, cross-step and sequential-scenario reuse, browser retention after failure, missing and ambiguous targets, no replay, and ChromeDriver shutdown at context closure.
 
 Configuration tests inspect real W3C new-session requests using a small protocol fixture. A focused remote scenario runs the same STS steps through `RemoteWebDriver` against an actual ChromeDriver service, including cookie reuse, captured state, validation, and cleanup; it does not require a provisioned Grid.
+
+## Failure evidence
+
+`ui.screenshots.path` defaults to `build/ui-screenshots`. Relative paths are resolved against the test process working directory. The destination is created lazily when a failure screenshot is saved. An empty path is rejected. Selenium supplies PNG bytes for both local and remote sessions; files are always written on the test-runner machine, not on the Grid host.
+
+Each filename contains a random processor/context ID and a fresh step-execution UUID. Files are created with `CREATE_NEW`, so concurrent contexts and repeated executions cannot overwrite evidence. The processor intentionally has no feature/scenario identity (see #83); a context ID identifies its owning run and execution UUIDs distinguish steps across scenarios without introducing grouping APIs. Filenames never include step names or input values.
+
+Failures expose a `UiFailure` through the normal result subscription and scenario failure report. It records `stage` (`SESSION`, `ACTION`, `OBSERVATION`, `STATE_UPDATE`, or `VALIDATION`), one-based `actionIndex` where applicable, `operation`, control `target` and `xpath` where applicable, total `elapsedMillis`, current `url`, and the absolute `screenshot` path. Observation errors identify the control being captured. State-update and validation errors identify their stage, without attributing them to the last action. The original exception is retained in `originalCause`; printable cause and suppressed-error chains mask nonempty type/select input values seen by this processor.
+
+Screenshot capture and URL lookup occur immediately on failure, before context cleanup. Failures to read the URL, capture/save the screenshot, or quit the browser are secondary suppressed errors. The original failure remains the reported failure. The browser remains available until context close; when an earlier UI failure exists, quit errors are attached to it instead of replacing it. Repeated close calls are safe, and a closed processor cannot create another browser.
+
+Results preserve `url` and detached `pages`, and add `actions` (one-based index, operation, target, XPath, duration in milliseconds and success flag) and total `durationMillis`. Failed results also include `failure` and `artifacts` (absolute file paths); completed actions and a successfully completed observation snapshot remain available through the result subscription. State storage and state assignments still precede a single validation evaluation. No UI action is retried.
+
+Screenshots can contain visible input and page data. Captured result data and the programmatic `originalCause` are unredacted so state/validation and debugging retain their original semantics; treat them as sensitive. Diagnostic masking does not redact screenshots or arbitrary page content. UI processing does not log raw results or validation inputs.

@@ -483,3 +483,22 @@ name("Capture implicit result") {
     state { implicitSnapshot = get("Capture implicit result_result") }
     validate { get(implicitSnapshot).pages.home.next.text = Next }
 }
+
+name("Fail UI state update") {
+    ui-actions [
+        { action = navigate
+          page = home }
+    ]
+    state { invalid = $result.url.toInt() }
+}
+
+name("Fail sensitive validation") {
+    ui-actions [
+        { action = navigate
+          page = login },
+        { action = type
+          target = "home.password"
+          value = ${password} }
+    ]
+    validate { pages.home.password.value = unexpected }
+}

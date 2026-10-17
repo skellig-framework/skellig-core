@@ -368,6 +368,11 @@ class UiScenarioIT {
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             val result = context.getTestScenarioState().get("open_result") as Map<*, *>
             assertEquals(emptyMap<String, Any?>(), result["pages"])
+            val outcome = (result["actions"] as List<UiActionOutcome>).single()
+            assertEquals("navigate", outcome.operation)
+            assertTrue(outcome.successful)
+            assertTrue(outcome.durationMillis >= 0)
+            assertTrue((result["durationMillis"] as Long) >= outcome.durationMillis)
         }
     }
 
@@ -392,6 +397,94 @@ class UiScenarioIT {
             }
         } finally {
             service.stop()
+        }
+    }
+
+    @Test
+    fun `action failure persists a screenshot and reports its stage before cleanup`() {
+        val directory = java.nio.file.Files.createTempDirectory("ui-evidence")
+        try {
+            withApplication(extraUi = "screenshots.path = ${com.typesafe.config.ConfigUtil.quoteString(directory.toString())}") { _, runner, baseUrl, _ ->
+                val failures = runScenario(runner, listOf("Open home", "Fail typing sensitive input"), mapOf("password" to "secret-89"))
+                val trace = failures.single().trace
+                val files = java.nio.file.Files.list(directory).use { it.toList() }
+                assertEquals(1, files.size, trace)
+                assertTrue(java.nio.file.Files.size(files.single()) > 0)
+                assertTrue(trace.contains(files.single().toString()), trace)
+                assertTrue(trace.contains("stage=ACTION"), trace)
+                assertTrue(trace.contains("actionIndex=1"), trace)
+                assertTrue(trace.contains(baseUrl), trace)
+                assertFalse(trace.contains("secret-89"), trace)
+            }
+        } finally {
+            directory.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `observation state and validation failures retain screenshot and completed actions`() {
+        val directory = java.nio.file.Files.createTempDirectory("ui-stages")
+        try {
+            withApplication(extraUi = "screenshots.path = ${com.typesafe.config.ConfigUtil.quoteString(directory.toString())}") { context, runner, baseUrl, _ ->
+                val cases = listOf(
+                    "Capture ambiguous control" to UiFailureStage.OBSERVATION,
+                    "Fail UI state update" to UiFailureStage.STATE_UPDATE,
+                    "Fail UI validation" to UiFailureStage.VALIDATION
+                )
+                cases.forEach { (step, stage) ->
+                    runner.run(step, mapOf("url" to "$baseUrl/ambiguous")).subscribe { _, response, error ->
+                        val failure = error as UiFailure
+                        assertEquals(stage, failure.stage)
+                        assertNotNull(failure.originalCause)
+                        assertNotNull(failure.screenshot)
+                        assertTrue(java.nio.file.Files.size(failure.screenshot!!) > 0)
+                        assertNotNull(failure.url)
+                        assertTrue(failure.elapsedMillis >= 0)
+                        val result = response as Map<*, *>
+                        assertTrue((result["actions"] as List<UiActionOutcome>).all { it.successful && it.durationMillis >= 0 })
+                        assertEquals(listOf(failure.screenshot.toString()), result["artifacts"])
+                        if (stage == UiFailureStage.OBSERVATION) {
+                            assertEquals("home.next", failure.target)
+                            assertEquals("//*[@id='next']", failure.xpath)
+                        }
+                    }
+                }
+                assertEquals(3L, java.nio.file.Files.list(directory).use { it.count() })
+                assertNotNull(context.getTestScenarioState().get("Fail UI validation_result"))
+            }
+        } finally { directory.toFile().deleteRecursively() }
+    }
+
+    @Test
+    fun `screenshot persistence failure preserves action failure`() {
+        val file = java.nio.file.Files.createTempFile("ui-not-directory", ".txt")
+        try {
+            withApplication(extraUi = "screenshots.path = ${com.typesafe.config.ConfigUtil.quoteString(file.toString())}") { _, runner, _, _ ->
+                runner.run("Open home").subscribe { _, _, error -> assertNull(error) }
+                runner.run("Fail typing sensitive input", mapOf("password" to "secret-89")).subscribe { _, _, error ->
+                    val failure = error as UiFailure
+                    assertEquals(UiFailureStage.ACTION, failure.stage)
+                    assertNull(failure.screenshot)
+                    assertNotNull(failure.originalCause)
+                    assertEquals(1, failure.suppressed.size)
+                    assertEquals("home.missing", failure.target)
+                    assertFalse(failure.stackTraceToString().contains("secret-89"))
+                }
+                assertEquals(0L, java.nio.file.Files.size(file))
+            }
+        } finally { java.nio.file.Files.delete(file) }
+    }
+
+    @Test
+    fun `validation diagnostics redact input while retaining original exception`() {
+        withApplication { _, runner, _, _ ->
+            runner.run("Fail sensitive validation", mapOf("password" to "secret-89")).subscribe { _, _, error ->
+                val failure = error as UiFailure
+                assertEquals(UiFailureStage.VALIDATION, failure.stage)
+                assertTrue(failure.originalCause.stackTraceToString().contains("secret-89"))
+                assertFalse(failure.stackTraceToString().contains("secret-89"))
+                assertEquals(java.nio.file.Path.of("build", "ui-screenshots").toAbsolutePath().normalize(), failure.screenshot!!.parent)
+            }
         }
     }
 
