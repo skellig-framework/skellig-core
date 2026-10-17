@@ -200,9 +200,85 @@ class UiBrowserSessionFactoryTest {
         }
     }
 
+    @Test
+    fun rejectsUnknownRemoteBrowserBeforeOpeningSession() {
+        Endpoint().use { endpoint ->
+            val error = assertThrows(IllegalArgumentException::class.java) {
+                UiBrowserSessionFactory(ConfigFactory.parseString("""
+                    mode = remote
+                    url = "${endpoint.url}"
+                    name = unsupported
+                """))
+            }
+            assertEquals("ui.browser.name must be chrome, firefox, edge or safari", error.message)
+            assertTrue(endpoint.requests.isEmpty())
+        }
+    }
+
+    @Test
+    fun preservesWindowSetupFailureWhenSessionCleanupAlsoFails() {
+        Endpoint(failResize = true, failQuit = true).use { endpoint ->
+            val factory = UiBrowserSessionFactory(ConfigFactory.parseString("""
+                mode = remote
+                url = "${endpoint.url}"
+                window { width = 800, height = 600 }
+            """))
+            val error = assertThrows(org.openqa.selenium.WebDriverException::class.java) { factory.create() }
+            assertTrue(error.message.orEmpty().contains("resize rejected"))
+            val cleanup = error.suppressed.single()
+            assertInstanceOf(org.openqa.selenium.WebDriverException::class.java, cleanup)
+            assertTrue(cleanup.message.orEmpty().contains("quit rejected"))
+            assertEquals("DELETE", endpoint.requests.last().method)
+            assertEquals("/session/test-session", endpoint.requests.last().path)
+        }
+    }
+
+    @Test
+    fun translatesProxyFromAdditionalCapabilities() {
+        Endpoint().use { endpoint ->
+            UiBrowserSessionFactory(ConfigFactory.parseString("""
+                mode = remote
+                url = "${endpoint.url}"
+                capabilities.proxy {
+                    proxyType = manual
+                    httpProxy = "proxy.example:8080"
+                    noProxy = ["localhost", "127.0.0.1"]
+                }
+            """)).create().quit()
+            assertEquals(mapOf(
+                "proxyType" to "manual",
+                "httpProxy" to "proxy.example:8080",
+                "noProxy" to listOf("localhost", "127.0.0.1")
+            ), endpoint.capabilities()["proxy"])
+        }
+    }
+
+    @Test
+    fun rejectsNonObjectProxyCapability() {
+        val error = assertThrows(IllegalArgumentException::class.java) {
+            UiBrowserSessionFactory(ConfigFactory.parseString("capabilities.proxy = invalid"))
+        }
+        assertEquals("ui.browser.capabilities.proxy must be an object", error.message)
+    }
+
+    @Test
+    fun wrapsSeleniumProxyConversionFailureWithConfigurationContext() {
+        val error = assertThrows(IllegalArgumentException::class.java) {
+            UiBrowserSessionFactory(ConfigFactory.parseString("""
+                proxy {
+                    proxyType = manual
+                    httpProxy = "proxy.example:8080"
+                    sslProxy = 123
+                }
+            """))
+        }
+        assertEquals("Invalid ui.browser.proxy settings", error.message)
+        assertInstanceOf(ClassCastException::class.java, error.cause)
+    }
+
     private data class Request(val method: String, val path: String, val body: Map<String, Any?>)
 
-    private class Endpoint(private val failResize: Boolean = false) : AutoCloseable {
+    private class Endpoint(private val failResize: Boolean = false, private val failQuit: Boolean = false) : AutoCloseable {
         val requests = CopyOnWriteArrayList<Request>()
         private val json = Json()
         private val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
@@ -214,16 +290,20 @@ class UiBrowserSessionFactoryTest {
                 val request = Request(exchange.requestMethod, exchange.requestURI.path,
                     if (body.isBlank()) emptyMap() else json.toType(body, Json.MAP_TYPE))
                 requests.add(request)
-                val failed = failResize && request.path.endsWith("/window/rect")
+                val failureMessage = when {
+                    failResize && request.path.endsWith("/window/rect") -> "resize rejected"
+                    failQuit && request.method == "DELETE" -> "quit rejected"
+                    else -> null
+                }
                 val value: Any? = when {
-                    failed -> mapOf("error" to "unknown error", "message" to "resize rejected", "stacktrace" to "")
+                    failureMessage != null -> mapOf("error" to "unknown error", "message" to failureMessage, "stacktrace" to "")
                     request.path == "/session" -> mapOf("sessionId" to "test-session", "capabilities" to mapOf("browserName" to "chrome"))
                     request.path.endsWith("/window/rect") -> mapOf("x" to 0, "y" to 0, "width" to 1280, "height" to 720)
                     else -> null
                 }
                 val response = json.toJson(mapOf("value" to value)).toByteArray()
                 exchange.responseHeaders.set("Content-Type", "application/json")
-                exchange.sendResponseHeaders(if (failed) 500 else 200, response.size.toLong())
+                exchange.sendResponseHeaders(if (failureMessage != null) 500 else 200, response.size.toLong())
                 exchange.responseBody.use { it.write(response) }
             }
             server.start()
