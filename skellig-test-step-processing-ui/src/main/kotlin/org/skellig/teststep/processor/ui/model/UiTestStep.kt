@@ -5,7 +5,9 @@ import org.skellig.teststep.processing.model.TestStepExecutionType
 
 open class UiAction {
     data class Navigate(val url: String) : UiAction()
-    open class NavigableElement(val target: String, val xpath: String) : UiAction()
+    open class NavigableElement(val target: String, val xpath: String) : UiAction() {
+        override fun toString() = "${javaClass.simpleName}(target=$target, xpath=$xpath)"
+    }
     class Type(target: String, xpath: String, val value: String, val append: Boolean) : NavigableElement(target, xpath) {
         override fun toString() = "Type(target=$target, xpath=$xpath, value=<redacted>, append=$append)"
     }

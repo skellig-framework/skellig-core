@@ -4,6 +4,10 @@ import com.sun.net.httpserver.HttpServer
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import org.junit.jupiter.api.Assertions.*
+import org.openqa.selenium.chrome.ChromeDriverService
+import org.openqa.selenium.chrome.ChromeOptions
+import org.openqa.selenium.remote.service.DriverFinder
+import java.io.File
 import org.junit.Test
 import org.junit.runner.notification.Failure
 import org.junit.runner.notification.RunListener
@@ -364,6 +368,30 @@ class UiScenarioIT {
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             val result = context.getTestScenarioState().get("open_result") as Map<*, *>
             assertEquals(emptyMap<String, Any?>(), result["pages"])
+        }
+    }
+
+    @Test
+    fun remoteChromeRunsSameScenario() {
+        val finder = DriverFinder(ChromeDriverService.createDefaultService(), ChromeOptions())
+        val service = ChromeDriverService.Builder().usingDriverExecutable(File(finder.driverPath)).usingAnyFreePort().build()
+        service.start()
+        try {
+            val binary = if (finder.hasBrowserPath()) "binary = ${com.typesafe.config.ConfigUtil.quoteString(finder.browserPath)}" else ""
+            withApplication(extraUi = """
+                browser {
+                    mode = remote
+                    url = "${service.url}"
+                    $binary
+                }
+            """) { context, runner, baseUrl, requests ->
+                val failures = runScenario(runner, listOf("Capture next control", "Follow next link", "Validate saved UI control"))
+                assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
+                assertEquals("$baseUrl/done", (context.getTestScenarioState().get("follow_result") as Map<*, *>)["url"])
+                assertTrue(requests.any { it.path == "/done" && it.cookie?.contains("journey=active") == true })
+            }
+        } finally {
+            service.stop()
         }
     }
 
