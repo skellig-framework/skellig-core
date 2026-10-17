@@ -395,6 +395,20 @@ class UiScenarioIT {
         }
     }
 
+    @Test
+    fun `local browser saves one screenshot before and after the action sequence`() {
+        val directory = java.nio.file.Files.createTempDirectory("ui-screenshots")
+        try {
+            withApplication(extraUi = "screenshots.path = ${com.typesafe.config.ConfigUtil.quoteString(directory.toString())}") { _, runner, _, _ ->
+                assertTrue(runScenario(runner, listOf("Navigate twice for screenshots")).isEmpty())
+                val files = java.nio.file.Files.list(directory).use { it.toList() }
+                assertEquals(2, files.size)
+                assertEquals(setOf("before", "after"), files.map { it.fileName.toString().substringBefore('_') }.toSet())
+                files.forEach { assertNotNull(javax.imageio.ImageIO.read(it.toFile())) }
+            }
+        } finally { directory.toFile().deleteRecursively() }
+    }
+
     private data class Request(val path: String, val cookie: String?, val query: String?)
 
     private fun withApplication(failClose: Boolean = false, timeout: String = "500ms", extraUi: String = "", test: (SkelligTestContext, org.skellig.teststep.runner.TestStepRunner, String, List<Request>) -> Unit) {

@@ -7,6 +7,7 @@ import org.skellig.teststep.processor.ui.UiTestStepProcessor
 import org.skellig.teststep.processor.ui.model.UiTestStep
 import org.skellig.teststep.processor.ui.model.factory.UiTestStepFactory
 import java.time.Duration
+import java.nio.file.Path
 
 /** Discovered by the standard Skellig processor configuration scan. */
 class UiTestStepProcessorConfig : TestStepProcessorConfig<UiTestStep> {
@@ -17,8 +18,13 @@ class UiTestStepProcessorConfig : TestStepProcessorConfig<UiTestStep> {
         val timeout = if (ui.hasPath("timeout")) ui.getDuration("timeout") else Duration.ofSeconds(30)
         require(!timeout.isZero && !timeout.isNegative) { "ui.timeout must be positive" }
         val pages = UiPageCatalog(ui)
+        val screenshots = if (ui.hasPath("screenshots.path")) {
+            val path = ui.getString("screenshots.path")
+            require(path.isNotBlank()) { "ui.screenshots.path must not be blank" }
+            Path.of(path)
+        } else Path.of("target", "ui-screenshots")
         return ConfiguredTestStepProcessorDetails(
-            UiTestStepProcessor(details.state, timeout, browser::create),
+            UiTestStepProcessor(details.state, timeout, browser::create, screenshots),
             UiTestStepFactory(details.testStepRegistry, details.valueExpressionContextFactory, pages)
         )
     }

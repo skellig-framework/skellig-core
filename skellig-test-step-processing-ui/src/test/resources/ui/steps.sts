@@ -483,3 +483,12 @@ name("Capture implicit result") {
     state { implicitSnapshot = get("Capture implicit result_result") }
     validate { get(implicitSnapshot).pages.home.next.text = Next }
 }
+
+name("Navigate twice for screenshots") {
+    ui-actions [
+        { action = navigate
+          page = home },
+        { action = navigate
+          page = home }
+    ]
+}

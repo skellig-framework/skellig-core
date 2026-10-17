@@ -5,14 +5,17 @@ import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.ui.handler.CompositeUiActionHandler
 import org.skellig.teststep.processor.ui.model.UiTestStep
+import java.nio.file.Path
 import java.time.Duration
 
 /** Executes once; readiness polling never repeats a click or the action sequence. */
 internal class UiTestStepProcessor(
     state: TestScenarioState,
     timeout: Duration,
-    private val createDriver: () -> WebDriver
+    private val createDriver: () -> WebDriver,
+    screenshotsPath: Path
 ) : BaseTestStepProcessor<UiTestStep>(state) {
+    private val screenshotCapturer = UiScreenshotCapturer(screenshotsPath)
     private var browser: WebDriver? = null
     private val uiActionsHandler = CompositeUiActionHandler(timeout)
 
@@ -21,7 +24,12 @@ internal class UiTestStepProcessor(
     @Synchronized
     override fun processTestStep(testStep: UiTestStep): Any {
         val driver = driver()
-        testStep.actions.forEach { action -> uiActionsHandler.handle(action, driver) }
+        screenshotCapturer.captureBefore(driver, testStep.name)
+        try {
+            testStep.actions.forEach { action -> uiActionsHandler.handle(action, driver) }
+        } finally {
+            screenshotCapturer.captureAfter(driver, testStep.name)
+        }
 
         return mapOf("url" to driver.currentUrl, "pages" to PageElementsStateCollector.collect(driver, testStep.actions))
     }

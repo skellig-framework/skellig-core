@@ -2,7 +2,7 @@
 
 Add `skellig-test-step-processing-ui` to your Skellig test project. Its configuration and factory are discovered by the standard processor scan when the configuration contains `ui`.
 
-Supports ordered `navigate`, `click`, `type`, `clear`, `select`, `check`, and `wait` operations in local Chrome or remote WebDriver sessions. UI control snapshots are available to state and validation. Screenshots belong to a subsequent UI processing ticket. Parallel execution, session limits, and feature-owned contexts are deferred.
+Supports ordered `navigate`, `click`, `type`, `clear`, `select`, `check`, and `wait` operations in local Chrome or remote WebDriver sessions. UI control snapshots are available to state and validation. Screenshots capture the browser before and after each UI step’s action sequence. Parallel execution, session limits, and feature-owned contexts are deferred.
 
 ```hocon
 ui {
@@ -172,3 +172,13 @@ mvn -pl skellig-test-step-processing-ui -am package \
 Use Maven for builds and verification. The fixture serves deterministic pages from a local HTTP server and runs actual headless Chrome. It verifies standalone execution without grouping hooks, navigation/click ordering, form replacement/append/clear, native selects, desired checkbox state, explicit waits, malformed fields, delayed readiness, timeouts and ambiguity for every operation, cross-step and sequential-scenario reuse, browser retention after failure, missing and ambiguous targets, no replay, and ChromeDriver shutdown at context closure.
 
 Configuration tests inspect real W3C new-session requests using a small protocol fixture. A focused remote scenario runs the same STS steps through `RemoteWebDriver` against an actual ChromeDriver service, including cookie reuse, captured state, validation, and cleanup; it does not require a provisioned Grid.
+
+## Screenshots
+
+One screenshot is saved before the complete UI action sequence and one after it. The after screenshot is also attempted when an action fails, before observation capture, state updates and validation. No screenshots are taken between actions.
+
+`ui.screenshots.path` defaults to `target/ui-screenshots`. Relative paths resolve against the test process working directory, and directories are created as needed. Both local and remote Selenium screenshots are saved on the test-runner machine.
+
+Filenames use `before_<test step name>_<local date and time>.png` and `after_<test step name>_<local date and time>.png`, for example `before_Open home_2026-10-17_21-30-00-123456789.png`. The timestamp uses the test process's local timezone with nanosecond precision. Characters unsafe in filenames are replaced with underscores, and step names are limited to 120 characters. Existing files are never overwritten.
+
+Screenshot errors are logged and do not interrupt actions or replace their original failure. Results keep the existing `url` and detached `pages` fields. Screenshots may contain visible input and page data; filenames contain the test step name.
