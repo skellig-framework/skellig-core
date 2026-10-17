@@ -14,6 +14,14 @@ internal class UiScreenshotCapturer(private val screenshotsPath: Path) {
     private val log = logger<UiScreenshotCapturer>()
     private val screenshotDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSSSSSSSS")
 
+    fun captureBefore(driver: WebDriver, stepName: String) {
+        capture(driver, "before", stepName)
+    }
+
+    fun captureAfter(driver: WebDriver, stepName: String) {
+        capture(driver, "after", stepName)
+    }
+
     fun capture(driver: WebDriver, phase: String, stepName: String) {
         try {
             val name = stepName.replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), "_").take(120)

@@ -24,11 +24,11 @@ internal class UiTestStepProcessor(
     @Synchronized
     override fun processTestStep(testStep: UiTestStep): Any {
         val driver = driver()
-        screenshotCapturer.capture(driver, "before", testStep.name)
+        screenshotCapturer.captureBefore(driver, testStep.name)
         try {
             testStep.actions.forEach { action -> uiActionsHandler.handle(action, driver) }
         } finally {
-            screenshotCapturer.capture(driver, "after", testStep.name)
+            screenshotCapturer.captureAfter(driver, testStep.name)
         }
 
         return mapOf("url" to driver.currentUrl, "pages" to PageElementsStateCollector.collect(driver, testStep.actions))

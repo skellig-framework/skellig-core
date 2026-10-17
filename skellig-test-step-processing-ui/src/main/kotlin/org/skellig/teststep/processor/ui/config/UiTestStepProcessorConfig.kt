@@ -22,7 +22,7 @@ class UiTestStepProcessorConfig : TestStepProcessorConfig<UiTestStep> {
             val path = ui.getString("screenshots.path")
             require(path.isNotBlank()) { "ui.screenshots.path must not be blank" }
             Path.of(path)
-        } else Path.of("build", "ui-screenshots")
+        } else Path.of("target", "ui-screenshots")
         return ConfiguredTestStepProcessorDetails(
             UiTestStepProcessor(details.state, timeout, browser::create, screenshots),
             UiTestStepFactory(details.testStepRegistry, details.valueExpressionContextFactory, pages)
