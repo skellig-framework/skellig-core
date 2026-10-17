@@ -14,6 +14,7 @@ Skellig is Automation/Performance Testing Framework with focus on writing tests 
 * Send HTTP requests and validate response
 * Sync/Async operations with TCP / AMQP / IBMMQ channels (ex. send, read, consume, respond) with output validation
 * RMDB/NOSQL database operations (ex. select, insert, delete) with data validation
+* [Browser UI journeys](skellig-test-step-processing-ui/README.md) with Selenium, reusable XPath pages, state capture, validation, and screenshots
 * Remote Unix commands with response validation
 * Performance testing with build-in or Prometheus metrics
 

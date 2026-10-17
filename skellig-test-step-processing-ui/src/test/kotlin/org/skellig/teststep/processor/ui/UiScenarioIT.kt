@@ -372,24 +372,61 @@ class UiScenarioIT {
     }
 
     @Test
+    fun documentedLoginWorkflow() {
+        verifyDocumentedLoginWorkflow()
+    }
+
+    private fun verifyDocumentedLoginWorkflow(extraUi: String = "") {
+        val directory = java.nio.file.Files.createTempDirectory("ui-login-evidence")
+        var saved: Any? = null
+        try {
+            withApplication(extraUi = """
+                $extraUi
+                screenshots.path = ${com.typesafe.config.ConfigUtil.quoteString(directory.toString())}
+            """) { context, runner, _, requests ->
+                val parameters = mapOf("username" to "alice", "password" to "fixture-only-password", "expectedAccount" to "Account")
+                val failures = runScenario(runner, listOf("Example login and capture", "Example consume account"), parameters)
+                assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
+                saved = context.getTestScenarioState().get("accountName")
+                assertEquals("Account", saved)
+                assertEquals(1, requests.count { it.path == "/dashboard" })
+                assertTrue(requests.single { it.path == "/dashboard" }.query.orEmpty().contains("username=alice"))
+                assertTrue(requests.single { it.path == "/dashboard" }.cookie.orEmpty().contains("journey=active"))
+
+                context.getTestScenarioState().remove("accountName")
+                context.getTestScenarioState().remove("exampleLogin_result")
+                val failed = runScenario(runner, listOf("Example login and capture"), parameters + ("expectedAccount" to "Wrong account"))
+                assertEquals(1, failed.size)
+                assertTrue(failed.single().trace.contains("Wrong account"), failed.single().trace)
+                assertEquals("Account", context.getTestScenarioState().get("accountName"), "State is saved before validation fails")
+                assertNotNull(context.getTestScenarioState().get("exampleLogin_result"))
+                assertEquals(2, requests.count { it.path == "/dashboard" }, "Failed validation must not replay login")
+                assertTrue(runScenario(runner, listOf("Example consume account")).isEmpty())
+
+                val screenshots = java.nio.file.Files.list(directory).use { it.toList() }
+                assertEquals(4, screenshots.size, "Each login, including the failed validation, saves before and after evidence")
+                screenshots.forEach { assertNotNull(javax.imageio.ImageIO.read(it.toFile()), it.toString()) }
+            }
+            assertEquals("Account", saved, "Captured data survives context cleanup")
+        } finally {
+            directory.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun remoteChromeRunsSameScenario() {
         val finder = DriverFinder(ChromeDriverService.createDefaultService(), ChromeOptions())
         val service = ChromeDriverService.Builder().usingDriverExecutable(File(finder.driverPath)).usingAnyFreePort().build()
         service.start()
         try {
             val binary = if (finder.hasBrowserPath()) "binary = ${com.typesafe.config.ConfigUtil.quoteString(finder.browserPath)}" else ""
-            withApplication(extraUi = """
+            verifyDocumentedLoginWorkflow("""
                 browser {
                     mode = remote
                     url = "${service.url}"
                     $binary
                 }
-            """) { context, runner, baseUrl, requests ->
-                val failures = runScenario(runner, listOf("Capture next control", "Follow next link", "Validate saved UI control"))
-                assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
-                assertEquals("$baseUrl/done", (context.getTestScenarioState().get("follow_result") as Map<*, *>)["url"])
-                assertTrue(requests.any { it.path == "/done" && it.cookie?.contains("journey=active") == true })
-            }
+            """)
         } finally {
             service.stop()
         }
@@ -496,13 +533,13 @@ class UiScenarioIT {
                 }
                 $extraUi
             }
-        """.trimIndent())
+        """.trimIndent()).withFallback(ConfigFactory.parseResources("ui/example/login.conf")).resolve()
         val originalDrivers = chromeDrivers()
         val context = object : SkelligTestContext() {
             override fun createConfig(classLoader: ClassLoader, configPath: String?): Config = config
         }
         try {
-            context.use { test(it, it.initialize(javaClass.classLoader, listOf("ui/steps.sts")), baseUrl, requests) }
+            context.use { test(it, it.initialize(javaClass.classLoader, listOf("ui/steps.sts", "ui/example/login.sts")), baseUrl, requests) }
         } finally {
             server.stop(0)
             assertEquals(originalDrivers, chromeDrivers(), "Context close left a ChromeDriver process running")
