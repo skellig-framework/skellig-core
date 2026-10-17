@@ -21,7 +21,6 @@ import java.net.URI
 import java.net.URL
 import java.time.Duration
 
-/** Validates configuration eagerly; opens a browser only when the processor requests it. */
 internal class UiBrowserSessionFactory(private val config: Config) {
     private val mode = if (config.hasPath("mode")) config.getString("mode") else "local"
     private val name = if (config.hasPath("name")) config.getString("name") else "chrome"
@@ -31,8 +30,12 @@ internal class UiBrowserSessionFactory(private val config: Config) {
 
     init {
         require(!config.hasPathOrNull("remote-url")) { "Use ui.browser.url, not remote-url" }
-        checkKeys(config, setOf("mode", "name", "url", "headless", "version", "platform", "accept-insecure-certs",
-            "page-load-strategy", "proxy", "binary", "arguments", "preferences", "extensions", "window", "timeouts", "capabilities"), "ui.browser")
+        checkKeys(
+            config, setOf(
+                "mode", "name", "url", "headless", "version", "platform", "accept-insecure-certs",
+                "page-load-strategy", "proxy", "binary", "arguments", "preferences", "extensions", "window", "timeouts", "capabilities"
+            ), "ui.browser"
+        )
         require(mode in setOf("local", "remote")) { "ui.browser.mode must be local or remote" }
         require(mode == "remote" || name == "chrome") { "Local execution supports only Chrome; use ui.browser.mode = remote for $name" }
         require(mode == "remote" || !config.hasPath("url")) { "ui.browser.url requires remote mode" }
@@ -73,7 +76,11 @@ internal class UiBrowserSessionFactory(private val config: Config) {
             window?.let { driver.manage().window().size = it }
             return driver
         } catch (failure: Throwable) {
-            try { driver.quit() } catch (cleanup: Throwable) { failure.addSuppressed(cleanup) }
+            try {
+                driver.quit()
+            } catch (cleanup: Throwable) {
+                failure.addSuppressed(cleanup)
+            }
             throw failure
         }
     }
@@ -100,6 +107,7 @@ internal class UiBrowserSessionFactory(private val config: Config) {
                 if (config.hasPath("binary")) options.setBinary(config.getString("binary"))
                 if (config.hasPath("preferences")) options.setExperimentalOption("prefs", config.getObject("preferences").unwrapped())
             }
+
             is FirefoxOptions -> {
                 options.addArguments(arguments)
                 if (config.hasPath("binary")) options.setBinary(config.getString("binary"))
@@ -115,7 +123,16 @@ internal class UiBrowserSessionFactory(private val config: Config) {
         require(!config.hasPath("headless") || arguments.none { it.trimStart('-').startsWith("headless") }) {
             "ui.browser.headless conflicts with a headless argument"
         }
-        require(window == null || arguments.none { it.trimStart('-').substringBefore('=') in setOf("window-size", "start-maximized", "start-fullscreen", "kiosk", "width", "height") }) {
+        require(window == null || arguments.none {
+            it.trimStart('-').substringBefore('=') in setOf(
+                "window-size",
+                "start-maximized",
+                "start-fullscreen",
+                "kiosk",
+                "width",
+                "height"
+            )
+        }) {
             "ui.browser.window conflicts with window sizing arguments"
         }
     }
@@ -123,8 +140,16 @@ internal class UiBrowserSessionFactory(private val config: Config) {
     private fun additionalCapabilities(options: AbstractDriverOptions<*>): MutableCapabilities {
         val result = MutableCapabilities(options)
         if (!config.hasPath("capabilities")) return result
-        val vendorKey = when (name) { "chrome" -> "goog:chromeOptions"; "edge" -> "ms:edgeOptions"; "firefox" -> "moz:firefoxOptions"; else -> null }
-        val managed = mapOf("browserVersion" to "version", "platformName" to "platform", "acceptInsecureCerts" to "accept-insecure-certs", "pageLoadStrategy" to "page-load-strategy", "proxy" to "proxy")
+        val vendorKey = when (name) {
+            "chrome" -> "goog:chromeOptions"; "edge" -> "ms:edgeOptions"; "firefox" -> "moz:firefoxOptions"; else -> null
+        }
+        val managed = mapOf(
+            "browserVersion" to "version",
+            "platformName" to "platform",
+            "acceptInsecureCerts" to "accept-insecure-certs",
+            "pageLoadStrategy" to "page-load-strategy",
+            "proxy" to "proxy"
+        )
         val standard = managed.keys + setOf("browserName", "timeouts", "setWindowRect", "strictFileInteractability", "unhandledPromptBehavior", "webSocketUrl")
         config.getObject("capabilities").unwrapped().forEach { (key, value) ->
             require(value != null) { "ui.browser.capabilities.$key must not be null" }
@@ -151,10 +176,12 @@ internal class UiBrowserSessionFactory(private val config: Config) {
                     val current = result.getCapability(key) as? Map<*, *> ?: emptyMap<Any, Any>()
                     result.setCapability(key, current + value)
                 }
+
                 "proxy" -> {
                     require(value is Map<*, *>) { "ui.browser.capabilities.proxy must be an object" }
                     result.setCapability(key, proxy(value))
                 }
+
                 else -> result.setCapability(key, value)
             }
         }
@@ -199,7 +226,9 @@ internal class UiBrowserSessionFactory(private val config: Config) {
             require("socksVersion" !in value) { "ui.browser.proxy.socksVersion requires socksProxy" }
         }
         @Suppress("UNCHECKED_CAST")
-        return try { Proxy(value as Map<String, Any>).toJson() } catch (error: RuntimeException) {
+        return try {
+            Proxy(value as Map<String, Any>).toJson()
+        } catch (error: RuntimeException) {
             throw IllegalArgumentException("Invalid ui.browser.proxy settings", error)
         }
     }
