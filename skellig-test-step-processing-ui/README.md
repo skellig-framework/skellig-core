@@ -183,42 +183,6 @@ Filenames use `before_<test step name>_<local date and time>.png` and `after_<te
 
 Screenshot errors are logged and do not interrupt actions or replace their original failure. Results keep the existing `url` and detached `pages` fields. Screenshots may contain visible input and page data; filenames contain the test step name.
 
-## Runnable login workflow
-
-The executable example lives in [`src/test/resources/ui/example/login.conf`](src/test/resources/ui/example/login.conf) and [`login.sts`](src/test/resources/ui/example/login.sts). The [scenario fixture](src/test/kotlin/org/skellig/teststep/processor/ui/UiScenarioIT.kt) starts a deterministic HTTP application on a free port and overrides the example's base URL. No separately running application or Grid is needed:
-
-```sh
-# From the repository root, with JDK 27 and Maven 3.9 installed:
-mvn -pl skellig-test-step-processing-ui -am clean test \
-  '-Dtest=UiScenarioIT#documentedLoginWorkflow+remoteChromeRunsSameScenario' \
-  -Dsurefire.failIfNoSpecifiedTests=false
-```
-
-Chrome must be available locally or installable through Selenium Manager. The remote check starts a ChromeDriver service and connects through `RemoteWebDriver`; this verifies the WebDriver transport without provisioning Grid. The fixture uses dummy credentials and is not an authentication service.
-
-The scenario supplies `username = alice`, `password = fixture-only-password`, and `expectedAccount = Account`. It navigates to login, replaces both input values, submits once, waits for the delayed account heading, captures `accountName`, and validates it with equality, a regex matcher, and a JSON extractor. `Example consume account` is an ordinary non-UI step that reads `get(accountName)` and the stored `exampleLogin_result`. A second login deliberately expects `Wrong account`: the check verifies that state and the snapshot survive failed validation, the submission is not replayed despite `attempts = 3`, and both screenshots are readable PNGs. The test deletes its temporary screenshot directory after checking it.
-
-To use these resources in your own project, copy them into test resources, set `ui.base-url` and the page XPath definitions for your application, and include the UI module alongside `skellig-junit-runner` at the same Skellig version. Pass the configuration resource when initializing your context, and run both named steps in one context:
-
-```kotlin
-SkelligTestContext().use { context ->
-    val runner = context.initialize(
-        Thread.currentThread().contextClassLoader,
-        listOf("ui/example/login.sts"),
-        "ui/example/login.conf"
-    )
-    runner.run("Example login and capture", mapOf(
-        "username" to "alice",
-        "password" to "fixture-only-password",
-        "expectedAccount" to "Account"
-    )).subscribe { _, _, error -> if (error != null) throw error }
-    runner.run("Example consume account")
-        .subscribe { _, _, error -> if (error != null) throw error }
-}
-```
-
-For remote execution, replace `ui.browser.mode` with `remote` and set `ui.browser.url` to your existing WebDriver endpoint. The application base URL must be reachable **from the browser host**; `localhost` then means that host, not the test runner. The browser configuration example above shows optional capabilities; provider names, browser versions, platform, window size and timeouts in examples are illustrative choices.
-
 ## Action and configuration reference
 
 Action names and enum values are lowercase. All action maps require `action`; the additional supported fields are:
@@ -248,35 +212,4 @@ Action names and enum values are lowercase. All action maps require `action`; th
 
 Operational defaults are local Chrome, headed mode, zero implicit wait, 30-second UI readiness waits, and before/after screenshots in `target/ui-screenshots`. Window dimensions are unchanged unless configured. Browser version, platform, binary, arguments, preferences, extensions, proxy and additional capabilities are not selected by Skellig unless configured. Page-load/script timeouts and other unset Selenium settings retain driver defaults. In particular, the example's headless mode and 1280×720 window are **not** library defaults.
 
-Capture is based on action targets, as implemented in #93, rather than inferred from state or validation expressions. All targets are captured from the **final document**, so login inputs may be absent after navigation to the dashboard. Add an explicit `wait` for each additional control you want to observe. Screenshots follow #95's before/after sequence policy; a state or validation failure uses the already captured after image, without another screenshot. Results expose `url` and `pages`; action timing records and screenshot paths are not result fields.
-
-Keep a context alive for one intended browser journey and close it with `use`/`finally`. Create a new context for a fresh journey; do not reuse a closed context. Browser cookies and navigation persist across scenarios that share a context. Concurrent use of a context, parallel-session verification and parallel scenario scheduling are deferred.
-
 For CI, collect the configured screenshot directory and the test reports even when tests fail. Maven's default destination is relative to the module working directory; Gradle users should explicitly select a destination if they prefer `build/ui-screenshots`. Artifact retention and access control belong to your CI system. Screenshots are viewport captures and may expose page contents; logged input masking does not redact images. Use non-sensitive step names because names appear in filenames. A screenshot write/capture failure is logged and leaves the original step outcome intact; the result does not guarantee that an image exists.
-
-## Verification and build status
-
-Build the Maven dependencies and run the entire UI suite (including the real-browser fixture). The test filter deliberately excludes upstream test classes:
-
-```sh
-mvn -pl skellig-test-step-processing-ui -am clean test \
-  '-Dtest=UiScenarioIT,UiBrowserSessionFactoryTest,UiDiagnosticsTest' \
-  -Dsurefire.failIfNoSpecifiedTests=false
-```
-
-Run the unfiltered repository suite separately to check non-UI compatibility (external-service integration tests remain disabled by the repository's default `skipITs` setting):
-
-```sh
-mvn clean package -DskipITs=true
-```
-
-The existing fixtures cover individual operations, wait/missing/ambiguous behavior, detached observations, session reuse, configuration conflicts, and screenshot failures. The assembled login checks reuse those fixtures rather than introducing a second browser harness. No parallel tests are added.
-
-The repository's Maven build targets JDK 27. The checked-in Gradle wrapper is 7.2 and currently fails on JDK 27 while loading `settings.gradle` with `Unsupported class file major version 71`, before UI compilation. Gradle build files also retain older dependency/toolchain settings. Therefore Gradle compatibility is not verified for this revision; use Maven. A repository-wide Gradle/JDK migration is separate from this UI workflow ticket.
-
-Verified on 2026-10-17 with JDK 27, Maven 3.9.16 and local Chrome:
-
-- `mvn clean package -DskipITs=true`: all 20 reactor modules succeeded; 545 tests, no failures, errors or skips. External-service integration tests were not enabled.
-- UI checks: 12 browser-configuration tests, 4 screenshot diagnostics, and 27 existing browser scenarios passed. The two updated local/remote login checks passed their focused rerun after correcting the example.
-- Gradle wrapper: blocked before compilation by the JDK compatibility error above.
-- Parallel sessions/scenarios: intentionally not verified in this ticket.
