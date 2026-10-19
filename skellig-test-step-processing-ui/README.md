@@ -111,7 +111,7 @@ After all actions finish, their `target` and `xpath` values are collected into a
 
 The order remains actions → capture → result storage → state updates → one immediate validation evaluation. Both state and validation read the same materialized data. Results use the existing `<id>_result` key (the step name when `id` is omitted), including references through `get(...)`. Captured values can feed later steps with `get(accountName)`; they cannot feed later actions within the same step. Results and values saved in state remain usable after navigation and context cleanup; they contain no WebDriver or WebElement references. A failed validation retains both the stored snapshot and completed state updates and does not replay actions or recapture observations.
 
-The UI processor creates its browser session only when its first UI step executes and reuses that driver until its existing `close()` method is called, normally through `SkelligTestContext.close()`. Navigation, cookies, and authentication persist across steps and sequential scenarios using the same context. Step failures leave the browser open for caller-directed continuation; the processor does not automatically discard or recreate a broken session. Contexts without UI work never create a browser. Repeated cleanup is safe, and closed processors cannot recreate a browser.
+The UI processor creates its browser session only when its first UI step executes and reuses that driver until its existing `close()` method is called, normally through `SkelligTestContext.close()`. Navigation, cookies, and authentication persist across steps and sequential scenarios using the same context. Step failures leave the browser open for caller-directed continuation; the processor does not automatically discard or recreate a broken session. Contexts without UI work never create a browser. Repeated cleanup is safe. Treat closure as the end of the context lifetime and create a new context for further work.
 
 Processing and step-runner modules have no feature/scenario lifecycle API. Programmatic callers execute ordinary steps directly and close the owning context in a `finally` block or `use` block. The current JUnit runner closes its context after its complete run. Higher-level callers decide context ownership; one context per feature and parallel execution are future work. UI steps currently require synchronous execution. No explicit reset/quit browser actions are provided.
 
@@ -182,3 +182,34 @@ One screenshot is saved before the complete UI action sequence and one after it.
 Filenames use `before_<test step name>_<local date and time>.png` and `after_<test step name>_<local date and time>.png`, for example `before_Open home_2026-10-17_21-30-00-123456789.png`. The timestamp uses the test process's local timezone with nanosecond precision. Characters unsafe in filenames are replaced with underscores, and step names are limited to 120 characters. Existing files are never overwritten.
 
 Screenshot errors are logged and do not interrupt actions or replace their original failure. Results keep the existing `url` and detached `pages` fields. Screenshots may contain visible input and page data; filenames contain the test step name.
+
+## Action and configuration reference
+
+Action names and enum values are lowercase. All action maps require `action`; the additional supported fields are:
+
+| Action | Required fields | Optional fields |
+| --- | --- | --- |
+| `navigate` | Exactly one of `page` or `url` | None |
+| `click` | `target` | None |
+| `type` | `target`, string `value` | Boolean `append`, default false |
+| `clear` | `target` | None |
+| `select` | `target`, `by` (`text` or `value`), string `value` | None |
+| `check` | `target`, boolean `value` | None |
+| `wait` | `target`, `condition` (`present`, `absent`, `visible`, `hidden`, `enabled`) | None |
+
+`ui-actions` must be a nonempty ordered array. `id`, `values`, `state`, `validate`, and parameter/function expressions use the existing step language. UI execution must be `SYNC`; `ASYNC` is rejected. Step retry settings do not replay UI actions or poll validation; use `ui.timeout` for readiness waits. There are no per-action timeout, inline XPath, read/assert, reset, or quit actions. Frames, multiple windows, custom dropdowns, JavaScript actions and uploads are outside this module's current scope.
+
+| HOCON property | Meaning and actual default |
+| --- | --- |
+| `ui` | Enables discovery of this processor; omitted means no UI processor. |
+| `ui.browser` | Required object when `ui` is present; `{}` selects local, headed Chrome. See browser settings above. |
+| `ui.pages` | Required object mapping page names to definitions; can be empty for explicit URL navigation. |
+| `ui.pages.<page>.path` | Optional navigation path; relative paths require `ui.base-url`. |
+| `ui.pages.<page>.elements` | Optional map of control names to static XPath strings. Page/control names cannot be empty or contain dots. |
+| `ui.base-url` | No default; absolute HTTP(S) base URL for relative page paths. |
+| `ui.timeout` | Positive duration, default `30s`. |
+| `ui.screenshots.path` | Default `target/ui-screenshots`, resolved against the test process working directory. |
+
+Operational defaults are local Chrome, headed mode, zero implicit wait, 30-second UI readiness waits, and before/after screenshots in `target/ui-screenshots`. Window dimensions are unchanged unless configured. Browser version, platform, binary, arguments, preferences, extensions, proxy and additional capabilities are not selected by Skellig unless configured. Page-load/script timeouts and other unset Selenium settings retain driver defaults. In particular, the example's headless mode and 1280×720 window are **not** library defaults.
+
+For CI, collect the configured screenshot directory and the test reports even when tests fail. Maven's default destination is relative to the module working directory; Gradle users should explicitly select a destination if they prefer `build/ui-screenshots`. Artifact retention and access control belong to your CI system. Screenshots are viewport captures and may expose page contents; logged input masking does not redact images. Use non-sensitive step names because names appear in filenames. A screenshot write/capture failure is logged and leaves the original step outcome intact; the result does not guarantee that an image exists.

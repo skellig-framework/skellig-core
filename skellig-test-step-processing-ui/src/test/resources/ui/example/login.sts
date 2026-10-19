@@ -1,0 +1,38 @@
+name("Example login and capture") {
+    id = exampleLogin
+    attempts = 3
+    ui-actions [
+        { action = navigate
+          page = login },
+        { action = type
+          target = "login.username"
+          value = ${username} },
+        { action = type
+          target = "login.password"
+          value = ${password} },
+        { action = click
+          target = "login.submit" },
+        { action = wait
+          target = "dashboard.account"
+          condition = visible }
+    ]
+    state {
+        accountName = $result.pages.dashboard.account.text
+    }
+    validate {
+        get(accountName) = ${expectedAccount}
+        pages.dashboard.account.text = get(accountName)
+        pages.dashboard.account.text.match("Acc.*") = true
+        toJson().jsonPath("pages.dashboard.account.text").contains("count") = true
+    }
+}
+
+name("Example consume account") {
+    values {
+        account = get(accountName)
+    }
+    validate {
+        ${account} = Account
+        get(exampleLogin_result).pages.dashboard.account.visible = true
+    }
+}

@@ -1,8 +1,5 @@
 package org.skellig.teststep.processor.ui
 
-import com.sun.net.httpserver.HttpServer
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
 import org.junit.jupiter.api.Assertions.*
 import org.openqa.selenium.chrome.ChromeDriverService
 import org.openqa.selenium.chrome.ChromeOptions
@@ -20,14 +17,14 @@ import org.skellig.feature.hook.DefaultSkelligHookRunner
 import org.skellig.feature.hook.DefaultSkelligTestHooksRegistry
 import org.skellig.plugin.report.DefaultTestStepLogger
 import org.skellig.runner.TestScenarioRunner
-import org.skellig.teststep.runner.context.SkelligTestContext
+import org.skellig.teststep.processor.ui.UiTestApplication.Companion.chromeDrivers
 import java.util.concurrent.CopyOnWriteArrayList
 
 class UiScenarioIT {
 
     @Test
     fun `scenario navigates then clicks using discovered UI processor`() {
-        withApplication { _, runner, _, requests ->
+        UiTestApplication().run { _, runner, _, requests ->
             val initialDrivers = chromeDrivers()
             val driversDuringSteps = mutableListOf<Set<Long>>()
             val dispatcher = DefaultSkelligTestEventDispatcher()
@@ -45,7 +42,7 @@ class UiScenarioIT {
 
     @Test
     fun `scenario waits for a delayed control and reuses its browser across steps`() {
-        withApplication { context, runner, baseUrl, requests ->
+        UiTestApplication().run { context, runner, baseUrl, requests ->
             val result = runScenario(runner, listOf("Open explicit URL", "Follow next link"), mapOf("url" to "$baseUrl/delayed"))
             assertTrue(result.isEmpty(), result.joinToString { it.trace })
             assertTrue(requests.any { it.path == "/done" && it.cookie?.contains("journey=active") == true })
@@ -55,7 +52,7 @@ class UiScenarioIT {
 
     @Test
     fun `failed action stops without replay and browser remains usable until context close`() {
-        withApplication { _, runner, baseUrl, requests ->
+        UiTestApplication().run { _, runner, baseUrl, requests ->
             val failures = runScenario(runner, listOf("Open home", "Click then fail without replay"))
 
             assertEquals(1, failures.size)
@@ -74,7 +71,7 @@ class UiScenarioIT {
 
     @Test
     fun `ambiguous target fails without clicking any match`() {
-        withApplication { _, runner, baseUrl, requests ->
+        UiTestApplication().run { _, runner, baseUrl, requests ->
             val failures = runScenario(runner, listOf("Open explicit URL", "Follow next link"), mapOf("url" to "$baseUrl/ambiguous"))
 
             assertEquals(1, failures.size)
@@ -85,7 +82,7 @@ class UiScenarioIT {
 
     @Test
     fun `browser is reused across scenarios and ordinary steps never start Chrome`() {
-        withApplication { _, runner, _, requests ->
+        UiTestApplication().run { _, runner, _, requests ->
             val initialDrivers = chromeDrivers()
             val dispatcher = DefaultSkelligTestEventDispatcher()
             val activeDuringOrdinarySteps = mutableListOf<Set<Long>>()
@@ -104,7 +101,7 @@ class UiScenarioIT {
 
     @Test
     fun `validation failure retains the browser for caller directed continuation`() {
-        withApplication { _, runner, _, requests ->
+        UiTestApplication().run { _, runner, _, requests ->
             runner.run("Fail UI validation").subscribe { _, _, error -> assertNotNull(error) }
             val activeDrivers = chromeDrivers()
             assertFalse(activeDrivers.isEmpty())
@@ -120,7 +117,7 @@ class UiScenarioIT {
     @Test
     fun `separate contexts have independent browser state`() {
         repeat(2) {
-            withApplication { _, runner, _, requests ->
+            UiTestApplication().run { _, runner, _, requests ->
                 runner.run("Open home").subscribe { _, _, error -> assertNull(error) }
                 assertEquals(1, requests.count { it.path == "/" && it.cookie?.contains("journey=active") != true })
             }
@@ -129,7 +126,7 @@ class UiScenarioIT {
 
     @Test
     fun `invalid navigation fails before any browser interaction`() {
-        withApplication { _, runner, _, requests ->
+        UiTestApplication().run { _, runner, _, requests ->
             val failures = runScenario(runner, listOf("Invalid navigation"))
             assertEquals(1, failures.size)
             assertTrue(failures.single().trace.contains("exactly one of page or url"), failures.single().trace)
@@ -139,7 +136,7 @@ class UiScenarioIT {
 
     @Test
     fun `context fallback closes Chrome even when another extension fails to shut down`() {
-        withApplication(failClose = true) { context, runner, _, _ ->
+        UiTestApplication(failClose = true).run { context, runner, _, _ ->
             val originalDrivers = chromeDrivers()
             runner.run("Open home").subscribe { _, _, error -> assertNull(error) }
             assertEquals(1, (chromeDrivers() - originalDrivers).size)
@@ -151,7 +148,7 @@ class UiScenarioIT {
 
     @Test
     fun `typing replaces existing text and can append evaluated parameters`() {
-        withApplication { _, runner, _, requests ->
+        UiTestApplication().run { _, runner, _, requests ->
             val failures = runScenario(runner, listOf("Fill username"), mapOf("username" to "alice", "domain" to "example.test"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             assertEquals("username=alice%40example.test", requests.single { it.path == "/submitted" }.query)
@@ -160,7 +157,7 @@ class UiScenarioIT {
 
     @Test
     fun `login journey clears inputs selects options and sets checkbox state`() {
-        withApplication { context, runner, baseUrl, requests ->
+        UiTestApplication().run { context, runner, baseUrl, requests ->
             val failures = runScenario(runner, listOf("Complete login"), mapOf("username" to "alice", "password" to "secret"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             assertEquals("username=alice&password=secret&notes=&textChoice=two&valueChoice=two&remember=yes&changes=3",
@@ -171,7 +168,7 @@ class UiScenarioIT {
 
     @Test
     fun `explicit waits synchronize presence absence visibility hidden and enabled states`() {
-        withApplication { _, runner, baseUrl, requests ->
+        UiTestApplication().run { _, runner, baseUrl, requests ->
             listOf("present", "absent", "visible", "hidden", "enabled", "hidden-missing").forEach { state ->
                 val condition = state.substringBefore('-')
                 val failures = runScenario(runner, listOf("Wait for control"),
@@ -184,7 +181,7 @@ class UiScenarioIT {
 
     @Test
     fun `every form operation waits for delayed interactable controls`() {
-        withApplication { _, runner, baseUrl, requests ->
+        UiTestApplication().run { _, runner, baseUrl, requests ->
             listOf("type", "clear", "select", "check").forEach { operation ->
                 val failures = runScenario(runner, listOf("Open explicit URL", "Try $operation"),
                     mapOf("url" to "$baseUrl/delayed-$operation", "target" to "home.marker"))
@@ -197,7 +194,7 @@ class UiScenarioIT {
 
     @Test
     fun `every form operation times out without submitting and ambiguous controls fail fast`() {
-        withApplication(timeout = "2s") { _, runner, baseUrl, requests ->
+        UiTestApplication(timeout = "2s").run { _, runner, baseUrl, requests ->
             listOf("type", "clear", "select", "check", "wait").forEach { operation ->
                 runScenario(runner, listOf("Open explicit URL"), mapOf("url" to "$baseUrl/ambiguous"))
                 val started = System.nanoTime()
@@ -208,7 +205,7 @@ class UiScenarioIT {
             }
             assertFalse(requests.any { it.path in listOf("/submitted", "/after-wait") })
         }
-        withApplication { _, runner, _, requests ->
+        UiTestApplication().run { _, runner, _, requests ->
             listOf("type", "clear", "select", "check", "wait").forEach { operation ->
                 val failures = runScenario(runner, listOf("Open home", "Try $operation"),
                     mapOf("target" to "home.missing", "condition" to "present"))
@@ -221,7 +218,7 @@ class UiScenarioIT {
 
     @Test
     fun `wait conditions distinguish absent hidden present visible and enabled`() {
-        withApplication { _, runner, baseUrl, requests ->
+        UiTestApplication().run { _, runner, baseUrl, requests ->
             val cases = listOf(
                 Triple("/invisible", "present", true), Triple("/invisible", "enabled", true),
                 Triple("/invisible", "hidden", true), Triple("/invisible", "absent", false),
@@ -239,7 +236,7 @@ class UiScenarioIT {
 
     @Test
     fun `invalid operation fields are rejected before navigation`() {
-        withApplication { _, runner, _, requests ->
+        UiTestApplication().run { _, runner, _, requests ->
             listOf("Invalid append", "Invalid check", "Invalid select", "Invalid wait", "Invalid target").forEach { step ->
                 assertEquals(1, runScenario(runner, listOf(step)).size, step)
             }
@@ -249,7 +246,7 @@ class UiScenarioIT {
 
     @Test
     fun `failed typing does not expose the input value in diagnostics`() {
-        withApplication { _, runner, _, _ ->
+        UiTestApplication().run { _, runner, _, _ ->
             val secret = "sensitive-sentinel-85"
             val failures = runScenario(runner, listOf("Open home", "Fail typing sensitive input"), mapOf("password" to secret))
             assertEquals(1, failures.size)
@@ -261,7 +258,7 @@ class UiScenarioIT {
     @Test
     fun `captured controls feed state validation and later steps after browser cleanup`() {
         var saved: Any? = null
-        withApplication { context, runner, _, requests ->
+        UiTestApplication().run { context, runner, _, requests ->
             val failures = runScenario(runner, listOf("Capture next control", "Follow next link", "Use saved UI value", "Validate saved UI control"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             saved = context.getTestScenarioState().get("captured")
@@ -272,11 +269,11 @@ class UiScenarioIT {
 
     @Test
     fun `captures only action targets without navigating unused catalog pages`() {
-        withApplication(extraUi = """
+        UiTestApplication(extraUi = """
             pages.unused { path = "/never-visit", elements.danger = "//*" }
             pages.home.elements.unused = "//*"
             pages.secondary.elements.next = "//*[@id='next']"
-        """) { context, runner, _, requests ->
+        """).run { context, runner, _, requests ->
             val failures = runScenario(runner, listOf("Scoped nested observations"), mapOf("expectedText" to "Next"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             val result = context.getTestScenarioState().get("scoped_result") as Map<*, *>
@@ -290,7 +287,7 @@ class UiScenarioIT {
 
     @Test
     fun `missing observations are immediate and provide false flags and null data`() {
-        withApplication(timeout = "5s") { context, runner, _, _ ->
+        UiTestApplication(timeout = "5s").run { context, runner, _, _ ->
             assertTrue(runScenario(runner, listOf("Open home")).isEmpty())
             val started = System.nanoTime()
             val failures = runScenario(runner, listOf("Capture missing control"))
@@ -302,7 +299,7 @@ class UiScenarioIT {
 
     @Test
     fun `repeated action targets are captured once before state updates and failed validation`() {
-        withApplication { context, runner, baseUrl, requests ->
+        UiTestApplication().run { context, runner, baseUrl, requests ->
             assertTrue(runScenario(runner, listOf("Open explicit URL"), mapOf("url" to "$baseUrl/probe")).isEmpty())
             val started = System.nanoTime()
             val failures = runScenario(runner, listOf("Capture probe then fail"))
@@ -318,7 +315,7 @@ class UiScenarioIT {
 
     @Test
     fun `dynamic paths existing extractors and matchers consume materialized observations`() {
-        withApplication { context, runner, _, _ ->
+        UiTestApplication().run { context, runner, _, _ ->
             val failures = runScenario(runner, listOf("Capture via extractor"), mapOf("path" to "pages.home.next.text"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             assertEquals("Next", context.getTestScenarioState().get("extractedUiText"))
@@ -327,7 +324,7 @@ class UiScenarioIT {
 
     @Test
     fun `ambiguous observations fail before state updates without replay and retain the browser`() {
-        withApplication { context, runner, baseUrl, requests ->
+        UiTestApplication().run { context, runner, baseUrl, requests ->
             val failures = runScenario(runner, listOf("Capture ambiguous control"), mapOf("url" to "$baseUrl/ambiguous"))
             assertEquals(1, failures.size)
             assertTrue(failures.single().trace.contains("during observation capture"), failures.single().trace)
@@ -340,7 +337,7 @@ class UiScenarioIT {
 
     @Test
     fun `observations reflect final form values selection visibility and enabled state`() {
-        withApplication { context, runner, _, _ ->
+        UiTestApplication().run { context, runner, _, _ ->
             val failures = runScenario(runner, listOf("Capture edited form"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             val form = context.getTestScenarioState().get("formSnapshot") as Map<*, *>
@@ -354,7 +351,7 @@ class UiScenarioIT {
 
     @Test
     fun `state and validation can refer to the current saved result key`() {
-        withApplication { context, runner, _, _ ->
+        UiTestApplication().run { context, runner, _, _ ->
             val failures = runScenario(runner, listOf("Capture using saved result key", "Capture whole saved result", "Capture implicit result"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             assertEquals("Next", context.getTestScenarioState().get("selfText"))
@@ -363,11 +360,53 @@ class UiScenarioIT {
 
     @Test
     fun `navigation alone captures no controls`() {
-        withApplication(extraUi = "pages.home.elements.unused = \"//*\"") { context, runner, _, _ ->
+        UiTestApplication(extraUi = "pages.home.elements.unused = \"//*\"").run { context, runner, _, _ ->
             val failures = runScenario(runner, listOf("Open home"))
             assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
             val result = context.getTestScenarioState().get("open_result") as Map<*, *>
             assertEquals(emptyMap<String, Any?>(), result["pages"])
+        }
+    }
+
+    @Test
+    fun documentedLoginWorkflow() {
+        verifyDocumentedLoginWorkflow()
+    }
+
+    private fun verifyDocumentedLoginWorkflow(extraUi: String = "") {
+        val directory = java.nio.file.Files.createTempDirectory("ui-login-evidence")
+        var saved: Any? = null
+        try {
+            UiTestApplication(extraUi = """
+                $extraUi
+                screenshots.path = ${com.typesafe.config.ConfigUtil.quoteString(directory.toString())}
+            """).run { context, runner, _, requests ->
+                val parameters = mapOf("username" to "alice", "password" to "fixture-only-password", "expectedAccount" to "Account")
+                val failures = runScenario(runner, listOf("Example login and capture", "Example consume account"), parameters)
+                assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
+                saved = context.getTestScenarioState().get("accountName")
+                assertEquals("Account", saved)
+                assertEquals(1, requests.count { it.path == "/dashboard" })
+                assertTrue(requests.single { it.path == "/dashboard" }.query.orEmpty().contains("username=alice"))
+                assertTrue(requests.single { it.path == "/dashboard" }.cookie.orEmpty().contains("journey=active"))
+
+                context.getTestScenarioState().remove("accountName")
+                context.getTestScenarioState().remove("exampleLogin_result")
+                val failed = runScenario(runner, listOf("Example login and capture"), parameters + ("expectedAccount" to "Wrong account"))
+                assertEquals(1, failed.size)
+                assertTrue(failed.single().trace.contains("Wrong account"), failed.single().trace)
+                assertEquals("Account", context.getTestScenarioState().get("accountName"), "State is saved before validation fails")
+                assertNotNull(context.getTestScenarioState().get("exampleLogin_result"))
+                assertEquals(2, requests.count { it.path == "/dashboard" }, "Failed validation must not replay login")
+                assertTrue(runScenario(runner, listOf("Example consume account")).isEmpty())
+
+                val screenshots = java.nio.file.Files.list(directory).use { it.toList() }
+                assertEquals(4, screenshots.size, "Each login, including the failed validation, saves before and after evidence")
+                screenshots.forEach { assertNotNull(javax.imageio.ImageIO.read(it.toFile()), it.toString()) }
+            }
+            assertEquals("Account", saved, "Captured data survives context cleanup")
+        } finally {
+            directory.toFile().deleteRecursively()
         }
     }
 
@@ -378,18 +417,13 @@ class UiScenarioIT {
         service.start()
         try {
             val binary = if (finder.hasBrowserPath()) "binary = ${com.typesafe.config.ConfigUtil.quoteString(finder.browserPath)}" else ""
-            withApplication(extraUi = """
+            verifyDocumentedLoginWorkflow("""
                 browser {
                     mode = remote
                     url = "${service.url}"
                     $binary
                 }
-            """) { context, runner, baseUrl, requests ->
-                val failures = runScenario(runner, listOf("Capture next control", "Follow next link", "Validate saved UI control"))
-                assertTrue(failures.isEmpty(), failures.joinToString { it.trace })
-                assertEquals("$baseUrl/done", (context.getTestScenarioState().get("follow_result") as Map<*, *>)["url"])
-                assertTrue(requests.any { it.path == "/done" && it.cookie?.contains("journey=active") == true })
-            }
+            """)
         } finally {
             service.stop()
         }
@@ -399,7 +433,7 @@ class UiScenarioIT {
     fun `local browser saves one screenshot before and after the action sequence`() {
         val directory = java.nio.file.Files.createTempDirectory("ui-screenshots")
         try {
-            withApplication(extraUi = "screenshots.path = ${com.typesafe.config.ConfigUtil.quoteString(directory.toString())}") { _, runner, _, _ ->
+            UiTestApplication(extraUi = "screenshots.path = ${com.typesafe.config.ConfigUtil.quoteString(directory.toString())}").run { _, runner, _, _ ->
                 assertTrue(runScenario(runner, listOf("Navigate twice for screenshots")).isEmpty())
                 val files = java.nio.file.Files.list(directory).use { it.toList() }
                 assertEquals(2, files.size)
@@ -407,106 +441,6 @@ class UiScenarioIT {
                 files.forEach { assertNotNull(javax.imageio.ImageIO.read(it.toFile())) }
             }
         } finally { directory.toFile().deleteRecursively() }
-    }
-
-    private data class Request(val path: String, val cookie: String?, val query: String?)
-
-    private fun withApplication(failClose: Boolean = false, timeout: String = "500ms", extraUi: String = "", test: (SkelligTestContext, org.skellig.teststep.runner.TestStepRunner, String, List<Request>) -> Unit) {
-        val requests = CopyOnWriteArrayList<Request>()
-        val server = HttpServer.create(java.net.InetSocketAddress("127.0.0.1", 0), 0)
-        server.createContext("/") { exchange ->
-            val path = exchange.requestURI.path
-            requests.add(Request(path, exchange.requestHeaders.getFirst("Cookie"), exchange.requestURI.rawQuery))
-            val link = "<a id='next' href='/done'>Next</a>"
-            val content = when (path) {
-                "/delayed" -> "<script>setTimeout(()=>document.body.innerHTML=\"$link\",200)</script>"
-                "/ambiguous" -> link + link
-                "/probe" -> """<input id='probe'><script>let reads=0;Object.defineProperty(probe,'value',{get:()=>String(++reads)})</script>"""
-                "/submitted" -> "<h1 id='submitted'>Submitted</h1>"
-                "/marker" -> "<input id='marker'>"
-                "/invisible" -> "<input id='marker' style='display:none'>"
-                "/disabled" -> "<input id='marker' disabled>"
-                "/delayed-type", "/delayed-clear", "/delayed-check", "/delayed-select" -> {
-                    val control = when (path) {
-                        "/delayed-select" -> "<select id='marker' name='field'><option value='one'>First</option><option value='two'>Second</option></select>"
-                        "/delayed-check" -> "<input id='marker' name='field' type='checkbox' value='yes'>"
-                        else -> "<input id='marker' name='field' value='old'>"
-                    }
-                    """<form action='/submitted'>$control<button id='submit'>Submit</button></form>
-                        <script>marker.disabled=true;marker.style.display='none';setTimeout(()=>{marker.disabled=false;marker.style.display='block'},200)</script>"""
-                }
-                "/wait-present" -> """<script>setTimeout(()=>document.body.innerHTML="<input id='marker'>",200)</script>"""
-                "/wait-absent" -> "<input id='marker'><script>setTimeout(()=>marker.remove(),200)</script>"
-                "/wait-visible" -> "<input id='marker' style='display:none'><script>setTimeout(()=>marker.style.display='block',200)</script>"
-                "/wait-hidden" -> "<input id='marker'><script>setTimeout(()=>marker.style.display='none',200)</script>"
-                "/wait-enabled" -> "<input id='marker' disabled><script>setTimeout(()=>marker.disabled=false,200)</script>"
-                "/wait-hidden-missing" -> ""
-                "/login" -> """
-                    <form action='/dashboard'>
-                      <input id='username' name='username' value='old'>
-                      <input id='password' name='password' type='password'>
-                      <input id='invisible' style='display:none'><input id='disabled' disabled><textarea id='notes' name='notes'>old notes</textarea>
-                      <select id='textChoice' name='textChoice'><option value='one'>First</option><option value='two'>Second</option></select>
-                      <select id='valueChoice' name='valueChoice'><option value='one'>First</option><option value='two'>Second</option></select>
-                      <input id='remember' name='remember' type='checkbox' value='yes' onchange="changes.value=Number(changes.value)+1">
-                      <input id='changes' name='changes' type='hidden' value='0'>
-                      <button id='submit'>Login</button>
-                    </form>
-                """.trimIndent()
-                "/dashboard" -> """<script>setTimeout(()=>document.body.innerHTML="<h1 id='dashboard'>Account</h1>",200)</script>"""
-                "/form" -> "<form action='/submitted'><input id='username' name='username' value='old'><button id='submit'>Submit</button></form>"
-                else -> link
-            }
-            val html = "<html><body>$content</body></html>".toByteArray()
-            exchange.responseHeaders.set("Content-Type", "text/html")
-            if (path != "/done") exchange.responseHeaders.add("Set-Cookie", "journey=active; Path=/")
-            exchange.sendResponseHeaders(200, html.size.toLong())
-            exchange.responseBody.use { it.write(html) }
-        }
-        server.start()
-        val baseUrl = "http://127.0.0.1:${server.address.port}"
-        val config = ConfigFactory.parseString("""
-            shutdown-failure = $failClose
-            ui {
-                timeout = $timeout
-                base-url = "$baseUrl"
-                browser { mode = local, name = chrome, headless = true }
-                pages.afterWait { path = "/after-wait" }
-                pages.login { path = "/login" }
-                pages.form { path = "/form" }
-                pages.home {
-                    path = "/"
-                    elements {
-                        next = "//*[@id='next']"
-                        missing = "//*[@id='missing']"
-                        username = "//*[@id='username']"
-                        submit = "//*[@id='submit']"
-                        password = "//*[@id='password']"
-                        notes = "//*[@id='notes']"
-                        textChoice = "//*[@id='textChoice']"
-                        valueChoice = "//*[@id='valueChoice']"
-                        remember = "//*[@id='remember']"
-                        marker = "//*[@id='marker']"
-                        dashboard = "//*[@id='dashboard']"
-                        submitted = "//*[@id='submitted']"
-                        probe = "//*[@id='probe']"
-                        invisible = "//*[@id='invisible']"
-                        disabled = "//*[@id='disabled']"
-                    }
-                }
-                $extraUi
-            }
-        """.trimIndent())
-        val originalDrivers = chromeDrivers()
-        val context = object : SkelligTestContext() {
-            override fun createConfig(classLoader: ClassLoader, configPath: String?): Config = config
-        }
-        try {
-            context.use { test(it, it.initialize(javaClass.classLoader, listOf("ui/steps.sts")), baseUrl, requests) }
-        } finally {
-            server.stop(0)
-            assertEquals(originalDrivers, chromeDrivers(), "Context close left a ChromeDriver process running")
-        }
     }
 
     private fun runScenario(
@@ -527,8 +461,4 @@ class UiScenarioIT {
         return failures
     }
 
-    private fun chromeDrivers(): Set<Long> = ProcessHandle.current().children().use { processes ->
-        processes.filter { it.info().command().orElse("").substringAfterLast('/') == "chromedriver" }
-            .map { it.pid() }.toList().toSet()
-    }
 }
