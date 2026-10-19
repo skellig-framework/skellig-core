@@ -9,6 +9,7 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-performance</artifactId>
+    <name>skellig-test-step-processing-performance</name>
     <description>Processing functionality for Performance-based Skellig Test Step</description>
 
     <dependencies>

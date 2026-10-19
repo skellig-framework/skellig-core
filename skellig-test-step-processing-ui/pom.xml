@@ -8,6 +8,7 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-ui</artifactId>
+    <name>skellig-test-step-processing-ui</name>
     <description>Selenium UI processing for Skellig Test Steps</description>
     <dependencies>
         <dependency>

@@ -9,6 +9,7 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-unix</artifactId>
+    <name>skellig-test-step-processing-unix</name>
     <description>Processing functionality for UNIX-Shell-based Skellig Test Step</description>
 
     <properties>

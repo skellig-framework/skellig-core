@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>skellig-plugin</artifactId>
+    <name>skellig-plugin</name>
 
     <dependencies>
         <dependency>
