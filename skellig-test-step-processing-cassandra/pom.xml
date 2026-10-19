@@ -9,6 +9,7 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-cassandra</artifactId>
+    <name>skellig-test-step-processing-cassandra</name>
     <description>Processing functionality for Cassandra-based Skellig Test Step</description>
 
     <properties>

@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>skellig-feature</artifactId>
+    <name>skellig-feature</name>
     <description>Reader and domain classes for Skellig Feature file</description>
     <dependencies>
         <dependency>

@@ -9,6 +9,7 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-ibmmq</artifactId>
+    <name>skellig-test-step-processing-ibmmq</name>
     <description>Processing functionality for IBMMQ-based Skellig Test Step</description>
 
     <dependencies>

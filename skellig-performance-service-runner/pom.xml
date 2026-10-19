@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>skellig-performance-service-runner</artifactId>
+    <name>skellig-performance-service-runner</name>
     <description>Web-service (Spring-Boot) runner for Skellig performance tests</description>
 
     <properties>

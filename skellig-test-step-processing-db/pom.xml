@@ -9,6 +9,7 @@
         <version>0.0.0</version>
     </parent>
     <artifactId>skellig-test-step-processing-db</artifactId>
+    <name>skellig-test-step-processing-db</name>
     <description>Basic processing functionality for DB-based Skellig Test Step</description>
 
     <dependencies>
