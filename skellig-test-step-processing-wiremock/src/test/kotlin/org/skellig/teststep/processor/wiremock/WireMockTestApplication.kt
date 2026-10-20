@@ -28,7 +28,25 @@ internal class WireMockTestApplication(
         context.use { test(it, it.initialize(javaClass.classLoader, steps)) }
     }
 
+    /** Runs a step and returns its result, failing the test with the step's error if it has one. */
+    fun TestStepRunner.run(name: String, parameters: Map<String, Any?> = emptyMap()): Any? {
+        var result: Any? = null
+        var error: Throwable? = null
+        run(name, parameters).subscribe { _, r, e -> result = r; error = e }
+        error?.let { throw it }
+        return result
+    }
+
+    fun run(runner: TestStepRunner, name: String): Throwable? {
+        var error: Throwable? = null
+        runner.run(name).subscribe { _, _, e -> error = e }
+        return error
+    }
+
     /** Calls the mock server the way the system under test would. */
+    fun post(port: Int, path: String): HttpResponse<String> =
+        client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path")).POST(HttpRequest.BodyPublishers.noBody()).build(), HttpResponse.BodyHandlers.ofString())
+
     fun call(port: Int, path: String = "/"): HttpResponse<String> =
         client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path")).build(), HttpResponse.BodyHandlers.ofString())
 

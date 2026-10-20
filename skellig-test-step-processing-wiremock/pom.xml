@@ -38,6 +38,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.skelligframework</groupId>
+            <artifactId>skellig-test-step-processing-http</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
