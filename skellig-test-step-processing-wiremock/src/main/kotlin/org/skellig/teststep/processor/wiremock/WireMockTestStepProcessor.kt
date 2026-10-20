@@ -1,9 +1,11 @@
 package org.skellig.teststep.processor.wiremock
 
+import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.wiremock.config.MockServerSettings
 import org.skellig.teststep.processor.wiremock.model.WireMockTestStep
+import java.util.UUID
 
 /** Owns the mock servers: they listen from creation until the Skellig context closes. */
 internal class WireMockTestStepProcessor private constructor(
@@ -13,7 +15,20 @@ internal class WireMockTestStepProcessor private constructor(
 
     override fun getTestStepClass() = WireMockTestStep::class.java
 
-    override fun processTestStep(testStep: WireMockTestStep): Any? = null
+    override fun processTestStep(testStep: WireMockTestStep): Any? {
+        val server = resolveServer(testStep.server)
+        val stub = testStep.stub ?: error("WireMock stub step has no stub definition")
+
+        // The same step on the same server always maps to the same id, so re-running it replaces its stub; a step without an id is never replaced
+        val id = testStep.id?.let { UUID.nameUUIDFromBytes("${server.name}:$it".toByteArray()) } ?: UUID.randomUUID()
+        server.registerStub(id, stub)
+        return mapOf("id" to id.toString(), "server" to server.name, "port" to server.port)
+    }
+
+    private fun resolveServer(name: String?): MockServer =
+        if (name != null) servers[name] ?: throw TestStepProcessingException("Unknown wiremock server '$name'. Configured servers: ${servers.keys.joinToString()}")
+        else servers.values.singleOrNull()
+            ?: throw TestStepProcessingException("The 'server' key is required when several wiremock servers are configured: ${servers.keys.joinToString()}")
 
     override fun close() {
         val failures = servers.values.mapNotNull { server -> runCatching { server.stop() }.exceptionOrNull() }

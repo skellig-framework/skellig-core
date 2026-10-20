@@ -23,6 +23,7 @@ class HttpTestStepFactory(
 
     companion object {
         private val SERVICE_KEYWORD = fromProperty("services")
+        private val MOCK_SERVER_KEYWORD = fromProperty("wiremock")
         private val URL_KEYWORD = fromProperty("url")
         private val METHOD_KEYWORD = fromProperty("method")
         private val HEADERS_KEYWORD = fromProperty("headers")
@@ -59,6 +60,7 @@ class HttpTestStepFactory(
 
 
     override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {
-        return rawTestStep.containsKey(URL_KEYWORD) && rawTestStep.containsKey(METHOD_KEYWORD)
+        // steps of a mock server processor may carry `url` and `method` too, but they are never HTTP client steps
+        return !rawTestStep.containsKey(MOCK_SERVER_KEYWORD) && rawTestStep.containsKey(URL_KEYWORD) && rawTestStep.containsKey(METHOD_KEYWORD)
     }
 }

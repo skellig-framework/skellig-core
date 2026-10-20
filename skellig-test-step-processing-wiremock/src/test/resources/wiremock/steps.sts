@@ -2,3 +2,134 @@ name("Ordinary step") {
     id = ordinary
     values { message = "no mock server needed" }
 }
+
+name("Stub ping") {
+    wiremock = stub
+    server = payments
+    id = ping
+    stub {
+        request {
+            method = GET
+            path = "/ping"
+        }
+        response {
+            status = 201
+            headers { "X-Stub" = first }
+            body = "pong"
+        }
+    }
+}
+
+name("Stub ping again") {
+    wiremock = stub
+    server = payments
+    id = ping
+    stub {
+        request {
+            method = GET
+            path = "/ping"
+        }
+        response {
+            status = 200
+            body = "pong again"
+        }
+    }
+}
+
+name("Stub ping on identity") {
+    wiremock = stub
+    server = identity
+    id = ping
+    stub {
+        request {
+            method = GET
+            path = "/ping"
+        }
+        response {
+            status = 202
+            body = "identity pong"
+        }
+    }
+}
+
+name("Stub anonymous one") {
+    wiremock = stub
+    server = payments
+    stub {
+        request {
+            method = POST
+            path = "/anon/one"
+        }
+        response {
+            status = 200
+            body = "one"
+        }
+    }
+}
+
+name("Stub anonymous two") {
+    wiremock = stub
+    server = payments
+    stub {
+        request {
+            method = POST
+            path = "/anon/two"
+        }
+        response {
+            status = 200
+            body = "two"
+        }
+    }
+}
+
+name("Stub on unknown server") {
+    wiremock = stub
+    server = nowhere
+    stub {
+        request {
+            method = GET
+            path = "/x"
+        }
+        response {
+            status = 200
+        }
+    }
+}
+
+name("Stub without server") {
+    wiremock = stub
+    id = lone
+    stub {
+        request {
+            method = GET
+            path = "/lone"
+        }
+        response {
+            status = 200
+            body = "lone"
+        }
+    }
+}
+
+name("Stub with url and method keys") {
+    wiremock = stub
+    server = payments
+    id = clash
+    url = "http://ignored.invalid"
+    method = GET
+    stub {
+        request {
+            method = GET
+            path = "/clash"
+        }
+        response {
+            status = 200
+            body = "mock"
+        }
+    }
+}
+
+name("Plain http call") {
+    url = "/ping"
+    method = GET
+}
