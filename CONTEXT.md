@@ -17,6 +17,7 @@ Skellig is a Kotlin/JVM framework for functional, integration, and performance t
 | `skellig-plugin` | Execution-event plugins, logging, and reports, including Cucumber report output. |
 | `skellig-test-step-processing-http` | HTTP request construction, execution, and response handling. |
 | `skellig-test-step-processing-ui` | Selenium browser navigation, form interactions, explicit waits, and detached observations for state/validation with a HOCON XPath page catalog and one lazy local Chrome or remote WebDriver session per processor, reused until context cleanup. |
+| `skellig-test-step-processing-wiremock` | Embedded WireMock mock servers declared under the `wiremock` configuration key, started with the Skellig context and stopped when it closes. Optional; kept out of the Spring Boot service runner so Jetty and Tomcat never share a classpath. |
 | `skellig-test-step-processing-tcp` | TCP channels and send/read/consume operations. |
 | `skellig-test-step-processing-rmq` | RabbitMQ/AMQP channels and messaging operations. |
 | `skellig-test-step-processing-ibmmq` | IBM MQ connections, queues, and messaging operations. |
@@ -47,4 +48,7 @@ Skellig is a Kotlin/JVM framework for functional, integration, and performance t
 - **SYNC / ASYNC:** Step execution modes; asynchronous results are delivered through subscriptions.
 - **Hook / plugin:** A lifecycle action before/after a feature or scenario / an extension reacting to execution events, such as report generation.
 - **Protocol / channel:** The integration selected for a step / its connection or transport abstraction.
+- **Mock server:** A named, fixed-port HTTP(S) server owned by the Skellig runtime that stands in for a dependency of the system under test. It is called by external systems, never by Skellig's own HTTP steps. Its lifetime is the whole test context, not a single scenario.
+- **Stub:** A rule on a mock server that pairs a request match with a canned response. A stub is owned by the test step that registered it; registering again from the same step replaces the earlier stub. Stubs of other steps may outlive the scenario that created them.
+- **Journal:** The mock server's record of requests it received, whether or not any stub matched. Steps read it to assert on what the system under test sent.
 - **Performance step:** Repeated execution of test work with timing/load settings and metric collection.

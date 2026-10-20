@@ -19,6 +19,7 @@
         <module>skellig-test-step-runner</module>
         <module>skellig-test-step-processing-http</module>
         <module>skellig-test-step-processing-ui</module>
+        <module>skellig-test-step-processing-wiremock</module>
         <module>skellig-test-step-processing-db</module>
         <module>skellig-test-step-processing-tcp</module>
         <module>skellig-test-step-processing-rmq</module>
@@ -89,6 +90,7 @@
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <testcontainers-service.version>1.21.4</testcontainers-service.version>
         <jackson-annotations.version>2.22</jackson-annotations.version>
+        <wiremock-server.version>4.0.0-beta.40</wiremock-server.version>
     </properties>
 
     <dependencies>

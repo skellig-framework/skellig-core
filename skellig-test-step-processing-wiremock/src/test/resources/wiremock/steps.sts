@@ -1,0 +1,4 @@
+name("Ordinary step") {
+    id = ordinary
+    values { message = "no mock server needed" }
+}
