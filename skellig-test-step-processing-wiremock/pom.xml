@@ -33,7 +33,7 @@
         </dependency>
         <dependency>
             <groupId>org.skelligframework</groupId>
-            <artifactId>skellig-junit-runner</artifactId>
+            <artifactId>skellig-test-step-runner</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
