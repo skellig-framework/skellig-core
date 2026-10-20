@@ -19,7 +19,7 @@ internal class MockServer private constructor(val settings: MockServerSettings, 
 
     /** Registers the stub under [id], first removing the stub it registered earlier so that the latest registration wins. */
     fun registerStub(id: UUID, stub: StubDefinition) {
-        if (server.getStubMappings().any { it.id == id }) server.removeStub(id)
+        server.removeStub(id)
 
         val response = aResponse().withStatus(stub.response.status)
         stub.response.headers.forEach { (name, value) -> response.withHeader(name, value) }

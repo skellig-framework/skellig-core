@@ -25,11 +25,6 @@ internal class WireMockTestStepProcessor private constructor(
         return mapOf("id" to id.toString(), "server" to server.name, "port" to server.port)
     }
 
-    private fun resolveServer(name: String?): MockServer =
-        if (name != null) servers[name] ?: throw TestStepProcessingException("Unknown wiremock server '$name'. Configured servers: ${servers.keys.joinToString()}")
-        else servers.values.singleOrNull()
-            ?: throw TestStepProcessingException("The 'server' key is required when several wiremock servers are configured: ${servers.keys.joinToString()}")
-
     override fun close() {
         val failures = servers.values.mapNotNull { server -> runCatching { server.stop() }.exceptionOrNull() }
         try {
@@ -41,6 +36,11 @@ internal class WireMockTestStepProcessor private constructor(
             }
         }
     }
+
+    private fun resolveServer(name: String?): MockServer =
+        if (name != null) servers[name] ?: throw TestStepProcessingException("Unknown wiremock server '$name'. Configured servers: ${servers.keys.joinToString()}")
+        else servers.values.singleOrNull()
+            ?: throw TestStepProcessingException("The 'server' key is required when several wiremock servers are configured: ${servers.keys.joinToString()}")
 
     companion object {
         /** Create WireMockTestStepProcessor and starts every Wiremock server, or none: servers already started are stopped when a later one fails. */
