@@ -16,7 +16,7 @@ class WireMockStubIT {
     fun `a stub answers a real http call with the defined response and returns its id, server and port`() {
         val app = WireMockTestApplication(two)
         app.run { _, runner ->
-            val result = with(app) { runner.run("Stub ping") } as Map<*, *>
+            val result = with(app) { runner.runStep("Stub ping") } as Map<*, *>
             assertEquals("payments", result["server"])
             assertEquals(payments, result["port"])
             assertNotNull(result["id"])
@@ -32,8 +32,8 @@ class WireMockStubIT {
     fun `re-running a step id replaces the earlier stub`() {
         val app = WireMockTestApplication(two)
         app.run { _, runner ->
-            val first = with(app) { runner.run("Stub ping") } as Map<*, *>
-            val second = with(app) { runner.run("Stub ping again") } as Map<*, *>
+            val first = with(app) { runner.runStep("Stub ping") } as Map<*, *>
+            val second = with(app) { runner.runStep("Stub ping again") } as Map<*, *>
 
             assertEquals(first["id"], second["id"])
             assertEquals("pong again", app.call(payments, "/ping").body())
@@ -46,8 +46,8 @@ class WireMockStubIT {
         val app = WireMockTestApplication(two)
         app.run { _, runner ->
             with(app) {
-                runner.run("Stub ping")
-                runner.run("Stub ping on identity")
+                runner.runStep("Stub ping")
+                runner.runStep("Stub ping on identity")
             }
             assertEquals("pong", app.call(payments, "/ping").body())
             assertEquals("identity pong", app.call(identity, "/ping").body())
@@ -59,8 +59,8 @@ class WireMockStubIT {
         val app = WireMockTestApplication(two)
         app.run { _, runner ->
             with(app) {
-                runner.run("Stub anonymous one")
-                runner.run("Stub anonymous two")
+                runner.runStep("Stub anonymous one")
+                runner.runStep("Stub anonymous two")
             }
             assertEquals("one", app.post(payments, "/anon/one").body())
             assertEquals("two", app.post(payments, "/anon/two").body())
@@ -80,7 +80,7 @@ class WireMockStubIT {
     fun `the server key is optional when exactly one server is configured`() {
         val app = WireMockTestApplication("""wiremock { servers = [ { name = only, port = $payments } ] }""")
         app.run { _, runner ->
-            with(app) { runner.run("Stub without server") }
+            with(app) { runner.runStep("Stub without server") }
             assertEquals("lone", app.call(payments, "/lone").body())
         }
     }
@@ -101,11 +101,11 @@ class WireMockStubIT {
                http { services = [ { serviceName = svc, url = "http://127.0.0.1:$payments" } ] }"""
         )
         app.run { _, runner ->
-            with(app) { runner.run("Stub with url and method keys") }
+            with(app) { runner.runStep("Stub with url and method keys") }
             assertEquals("mock", app.call(payments, "/clash").body())
 
-            with(app) { runner.run("Stub ping") }
-            val httpResult = with(app) { runner.run("Plain http call") } as org.skellig.teststep.processor.http.model.HttpResponse
+            with(app) { runner.runStep("Stub ping") }
+            val httpResult = with(app) { runner.runStep("Plain http call") } as org.skellig.teststep.processor.http.model.HttpResponse
             assertEquals(201, httpResult.statusCode)
             assertEquals("pong", httpResult.body)
         }

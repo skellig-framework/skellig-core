@@ -29,7 +29,7 @@ internal class WireMockTestApplication(
     }
 
     /** Runs a step and returns its result, failing the test with the step's error if it has one. */
-    fun TestStepRunner.run(name: String, parameters: Map<String, Any?> = emptyMap()): Any? {
+    fun TestStepRunner.runStep(name: String, parameters: Map<String, Any?> = emptyMap()): Any? {
         var result: Any? = null
         var error: Throwable? = null
         run(name, parameters).subscribe { _, r, e -> result = r; error = e }

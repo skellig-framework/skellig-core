@@ -23,6 +23,19 @@ internal class WireMockTestStepFactory(
         private val SERVER_KEYWORD = fromProperty("server")
         private val STUB_KEYWORD = fromProperty("stub")
         private const val STUB_OPERATION = "stub"
+        private const val REQUEST_KEY = "request"
+        private const val RESPONSE_KEY = "response"
+        private const val METHOD_KEY = "method"
+        private const val PATH_KEY = "path"
+        private const val QUERY_KEY = "query"
+        private const val HEADERS_KEY = "headers"
+        private const val BODY_KEY = "body"
+        private const val STATUS_KEY = "status"
+        private const val DELAY_KEY = "delay"
+        private const val PRIORITY_KEY = "priority"
+        private const val CONTAINS = "contains"
+        private const val MATCHES = "matches"
+        private const val JSON = "json"
     }
 
     override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>) = rawTestStep.containsKey(WIREMOCK_KEYWORD)
@@ -44,28 +57,28 @@ internal class WireMockTestStepFactory(
 
     private fun readStub(stub: Map<*, *>?): StubDefinition {
         stub ?: throw TestStepCreationException("A wiremock 'stub' step must have a 'stub { request { ... } response { ... } }' block")
-        val request = block(stub, "request")
-        val response = block(stub, "response")
+        val request = block(stub, REQUEST_KEY)
+        val response = block(stub, RESPONSE_KEY)
 
         return StubDefinition(
             StubRequest(
-                method = (request["method"] ?: throw TestStepCreationException("The stub 'request' block must have a 'method'")).toString().uppercase(),
-                path = readPath(request["path"]),
-                query = readMatchers(request["query"], "query"),
-                headers = readMatchers(request["headers"], "headers"),
-                body = request["body"]?.let { readMatcher(it) }
+                method = (request[METHOD_KEY] ?: throw TestStepCreationException("The stub 'request' block must have a 'method'")).toString().uppercase(),
+                path = readPath(request[PATH_KEY]),
+                query = readMatchers(request[QUERY_KEY], QUERY_KEY),
+                headers = readMatchers(request[HEADERS_KEY], HEADERS_KEY),
+                body = request[BODY_KEY]?.let { readMatcher(it) }
             ),
             StubResponse(
-                status = (response["status"] ?: 200).toString().toInt(),
-                headers = (response["headers"] as? Map<*, *>)?.entries?.associate { it.key.toString() to it.value.toString() } ?: emptyMap(),
-                body = response["body"]?.toString(),
-                delay = response["delay"]?.let { readInteger(it, "response.delay", 0) }
+                status = (response[STATUS_KEY] ?: 200).toString().toInt(),
+                headers = (response[HEADERS_KEY] as? Map<*, *>)?.entries?.associate { it.key.toString() to it.value.toString() } ?: emptyMap(),
+                body = response[BODY_KEY]?.toString(),
+                delay = response[DELAY_KEY]?.let { readInt(it, "response.delay", 0) }
             ),
-            priority = stub["priority"]?.let { readInteger(it, "priority", 1) }
+            priority = stub[PRIORITY_KEY]?.let { readInt(it, PRIORITY_KEY, 1) }
         )
     }
 
-    private fun readInteger(value: Any, name: String, minimum: Int): Int =
+    private fun readInt(value: Any, name: String, minimum: Int): Int =
         value.toString().toIntOrNull()?.takeIf { it >= minimum }
             ?: throw TestStepCreationException("Stub '$name' must be an integer greater than or equal to $minimum")
 
@@ -91,9 +104,9 @@ internal class WireMockTestStepFactory(
         val (name, expected) = value.entries.single()
         val text = expected?.toString() ?: throw TestStepCreationException("Request matcher '$name' must have a value")
         return when (name) {
-            "contains" -> RequestMatcher.Contains(text)
-            "matches" -> RequestMatcher.Matches(text)
-            "json" -> RequestMatcher.Json(text)
+            CONTAINS -> RequestMatcher.Contains(text)
+            MATCHES -> RequestMatcher.Matches(text)
+            JSON -> RequestMatcher.Json(text)
             else -> throw TestStepCreationException("Unknown request matcher '$name'. Supported matchers: contains, matches, json, or a plain value for equality")
         }
     }

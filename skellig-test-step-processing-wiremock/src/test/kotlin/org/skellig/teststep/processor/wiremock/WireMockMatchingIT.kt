@@ -21,12 +21,13 @@ class WireMockMatchingIT {
     @Test
     fun `response delay is observed by the HTTP client`() {
         app.run { _, runner ->
-            with(app) { runner.run("Stub delayed") }
+            with(app) { runner.runStep("Stub delayed") }
             // Warm up the connection so initial connection setup is not mistaken for the delay.
             app.call(port, "/warmup")
             val start = System.nanoTime()
             val response = app.call(port, "/delayed")
             val elapsedMillis = (System.nanoTime() - start) / 1_000_000
+
             assertEquals(200, response.statusCode())
             assertEquals("delayed", response.body())
             assertTrue(elapsedMillis >= 250, "Expected at least 250 ms, got $elapsedMillis ms")
@@ -37,7 +38,7 @@ class WireMockMatchingIT {
     fun `higher priority beats a newer general stub and equal priorities use latest registration`() {
         app.run { _, runner ->
             fun register(id: String, priority: Int, path: Any, reply: String) {
-                with(app) { runner.run("Stub priority", mapOf("stubId" to id, "priority" to priority, "path" to path, "reply" to reply)) }
+                with(app) { runner.runStep("Stub priority", mapOf("stubId" to id, "priority" to priority, "path" to path, "reply" to reply)) }
             }
             register("specific", 1, "/priority", "specific")
             register("general", 5, mapOf("matches" to "/.*"), "general")
@@ -53,7 +54,7 @@ class WireMockMatchingIT {
     @Test
     fun `path regex and nested matchers combine and every request part must match`() {
         app.run { _, runner ->
-            with(app) { runner.run("Stub combined matchers") }
+            with(app) { runner.runStep("Stub combined matchers") }
             fun send(
                 path: String = "/orders/123", query: String = "currency=GBP",
                 token: String = "a-secret-token", body: String = """{"amount":10,"extra":true}""",
@@ -70,7 +71,7 @@ class WireMockMatchingIT {
             assertEquals(404, send(body = """{"amount":11}"""))
             assertEquals(404, send(method = "PUT"))
 
-            with(app) { runner.run("Stub matching request", mapOf("request" to mapOf("method" to "GET", "path" to "/literal.+"))) }
+            with(app) { runner.runStep("Stub matching request", mapOf("req" to mapOf("method" to "GET", "path" to "/literal.+"))) }
             assertEquals(200, app.call(port, "/literal.+?unmatched=query").statusCode())
             assertEquals(404, app.call(port, "/literalXYZ").statusCode())
         }
@@ -89,7 +90,7 @@ class WireMockMatchingIT {
                 for ((matcher, matching, rejected) in cases) {
                     val request = mapOf("method" to "POST", "path" to "/match", part to
                         if (part == "body") matcher else mapOf("value" to matcher))
-                    with(app) { runner.run("Stub matching request", mapOf("request" to request)) }
+                    with(app) { runner.runStep("Stub matching request", mapOf("req" to request)) }
                     assertEquals(200, call(part, matching).statusCode(), "$part $matcher should match")
                     assertEquals(404, call(part, rejected).statusCode(), "$part $matcher should reject")
                     assertEquals(404, call("none", "").statusCode(), "$part $matcher requires a value")

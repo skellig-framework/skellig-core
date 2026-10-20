@@ -2,7 +2,7 @@ name("Stub matching request") {
     wiremock = stub
     id = matching
     stub {
-        request = ${request}
+        request = ${req}
         response { body = matched }
     }
 }
