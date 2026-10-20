@@ -4,9 +4,15 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.request
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.containing
+import com.github.tomakehurst.wiremock.client.WireMock.matching
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import org.skellig.teststep.processor.wiremock.config.MockServerSettings
 import org.skellig.teststep.processor.wiremock.model.StubDefinition
+import org.skellig.teststep.processor.wiremock.model.RequestMatcher
 import java.util.UUID
 
 /** The only class that touches WireMock types; everything else works with Skellig's own models. */
@@ -24,8 +30,26 @@ internal class MockServer private constructor(val settings: MockServerSettings, 
         val response = aResponse().withStatus(stub.response.status)
         stub.response.headers.forEach { (name, value) -> response.withHeader(name, value) }
         stub.response.body?.let { response.withBody(it) }
+        stub.response.delay?.let { response.withFixedDelay(it) }
 
-        server.stubFor(request(stub.request.method, urlPathEqualTo(stub.request.path)).withId(id).willReturn(response))
+        val path = when (val matcher = stub.request.path) {
+            is RequestMatcher.Equal -> urlPathEqualTo(matcher.value)
+            is RequestMatcher.Matches -> urlPathMatching(matcher.value)
+            else -> error("Request path must use equality or regex matching")
+        }
+        val mapping = request(stub.request.method, path).withId(id)
+        stub.priority?.let { mapping.atPriority(it) }
+        stub.request.query.forEach { (name, matcher) -> mapping.withQueryParam(name, pattern(matcher)) }
+        stub.request.headers.forEach { (name, matcher) -> mapping.withHeader(name, pattern(matcher)) }
+        stub.request.body?.let { mapping.withRequestBody(pattern(it)) }
+        server.stubFor(mapping.willReturn(response))
+    }
+
+    private fun pattern(matcher: RequestMatcher) = when (matcher) {
+        is RequestMatcher.Equal -> equalTo(matcher.value)
+        is RequestMatcher.Contains -> containing(matcher.value)
+        is RequestMatcher.Matches -> matching(matcher.value)
+        is RequestMatcher.Json -> equalToJson(matcher.value, false, true)
     }
 
     fun stop() {
