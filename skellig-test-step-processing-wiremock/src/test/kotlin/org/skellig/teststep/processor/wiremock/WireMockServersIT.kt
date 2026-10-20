@@ -53,7 +53,7 @@ class WireMockServersIT {
     @Test
     fun `port 0 fails at startup`() {
         val messages = failureMessages(WireMockTestApplication(servers("""{ name = a, port = 0 }""")))
-        assertTrue(messages.contains("wiremock server 'a' must use a fixed non-zero port"), messages)
+        assertTrue(messages.contains("wiremock server 'a' has invalid port 0"), messages)
     }
 
     @Test
