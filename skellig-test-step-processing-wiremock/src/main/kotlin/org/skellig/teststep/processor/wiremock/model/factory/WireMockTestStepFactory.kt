@@ -37,11 +37,11 @@ internal class WireMockTestStepFactory(
         return WireMockTestStep.Builder().apply {
             this.operation = operation
             server = convertValue<String>(rawTestStep[SERVER_KEYWORD], parameters)
-            stub = readStub(convertValue<Map<String, Any?>>(rawTestStep[STUB_KEYWORD], parameters))
+            stub = readStub(convertValue<Any>(rawTestStep[STUB_KEYWORD], parameters) as? Map<*, *>)
         }
     }
 
-    private fun readStub(stub: Map<String, Any?>?): StubDefinition {
+    private fun readStub(stub: Map<*, *>?): StubDefinition {
         stub ?: throw TestStepCreationException("A wiremock 'stub' step must have a 'stub { request { ... } response { ... } }' block")
         val request = block(stub, "request")
         val response = block(stub, "response")
@@ -59,7 +59,6 @@ internal class WireMockTestStepFactory(
         )
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun block(stub: Map<String, Any?>, name: String): Map<String, Any?> =
-        stub[name] as? Map<String, Any?> ?: throw TestStepCreationException("The wiremock 'stub' block must have a '$name { ... }' block")
+    private fun block(stub: Map<*, *>, name: String): Map<*, *> =
+        stub[name] as? Map<*, *> ?: throw TestStepCreationException("The wiremock 'stub' block must have a '$name { ... }' block")
 }

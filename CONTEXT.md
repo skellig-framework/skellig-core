@@ -35,6 +35,8 @@ Skellig is a Kotlin/JVM framework for functional, integration, and performance t
 
 `SkelligTestContext` wires readers, registries, factories, processors, configuration, and plugins. Parsing changes belong in the feature or STS reader modules; shared evaluation/validation behavior belongs in core processing; protocol-specific behavior belongs in its adapter module. Kotlin sources live under `src/main/kotlin`; parser grammars live under `src/main/antlr` in the parsing modules. Both Maven and Gradle build definitions are present.
 
+All test step factories must use `convertValue` when reading each property or value from a raw test step: values may be expressions and need proper evaluation against the step parameters and context. Use `convertValue<String>` for string-valued properties instead of calling `.toString()` on raw expressions, and `convertValue<Any>` for other properties before inspecting their types. Map and list expressions evaluate their nested keys and values recursively, so subsequent conversions operate on evaluated values.
+
 ## Glossary
 
 - **Feature / scenario:** A named group of tests / one sequence of steps. Example tables supply scenario data; `<parameter>` placeholders substitute it into step names and parameters.
