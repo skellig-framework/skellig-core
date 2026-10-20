@@ -18,7 +18,8 @@ internal class MockServer private constructor(val settings: MockServerSettings, 
     }
 
     companion object {
-        fun start(settings: MockServerSettings): MockServer {
+        /** Create WireMock server and start it. */
+        fun create(settings: MockServerSettings): MockServer {
             val options = options().port(settings.port)
             settings.journalMaxEntries?.let { options.maxRequestJournalEntries(it) }
             val server = WireMockServer(options)

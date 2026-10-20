@@ -8,6 +8,7 @@ internal data class MockServerSettings(val name: String, val port: Int, val jour
         /** Reads and validates `wiremock.servers`; fails with a message naming the offending entry. */
         fun readAll(wiremock: Config): List<MockServerSettings> {
             require(wiremock.hasPath("servers")) { "wiremock.servers must declare at least one mock server" }
+
             val servers = wiremock.getConfigList("servers").mapIndexed { index, server -> read(server, index + 1) }
             require(servers.isNotEmpty()) { "wiremock.servers must declare at least one mock server" }
 
@@ -26,13 +27,12 @@ internal data class MockServerSettings(val name: String, val port: Int, val jour
             }
             val name = server.getString("name")
             require(server.hasPath("port")) { "wiremock server '$name' must have a fixed port" }
+
             val port = server.getInt("port")
-            require(port != 0) { "wiremock server '$name' must use a fixed non-zero port, but port is 0" }
             require(port in 1..65535) { "wiremock server '$name' has invalid port $port" }
+
             val maxEntries = if (server.hasPath("journal.max-entries")) server.getInt("journal.max-entries") else null
-            require(maxEntries == null || maxEntries > 0) {
-                "wiremock server '$name' journal.max-entries must be positive, but is $maxEntries"
-            }
+
             return MockServerSettings(name, port, maxEntries)
         }
     }

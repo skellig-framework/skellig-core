@@ -28,11 +28,11 @@ internal class WireMockTestStepProcessor private constructor(
     }
 
     companion object {
-        /** Starts every server, or none: servers already started are stopped when a later one fails. */
-        fun start(state: TestScenarioState, settings: List<MockServerSettings>): WireMockTestStepProcessor {
+        /** Create WireMockTestStepProcessor and starts every Wiremock server, or none: servers already started are stopped when a later one fails. */
+        fun create(state: TestScenarioState, settings: List<MockServerSettings>): WireMockTestStepProcessor {
             val started = linkedMapOf<String, MockServer>()
             try {
-                settings.forEach { started[it.name] = MockServer.start(it) }
+                settings.forEach { started[it.name] = MockServer.create(it) }
             } catch (ex: Exception) {
                 started.values.forEach { runCatching { it.stop() } }
                 throw ex

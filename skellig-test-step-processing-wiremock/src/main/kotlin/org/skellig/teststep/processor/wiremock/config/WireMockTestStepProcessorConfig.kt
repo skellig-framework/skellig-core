@@ -13,7 +13,7 @@ class WireMockTestStepProcessorConfig : TestStepProcessorConfig<WireMockTestStep
         if (!details.config.hasPath("wiremock")) return null
         val servers = MockServerSettings.readAll(details.config.getConfig("wiremock"))
         return ConfiguredTestStepProcessorDetails(
-            WireMockTestStepProcessor.start(details.state, servers),
+            WireMockTestStepProcessor.create(details.state, servers),
             WireMockTestStepFactory(details.testStepRegistry, details.valueExpressionContextFactory)
         )
     }
