@@ -6,6 +6,7 @@ import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.wiremock.model.StubDefinition
+import org.skellig.teststep.processor.wiremock.model.RequestMatcher
 import org.skellig.teststep.processor.wiremock.model.StubRequest
 import org.skellig.teststep.processor.wiremock.model.StubResponse
 import org.skellig.teststep.processor.wiremock.model.WireMockTestStep
@@ -22,6 +23,19 @@ internal class WireMockTestStepFactory(
         private val SERVER_KEYWORD = fromProperty("server")
         private val STUB_KEYWORD = fromProperty("stub")
         private const val STUB_OPERATION = "stub"
+        private const val REQUEST_KEY = "request"
+        private const val RESPONSE_KEY = "response"
+        private const val METHOD_KEY = "method"
+        private const val PATH_KEY = "path"
+        private const val QUERY_KEY = "query"
+        private const val HEADERS_KEY = "headers"
+        private const val BODY_KEY = "body"
+        private const val STATUS_KEY = "status"
+        private const val DELAY_KEY = "delay"
+        private const val PRIORITY_KEY = "priority"
+        private const val CONTAINS = "contains"
+        private const val MATCHES = "matches"
+        private const val JSON = "json"
     }
 
     override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>) = rawTestStep.containsKey(WIREMOCK_KEYWORD)
@@ -43,20 +57,58 @@ internal class WireMockTestStepFactory(
 
     private fun readStub(stub: Map<*, *>?): StubDefinition {
         stub ?: throw TestStepCreationException("A wiremock 'stub' step must have a 'stub { request { ... } response { ... } }' block")
-        val request = block(stub, "request")
-        val response = block(stub, "response")
+        val request = block(stub, REQUEST_KEY)
+        val response = block(stub, RESPONSE_KEY)
 
         return StubDefinition(
             StubRequest(
-                method = (request["method"] ?: throw TestStepCreationException("The stub 'request' block must have a 'method'")).toString().uppercase(),
-                path = (request["path"] ?: throw TestStepCreationException("The stub 'request' block must have a 'path'")).toString()
+                method = (request[METHOD_KEY] ?: throw TestStepCreationException("The stub 'request' block must have a 'method'")).toString().uppercase(),
+                path = readPath(request[PATH_KEY]),
+                query = readMatchers(request[QUERY_KEY], QUERY_KEY),
+                headers = readMatchers(request[HEADERS_KEY], HEADERS_KEY),
+                body = request[BODY_KEY]?.let { readMatcher(it) }
             ),
             StubResponse(
-                status = (response["status"] ?: 200).toString().toInt(),
-                headers = (response["headers"] as? Map<*, *>)?.entries?.associate { it.key.toString() to it.value.toString() } ?: emptyMap(),
-                body = response["body"]?.toString()
-            )
+                status = (response[STATUS_KEY] ?: 200).toString().toInt(),
+                headers = (response[HEADERS_KEY] as? Map<*, *>)?.entries?.associate { it.key.toString() to it.value.toString() } ?: emptyMap(),
+                body = response[BODY_KEY]?.toString(),
+                delay = response[DELAY_KEY]?.let { readInt(it, "response.delay", 0) }
+            ),
+            priority = stub[PRIORITY_KEY]?.let { readInt(it, PRIORITY_KEY, 1) }
         )
+    }
+
+    private fun readInt(value: Any, name: String, minimum: Int): Int =
+        value.toString().toIntOrNull()?.takeIf { it >= minimum }
+            ?: throw TestStepCreationException("Stub '$name' must be an integer greater than or equal to $minimum")
+
+    private fun readPath(value: Any?): RequestMatcher {
+        val matcher = readMatcher(value ?: throw TestStepCreationException("The stub 'request' block must have a 'path'"))
+        if (matcher !is RequestMatcher.Equal && matcher !is RequestMatcher.Matches) {
+            throw TestStepCreationException("Request 'path' must be a plain value or a 'matches' regex")
+        }
+        return matcher
+    }
+
+    private fun readMatchers(value: Any?, name: String): Map<String, RequestMatcher> {
+        if (value == null) return emptyMap()
+        val entries = value as? Map<*, *>
+            ?: throw TestStepCreationException("Request '$name' must be a block of named matchers")
+        return entries.entries.associate { it.key.toString() to readMatcher(it.value) }
+    }
+
+    private fun readMatcher(value: Any?): RequestMatcher {
+        if (value == null) throw TestStepCreationException("A request matcher must have a value")
+        if (value !is Map<*, *>) return RequestMatcher.Equal(value.toString())
+        if (value.size != 1) throw TestStepCreationException("A request matcher must contain exactly one of 'contains', 'matches' or 'json'")
+        val (name, expected) = value.entries.single()
+        val text = expected?.toString() ?: throw TestStepCreationException("Request matcher '$name' must have a value")
+        return when (name) {
+            CONTAINS -> RequestMatcher.Contains(text)
+            MATCHES -> RequestMatcher.Matches(text)
+            JSON -> RequestMatcher.Json(text)
+            else -> throw TestStepCreationException("Unknown request matcher '$name'. Supported matchers: contains, matches, json, or a plain value for equality")
+        }
     }
 
     private fun block(stub: Map<*, *>, name: String): Map<*, *> =

@@ -38,6 +38,42 @@ name("Payment accepted") {
 }
 ```
 
+### Request matching and stub options
+
+`request.path` accepts an exact path or `path { matches = "/payments/[0-9]+" }`. It excludes the query string. Query parameters, headers and body accept a plain value for equality or a single matcher block:
+
+| Matcher | Meaning |
+| --- | --- |
+| `value = "text"` | Exact equality |
+| `value { contains = "text" }` | Contains the text |
+| `value { matches = "text-[0-9]+" }` | Matches the regular expression |
+| `value { json = "{\"id\":1}" }` | Equal JSON, ignoring extra fields; array order is significant |
+
+All declared request conditions must match. Missing query parameters or headers do not match.
+
+```
+name("Specific payment") {
+    wiremock = stub
+    stub {
+        priority = 1
+        request {
+            method = POST
+            path { matches = "/payments/[0-9]+" }
+            query { currency = GBP }
+            headers { "X-Token" { contains = secret } }
+            body { json = "{\"amount\":10}" }
+        }
+        response {
+            status = 201
+            delay = 250
+            body = accepted
+        }
+    }
+}
+```
+
+`stub.priority` is a positive integer: lower numbers have higher priority, and the default is WireMock's priority of 5. Equal priorities resolve to the latest registered stub. `response.delay` is a non-negative fixed delay in milliseconds and defaults to no delay. This is distinct from a step's top-level retry delay.
+
 The stub id is derived from the server name and the step `id`, so running the step again replaces its earlier stub, and the same `id` on two servers is independent. A step without an `id` gets a random stub id and is never replaced. The step returns `id`, `server` and `port`.
 
 Steps with a `wiremock` key are never handled by the HTTP processor, even if they also carry `url` and `method`.

@@ -1,0 +1,49 @@
+name("Stub matching request") {
+    wiremock = stub
+    id = matching
+    stub {
+        request = ${req}
+        response { body = matched }
+    }
+}
+
+name("Stub combined matchers") {
+    wiremock = stub
+    stub {
+        request {
+            method = POST
+            path { matches = "/orders/[0-9]+" }
+            query { currency = GBP }
+            headers { "X-Token" { contains = secret } }
+            body { json = "{\"amount\":10}" }
+        }
+        response { body = accepted }
+    }
+}
+
+name("Stub priority") {
+    wiremock = stub
+    id = ${stubId}
+    stub {
+        priority = ${priority}
+        request {
+            method = GET
+            path = ${path}
+        }
+        response { body = ${reply} }
+    }
+}
+
+name("Stub delayed") {
+    wiremock = stub
+    stub {
+        request {
+            method = GET
+            path = "/delayed"
+        }
+        response {
+            delay = 250
+            body = delayed
+        }
+    }
+}
