@@ -78,4 +78,41 @@ The stub id is derived from the server name and the step `id`, so running the st
 
 Steps with a `wiremock` key are never handled by the HTTP processor, even if they also carry `url` and `method`.
 
-Request-journal and reset steps are added in follow-up work. Do not add this module to the Spring Boot performance service runner: it brings Jetty, which must not share a classpath with Tomcat.
+Reset steps are added in follow-up work. Do not add this module to the Spring Boot performance service runner: it brings Jetty, which must not share a classpath with Tomcat.
+
+## Request journal
+
+`wiremock = requests` returns a detached map with `count` and `requests`. Each request is a map with:
+
+| Field | Value |
+| --- | --- |
+| `method` | HTTP method |
+| `url` | Request path and query string |
+| `path` | Request path without the query string |
+| `query` | Query parameter names mapped to their first decoded value |
+| `headers` | Header names mapped to their first value; names preserve received casing |
+| `body` | Raw request body string |
+| `loggedTime` | Time received, as milliseconds since the Unix epoch |
+| `matched` | Whether a stub matched the request |
+| `stubId` | Matched stub ID, or null for unmatched requests |
+
+Omit `request` to read the whole journal, or use a top-level `request {}` block with the same matchers as stubs. Omitted method/path conditions match any method/path. `unmatched = true` restricts the result to requests that matched no stub; it combines with the request filter. Reads do not consume journal entries. The configured journal size limit still applies. No ordering is guaranteed; filter to the requests relevant to the assertion.
+
+```
+name("Wait for payment request") {
+    wiremock = requests
+    server = payments
+    request {
+        method = POST
+        path = "/payments"
+    }
+    attempts = 20
+    delay = 100
+    validate { toJson().jsonPath("count") = 1 }
+    state { paymentBody = $result.requests.fromIndex(0).body }
+}
+```
+
+Use `toJson().jsonPath("count")` to validate the count field; bare `count` resolves to the DSL collection function.
+
+`attempts` is the maximum number of journal reads (at least one), with `delay` milliseconds between unsuccessful validations. Polling stops once validation passes; without validation it reads once. A failed validation reports the last journal result. Normal `state {}` and `validate {}` expressions operate on that final result.

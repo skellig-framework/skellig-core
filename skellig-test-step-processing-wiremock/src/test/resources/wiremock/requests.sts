@@ -1,0 +1,44 @@
+name("Read journal") {
+    wiremock = requests
+}
+
+name("Filter journal") {
+    wiremock = requests
+    request = ${filter}
+    unmatched = ${unmatched}
+}
+
+name("Capture request") {
+    wiremock = requests
+    request { path = "/capture" }
+    state { capturedBody = $result.requests.fromIndex(0).body }
+    validate { toJson().jsonPath("count") = 1 }
+}
+
+name("Use captured request") {
+    validate { get(capturedBody) = "captured-value" }
+}
+
+name("Poll journal") {
+    wiremock = requests
+    request { path = "/late" }
+    attempts = ${attempts}
+    delay = 100
+    validate { toJson().jsonPath("count") = 2 }
+    state { finalRequests = $result.requests }
+}
+
+name("Poll empty journal with state capture") {
+    wiremock = requests
+    attempts = 2
+    delay = 10
+    validate { toJson().jsonPath("count") = 1 }
+    state { missingBody = $result.requests.fromIndex(0).body }
+}
+
+name("Poll empty journal with extraction validation") {
+    wiremock = requests
+    attempts = 2
+    delay = 10
+    validate { requests.fromIndex(0).body = expected }
+}

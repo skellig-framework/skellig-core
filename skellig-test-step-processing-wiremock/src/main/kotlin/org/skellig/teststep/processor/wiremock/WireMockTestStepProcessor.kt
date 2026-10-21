@@ -1,7 +1,9 @@
 package org.skellig.teststep.processor.wiremock
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException
+import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
+import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.wiremock.config.MockServerSettings
 import org.skellig.teststep.processor.wiremock.model.WireMockTestStep
@@ -17,12 +19,40 @@ internal class WireMockTestStepProcessor private constructor(
 
     override fun processTestStep(testStep: WireMockTestStep): Any? {
         val server = resolveServer(testStep.server)
+        if (testStep.operation == "requests") return pollRequests(server, testStep)
         val stub = testStep.stub ?: error("WireMock stub step has no stub definition")
 
         // The same step on the same server always maps to the same id, so re-running it replaces its stub; a step without an id is never replaced
         val id = testStep.id?.let { UUID.nameUUIDFromBytes("${server.name}:$it".toByteArray()) } ?: UUID.randomUUID()
         server.registerStub(id, stub)
         return mapOf("id" to id.toString(), "server" to server.name, "port" to server.port)
+    }
+
+    private fun pollRequests(server: MockServer, testStep: WireMockTestStep): Map<String, Any> {
+        var result = server.requests(testStep.requestFilter, testStep.unmatched)
+        repeat((testStep.attempts - 1).coerceAtLeast(0)) {
+            if (isValid(testStep, result)) return result
+            if (testStep.delay > 0) Thread.sleep(testStep.delay.toLong())
+            result = server.requests(testStep.requestFilter, testStep.unmatched)
+        }
+        return result
+    }
+
+    override fun process(testStep: WireMockTestStep): TestStepRunResult {
+        val processed = super.process(testStep)
+        if (testStep.operation != "requests") return processed
+
+        // Enrich errors after both state capture and validation, preserving the final result for subscribers.
+        val reported = DefaultTestStepRunResult(testStep)
+        processed.subscribe { _, result, error ->
+            val failure = if (error != null && result != null) {
+                val message = "${error.message}\nLast WireMock journal result: $result"
+                if (error is ValidationException) ValidationException(message, error)
+                else TestStepProcessingException(message, error)
+            } else error
+            reported.notify(result, failure)
+        }
+        return reported
     }
 
     override fun close() {
