@@ -3,7 +3,7 @@ package org.skellig.teststep.processor.wiremock.model
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 
-/** Mock server step; [operation] selects what it does. Supports stub registration and request journal reads. */
+/** Mock server step; [operation] selects what it does. Supports stub registration, request journal reads and resets. */
 class WireMockTestStep private constructor(builder: Builder) : DefaultTestStep(
     builder.stepId, builder.stepName, TestStepExecutionType.SYNC,
     builder.stepTimeout, builder.stepDelay, builder.stepAttempts, builder.stepValues,
@@ -16,6 +16,7 @@ class WireMockTestStep private constructor(builder: Builder) : DefaultTestStep(
     internal val requestFilter: StubRequest? = builder.requestFilter
     internal val unmatched: Boolean = builder.unmatched
     internal val stub: StubDefinition? = builder.stub
+    internal val resetScope: ResetScope = builder.resetScope
 
     internal class Builder : DefaultTestStep.Builder<WireMockTestStep>() {
         var operation: String? = null
@@ -23,6 +24,7 @@ class WireMockTestStep private constructor(builder: Builder) : DefaultTestStep(
         var requestFilter: StubRequest? = null
         var unmatched: Boolean = false
         var stub: StubDefinition? = null
+        var resetScope: ResetScope = ResetScope.ALL
 
         val stepId get() = id
         val stepName get() = name ?: error("WireMock test step name is required")

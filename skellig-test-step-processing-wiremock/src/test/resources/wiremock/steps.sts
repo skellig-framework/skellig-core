@@ -133,3 +133,24 @@ name("Plain http call") {
     url = "/ping"
     method = GET
 }
+
+name("Reset default") {
+    wiremock = reset
+    server = ${server}
+}
+
+name("Reset what") {
+    wiremock = reset
+    server = ${server}
+    what = ${what}
+}
+
+name("Reset all servers") {
+    wiremock = reset
+    what = ${what}
+}
+
+name("Read server journal") {
+    wiremock = requests
+    server = ${server}
+}
