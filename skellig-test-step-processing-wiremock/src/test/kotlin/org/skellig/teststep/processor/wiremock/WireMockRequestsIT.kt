@@ -107,7 +107,7 @@ class WireMockRequestsIT {
     }
 
     @Test
-    fun `a missing request exhausts polling and reports the last journal result`() {
+    fun `a missing request exhausts polling and returns the last result with a validation error`() {
         app.run { _, runner ->
             send("/late", "last-result-marker")
             val started = System.nanoTime()
@@ -119,22 +119,9 @@ class WireMockRequestsIT {
             }
             assertTrue(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started) >= 200)
             assertEquals(1, (result as Map<*, *>)["count"])
-            assertNotNull(failure)
-            val message = failure!!.message.orEmpty()
-            assertTrue(message.contains("count=1"), message)
-            assertTrue(message.contains("last-result-marker"), message)
-        }
-    }
-
-    @Test
-    fun `empty journal failures include the last result when extracting validation or state values`() {
-        app.run { _, runner ->
-            listOf("Poll empty journal with state capture", "Poll empty journal with extraction validation").forEach { name ->
-                val failure = app.run(runner, name)
-                assertNotNull(failure)
-                val message = failure!!.message.orEmpty()
-                assertTrue(message.contains("count=0") && message.contains("requests=[]"), message)
-            }
+            assertInstanceOf(org.skellig.teststep.processing.exception.ValidationException::class.java, failure)
+            val requests = (result as Map<*, *>)["requests"] as List<*>
+            assertEquals("last-result-marker", (requests.single() as Map<*, *>)["body"])
         }
     }
 

@@ -27,18 +27,3 @@ name("Poll journal") {
     validate { toJson().jsonPath("count") = 2 }
     state { finalRequests = $result.requests }
 }
-
-name("Poll empty journal with state capture") {
-    wiremock = requests
-    attempts = 2
-    delay = 10
-    validate { toJson().jsonPath("count") = 1 }
-    state { missingBody = $result.requests.fromIndex(0).body }
-}
-
-name("Poll empty journal with extraction validation") {
-    wiremock = requests
-    attempts = 2
-    delay = 10
-    validate { requests.fromIndex(0).body = expected }
-}

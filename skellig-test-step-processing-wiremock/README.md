@@ -115,4 +115,4 @@ name("Wait for payment request") {
 
 Use `toJson().jsonPath("count")` to validate the count field; bare `count` resolves to the DSL collection function.
 
-`attempts` is the maximum number of journal reads (at least one), with `delay` milliseconds between unsuccessful validations. Polling stops once validation passes; without validation it reads once. A failed validation reports the last journal result. Normal `state {}` and `validate {}` expressions operate on that final result.
+`attempts` is the maximum number of journal reads (at least one), with `delay` milliseconds between unsuccessful validations. Polling stops once validation passes; without validation it reads once. Failed validation uses the standard processor error handling; the final journal result remains available to result subscribers. Normal `state {}` and `validate {}` expressions operate on that final result.

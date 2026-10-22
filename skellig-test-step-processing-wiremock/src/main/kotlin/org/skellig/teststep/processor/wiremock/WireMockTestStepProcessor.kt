@@ -1,9 +1,7 @@
 package org.skellig.teststep.processor.wiremock
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException
-import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
-import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.wiremock.config.MockServerSettings
 import org.skellig.teststep.processor.wiremock.model.WireMockTestStep
@@ -36,23 +34,6 @@ internal class WireMockTestStepProcessor private constructor(
             result = server.requests(testStep.requestFilter, testStep.unmatched)
         }
         return result
-    }
-
-    override fun process(testStep: WireMockTestStep): TestStepRunResult {
-        val processed = super.process(testStep)
-        if (testStep.operation != "requests") return processed
-
-        // Enrich errors after both state capture and validation, preserving the final result for subscribers.
-        val reported = DefaultTestStepRunResult(testStep)
-        processed.subscribe { _, result, error ->
-            val failure = if (error != null && result != null) {
-                val message = "${error.message}\nLast WireMock journal result: $result"
-                if (error is ValidationException) ValidationException(message, error)
-                else TestStepProcessingException(message, error)
-            } else error
-            reported.notify(result, failure)
-        }
-        return reported
     }
 
     override fun close() {
