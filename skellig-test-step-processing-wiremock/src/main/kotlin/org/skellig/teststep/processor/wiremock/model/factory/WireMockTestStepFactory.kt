@@ -5,6 +5,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
+import org.skellig.teststep.processor.wiremock.model.ResetScope
 import org.skellig.teststep.processor.wiremock.model.StubDefinition
 import org.skellig.teststep.processor.wiremock.model.RequestMatcher
 import org.skellig.teststep.processor.wiremock.model.StubRequest
@@ -24,7 +25,10 @@ internal class WireMockTestStepFactory(
         private val STUB_KEYWORD = fromProperty("stub")
         private val REQUEST_KEYWORD = fromProperty("request")
         private val UNMATCHED_KEYWORD = fromProperty("unmatched")
+        private val WHAT_KEYWORD = fromProperty("what")
         private const val STUB_OPERATION = "stub"
+        private const val REQUESTS_OPERATION = "requests"
+        private const val RESET_OPERATION = "reset"
         private const val REQUEST_KEY = "request"
         private const val RESPONSE_KEY = "response"
         private const val METHOD_KEY = "method"
@@ -47,14 +51,20 @@ internal class WireMockTestStepFactory(
         parameters: Map<String, Any?>
     ): DefaultTestStep.Builder<WireMockTestStep> {
         val operation = convertValue<String>(rawTestStep[WIREMOCK_KEYWORD], parameters)?.trim()
-        if (operation !in setOf(STUB_OPERATION, "requests")) {
-            throw TestStepCreationException("Unsupported wiremock operation '$operation'. Supported operations: $STUB_OPERATION, requests")
+        if (operation !in setOf(STUB_OPERATION, REQUESTS_OPERATION, RESET_OPERATION)) {
+            throw TestStepCreationException("Unsupported wiremock operation '$operation'. Supported operations: $STUB_OPERATION, $REQUESTS_OPERATION, $RESET_OPERATION")
         }
         return WireMockTestStep.Builder().apply {
             this.operation = operation
             server = convertValue<String>(rawTestStep[SERVER_KEYWORD], parameters)
             if (operation == STUB_OPERATION) {
                 stub = readStub(convertValue<Any>(rawTestStep[STUB_KEYWORD], parameters) as? Map<*, *>)
+            } else if (operation == RESET_OPERATION) {
+                resetScope = convertValue<String>(rawTestStep[WHAT_KEYWORD], parameters)?.let {
+                    ResetScope.fromKeyword(it) ?: throw TestStepCreationException(
+                        "Unknown wiremock reset 'what' '$it'. Supported values: ${ResetScope.entries.joinToString { scope -> scope.keyword }}"
+                    )
+                } ?: ResetScope.ALL
             } else {
                 requestFilter = convertValue<Any>(rawTestStep[REQUEST_KEYWORD], parameters)?.let {
                     readRequest(it as? Map<*, *> ?: throw TestStepCreationException("Request filter must be a block"), true)

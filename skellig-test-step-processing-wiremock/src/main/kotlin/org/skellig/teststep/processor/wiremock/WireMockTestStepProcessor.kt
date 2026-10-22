@@ -16,6 +16,7 @@ internal class WireMockTestStepProcessor private constructor(
     override fun getTestStepClass() = WireMockTestStep::class.java
 
     override fun processTestStep(testStep: WireMockTestStep): Any? {
+        if (testStep.operation == "reset") return reset(testStep)
         val server = resolveServer(testStep.server)
         if (testStep.operation == "requests") return pollRequests(server, testStep)
         val stub = testStep.stub ?: error("WireMock stub step has no stub definition")
@@ -24,6 +25,13 @@ internal class WireMockTestStepProcessor private constructor(
         val id = testStep.id?.let { UUID.nameUUIDFromBytes("${server.name}:$it".toByteArray()) } ?: UUID.randomUUID()
         server.registerStub(id, stub)
         return mapOf("id" to id.toString(), "server" to server.name, "port" to server.port)
+    }
+
+    /** Resets the named server, or every server when none is named. */
+    private fun reset(testStep: WireMockTestStep): Map<String, Any> {
+        val targets = testStep.server?.let { listOf(resolveServer(it)) } ?: servers.values
+        targets.forEach { it.reset(testStep.resetScope) }
+        return mapOf("servers" to targets.map { it.name }, "what" to testStep.resetScope.keyword)
     }
 
     private fun pollRequests(server: MockServer, testStep: WireMockTestStep): Map<String, Any> {

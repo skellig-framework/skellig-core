@@ -12,6 +12,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import org.skellig.teststep.processor.wiremock.config.MockServerSettings
+import org.skellig.teststep.processor.wiremock.model.ResetScope
 import org.skellig.teststep.processor.wiremock.model.StubRequest
 import org.skellig.teststep.processor.wiremock.model.StubDefinition
 import org.skellig.teststep.processor.wiremock.model.RequestMatcher
@@ -23,7 +24,11 @@ internal class MockServer private constructor(val settings: MockServerSettings, 
     val name get() = settings.name
     val port get() = settings.port
 
-    fun reset() = server.resetAll()
+    fun reset(what: ResetScope) = when (what) {
+        ResetScope.ALL -> server.resetAll()
+        ResetScope.STUBS -> server.resetMappings()
+        ResetScope.JOURNAL -> server.resetRequests()
+    }
 
     /** Registers the stub under [id], first removing the stub it registered earlier so that the latest registration wins. */
     fun registerStub(id: UUID, stub: StubDefinition) {

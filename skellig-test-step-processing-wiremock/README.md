@@ -78,7 +78,7 @@ The stub id is derived from the server name and the step `id`, so running the st
 
 Steps with a `wiremock` key are never handled by the HTTP processor, even if they also carry `url` and `method`.
 
-Reset steps are added in follow-up work. Do not add this module to the Spring Boot performance service runner: it brings Jetty, which must not share a classpath with Tomcat.
+Do not add this module to the Spring Boot performance service runner: it brings Jetty, which must not share a classpath with Tomcat.
 
 ## Request journal
 
@@ -116,3 +116,23 @@ name("Wait for payment request") {
 Use `toJson().jsonPath("count")` to validate the count field; bare `count` resolves to the DSL collection function.
 
 `attempts` is the maximum number of journal reads (at least one), with `delay` milliseconds between unsuccessful validations. Polling stops once validation passes; without validation it reads once. Failed validation uses the standard processor error handling; the final journal result remains available to result subscribers. Normal `state {}` and `validate {}` expressions operate on that final result.
+
+## Reset
+
+`wiremock = reset` clears state on a mock server so a scenario starts clean. `what` selects the scope and defaults to `all`:
+
+| `what` | Clears |
+| --- | --- |
+| `all` | Stubs and the request journal (and scenario state) |
+| `stubs` | Registered stubs only; the journal is kept |
+| `journal` | The request journal only; stubs are kept |
+
+Name one server with `server`, or omit it to reset every configured server. After a journal reset, `wiremock = requests` only returns requests received afterwards. The step returns `servers` (the names reset) and `what`.
+
+```
+name("Clean slate") {
+    wiremock = reset
+    server = payments
+    what = journal
+}
+```
