@@ -18,6 +18,9 @@ class WireMockTestStep private constructor(builder: Builder) : DefaultTestStep(
     internal val stub: StubDefinition? = builder.stub
     internal val resetScope: ResetScope = builder.resetScope
 
+    /** A raw WireMock JSON mapping, used instead of [stub] when the step declares `stub { json = ... }`. */
+    internal val rawStub: String? = builder.rawStub
+
     internal class Builder : DefaultTestStep.Builder<WireMockTestStep>() {
         var operation: String? = null
         var server: String? = null
@@ -25,6 +28,7 @@ class WireMockTestStep private constructor(builder: Builder) : DefaultTestStep(
         var unmatched: Boolean = false
         var stub: StubDefinition? = null
         var resetScope: ResetScope = ResetScope.ALL
+        var rawStub: String? = null
 
         val stepId get() = id
         val stepName get() = name ?: error("WireMock test step name is required")
