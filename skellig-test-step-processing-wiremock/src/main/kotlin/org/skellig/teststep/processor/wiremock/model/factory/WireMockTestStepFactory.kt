@@ -22,6 +22,8 @@ internal class WireMockTestStepFactory(
         private val WIREMOCK_KEYWORD = fromProperty("wiremock")
         private val SERVER_KEYWORD = fromProperty("server")
         private val STUB_KEYWORD = fromProperty("stub")
+        private val REQUEST_KEYWORD = fromProperty("request")
+        private val UNMATCHED_KEYWORD = fromProperty("unmatched")
         private const val STUB_OPERATION = "stub"
         private const val REQUEST_KEY = "request"
         private const val RESPONSE_KEY = "response"
@@ -45,13 +47,23 @@ internal class WireMockTestStepFactory(
         parameters: Map<String, Any?>
     ): DefaultTestStep.Builder<WireMockTestStep> {
         val operation = convertValue<String>(rawTestStep[WIREMOCK_KEYWORD], parameters)?.trim()
-        if (operation != STUB_OPERATION) {
-            throw TestStepCreationException("Unsupported wiremock operation '$operation'. Supported operations: $STUB_OPERATION")
+        if (operation !in setOf(STUB_OPERATION, "requests")) {
+            throw TestStepCreationException("Unsupported wiremock operation '$operation'. Supported operations: $STUB_OPERATION, requests")
         }
         return WireMockTestStep.Builder().apply {
             this.operation = operation
             server = convertValue<String>(rawTestStep[SERVER_KEYWORD], parameters)
-            stub = readStub(convertValue<Any>(rawTestStep[STUB_KEYWORD], parameters) as? Map<*, *>)
+            if (operation == STUB_OPERATION) {
+                stub = readStub(convertValue<Any>(rawTestStep[STUB_KEYWORD], parameters) as? Map<*, *>)
+            } else {
+                requestFilter = convertValue<Any>(rawTestStep[REQUEST_KEYWORD], parameters)?.let {
+                    readRequest(it as? Map<*, *> ?: throw TestStepCreationException("Request filter must be a block"), true)
+                }
+                unmatched = convertValue<Any>(rawTestStep[UNMATCHED_KEYWORD], parameters)?.let {
+                    it.toString().toBooleanStrictOrNull()
+                        ?: throw TestStepCreationException("WireMock 'unmatched' must be true or false")
+                } ?: false
+            }
         }
     }
 
@@ -61,13 +73,7 @@ internal class WireMockTestStepFactory(
         val response = block(stub, RESPONSE_KEY)
 
         return StubDefinition(
-            StubRequest(
-                method = (request[METHOD_KEY] ?: throw TestStepCreationException("The stub 'request' block must have a 'method'")).toString().uppercase(),
-                path = readPath(request[PATH_KEY]),
-                query = readMatchers(request[QUERY_KEY], QUERY_KEY),
-                headers = readMatchers(request[HEADERS_KEY], HEADERS_KEY),
-                body = request[BODY_KEY]?.let { readMatcher(it) }
-            ),
+            readRequest(request),
             StubResponse(
                 status = (response[STATUS_KEY] ?: 200).toString().toInt(),
                 headers = (response[HEADERS_KEY] as? Map<*, *>)?.entries?.associate { it.key.toString() to it.value.toString() } ?: emptyMap(),
@@ -77,6 +83,15 @@ internal class WireMockTestStepFactory(
             priority = stub[PRIORITY_KEY]?.let { readInt(it, PRIORITY_KEY, 1) }
         )
     }
+
+    private fun readRequest(request: Map<*, *>, filter: Boolean = false) = StubRequest(
+        method = (request[METHOD_KEY] ?: if (filter) "ANY" else
+            throw TestStepCreationException("The stub 'request' block must have a 'method'")).toString().uppercase(),
+        path = if (filter && request[PATH_KEY] == null) RequestMatcher.Matches(".*") else readPath(request[PATH_KEY]),
+        query = readMatchers(request[QUERY_KEY], QUERY_KEY),
+        headers = readMatchers(request[HEADERS_KEY], HEADERS_KEY),
+        body = request[BODY_KEY]?.let { readMatcher(it) }
+    )
 
     private fun readInt(value: Any, name: String, minimum: Int): Int =
         value.toString().toIntOrNull()?.takeIf { it >= minimum }

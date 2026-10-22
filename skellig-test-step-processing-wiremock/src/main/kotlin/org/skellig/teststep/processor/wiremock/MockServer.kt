@@ -1,6 +1,7 @@
 package org.skellig.teststep.processor.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.request
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
@@ -11,6 +12,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import org.skellig.teststep.processor.wiremock.config.MockServerSettings
+import org.skellig.teststep.processor.wiremock.model.StubRequest
 import org.skellig.teststep.processor.wiremock.model.StubDefinition
 import org.skellig.teststep.processor.wiremock.model.RequestMatcher
 import java.util.UUID
@@ -32,17 +34,43 @@ internal class MockServer private constructor(val settings: MockServerSettings, 
         stub.response.body?.let { response.withBody(it) }
         stub.response.delay?.let { response.withFixedDelay(it) }
 
-        val path = when (val matcher = stub.request.path) {
+        val mapping = mapping(stub.request).withId(id)
+        stub.priority?.let { mapping.atPriority(it) }
+        server.stubFor(mapping.willReturn(response))
+    }
+
+    private fun mapping(definition: StubRequest): MappingBuilder {
+        val path = when (val matcher = definition.path) {
             is RequestMatcher.Equal -> urlPathEqualTo(matcher.value)
             is RequestMatcher.Matches -> urlPathMatching(matcher.value)
             else -> error("Request path must use equality or regex matching")
         }
-        val mapping = request(stub.request.method, path).withId(id)
-        stub.priority?.let { mapping.atPriority(it) }
-        stub.request.query.forEach { (name, matcher) -> mapping.withQueryParam(name, pattern(matcher)) }
-        stub.request.headers.forEach { (name, matcher) -> mapping.withHeader(name, pattern(matcher)) }
-        stub.request.body?.let { mapping.withRequestBody(pattern(it)) }
-        server.stubFor(mapping.willReturn(response))
+        val mapping = request(definition.method, path)
+        definition.query.forEach { (name, matcher) -> mapping.withQueryParam(name, pattern(matcher)) }
+        definition.headers.forEach { (name, matcher) -> mapping.withHeader(name, pattern(matcher)) }
+        definition.body?.let { mapping.withRequestBody(pattern(it)) }
+        return mapping
+    }
+
+    fun requests(filter: StubRequest?, unmatched: Boolean): Map<String, Any> {
+        val pattern = filter?.let { mapping(it).build().request }
+        val requests = server.allServeEvents
+            .filter { (!unmatched || it.isNoExactMatch) && (pattern == null || pattern.match(it.request).isExactMatch) }
+            .map { event ->
+                val request = event.request
+                mapOf(
+                    "method" to request.method.name,
+                    "url" to request.url,
+                    "path" to request.url.substringBefore('?'),
+                    "query" to request.queryParams.mapValues { it.value.firstValue() },
+                    "headers" to request.headers.all().associate { it.key() to it.firstValue() },
+                    "body" to request.bodyAsString,
+                    "loggedTime" to request.loggedDate.time,
+                    "matched" to !event.isNoExactMatch,
+                    "stubId" to event.stubMapping?.takeUnless { event.isNoExactMatch }?.id?.toString()
+                )
+            }
+        return mapOf("count" to requests.size, "requests" to requests)
     }
 
     private fun pattern(matcher: RequestMatcher) = when (matcher) {
