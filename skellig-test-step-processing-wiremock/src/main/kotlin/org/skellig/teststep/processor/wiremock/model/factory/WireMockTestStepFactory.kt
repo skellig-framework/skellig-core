@@ -58,7 +58,12 @@ internal class WireMockTestStepFactory(
             this.operation = operation
             server = convertValue<String>(rawTestStep[SERVER_KEYWORD], parameters)
             if (operation == STUB_OPERATION) {
-                stub = readStub(convertValue<Any>(rawTestStep[STUB_KEYWORD], parameters) as? Map<*, *>)
+                val stubBlock = convertValue<Any>(rawTestStep[STUB_KEYWORD], parameters) as? Map<*, *>
+                if (stubBlock?.containsKey(JSON) == true) {
+                    rawStub = readRawStub(stubBlock)
+                } else {
+                    stub = readStub(stubBlock)
+                }
             } else if (operation == RESET_OPERATION) {
                 resetScope = convertValue<String>(rawTestStep[WHAT_KEYWORD], parameters)?.let {
                     ResetScope.fromKeyword(it) ?: throw TestStepCreationException(
@@ -75,6 +80,12 @@ internal class WireMockTestStepFactory(
                 } ?: false
             }
         }
+    }
+
+    private fun readRawStub(stub: Map<*, *>): String {
+        if (stub.size != 1) throw TestStepCreationException("A raw wiremock 'stub { json = ... }' block must contain only 'json'")
+        return stub[JSON]?.toString()?.takeIf { it.isNotBlank() }
+            ?: throw TestStepCreationException("The wiremock stub 'json' must not be empty")
     }
 
     private fun readStub(stub: Map<*, *>?): StubDefinition {

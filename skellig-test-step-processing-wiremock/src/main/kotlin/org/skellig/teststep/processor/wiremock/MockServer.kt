@@ -16,6 +16,10 @@ import org.skellig.teststep.processor.wiremock.model.ResetScope
 import org.skellig.teststep.processor.wiremock.model.StubRequest
 import org.skellig.teststep.processor.wiremock.model.StubDefinition
 import org.skellig.teststep.processor.wiremock.model.RequestMatcher
+import com.github.tomakehurst.wiremock.common.Json
+import com.github.tomakehurst.wiremock.common.InvalidInputException
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import org.skellig.teststep.processing.exception.TestStepProcessingException
 import java.util.UUID
 
 /** The only class that touches WireMock types; everything else works with Skellig's own models. */
@@ -42,6 +46,20 @@ internal class MockServer private constructor(val settings: MockServerSettings, 
         val mapping = mapping(stub.request).withId(id)
         stub.priority?.let { mapping.atPriority(it) }
         server.stubFor(mapping.willReturn(response))
+    }
+
+    /** Registers a raw WireMock JSON mapping under [id], replacing the stub registered earlier with that id. */
+    fun registerRawStub(id: UUID, json: String) {
+        val mapping: StubMapping? = try {
+            Json.read(json, StubMapping::class.java)
+        } catch (ex: InvalidInputException) {
+            throw TestStepProcessingException("Invalid wiremock stub JSON: ${ex.errors?.errors?.firstOrNull()?.detail ?: ex.message}", ex)
+        }
+        if (mapping?.request == null) {
+            throw TestStepProcessingException("Invalid wiremock stub JSON: a mapping must be an object with a 'request'")
+        }
+        server.removeStub(id)
+        server.addStubMapping(mapping.transform { it.setId(id) })
     }
 
     private fun mapping(definition: StubRequest): MappingBuilder {
