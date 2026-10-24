@@ -110,6 +110,30 @@ name("Specific payment") {
 
 The stub id is derived from the server name and the step `id`, so running the step again replaces its earlier stub, and the same `id` on two servers is independent. A step without an `id` gets a random stub id and is never replaced. The step returns `id`, `server` and `port`.
 
+### Building a JSON body with `toJson`
+
+Instead of writing JSON as an escaped string, build it with `toJson` and a map. The body is then compared by equality with the JSON text `toJson` produces (compact, no spaces after `:`), so the system under test must send exactly that text. Use `body { json = ... }` when extra fields or whitespace differences must be ignored.
+
+```
+name("Stub payment with toJson") {
+    wiremock = stub
+    id = paymentToJson
+    stub {
+        request {
+            method = POST
+            path = "/payments"
+            body = toJson({ amount = 10 })
+        }
+        response {
+            status = 201
+            body = accepted
+        }
+    }
+}
+```
+
+This stub answers a `POST /payments` whose body is exactly `{"amount":10}`.
+
 ### Raw WireMock JSON
 
 For WireMock features Skellig does not model, replace the DSL blocks with `stub { json = ... }` holding a single WireMock JSON mapping. It is parsed by WireMock itself and gets the same step-derived id and replacement behaviour as a DSL stub, so `id` and `server` work as above. `json` must be the only key in the `stub` block.
