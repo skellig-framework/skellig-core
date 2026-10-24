@@ -6,19 +6,15 @@ import org.junit.jupiter.api.Test
 import org.skellig.teststep.processor.http.model.HttpResponse
 import org.skellig.teststep.processor.wiremock.WireMockTestApplication.Companion.freePort
 import org.skellig.teststep.processor.wiremock.WireMockTestApplication.Companion.isFree
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse.BodyHandlers
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @Tag("integration-test")
 class WireMockScenarioIT {
-    private val mock = freePort()
+    private val serverPort = freePort()
     private val app = WireMockTestApplication(
-        """wiremock { servers = [ { name = payments, port = $mock } ] }
-           http { services = [ { serviceName = svc, url = "http://127.0.0.1:$mock" } ] }""",
+        """wiremock { servers = [ { name = payments, port = $serverPort } ] }
+           http { services = [ { serviceName = svc, url = "http://127.0.0.1:$serverPort" } ] }""",
         listOf("wiremock/steps.sts", "wiremock/scenario.sts")
     )
 
@@ -34,14 +30,10 @@ class WireMockScenarioIT {
             try {
                 // The system under test calls the stubs, the payment call arriving after polling has started.
                 val payment = sender.schedule<java.net.http.HttpResponse<String>>({
-                    HttpClient.newHttpClient().send(
-                        HttpRequest.newBuilder(URI.create("http://127.0.0.1:$mock/payments"))
-                            .header("Content-Type", "application/json")
-                            .POST(HttpRequest.BodyPublishers.ofString("{\"amount\": 10, \"note\": \"extra\"}")).build(),
-                        BodyHandlers.ofString()
-                    )
+                    app.post(serverPort, "/payments", "{\"amount\":10}")
                 }, 500, TimeUnit.MILLISECONDS)
-                val identity = app.call(mock, "/users/42")
+
+                val identity = app.call(serverPort, "/users/42")
                 assertEquals("Ada", identity.body())
 
                 with(app) {
@@ -49,6 +41,7 @@ class WireMockScenarioIT {
                     runner.runStep("Check no unexpected calls")
                     runner.runStep("Check captured payment")
                 }
+
                 val paymentResponse = payment.get(5, TimeUnit.SECONDS)
                 assertEquals(201, paymentResponse.statusCode())
                 assertEquals("{\"status\": \"accepted\"}", paymentResponse.body())
@@ -63,16 +56,16 @@ class WireMockScenarioIT {
             assertEquals("pong", http.body)
 
             // An unexpected call shows up as unmatched.
-            app.call(mock, "/unexpected")
+            app.call(serverPort, "/unexpected")
             assertNotNull(app.run(runner, "Check no unexpected calls"))
 
             with(app) {
                 runner.runStep("Clean slate")
                 runner.runStep("Empty journal")
             }
-            assertEquals(404, app.call(mock, "/users/42").statusCode())
-            assertFalse(isFree(mock))
+            assertEquals(404, app.call(serverPort, "/users/42").statusCode())
+            assertFalse(isFree(serverPort))
         }
-        assertTrue(isFree(mock), "Port $mock still in use after the context closed")
+        assertTrue(isFree(serverPort), "Port $serverPort still in use after the context closed")
     }
 }

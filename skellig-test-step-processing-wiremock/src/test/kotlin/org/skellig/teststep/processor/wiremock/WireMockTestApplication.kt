@@ -47,6 +47,11 @@ internal class WireMockTestApplication(
     fun post(port: Int, path: String): HttpResponse<String> =
         client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path")).POST(HttpRequest.BodyPublishers.noBody()).build(), HttpResponse.BodyHandlers.ofString())
 
+    fun post(port: Int, path: String, body: String): HttpResponse<String> =
+        client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString())
+
     fun call(port: Int, path: String = "/"): HttpResponse<String> =
         client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path")).build(), HttpResponse.BodyHandlers.ofString())
 

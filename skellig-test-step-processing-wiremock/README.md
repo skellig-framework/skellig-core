@@ -207,7 +207,7 @@ name("Stub payment accepted") {
             method = POST
             path = "/payments"
             headers { "Content-Type" { contains = "json" } }
-            body { json = "{\"amount\": 10}" }
+            body = toJson({ amount = 10 })
         }
         response {
             status = 201
