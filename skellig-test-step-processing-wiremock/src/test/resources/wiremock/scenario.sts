@@ -1,0 +1,66 @@
+name("Stub payment accepted") {
+    wiremock = stub
+    id = paymentAccepted
+    stub {
+        request {
+            method = POST
+            path = "/payments"
+            headers { "Content-Type" { contains = "json" } }
+            body { json = "{\"amount\": 10}" }
+        }
+        response {
+            status = 201
+            headers { "Content-Type" = "application/json" }
+            body = "{\"status\": \"accepted\"}"
+        }
+    }
+}
+
+name("Stub identity lookup") {
+    wiremock = stub
+    id = identityLookup
+    stub {
+        json = "{\"request\":{\"method\":\"GET\",\"urlPath\":\"/users/42\"},\"response\":{\"status\":200,\"body\":\"Ada\"}}"
+    }
+}
+
+name("Wait for payment request") {
+    wiremock = requests
+    request {
+        method = POST
+        path = "/payments"
+    }
+    attempts = 20
+    delay = 100
+    validate {
+        toJson().jsonPath("count") = 1
+    }
+    state {
+        paymentBody = $result.requests.fromIndex(0).body
+    }
+}
+
+name("Check no unexpected calls") {
+    wiremock = requests
+    unmatched = true
+    validate {
+        toJson().jsonPath("count") = 0
+    }
+}
+
+name("Check captured payment") {
+    validate {
+        get(paymentBody) = "{\"amount\": 10, \"note\": \"extra\"}"
+    }
+}
+
+name("Clean slate") {
+    wiremock = reset
+}
+
+name("Empty journal") {
+    wiremock = requests
+    validate {
+        toJson().jsonPath("count") = 0
+    }
+}

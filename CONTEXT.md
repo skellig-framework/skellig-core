@@ -50,7 +50,7 @@ All test step factories must use `convertValue` when reading each property or va
 - **SYNC / ASYNC:** Step execution modes; asynchronous results are delivered through subscriptions.
 - **Hook / plugin:** A lifecycle action before/after a feature or scenario / an extension reacting to execution events, such as report generation.
 - **Protocol / channel:** The integration selected for a step / its connection or transport abstraction.
-- **Mock server:** A named, fixed-port HTTP(S) server owned by the Skellig runtime that stands in for a dependency of the system under test. It is called by external systems, never by Skellig's own HTTP steps. Its lifetime is the whole test context, not a single scenario.
+- **Mock server:** A named, fixed-port HTTP(S) server owned by the Skellig runtime that stands in for a dependency of the system under test. It is called by external systems; Skellig's HTTP steps are not wired to it automatically. Its lifetime is the whole test context, not a single scenario.
 - **Stub:** A rule on a mock server that pairs a request match with a canned response. A stub is owned by the test step that registered it; registering again from the same step replaces the earlier stub. Stubs of other steps may outlive the scenario that created them.
 - **Journal:** The mock server's record of requests it received, whether or not any stub matched. Steps read it to assert on what the system under test sent.
 - **Performance step:** Repeated execution of test work with timing/load settings and metric collection.
