@@ -154,3 +154,46 @@ name("Read server journal") {
     wiremock = requests
     server = ${server}
 }
+
+name("Stub raw json inline") {
+    wiremock = stub
+    server = payments
+    id = raw
+    stub {
+        json = "{\"request\":{\"method\":\"GET\",\"urlPath\":\"/raw\"},\"response\":{\"status\":202,\"body\":\"raw inline\",\"headers\":{\"X-Raw\":\"yes\"}}}"
+    }
+}
+
+name("Stub raw json inline again") {
+    wiremock = stub
+    server = payments
+    id = raw
+    stub {
+        json = "{\"request\":{\"method\":\"GET\",\"urlPath\":\"/raw\"},\"response\":{\"status\":200,\"body\":\"raw replaced\"}}"
+    }
+}
+
+name("Stub raw json from file") {
+    wiremock = stub
+    server = payments
+    id = rawFile
+    stub {
+        json = fromFile("wiremock/raw-stub.json")
+    }
+}
+
+name("Stub raw json invalid") {
+    wiremock = stub
+    server = payments
+    stub {
+        json = "{ not json"
+    }
+}
+
+name("Stub raw json null") {
+    wiremock = stub
+    server = payments
+    stub {
+        json = "null"
+    }
+}

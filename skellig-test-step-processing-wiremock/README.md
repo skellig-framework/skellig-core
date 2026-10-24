@@ -76,6 +76,23 @@ name("Specific payment") {
 
 The stub id is derived from the server name and the step `id`, so running the step again replaces its earlier stub, and the same `id` on two servers is independent. A step without an `id` gets a random stub id and is never replaced. The step returns `id`, `server` and `port`.
 
+### Raw WireMock JSON
+
+For WireMock features Skellig does not model, replace the DSL blocks with `stub { json = ... }` holding a single WireMock JSON mapping. It is parsed by WireMock itself and gets the same step-derived id and replacement behaviour as a DSL stub, so `id` and `server` work as above. `json` must be the only key in the `stub` block.
+
+```
+name("Raw stub") {
+    wiremock = stub
+    server = payments
+    id = raw
+    stub {
+        json = "{\"request\":{\"method\":\"GET\",\"urlPath\":\"/raw\"},\"response\":{\"status\":202,\"body\":\"ok\"}}"
+    }
+}
+```
+
+To keep the mapping in a file on the classpath, read it with `fromFile`: `json = fromFile("wiremock/raw-stub.json")`. Invalid JSON fails the step with `Invalid wiremock stub JSON: ...`.
+
 Steps with a `wiremock` key are never handled by the HTTP processor, even if they also carry `url` and `method`.
 
 Do not add this module to the Spring Boot performance service runner: it brings Jetty, which must not share a classpath with Tomcat.

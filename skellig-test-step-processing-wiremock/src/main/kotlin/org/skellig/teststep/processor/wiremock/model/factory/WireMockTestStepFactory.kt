@@ -1,15 +1,22 @@
 package org.skellig.teststep.processor.wiremock.model.factory
 
+import com.github.tomakehurst.wiremock.client.MappingBuilder
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.containing
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
+import com.github.tomakehurst.wiremock.client.WireMock.matching
+import com.github.tomakehurst.wiremock.client.WireMock.request
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
+import com.github.tomakehurst.wiremock.common.Json
+import com.github.tomakehurst.wiremock.matching.StringValuePattern
 import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processor.wiremock.model.ResetScope
-import org.skellig.teststep.processor.wiremock.model.StubDefinition
-import org.skellig.teststep.processor.wiremock.model.RequestMatcher
-import org.skellig.teststep.processor.wiremock.model.StubRequest
-import org.skellig.teststep.processor.wiremock.model.StubResponse
 import org.skellig.teststep.processor.wiremock.model.WireMockTestStep
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
@@ -57,81 +64,94 @@ internal class WireMockTestStepFactory(
         return WireMockTestStep.Builder().apply {
             this.operation = operation
             server = convertValue<String>(rawTestStep[SERVER_KEYWORD], parameters)
-            if (operation == STUB_OPERATION) {
-                stub = readStub(convertValue<Any>(rawTestStep[STUB_KEYWORD], parameters) as? Map<*, *>)
-            } else if (operation == RESET_OPERATION) {
-                resetScope = convertValue<String>(rawTestStep[WHAT_KEYWORD], parameters)?.let {
-                    ResetScope.fromKeyword(it) ?: throw TestStepCreationException(
-                        "Unknown wiremock reset 'what' '$it'. Supported values: ${ResetScope.entries.joinToString { scope -> scope.keyword }}"
-                    )
-                } ?: ResetScope.ALL
-            } else {
-                requestFilter = convertValue<Any>(rawTestStep[REQUEST_KEYWORD], parameters)?.let {
-                    readRequest(it as? Map<*, *> ?: throw TestStepCreationException("Request filter must be a block"), true)
+            when (operation) {
+                STUB_OPERATION -> {
+                    rawStub = readStub(convertValue<Any>(rawTestStep[STUB_KEYWORD], parameters) as? Map<*, *>)
                 }
-                unmatched = convertValue<Any>(rawTestStep[UNMATCHED_KEYWORD], parameters)?.let {
-                    it.toString().toBooleanStrictOrNull()
-                        ?: throw TestStepCreationException("WireMock 'unmatched' must be true or false")
-                } ?: false
+                RESET_OPERATION -> {
+                    resetScope = convertValue<String>(rawTestStep[WHAT_KEYWORD], parameters)?.let {
+                        ResetScope.fromKeyword(it) ?: throw TestStepCreationException(
+                            "Unknown wiremock reset 'what' '$it'. Supported values: ${ResetScope.entries.joinToString { scope -> scope.keyword }}"
+                        )
+                    } ?: ResetScope.ALL
+                }
+                else -> {
+                    requestFilter = convertValue<Any>(rawTestStep[REQUEST_KEYWORD], parameters)?.let {
+                        readRequest(it as? Map<*, *> ?: throw TestStepCreationException("Request filter must be a block"), true).build().request
+                    }
+                    unmatched = convertValue<Any>(rawTestStep[UNMATCHED_KEYWORD], parameters)?.let {
+                        it.toString().toBooleanStrictOrNull()
+                            ?: throw TestStepCreationException("WireMock 'unmatched' must be true or false")
+                    } ?: false
+                }
             }
         }
     }
 
-    private fun readStub(stub: Map<*, *>?): StubDefinition {
+    /** Returns the WireMock JSON mapping of the `stub` block: its raw `json` as is, or the mapping built from `request {}` and `response {}`. */
+    private fun readStub(stub: Map<*, *>?): String {
         stub ?: throw TestStepCreationException("A wiremock 'stub' step must have a 'stub { request { ... } response { ... } }' block")
+        if (stub.containsKey(JSON)) return readRawStub(stub)
+
         val request = block(stub, REQUEST_KEY)
         val response = block(stub, RESPONSE_KEY)
 
-        return StubDefinition(
-            readRequest(request),
-            StubResponse(
-                status = (response[STATUS_KEY] ?: 200).toString().toInt(),
-                headers = (response[HEADERS_KEY] as? Map<*, *>)?.entries?.associate { it.key.toString() to it.value.toString() } ?: emptyMap(),
-                body = response[BODY_KEY]?.toString(),
-                delay = response[DELAY_KEY]?.let { readInt(it, "response.delay", 0) }
-            ),
-            priority = stub[PRIORITY_KEY]?.let { readInt(it, PRIORITY_KEY, 1) }
-        )
+        val mappingResponse = aResponse().withStatus((response[STATUS_KEY] ?: 200).toString().toInt())
+        (response[HEADERS_KEY] as? Map<*, *>)?.forEach { (name, value) -> mappingResponse.withHeader(name.toString(), value.toString()) }
+        response[BODY_KEY]?.let { mappingResponse.withBody(it.toString()) }
+        response[DELAY_KEY]?.let { mappingResponse.withFixedDelay(readInt(it, "response.delay", 0)) }
+
+        val mapping = readRequest(request)
+        stub[PRIORITY_KEY]?.let { mapping.atPriority(readInt(it, PRIORITY_KEY, 1)) }
+        return Json.write(mapping.willReturn(mappingResponse).build())
     }
 
-    private fun readRequest(request: Map<*, *>, filter: Boolean = false) = StubRequest(
-        method = (request[METHOD_KEY] ?: if (filter) "ANY" else
-            throw TestStepCreationException("The stub 'request' block must have a 'method'")).toString().uppercase(),
-        path = if (filter && request[PATH_KEY] == null) RequestMatcher.Matches(".*") else readPath(request[PATH_KEY]),
-        query = readMatchers(request[QUERY_KEY], QUERY_KEY),
-        headers = readMatchers(request[HEADERS_KEY], HEADERS_KEY),
-        body = request[BODY_KEY]?.let { readMatcher(it) }
-    )
+    private fun readRawStub(stub: Map<*, *>): String {
+        if (stub.size != 1) throw TestStepCreationException("A raw wiremock 'stub { json = ... }' block must contain only 'json'")
+        return stub[JSON]?.toString()?.takeIf { it.isNotBlank() }
+            ?: throw TestStepCreationException("The wiremock stub 'json' must not be empty")
+    }
+
+    private fun readRequest(request: Map<*, *>, filter: Boolean = false): MappingBuilder {
+        val method = (request[METHOD_KEY] ?: if (filter) "ANY" else
+            throw TestStepCreationException("The stub 'request' block must have a 'method'")).toString().uppercase()
+        val path = if (filter && request[PATH_KEY] == null) urlPathMatching(".*") else readPath(request[PATH_KEY])
+        val mapping = request(method, path)
+        readMatchers(request[QUERY_KEY], QUERY_KEY).forEach { (name, matcher) -> mapping.withQueryParam(name, matcher) }
+        readMatchers(request[HEADERS_KEY], HEADERS_KEY).forEach { (name, matcher) -> mapping.withHeader(name, matcher) }
+        request[BODY_KEY]?.let { mapping.withRequestBody(readMatcher(it)) }
+        return mapping
+    }
 
     private fun readInt(value: Any, name: String, minimum: Int): Int =
         value.toString().toIntOrNull()?.takeIf { it >= minimum }
             ?: throw TestStepCreationException("Stub '$name' must be an integer greater than or equal to $minimum")
 
-    private fun readPath(value: Any?): RequestMatcher {
-        val matcher = readMatcher(value ?: throw TestStepCreationException("The stub 'request' block must have a 'path'"))
-        if (matcher !is RequestMatcher.Equal && matcher !is RequestMatcher.Matches) {
-            throw TestStepCreationException("Request 'path' must be a plain value or a 'matches' regex")
-        }
-        return matcher
+    private fun readPath(value: Any?) = when (value) {
+        null -> throw TestStepCreationException("The stub 'request' block must have a 'path'")
+        is Map<*, *> -> (value.entries.singleOrNull()?.takeIf { it.key == MATCHES }
+            ?: throw TestStepCreationException("Request 'path' must be a plain value or a 'matches' regex"))
+            .let { urlPathMatching(it.value.toString()) }
+        else -> urlPathEqualTo(value.toString())
     }
 
-    private fun readMatchers(value: Any?, name: String): Map<String, RequestMatcher> {
+    private fun readMatchers(value: Any?, name: String): Map<String, StringValuePattern> {
         if (value == null) return emptyMap()
         val entries = value as? Map<*, *>
             ?: throw TestStepCreationException("Request '$name' must be a block of named matchers")
         return entries.entries.associate { it.key.toString() to readMatcher(it.value) }
     }
 
-    private fun readMatcher(value: Any?): RequestMatcher {
+    private fun readMatcher(value: Any?): StringValuePattern {
         if (value == null) throw TestStepCreationException("A request matcher must have a value")
-        if (value !is Map<*, *>) return RequestMatcher.Equal(value.toString())
+        if (value !is Map<*, *>) return equalTo(value.toString())
         if (value.size != 1) throw TestStepCreationException("A request matcher must contain exactly one of 'contains', 'matches' or 'json'")
         val (name, expected) = value.entries.single()
         val text = expected?.toString() ?: throw TestStepCreationException("Request matcher '$name' must have a value")
         return when (name) {
-            CONTAINS -> RequestMatcher.Contains(text)
-            MATCHES -> RequestMatcher.Matches(text)
-            JSON -> RequestMatcher.Json(text)
+            CONTAINS -> containing(text)
+            MATCHES -> matching(text)
+            JSON -> equalToJson(text, false, true)
             else -> throw TestStepCreationException("Unknown request matcher '$name'. Supported matchers: contains, matches, json, or a plain value for equality")
         }
     }

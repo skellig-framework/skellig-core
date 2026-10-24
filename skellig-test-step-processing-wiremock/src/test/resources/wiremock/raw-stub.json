@@ -1,0 +1,4 @@
+{
+  "request": { "method": "GET", "urlPath": "/raw-file" },
+  "response": { "status": 203, "body": "raw from file" }
+}

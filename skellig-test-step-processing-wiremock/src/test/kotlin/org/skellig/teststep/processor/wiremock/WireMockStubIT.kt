@@ -110,4 +110,60 @@ class WireMockStubIT {
             assertEquals("pong", httpResult.body)
         }
     }
+
+    @Test
+    fun `an inline raw json stub answers a real http call`() {
+        val app = WireMockTestApplication(two)
+        app.run { _, runner ->
+            val result = with(app) { runner.runStep("Stub raw json inline") } as Map<*, *>
+            assertNotNull(result["id"])
+
+            val response = app.call(payments, "/raw")
+            assertEquals(202, response.statusCode())
+            assertEquals("raw inline", response.body())
+            assertEquals("yes", response.headers().firstValue("X-Raw").orElse(null))
+        }
+    }
+
+    @Test
+    fun `a raw json stub read from a file answers a real http call`() {
+        val app = WireMockTestApplication(two)
+        app.run { _, runner ->
+            with(app) { runner.runStep("Stub raw json from file") }
+
+            val response = app.call(payments, "/raw-file")
+            assertEquals(203, response.statusCode())
+            assertEquals("raw from file", response.body())
+        }
+    }
+
+    @Test
+    fun `re-running a raw json step id replaces the earlier stub`() {
+        val app = WireMockTestApplication(two)
+        app.run { _, runner ->
+            val first = with(app) { runner.runStep("Stub raw json inline") } as Map<*, *>
+            val second = with(app) { runner.runStep("Stub raw json inline again") } as Map<*, *>
+
+            assertEquals(first["id"], second["id"])
+            assertEquals("raw replaced", app.call(payments, "/raw").body())
+        }
+    }
+
+    @Test
+    fun `invalid raw json fails the step with a clear message`() {
+        val app = WireMockTestApplication(two)
+        app.run { _, runner ->
+            val message = app.run(runner, "Stub raw json invalid")?.message.orEmpty()
+            assertTrue(message.contains("Invalid wiremock stub JSON"), message)
+        }
+    }
+
+    @Test
+    fun `a raw json null mapping fails the step with a clear message`() {
+        val app = WireMockTestApplication(two)
+        app.run { _, runner ->
+            val message = app.run(runner, "Stub raw json null")?.message.orEmpty()
+            assertTrue(message.contains("Invalid wiremock stub JSON") && message.contains("request"), message)
+        }
+    }
 }
