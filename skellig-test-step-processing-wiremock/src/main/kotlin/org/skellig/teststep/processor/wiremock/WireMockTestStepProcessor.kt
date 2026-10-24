@@ -22,12 +22,7 @@ internal class WireMockTestStepProcessor private constructor(
 
         // The same step on the same server always maps to the same id, so re-running it replaces its stub; a step without an id is never replaced
         val id = testStep.id?.let { UUID.nameUUIDFromBytes("${server.name}:$it".toByteArray()) } ?: UUID.randomUUID()
-        val rawStub = testStep.rawStub
-        if (rawStub != null) {
-            server.registerRawStub(id, rawStub)
-        } else {
-            server.registerStub(id, testStep.stub ?: error("WireMock stub step has no stub definition"))
-        }
+        server.registerStub(id, testStep.rawStub ?: error("WireMock stub step has no stub definition"))
         return mapOf("id" to id.toString(), "server" to server.name, "port" to server.port)
     }
 

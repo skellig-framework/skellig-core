@@ -1,5 +1,6 @@
 package org.skellig.teststep.processor.wiremock.model
 
+import com.github.tomakehurst.wiremock.matching.RequestPattern
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 
@@ -13,20 +14,18 @@ class WireMockTestStep private constructor(builder: Builder) : DefaultTestStep(
 
     /** Name of the target mock server; null when the step does not name one. */
     internal val server: String? = builder.server
-    internal val requestFilter: StubRequest? = builder.requestFilter
+    internal val requestFilter: RequestPattern? = builder.requestFilter
     internal val unmatched: Boolean = builder.unmatched
-    internal val stub: StubDefinition? = builder.stub
-    internal val resetScope: ResetScope = builder.resetScope
+        internal val resetScope: ResetScope = builder.resetScope
 
-    /** A raw WireMock JSON mapping, used instead of [stub] when the step declares `stub { json = ... }`. */
+    /** The WireMock JSON mapping of a `stub` step, either declared as raw JSON or produced from the `stub {}` block. */
     internal val rawStub: String? = builder.rawStub
 
     internal class Builder : DefaultTestStep.Builder<WireMockTestStep>() {
         var operation: String? = null
         var server: String? = null
-        var requestFilter: StubRequest? = null
+        var requestFilter: RequestPattern? = null
         var unmatched: Boolean = false
-        var stub: StubDefinition? = null
         var resetScope: ResetScope = ResetScope.ALL
         var rawStub: String? = null
 
