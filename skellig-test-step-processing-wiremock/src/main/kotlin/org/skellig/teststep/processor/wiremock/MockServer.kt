@@ -70,13 +70,20 @@ internal class MockServer private constructor(val settings: MockServerSettings, 
         fun create(settings: MockServerSettings): MockServer {
             val options = options().port(settings.port)
             settings.journalMaxEntries?.let { options.maxRequestJournalEntries(it) }
-            val server = WireMockServer(options)
+            settings.bindAddress?.let { options.bindAddress(it) }
+            settings.filesDirectory?.let { options.usingFilesUnderDirectory(it.path) }
+            settings.https?.let {
+                options.httpsPort(it.port).keystorePath(it.keystorePath).keystorePassword(it.keystorePassword)
+                    .keystoreType(it.keystoreType).keyManagerPassword(it.keystorePassword)
+            }
+            var server: WireMockServer? = null
             try {
+                server = WireMockServer(options)
                 server.start()
             } catch (ex: Exception) {
-                runCatching { server.stop() }
+                runCatching { server?.stop() }
                 throw IllegalStateException(
-                    "Failed to start wiremock server '${settings.name}' on port ${settings.port}: ${ex.message}. If the message does not explain it, check whether the port is already in use.", ex
+                    "Failed to start wiremock server '${settings.name}' on port ${settings.port}${settings.https?.let { " (https port ${it.port})" }.orEmpty()}: ${ex.message}. If the message does not explain it, check whether the port is already in use, and that the keystore, password and files directory are valid.", ex
                 )
             }
             return MockServer(settings, server)

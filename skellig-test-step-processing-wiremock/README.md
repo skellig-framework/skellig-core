@@ -13,7 +13,39 @@ wiremock {
 }
 ```
 
-`journal.max-entries` optionally caps the number of requests each server remembers.
+`journal.max-entries` optionally caps the number of requests each server remembers (at least 1); older requests are dropped first.
+
+## Optional server settings
+
+```hocon
+wiremock {
+  servers = [
+    {
+      name = payments
+      port = 8081
+      bind-address = "127.0.0.1"
+      files-directory = "src/test/resources/wiremock-files"
+      https {
+        port = 8443
+        keystore-path = "src/test/resources/keystore.p12"
+        keystore-password = changeit
+        keystore-type = PKCS12
+      }
+    }
+  ]
+}
+```
+
+| Setting | Meaning |
+| --- | --- |
+| `bind-address` | Host name or IP address the server listens on; by default all interfaces |
+| `files-directory` | Existing directory in WireMock's file layout: mappings from `mappings/` are loaded and `__files/` serves `bodyFileName` bodies |
+| `https.port` | Additional HTTPS port; must differ from every other configured port |
+| `https.keystore-path` | Path of an existing keystore file |
+| `https.keystore-password` | Password for the keystore and its key |
+| `https.keystore-type` | Optional; `PKCS12` for `.p12`/`.pfx` files, otherwise `JKS` |
+
+Invalid values (unknown host, missing directory or keystore, bad port, wrong keystore password) fail startup with a message naming the server.
 
 ## Stubs
 
