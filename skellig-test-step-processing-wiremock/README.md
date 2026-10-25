@@ -1,5 +1,7 @@
 # WireMock test step processing
 
+Embedded WireMock mock servers for Skellig: stand in for the HTTP dependencies of the system under test, then assert on what it sent.
+
 Add `skellig-test-step-processing-wiremock` to your Skellig test project. Its configuration is discovered by the standard processor scan and is active only when the configuration contains `wiremock`.
 
 Each mock server has a required unique `name` and a required unique fixed `port` (port 0 is rejected). Servers listen as soon as the Skellig context is created. Closing the context resets all stubs and frees the ports. Startup fails with a message naming the server when a name or port is duplicated or a port is already in use.
@@ -108,6 +110,30 @@ name("Specific payment") {
 
 The stub id is derived from the server name and the step `id`, so running the step again replaces its earlier stub, and the same `id` on two servers is independent. A step without an `id` gets a random stub id and is never replaced. The step returns `id`, `server` and `port`.
 
+### Building a JSON body with `toJson`
+
+Instead of writing JSON as an escaped string, build it with `toJson` and a map. The body is then compared by equality with the JSON text `toJson` produces (compact, no spaces after `:`), so the system under test must send exactly that text. Use `body { json = ... }` when extra fields or whitespace differences must be ignored.
+
+```
+name("Stub payment with toJson") {
+    wiremock = stub
+    id = paymentToJson
+    stub {
+        request {
+            method = POST
+            path = "/payments"
+            body = toJson({ amount = 10 })
+        }
+        response {
+            status = 201
+            body = accepted
+        }
+    }
+}
+```
+
+This stub answers a `POST /payments` whose body is exactly `{"amount":10}`.
+
 ### Raw WireMock JSON
 
 For WireMock features Skellig does not model, replace the DSL blocks with `stub { json = ... }` holding a single WireMock JSON mapping. It is parsed by WireMock itself and gets the same step-derived id and replacement behaviour as a DSL stub, so `id` and `server` work as above. `json` must be the only key in the `stub` block.
@@ -185,3 +211,66 @@ name("Clean slate") {
     what = journal
 }
 ```
+
+## Worked example
+
+The scenario below is the one verified end to end by `WireMockScenarioIT`. A single `payments` server is configured, so `server` is omitted from every step.
+
+```hocon
+wiremock {
+  servers = [ { name = payments, port = 8081 } ]
+}
+```
+
+```
+name("Stub payment accepted") {
+    wiremock = stub
+    id = paymentAccepted
+    stub {
+        request {
+            method = POST
+            path = "/payments"
+            headers { "Content-Type" { contains = "json" } }
+            body = toJson({ amount = 10 })
+        }
+        response {
+            status = 201
+            body = "{\"status\": \"accepted\"}"
+        }
+    }
+}
+
+name("Stub identity lookup") {
+    wiremock = stub
+    id = identityLookup
+    stub {
+        json = "{\"request\":{\"method\":\"GET\",\"urlPath\":\"/users/42\"},\"response\":{\"status\":200,\"body\":\"Ada\"}}"
+    }
+}
+
+name("Wait for payment request") {
+    wiremock = requests
+    request {
+        method = POST
+        path = "/payments"
+    }
+    attempts = 20
+    delay = 100
+    validate { toJson().jsonPath("count") = 1 }
+    state { paymentBody = $result.requests.fromIndex(0).body }
+}
+
+name("Check no unexpected calls") {
+    wiremock = requests
+    unmatched = true
+    validate { toJson().jsonPath("count") = 0 }
+}
+
+name("Clean slate") {
+    wiremock = reset
+}
+```
+
+Run the two stub steps, then let the system under test call `http://localhost:8081/payments` and `/users/42`. `Wait for payment request` polls the journal until the payment arrives, and stores its body in state for later steps. `Check no unexpected calls` fails if any request matched no stub. `Clean slate` clears stubs and the journal on every server; closing the Skellig context then stops the servers and frees the ports.
+
+Existing `url`/`method` HTTP steps keep working alongside this module and are still handled by the HTTP processor.
