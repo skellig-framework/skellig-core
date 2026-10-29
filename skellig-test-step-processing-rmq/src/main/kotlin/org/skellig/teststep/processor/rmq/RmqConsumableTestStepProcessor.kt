@@ -28,7 +28,7 @@ open class RmqConsumableTestStepProcessor(
 
     override fun process(testStep: RmqConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
-        testScenarioState.set(testStep.getId, testStep)
+        stateOf(testStep).set(testStep.getId, testStep)
 
         log.info(testStep, "Start to consume messages for test step '${testStep.name}' from RMQ queues ${testStep.consumeFrom}")
         consume(testStep, testStepRunResult)

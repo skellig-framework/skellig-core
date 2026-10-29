@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.model
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.PropertyFormatUtils
 import java.lang.reflect.Method
 import java.util.regex.Pattern
@@ -15,6 +16,8 @@ class ClassTestStep(
     override val name: String,
     val parameters: Map<String, Any?>?
 ) : TestStep {
+
+    override val scope: TestScenarioScope? = TestScenarioScope.from(parameters)
 
     val getId: String = id
         get() = field.ifEmpty { name }

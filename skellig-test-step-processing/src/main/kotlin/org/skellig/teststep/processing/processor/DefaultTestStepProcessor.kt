@@ -18,7 +18,7 @@ internal class DefaultTestStepProcessor private constructor(testScenarioState: T
 
     override fun process(testStep: DefaultTestStep): TestStepRunResult {
         val testStepRunResult = TestStepRunResult(testStep)
-        testScenarioState.set(testStep.getId, testStep)
+        stateOf(testStep).set(testStep.getId, testStep)
         log.info(testStep, "Start to process task of test '${testStep.name}' by running validation only")
         validate(testStep, testStepRunResult)
 

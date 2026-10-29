@@ -34,7 +34,7 @@ internal class TaskTestStepProcessor(
                 context.getTestStepsResult().forEach { it.awaitResult() }
             }
         }
-        return testScenarioState
+        return stateOf(testStep)
     }
 
     override fun getTestStepClass(): Class<TaskTestStep> = TaskTestStep::class.java

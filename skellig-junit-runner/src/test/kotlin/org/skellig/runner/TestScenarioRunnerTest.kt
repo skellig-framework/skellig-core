@@ -11,6 +11,7 @@ import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestScenario
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.runner.TestStepRunner
 
 class TestScenarioRunnerTest {
@@ -63,6 +64,18 @@ class TestScenarioRunnerTest {
         val orderVerifier = Mockito.inOrder(hookRunner)
         orderVerifier.verify(hookRunner).run(eq(testScenario.tags), eq(BeforeTestScenario::class.java), argThat { true })
         orderVerifier.verify(hookRunner).run(eq(testScenario.tags), eq(AfterTestScenario::class.java), argThat { true })
+    }
+
+    @Test
+    fun testRunStepsInTheScopeOfTheRunner() {
+        val scope = TestScenarioScope("s1", mock())
+        val scopedRunner = TestScenarioRunner.create(testScenario, 0, testStepRunner, hookRunner, mock(), mock(), scope)
+        whenever(testStepRunner.run(any(), any(), any())).thenReturn(mock<TestStepProcessor.TestStepRunResult>())
+
+        scopedRunner.run(mock<RunNotifier>())
+
+        Mockito.verify(testStepRunner).run("t1", emptyMap(), scope)
+        Mockito.verify(testStepRunner, never()).run(any<String>(), any<Map<String, Any?>>())
     }
 
     private fun createScenarioWithBeforeAndAfterSteps(): TestScenario {

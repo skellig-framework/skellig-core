@@ -8,6 +8,7 @@ import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestScenario
 import org.skellig.plugin.report.TestStepLogger
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.runner.TestStepRunner
 
 
@@ -18,6 +19,7 @@ import org.skellig.teststep.runner.TestStepRunner
  * @param testStepRunner The test step runner used to execute individual test steps.
  * @param hookRunner The hook runner used to execute before and after hooks.
  * @param testStepLogger The test step logger used to log test step execution details.
+ * @param scope The scope the test steps of the scenario run in. If null, they run without a scope.
  */
 open class TestScenarioRunner protected constructor(
     testScenario: TestScenario,
@@ -25,19 +27,22 @@ open class TestScenarioRunner protected constructor(
     testStepRunner: TestStepRunner?,
     hookRunner: SkelligHookRunner,
     testStepLogger: TestStepLogger,
-    eventDispatcher: SkelligTestEventDispatcher
+    eventDispatcher: SkelligTestEventDispatcher,
+    scope: TestScenarioScope? = null
 ) : BaseSkelligTestEntityRunner<TestStepWrapper>(
     testScenario, hookRunner, testStepRunner, testStepLogger,
     BeforeTestScenario::class.java, AfterTestScenario::class.java,
-    eventDispatcher
+    eventDispatcher, scope
 ) {
 
     companion object {
+        @JvmOverloads
         fun create(
             testScenario: TestScenario, parentFeatureId: Int, testStepRunner: TestStepRunner?,
-            hookRunner: SkelligHookRunner, testStepLogger: TestStepLogger, eventDispatcher: SkelligTestEventDispatcher
+            hookRunner: SkelligHookRunner, testStepLogger: TestStepLogger, eventDispatcher: SkelligTestEventDispatcher,
+            scope: TestScenarioScope? = null
         ): TestScenarioRunner {
-            return TestScenarioRunner(testScenario, parentFeatureId, testStepRunner, hookRunner, testStepLogger, eventDispatcher)
+            return TestScenarioRunner(testScenario, parentFeatureId, testStepRunner, hookRunner, testStepLogger, eventDispatcher, scope)
         }
     }
 

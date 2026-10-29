@@ -12,6 +12,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.StringValueExpression
@@ -36,6 +37,32 @@ internal class DefaultTestStepRunnerTest {
         initializeTestStepRunner()
 
         testStepRunner!!.run(testStepName)
+
+        Mockito.verify(testStepProcessor).process(testStep!!)
+    }
+
+    @Test
+    @DisplayName("When run with a scope Then the test step is created with the parameters and the scope")
+    fun testRunTestStepWithScope() {
+        val testStepName = "test1"
+        val scope = TestScenarioScope("s1", mock())
+        initializeTestSteps(testStepName, mapOf(Pair("a", "b"), Pair(TestScenarioScope.PARAMETER_KEY, scope)))
+        initializeTestStepRunner()
+
+        testStepRunner!!.run(testStepName, mapOf(Pair("a", "b")), scope)
+
+        Mockito.verify(testStepProcessor).process(testStep!!)
+    }
+
+    @Test
+    @DisplayName("When run with a scope Then it replaces the scope in the parameters")
+    fun testRunTestStepWithScopeReplacesScopeInParameters() {
+        val testStepName = "test1"
+        val scope = TestScenarioScope("s1", mock())
+        initializeTestSteps(testStepName, mapOf(Pair(TestScenarioScope.PARAMETER_KEY, scope)))
+        initializeTestStepRunner()
+
+        testStepRunner!!.run(testStepName, mapOf(Pair(TestScenarioScope.PARAMETER_KEY, TestScenarioScope("other", mock()))), scope)
 
         Mockito.verify(testStepProcessor).process(testStep!!)
     }

@@ -1,0 +1,14 @@
+Feature: Steps run in the default scope
+
+    Before Feature:
+        * Capture the scenario scope
+
+    Scenario: First scenario
+        * Capture the scenario scope
+        * Capture the scenario scope
+
+    Scenario: Second scenario
+        * Capture the scenario scope
+
+    After Feature:
+        * Capture the scenario scope

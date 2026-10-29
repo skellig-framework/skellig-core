@@ -11,6 +11,7 @@ import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.plugin.report.TestStepLogger
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.runner.TestStepRunner
 
@@ -27,6 +28,7 @@ private const val AFTER_FEATURE_NAME = "After Feature"
  * @property hookRunner The hook runner to run hooks before and after feature execution
  * @property testStepRunner The test step runner to run individual test steps
  * @property testStepLogger The test step logger for logging test steps
+ * @property scope The scope the steps of the feature and its scenarios run in. If null, they run without a scope.
  */
 open class FeatureRunner(
     feature: Feature,
@@ -35,10 +37,11 @@ open class FeatureRunner(
     hookRunner: SkelligHookRunner,
     testStepRunner: TestStepRunner?,
     testStepLogger: TestStepLogger,
-    eventDispatcher: SkelligTestEventDispatcher
+    eventDispatcher: SkelligTestEventDispatcher,
+    scope: TestScenarioScope? = null
 ) : BaseSkelligTestEntityRunner<TestScenarioRunner>(
     feature, hookRunner, testStepRunner, testStepLogger,
-    BeforeTestFeature::class.java, AfterTestFeature::class.java, eventDispatcher
+    BeforeTestFeature::class.java, AfterTestFeature::class.java, eventDispatcher, scope
 ) {
 
     private var description: Description? = null
@@ -61,20 +64,20 @@ open class FeatureRunner(
                 testScenarioRunners!!.add(
                     TestScenarioRunner.create(
                         TestScenarioWrapper(feature.filePath + ":$BEFORE_FEATURE_NAME", BEFORE_FEATURE_NAME, it, null),
-                        testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher
+                        testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scope
                     )
                 )
             }
 
             feature.scenarios
                 ?.filter { tagsFilter.checkTagsAreIncluded(it.tags) }
-                ?.forEach { testScenarioRunners!!.add(TestScenarioRunner.create(it, testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher)) }
+                ?.forEach { testScenarioRunners!!.add(TestScenarioRunner.create(it, testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scope)) }
 
             feature.afterSteps?.let {
                 testScenarioRunners!!.add(
                     TestScenarioRunner.create(
                         TestScenarioWrapper(feature.filePath + ":$AFTER_FEATURE_NAME", AFTER_FEATURE_NAME, null, it),
-                        testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher
+                        testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scope
                     )
                 )
             }
@@ -114,6 +117,7 @@ open class FeatureRunner(
     }
 
     companion object {
+        @JvmOverloads
         fun create(
             feature: Feature,
             testStepRunner: TestStepRunner?,
@@ -121,9 +125,10 @@ open class FeatureRunner(
             testStepLogger: TestStepLogger,
             hookRunner: SkelligHookRunner,
             eventDispatcher: SkelligTestEventDispatcher,
-            tagsFilter: TagsFilter
+            tagsFilter: TagsFilter,
+            scope: TestScenarioScope? = null
         ): FeatureRunner {
-            return FeatureRunner(feature, testScenarioState, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher)
+            return FeatureRunner(feature, testScenarioState, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher, scope)
         }
     }
 

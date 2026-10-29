@@ -28,7 +28,7 @@ open class IbmMqConsumableTestStepProcessor(
 
     override fun process(testStep: IbmMqConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
-        testScenarioState.set(testStep.getId, testStep)
+        stateOf(testStep).set(testStep.getId, testStep)
 
         log.info(testStep, "Start to consume messages for test step '${testStep.name}' from IBMMQ queues ${testStep.consumeFrom}")
         consume(testStep, testStep.consumeFrom, testStepRunResult)

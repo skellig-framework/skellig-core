@@ -34,7 +34,7 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
 
     override fun process(testStep: T): TestStepRunResult {
         val testStepRunResult = DefaultTestStepRunResult(testStep)
-        testScenarioState.set(testStep.getId, testStep)
+        stateOf(testStep).set(testStep.getId, testStep)
 
         when (testStep.execution) {
             TestStepExecutionType.ASYNC -> asyncTaskExecutor.execute {
@@ -79,9 +79,10 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
         var error: RuntimeException? = null
         try {
             result = processTestStep(testStep)
-            testScenarioState.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, result)
+            val state = stateOf(testStep)
+            state.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, result)
             testStep.scenarioStateUpdaters?.let { updaters ->
-                updaters.forEach { it.update(result, testScenarioState) }
+                updaters.forEach { it.update(result, state) }
             }
             validate(testStep, result)
         } catch (ex: Throwable) {

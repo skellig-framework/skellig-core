@@ -1,11 +1,20 @@
 package org.skellig.teststep.processing.model
 
+import org.skellig.teststep.processing.state.TestScenarioScope
+
 /**
  * Base interface to define a test step with name
  */
 interface TestStep {
 
     val name: String
+
+    /**
+     * The scope of the scenario this test step runs in. It is taken from the parameters of the test step
+     * (key [TestScenarioScope.PARAMETER_KEY]) when the test step is built, and is null if the parameters have none.
+     */
+    val scope: TestScenarioScope?
+        get() = null
 
     /**
      * Get full information about this test step (ex. properties or any other data).

@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.model.factory
 import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
@@ -85,6 +86,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
             .withAttempts(getAttempts(rawTestStep, additionalParameters))
             .withScenarioStateUpdater(stateUpdaterFactory.create(rawTestStep, additionalParameters))
             .build()
+            .also { it.scope = TestScenarioScope.from(parameters) }
     }
 
     /**

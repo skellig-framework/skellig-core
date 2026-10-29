@@ -16,6 +16,7 @@ import org.skellig.plugin.report.CustomAppender
 import org.skellig.plugin.report.DefaultTestStepLogger
 import org.skellig.runner.annotation.SkelligOptions
 import org.skellig.runner.exception.FeatureRunnerException
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.nio.file.Paths
@@ -60,6 +61,8 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
             clazz.classLoader, skelligOptions.testSteps.toList(), config, classInstanceRegistry
         )
         val testScenarioState = skelligTestContext.getTestScenarioState()
+        // without a parallel run, all scenarios share the only state of the context through one default scope
+        val defaultScope = TestScenarioScope(TestScenarioScope.DEFAULT_ID, testScenarioState)
 
         val testStepLogger = DefaultTestStepLogger()
         skelligTestContext.config?.let {
@@ -93,7 +96,8 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
                                     testStepLogger,
                                     hookRunner,
                                     eventDispatcher,
-                                    tagsFilter
+                                    tagsFilter,
+                                    defaultScope
                                 )
                             }
                             .toCollection(children)

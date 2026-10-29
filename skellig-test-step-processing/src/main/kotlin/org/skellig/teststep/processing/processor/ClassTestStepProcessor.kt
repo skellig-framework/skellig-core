@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.processor
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logTestStepResult
@@ -52,7 +53,7 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
         )
         try {
             response = testStepMethod.invoke(testStepDefInstance, *methodParameters)
-            testScenarioState.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, response)
+            (testStep.scope?.state ?: testScenarioState).set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, response)
         } catch (e: IllegalAccessException) {
             error = TestStepProcessingException("Failed to access non-public method '${testStepDefInstance.javaClass.simpleName}:$testStepMethod'" +
                     " of test step '${testStep.name}'")
@@ -89,7 +90,8 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
         if (testStepMethod.parameterCount > 0) {
             val lastParamType = testStepMethod.parameterTypes[testStepMethod.parameterCount - 1]
             if (lastParamType.isAssignableFrom(Map::class.java)) {
-                methodParameters[testStepMethod.parameterCount - 1] = parameters
+                // the scope is not for the user code, which only sees the parameters of the test step
+                methodParameters[testStepMethod.parameterCount - 1] = parameters?.let { TestScenarioScope.removeFrom(it) }
             }
         }
         return methodParameters

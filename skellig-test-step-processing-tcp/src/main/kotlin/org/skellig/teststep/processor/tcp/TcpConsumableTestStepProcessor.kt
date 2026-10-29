@@ -28,7 +28,7 @@ open class TcpConsumableTestStepProcessor(
 
     override fun process(testStep: TcpConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
-        testScenarioState.set(testStep.getId, testStep)
+        stateOf(testStep).set(testStep.getId, testStep)
 
         log.info(testStep, "Start to consume messages for test step '${testStep.name}' from TCP channels ${testStep.consumeFrom}")
         consume(testStep, testStep.consumeFrom, testStepRunResult)

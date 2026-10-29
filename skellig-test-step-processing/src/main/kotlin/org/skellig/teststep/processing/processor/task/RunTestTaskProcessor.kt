@@ -1,6 +1,7 @@
 package org.skellig.teststep.processing.processor.task
 
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
@@ -29,7 +30,9 @@ internal class RunTestTaskProcessor(
                     val testStepName = valueConvertDelegate(task.args[0], context.parameters)
                     log.info("Run test step '$testStepName")
                     val result = testStepName?.let {
-                        val runTestParameters = (valueConvertDelegate(value.value[PARAMETERS], context.parameters) as? Map<String, Any?>) ?: context.parameters
+                        val runTestParameters = (valueConvertDelegate(value.value[PARAMETERS], context.parameters) as? Map<String, Any?>)
+                            ?.let { TestScenarioScope.addTo(it, TestScenarioScope.from(context.parameters)) }
+                            ?: context.parameters
                         processTestStepDelegate(testStepName.toString(), runTestParameters)
                     } ?: error("The Test Step '${task.args[0]}' was evaluated to 'null'")
 

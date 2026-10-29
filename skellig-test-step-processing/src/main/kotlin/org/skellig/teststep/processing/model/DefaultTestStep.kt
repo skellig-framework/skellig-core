@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.model
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.PropertyFormatUtils
 import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStringCollection
 
@@ -38,6 +39,12 @@ open class DefaultTestStep(
     val validationDetails: ValidationNode? = null,
     val scenarioStateUpdaters: List<ScenarioStateUpdater>? = null
 ) : TestStep {
+
+    /**
+     * The scope of the scenario this test step runs in. It is set by the test step factory from the parameters of the test step.
+     */
+    override var scope: TestScenarioScope? = null
+        internal set
 
     /**
      * Get id of the test step. If not defined, then its name is returned as id.
