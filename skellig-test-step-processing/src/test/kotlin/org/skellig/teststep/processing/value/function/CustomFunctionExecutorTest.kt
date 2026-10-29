@@ -38,9 +38,10 @@ class CustomFunctionExecutorTest {
         val ex = assertThrows<FunctionRegistryException> {
             CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.duplicate"))
         }
-        assertTrue(ex.message!!.contains("same"))
-        assertTrue(ex.message!!.contains("DuplicateFunctionsA.same"))
-        assertTrue(ex.message!!.contains("DuplicateFunctionsB.same"))
+        val expected = "Function 'same' is defined more than once: "
+        assertTrue(ex.message!!.startsWith(expected), ex.message)
+        assertTrue(ex.message!!.contains("'org.skellig.teststep.processing.fixture.duplicate.DuplicateFunctionsA.same'"), ex.message)
+        assertTrue(ex.message!!.contains("'org.skellig.teststep.processing.fixture.duplicate.DuplicateFunctionsB.same'"), ex.message)
     }
 
     @Test
