@@ -69,14 +69,15 @@ class CustomFunctionExecutor(
                         throw FunctionRegistryException("Failed to instantiate class '${type.name}'", ex)
                     }
                 }
-                foundClassInstance::class.java.methods
-                    .find { method -> method.name == m.name }
-                    ?.let { methodInstance ->
-                        methodInstance.let {
-                            functions[it.name] = CustomFunction(foundClassInstance, it)
-                        }
-                    }
-
+                val method = m.loadClassAndGetMethod()
+                functions[method.name]?.let { existing ->
+                    throw FunctionRegistryException(
+                        "Function '${method.name}' is defined more than once: " +
+                                "'${existing.method.declaringClass.name}.${existing.method.name}' and " +
+                                "'${method.declaringClass.name}.${method.name}'"
+                    )
+                }
+                functions[method.name] = CustomFunction(foundClassInstance, method)
             }
     }
 

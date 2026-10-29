@@ -67,22 +67,19 @@ internal class ClassTestStepsRegistry(
                     }
                 }
 
-                instance::class.java.methods
-                    .find { method -> method.name == m.name }
-                    ?.let { methodInstance ->
-                        val testStepAnnotation = methodInstance.getAnnotation(TestStep::class.java)
-                        val testStepNameId = testStepAnnotation.id
-                        val testStepNamePattern = PatternValueExpression(testStepAnnotation.name)
+                val methodInstance = m.loadClassAndGetMethod()
+                val testStepAnnotation = methodInstance.getAnnotation(TestStep::class.java)
+                val testStepNameId = testStepAnnotation.id
+                val testStepNamePattern = PatternValueExpression(testStepAnnotation.name)
 
-                        testStepsPerClass.add(
-                            mapOf(
-                                Pair(ID, StringValueExpression(testStepNameId)),
-                                Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
-                                Pair(TEST_STEP_DEF_INSTANCE, AnyValueExpression(instance)),
-                                Pair(TEST_STEP_METHOD, AnyValueExpression(methodInstance))
-                            )
-                        )
-                    }
+                testStepsPerClass.add(
+                    mapOf(
+                        Pair(ID, StringValueExpression(testStepNameId)),
+                        Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
+                        Pair(TEST_STEP_DEF_INSTANCE, AnyValueExpression(instance)),
+                        Pair(TEST_STEP_METHOD, AnyValueExpression(methodInstance))
+                    )
+                )
             }
     }
 }
