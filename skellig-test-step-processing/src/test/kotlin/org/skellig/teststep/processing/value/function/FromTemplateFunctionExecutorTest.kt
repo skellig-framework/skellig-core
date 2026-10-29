@@ -39,4 +39,28 @@ class FromTemplateFunctionExecutorTest {
     }
 
     private fun inlineString(result: Any?) = result.toString().replace(Regex("[\r\n]+"), "")
+
+    @Test
+    @DisplayName("When called from several threads for the same and different templates Then each call returns correct output")
+    fun testFtlConversionFromSeveralThreads() {
+        val threads = 8
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(threads)
+        val start = java.util.concurrent.CountDownLatch(1)
+        val executor = FromTemplateFunctionExecutor(javaClass.classLoader)
+
+        val futures = (0 until threads).map { thread ->
+            pool.submit<List<Boolean>> {
+                start.await()
+                (0 until 300).map { i ->
+                    val data = mapOf("name" to "n$thread", "value" to "v$i")
+                    val result = executor.execute("fromTemplate", null, arrayOf("template/test.ftl", data))
+                    inlineString(result) == """{ "name" : "n$thread" "value" : "v$i"}"""
+                }
+            }
+        }
+        start.countDown()
+
+        futures.forEach { Assertions.assertTrue(it.get(30, java.util.concurrent.TimeUnit.SECONDS).all { ok -> ok }) }
+        pool.shutdownNow()
+    }
 }

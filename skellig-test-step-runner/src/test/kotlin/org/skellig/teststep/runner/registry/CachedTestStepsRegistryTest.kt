@@ -89,4 +89,33 @@ class CachedTestStepsRegistryTest {
         verify(mockTestStepRegistry1).getTestSteps()
         verify(mockTestStepRegistry2).getTestSteps()
     }
+
+    @Test
+    fun `should return correct test steps when looked up from many threads at once`() {
+        val steps = (0 until 50).associate { "step$it" to mapOf<ValueExpression, ValueExpression?>(mock<ValueExpression>() to mock<ValueExpression>()) }
+        // a plain fake is used, as Mockito mocks are not meant to be invoked from many threads at once
+        val registry = CachedTestStepsRegistry(listOf(object : TestStepRegistry {
+            override fun getByName(testStepName: String) = steps[testStepName]
+            override fun getById(testStepId: String) = steps[testStepId]
+            override fun getTestSteps() = steps.values
+        }))
+        val threads = 8
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(threads)
+        val start = java.util.concurrent.CountDownLatch(1)
+
+        val futures = (0 until threads).map { thread ->
+            pool.submit<List<Boolean>> {
+                start.await()
+                (0 until 2000).map { i ->
+                    val name = "step${(i + thread) % 50}"
+                    val found = if (i % 2 == 0) registry.getByName(name) else registry.getById(name)
+                    found === steps[name]
+                }
+            }
+        }
+        start.countDown()
+
+        futures.forEach { assertTrue(it.get(30, java.util.concurrent.TimeUnit.SECONDS).all { ok -> ok }) }
+        pool.shutdownNow()
+    }
 }

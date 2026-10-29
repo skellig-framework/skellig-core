@@ -114,4 +114,51 @@ class SkelligReportPluginTest {
             "validations of ${testStep.name}",
         ).parallelStream().forEach { assertTrue(content.contains(it)) }
     }
+
+    @Test
+    fun testGenerateReportWhenScenariosOfOneFeatureFinishConcurrently() {
+        val eventDispatcher = DefaultSkelligTestEventDispatcher()
+        SkelligReportPlugin(reportDir).init(eventDispatcher)
+
+        val feature = Feature.Builder()
+            .withName("Concurrent feature")
+            .withFilePath("concurrent.feature")
+            .build()
+        eventDispatcher.dispatch(FeatureStartedEvent(feature))
+
+        val scenarioCount = 16
+        val stepsPerScenario = 20
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(scenarioCount)
+        val start = java.util.concurrent.CountDownLatch(1)
+        val futures = (0 until scenarioCount).map { s ->
+            pool.submit {
+                val scenario = TestScenario.Builder().withName("Scenario #$s#").build().first()
+                start.await()
+                eventDispatcher.dispatch(TestScenarioStartedEvent(scenario, feature.getId()))
+                (0 until stepsPerScenario).forEach { i ->
+                    val step = TestStep.Builder().withName("Step #$s-$i#").withPosition(i).build()
+                    eventDispatcher.dispatch(TestStepStartedEvent(step, feature.getId(), scenario.getId(), null))
+                    eventDispatcher.dispatch(
+                        HookFinishedEvent("hook $s-$i", feature.getId(), scenario.getId(), null, Result(1L, null, null), ExecutionSequenceType.BEFORE)
+                    )
+                    eventDispatcher.dispatch(
+                        TestStepProcessingFinishedEvent(
+                            step.getId(), feature.getId(), scenario.getId(), Result(1L, null, null), emptyMap(), ExecutionSequenceType.NORMAL
+                        )
+                    )
+                }
+            }
+        }
+        start.countDown()
+        futures.forEach { it.get(30, java.util.concurrent.TimeUnit.SECONDS) }
+        pool.shutdownNow()
+
+        eventDispatcher.dispatch(TestRunFinishedEvent())
+
+        val content = File("target/$reportDir/skellig-report/feature-reports/Concurrent feature.html").readText()
+        (0 until scenarioCount).forEach { s ->
+            assertTrue(content.contains("Scenario #$s#"), "Scenario $s is missing in the report")
+            (0 until stepsPerScenario).forEach { i -> assertTrue(content.contains("Step #$s-$i#"), "Step $s-$i is missing in the report") }
+        }
+    }
 }

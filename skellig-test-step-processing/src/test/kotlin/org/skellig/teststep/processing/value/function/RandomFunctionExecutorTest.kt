@@ -55,4 +55,37 @@ class RandomFunctionExecutorTest {
         val ex = assertThrows<FunctionExecutionException> { random.execute("rand", null, emptyArray()) }
         assertEquals("Function `random` can only accept between 2 and 3 String arguments. Found 0", ex.message)
     }
+
+    @Test
+    fun testRandomFromSeveralThreads() {
+        val threads = 8
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(threads)
+        val start = java.util.concurrent.CountDownLatch(1)
+
+        val futures = (0 until threads).map {
+            pool.submit<List<Any>> {
+                start.await()
+                (0 until 5000).map {
+                    listOf(
+                        random.execute("rand", null, arrayOf("10", "20", "int")),
+                        random.execute("rand", null, arrayOf("10", "20", "long")),
+                        random.execute("rand", null, arrayOf("0.1", "0.9", "double")),
+                        random.execute("rand", null, arrayOf("10", "20", "bigDecimal")),
+                    )
+                }.flatten()
+            }
+        }
+        start.countDown()
+
+        futures.flatMap { it.get(30, java.util.concurrent.TimeUnit.SECONDS) }.forEach {
+            when (it) {
+                is Int -> assertTrue(it in 10..20)
+                is Long -> assertTrue(it in 10..20)
+                is Double -> assertTrue(it in 0.1..0.9)
+                is BigDecimal -> assertTrue(it >= BigDecimal(10) && it <= BigDecimal(20))
+                else -> throw AssertionError("Unexpected value $it")
+            }
+        }
+        pool.shutdownNow()
+    }
 }

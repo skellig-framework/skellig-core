@@ -6,6 +6,7 @@ import freemarker.template.Template
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import java.io.StringWriter
 import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Executor for the 'fromTemplate' function, which constructs a [String] output based on a template file and data model.
@@ -51,10 +52,11 @@ class FromTemplateFunctionExecutor(val classLoader: ClassLoader) : FunctionValue
 
     private class TemplateProvider(private val classLoader: ClassLoader) {
 
-        private val templates = mutableMapOf<String?, Template>()
+        // ConcurrentHashMap does not accept null keys, so a missing path is cached under an empty key
+        private val templates = ConcurrentHashMap<String, Template>()
 
         fun getTemplate(relativeFilePath: String?): Template {
-            return templates.computeIfAbsent(relativeFilePath) { loadFtlTemplate(relativeFilePath) }
+            return templates.computeIfAbsent(relativeFilePath ?: "") { loadFtlTemplate(relativeFilePath) }
         }
 
         private fun loadFtlTemplate(filePath: String?): Template {
