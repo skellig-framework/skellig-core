@@ -34,6 +34,16 @@ class ClassTestStepsRegistryTest {
             { assertEquals(Steps::class.java.methods[0], (firstStep[AlphanumericValueExpression("testStepMethod")] as AnyValueExpression).evaluate(mock())) }
         )
     }
+
+    @Test
+    fun testExtractAnnotatedOverloadOnly() {
+        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.overload"), mutableMapOf())
+
+        val testSteps = registry.getTestSteps()
+        val method = (testSteps.single()[AlphanumericValueExpression("testStepMethod")] as AnyValueExpression).evaluate(mock()) as java.lang.reflect.Method
+        val instance = (testSteps.single()[AlphanumericValueExpression("testStepDefInstance")] as AnyValueExpression).evaluate(mock())
+        assertEquals("annotated:ab", method.invoke(instance, "a", "b"))
+    }
 }
 
 class Steps {

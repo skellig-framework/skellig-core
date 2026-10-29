@@ -69,14 +69,15 @@ class CustomFunctionExecutor(
                         throw FunctionRegistryException("Failed to instantiate class '${type.name}'", ex)
                     }
                 }
-                foundClassInstance::class.java.methods
-                    .find { method -> method.name == m.name }
-                    ?.let { methodInstance ->
-                        methodInstance.let {
-                            functions[it.name] = CustomFunction(foundClassInstance, it)
-                        }
-                    }
-
+                val method = m.loadClassAndGetMethod()
+                functions[method.name]?.let { existing ->
+                    throw FunctionRegistryException(
+                        "Function '${method.name}' is defined more than once: " +
+                                "'${existing.method.declaringClass.name}.${existing.method.name}' and " +
+                                "'${method.declaringClass.name}.${method.name}'"
+                    )
+                }
+                functions[method.name] = CustomFunction(foundClassInstance, method)
             }
     }
 
@@ -85,7 +86,9 @@ class CustomFunctionExecutor(
 
 /**
  * Annotation used to mark a method of a class as a Skellig Function and registered in [CustomFunctionExecutor].
- * The name of the function is the same as the method name.
+ * The name of the function is the same as the method name, and it must be unique across all scanned classes:
+ * only the annotated method is called, even if other overloads exist, and two annotated methods with the same name
+ * fail registration with [FunctionRegistryException].
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)

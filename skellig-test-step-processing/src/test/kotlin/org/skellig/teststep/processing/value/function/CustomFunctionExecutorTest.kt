@@ -27,6 +27,24 @@ class CustomFunctionExecutorTest {
     }
 
     @Test
+    fun `execute the annotated overload of a function`() {
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.overload"))
+
+        assertEquals("annotated:ab", executor.execute("combine", null, arrayOf("a", "b")))
+    }
+
+    @Test
+    fun `fail when two functions have the same name`() {
+        val ex = assertThrows<FunctionRegistryException> {
+            CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.duplicate"))
+        }
+        val expected = "Function 'same' is defined more than once: "
+        assertTrue(ex.message!!.startsWith(expected), ex.message)
+        assertTrue(ex.message!!.contains("'org.skellig.teststep.processing.fixture.duplicate.DuplicateFunctionsA.same'"), ex.message)
+        assertTrue(ex.message!!.contains("'org.skellig.teststep.processing.fixture.duplicate.DuplicateFunctionsB.same'"), ex.message)
+    }
+
+    @Test
     fun `get function name as empty`() {
         assertEquals("", CustomFunctionExecutor(listOf("org.skellig.teststep.processing.value.function")).getFunctionName())
     }
