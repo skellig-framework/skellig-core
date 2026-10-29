@@ -1,5 +1,8 @@
 package org.skellig.plugin.report.model
 
+import java.util.Collections
+import java.util.concurrent.CopyOnWriteArrayList
+
 /**
  * Represents the report details for a test scenario.
  *
@@ -14,11 +17,11 @@ package org.skellig.plugin.report.model
 class TestScenarioReportDetails(
     val name: String?,
     val tags: Set<String>?,
-    val beforeHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
-    val afterHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
-    val beforeReportDetails: MutableMap<Any,TestStepReportDetails> = mutableMapOf(),
-    val afterReportDetails: MutableMap<Any, TestStepReportDetails> = mutableMapOf(),
-    val testStepReportDetails: MutableMap<Any, TestStepReportDetails> = mutableMapOf()
+    val beforeHooksReportDetails: MutableList<HookReportDetails> = CopyOnWriteArrayList(),
+    val afterHooksReportDetails: MutableList<HookReportDetails> = CopyOnWriteArrayList(),
+    val beforeReportDetails: MutableMap<Any, TestStepReportDetails> = Collections.synchronizedMap(LinkedHashMap()),
+    val afterReportDetails: MutableMap<Any, TestStepReportDetails> = Collections.synchronizedMap(LinkedHashMap()),
+    val testStepReportDetails: MutableMap<Any, TestStepReportDetails> = Collections.synchronizedMap(LinkedHashMap())
 ) {
 
     fun getTotalPassedTestSteps(): Int {

@@ -7,7 +7,9 @@ import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.io.path.absolute
 
 
@@ -138,13 +140,13 @@ class SkelligToCucumberReportPlugin(val reportFile: String) : SkelligPlugin {
         description: String = ""
     ) : CucumberElementReportDetails(line, id, name) {
 
-        private val elements = mutableMapOf<Int, CucumberElementReportDetails>()
+        private val elements = Collections.synchronizedMap(LinkedHashMap<Int, CucumberElementReportDetails>())
 
         override fun getKeyword(): String = "Feature"
 
         override fun getType(): String = "feature"
 
-        fun getElements(): Collection<CucumberElementReportDetails> = elements.values
+        fun getElements(): Collection<CucumberElementReportDetails> = synchronized(elements) { elements.values.toList() }
 
         fun addScenario(scenarioId: Int, cucumberScenarioReportDetails: CucumberScenarioReportDetails) {
             elements[scenarioId] = cucumberScenarioReportDetails
@@ -160,13 +162,13 @@ class SkelligToCucumberReportPlugin(val reportFile: String) : SkelligPlugin {
         id: String,
         name: String,
         val start_timestamp: Any,
-        val before: MutableList<CucumberHookReportDetails> = mutableListOf(),
-        val after: MutableList<CucumberHookReportDetails> = mutableListOf(),
+        val before: MutableList<CucumberHookReportDetails> = CopyOnWriteArrayList(),
+        val after: MutableList<CucumberHookReportDetails> = CopyOnWriteArrayList(),
         val tags: List<CucumberTagReportDetails> = emptyList(),
         description: String = "",
     ) : CucumberElementReportDetails(line, id, name) {
 
-        private val steps = mutableMapOf<Int, CucumberStepReportDetails>()
+        private val steps = Collections.synchronizedMap(LinkedHashMap<Int, CucumberStepReportDetails>())
 
         override fun getKeyword(): String = "Scenario"
 
@@ -186,7 +188,7 @@ class SkelligToCucumberReportPlugin(val reportFile: String) : SkelligPlugin {
 
         fun getStep(testStepId: Int): CucumberStepReportDetails? = steps[testStepId]
 
-        fun getSteps(): Collection<CucumberStepReportDetails> = steps.values
+        fun getSteps(): Collection<CucumberStepReportDetails> = synchronized(steps) { steps.values.toList() }
     }
 
     inner class CucumberStepReportDetails(

@@ -16,7 +16,8 @@ import kotlin.random.Random
 class RandomFunctionExecutor : FunctionValueExecutor {
 
 
-    private val random = Random(System.currentTimeMillis())
+    // Random.Default is thread-safe, unlike an instance created with a seed
+    private val random = Random.Default
 
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any {
         if (value != null) throw FunctionExecutionException("Function `${getFunctionName()}` cannot be called from another value")

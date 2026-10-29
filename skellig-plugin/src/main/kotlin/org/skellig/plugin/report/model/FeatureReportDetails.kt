@@ -1,5 +1,8 @@
 package org.skellig.plugin.report.model
 
+import java.util.Collections
+import java.util.concurrent.CopyOnWriteArrayList
+
 /**
  * Represents the details of a feature report which includes a list of [TestScenarioReportDetails]
  *
@@ -14,11 +17,11 @@ package org.skellig.plugin.report.model
 class FeatureReportDetails(
     val name: String?,
     val tags: Set<String>?,
-    val beforeHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
-    val afterHooksReportDetails: MutableList<HookReportDetails> = mutableListOf(),
-    val beforeReportDetails: MutableMap<Any, TestStepReportDetails> = mutableMapOf(),
-    val afterReportDetails: MutableMap<Any, TestStepReportDetails> = mutableMapOf(),
-    val testScenarioReportDetails: MutableMap<Any, TestScenarioReportDetails> = mutableMapOf(),
+    val beforeHooksReportDetails: MutableList<HookReportDetails> = CopyOnWriteArrayList(),
+    val afterHooksReportDetails: MutableList<HookReportDetails> = CopyOnWriteArrayList(),
+    val beforeReportDetails: MutableMap<Any, TestStepReportDetails> = Collections.synchronizedMap(LinkedHashMap()),
+    val afterReportDetails: MutableMap<Any, TestStepReportDetails> = Collections.synchronizedMap(LinkedHashMap()),
+    val testScenarioReportDetails: MutableMap<Any, TestScenarioReportDetails> = Collections.synchronizedMap(LinkedHashMap()),
 ) {
 
     private var totalTestSteps = -1
