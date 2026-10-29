@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepFactory
@@ -46,11 +48,13 @@ internal class DefaultTestStepRunnerTest {
     fun testRunTestStepWithScope() {
         val testStepName = "test1"
         val scope = TestScenarioScope("s1", mock())
-        initializeTestSteps(testStepName, mapOf(Pair("a", "b"), Pair(TestScenarioScope.PARAMETER_KEY, scope)))
+        val parameters = mapOf(Pair("a", "b"), Pair(TestScenarioScope.PARAMETER_KEY, scope))
+        initializeTestSteps(testStepName, parameters)
         initializeTestStepRunner()
 
         testStepRunner!!.run(testStepName, mapOf(Pair("a", "b")), scope)
 
+        Mockito.verify(testStepFactory).create(eq(testStepName), any(), eq(parameters));
         Mockito.verify(testStepProcessor).process(testStep!!)
     }
 
@@ -64,6 +68,7 @@ internal class DefaultTestStepRunnerTest {
 
         testStepRunner!!.run(testStepName, mapOf(Pair(TestScenarioScope.PARAMETER_KEY, TestScenarioScope("other", mock()))), scope)
 
+        Mockito.verify(testStepFactory).create(eq(testStepName), any(), argThat { p -> p[TestScenarioScope.PARAMETER_KEY] == scope });
         Mockito.verify(testStepProcessor).process(testStep!!)
     }
 
@@ -73,9 +78,9 @@ internal class DefaultTestStepRunnerTest {
         val testStepName = "test1"
         initializeTestSteps(testStepName, emptyMap<String, String>())
         testStepRunner = DefaultTestStepRunner()
-                .withTestStepFactory(testStepFactory)
-                .withTestStepProcessor(testStepProcessor)
-                .withTestStepsRegistry(createTestStepsRegistry("wrong path"))
+            .withTestStepFactory(testStepFactory)
+            .withTestStepProcessor(testStepProcessor)
+            .withTestStepsRegistry(createTestStepsRegistry("wrong path"))
 
         Assertions.assertThrows(IllegalStateException::class.java) { testStepRunner!!.run(testStepName) }
 
@@ -96,9 +101,9 @@ internal class DefaultTestStepRunnerTest {
     private fun initializeTestSteps(testStepName: String, parameters: Map<String, Any?>) {
         val rawTestStep = mapOf<ValueExpression, ValueExpression?>(Pair(AlphanumericValueExpression("name"), StringValueExpression(testStepName)))
         testStep = DefaultTestStep.DefaultTestStepBuilder()
-                .withId("t1")
-                .withName(testStepName)
-                .build()
+            .withId("t1")
+            .withName(testStepName)
+            .build()
 
         whenever(testStepFactory.create(testStepName, rawTestStep, parameters)).thenReturn(testStep)
         doReturn(listOf(rawTestStep)).whenever(testStepReader).read(argThat { true })
@@ -106,9 +111,9 @@ internal class DefaultTestStepRunnerTest {
 
     private fun initializeTestStepRunner() {
         testStepRunner = DefaultTestStepRunner()
-                .withTestStepFactory(testStepFactory)
-                .withTestStepProcessor(testStepProcessor)
-                .withTestStepsRegistry(createTestStepsRegistry("steps"))
+            .withTestStepFactory(testStepFactory)
+            .withTestStepProcessor(testStepProcessor)
+            .withTestStepsRegistry(createTestStepsRegistry("steps"))
     }
 
     private fun createTestStepsRegistry(testStepsPath: String): TestStepsRegistry {
