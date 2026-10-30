@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 /**
  * Represents a test step that can have details about where to read data from IBMMQ queues, where to send it and respond upon receive.
@@ -28,8 +29,9 @@ open class IbmMqTestStep protected constructor(id: String?,
                                                scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                                val sendTo: Set<String>?,
                                                val readFrom: Set<String>?,
-                                               val respondTo: Set<String>?)
-    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+                                               val respondTo: Set<String>?,
+                                               scope: TestScenarioScope? = null)
+    : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, scope) {
 
     override fun toString(): String {
         return super.toString() +
@@ -57,7 +59,7 @@ open class IbmMqTestStep protected constructor(id: String?,
 
         override fun build(): IbmMqTestStep {
             return IbmMqTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
-                scenarioStateUpdaters, sendTo, readFrom, respondTo)
+                scenarioStateUpdaters, sendTo, readFrom, respondTo, scope)
         }
     }
 }

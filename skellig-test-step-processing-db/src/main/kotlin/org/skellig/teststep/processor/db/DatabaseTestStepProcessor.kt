@@ -22,8 +22,7 @@ import org.skellig.teststep.processor.db.model.DatabaseTestStep
  */
 abstract class DatabaseTestStepProcessor<T : DatabaseRequestExecutor, TS : DatabaseTestStep>
     ( private val dbServers: Map<String, T>,
-    testScenarioState: TestScenarioState
-) : BaseTestStepProcessor<TS>(testScenarioState) {
+) : BaseTestStepProcessor<TS>() {
 
     private val log = logger<DatabaseTestStepProcessor<T, TS>>()
 

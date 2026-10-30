@@ -16,7 +16,6 @@ class JdbcTestStepProcessorConfig : TestStepProcessorConfig<JdbcTestStep> {
             ConfiguredTestStepProcessorDetails(
                 JdbcTestStepProcessor.Builder()
                     .withDbServers(details.config)
-                    .withTestScenarioState(details.state)
                     .build(),
                 JdbcTestStepFactory(
                     details.testStepRegistry,

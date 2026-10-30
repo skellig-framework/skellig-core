@@ -3,6 +3,7 @@ package org.skellig.teststep.processor.rmq.model
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 /**
  * Represents a test step that can have details about where to read data from RMQ queues, where to send it and respond upon receive.
@@ -31,9 +32,10 @@ open class RmqTestStep protected constructor(id: String?,
                                              val readFrom: Set<String>?,
                                              val respondTo: Set<String>?,
                                              routingKey: String?,
-                                             properties: Map<String, Any?>?)
+                                             properties: Map<String, Any?>?,
+                                             scope: TestScenarioScope? = null)
     : BaseRmqTestStep(id, name!!, execution, timeout, delay, attempts,
-                      values, testData, validationDetails, scenarioStateUpdaters, routingKey, properties) {
+                      values, testData, validationDetails, scenarioStateUpdaters, routingKey, properties, scope) {
 
     override fun toString(): String {
         return super.toString() +
@@ -62,7 +64,7 @@ open class RmqTestStep protected constructor(id: String?,
 
         override fun build(): RmqTestStep {
             return RmqTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
-                scenarioStateUpdaters, sendTo, readFrom, respondTo, routingKey, properties)
+                scenarioStateUpdaters, sendTo, readFrom, respondTo, routingKey, properties, scope)
         }
     }
 }

@@ -3,6 +3,7 @@ package org.skellig.runner.config
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.factory.BaseDefaultTestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
@@ -28,8 +29,9 @@ class SimpleTestStepFactory(
     class SimpleTestStep(
         id: String,
         override val name: String,
-        val captureData: String
-    ) : DefaultTestStep(id = id, name = name) {
+        val captureData: String,
+        scope: TestScenarioScope? = null
+    ) : DefaultTestStep(id = id, name = name, scope = scope) {
 
         class Builder : DefaultTestStep.Builder<SimpleTestStep>() {
 
@@ -40,7 +42,7 @@ class SimpleTestStepFactory(
             }
 
             override fun build(): SimpleTestStep {
-                return SimpleTestStep(id = id!!, name = name!!, captureData = captureData!!)
+                return SimpleTestStep(id = id!!, name = name!!, captureData = captureData!!, scope = scope)
             }
         }
     }

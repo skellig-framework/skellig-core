@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 /**
  * Represents a test step that interacts with a database.
@@ -36,8 +37,9 @@ open class DatabaseTestStep protected constructor(id: String?,
                                                   val servers: Collection<String>?,
                                                   val command: String?,
                                                   val table: String?,
-                                                  val query: String?)
-    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+                                                  val query: String?,
+                                                  scope: TestScenarioScope? = null)
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, scope) {
 
     override fun toString(): String {
         return super.toString() + (query?.let { "servers = $servers\nquery=$query\n" }

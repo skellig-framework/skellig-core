@@ -2,6 +2,8 @@ package org.skellig.teststep.processing.processor.task
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -10,6 +12,7 @@ import org.mockito.kotlin.mock
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactoryTest
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
@@ -20,6 +23,7 @@ import java.math.BigDecimal
 class DefaultTaskProcessorTest {
 
     private val testScenarioState = DefaultTestScenarioState()
+    private val scope = TestScenarioScope("test", testScenarioState)
     private val valueExpressionContextFactory = ValueExpressionContextFactory(
         DefaultFunctionValueExecutor.Builder()
             .withTestScenarioState(testScenarioState)
@@ -76,6 +80,25 @@ class DefaultTaskProcessorTest {
             assertAll(
                 { assertEquals(mapOf(Pair("p1", "v1")), parameters["a"]) },
                 { assertEquals(listOf("v2"), parameters["b"]) },
+            )
+        }
+
+        @Test
+        fun testSetVariableWithReservedScopeKeyIsRejected() {
+            val taskProcessor = createTaskProcessor()
+            val parameters = mutableMapOf<String, Any?>()
+
+            val ex = assertThrows<IllegalStateException> {
+                taskProcessor.process(
+                    null,
+                    MapValueExpression(mapOf(Pair(StringValueExpression("skellig.scope"), NumberValueExpression("100")))),
+                    TaskProcessingContext(parameters)
+                )
+            }
+
+            assertAll(
+                { assertEquals("The variable name 'skellig.scope' is reserved for the scenario scope and cannot be assigned", ex.message) },
+                { assertFalse(parameters.containsKey("skellig.scope")) },
             )
         }
 
@@ -218,6 +241,24 @@ class DefaultTaskProcessorTest {
     inner class ForEachTaskProcessorTest {
 
         @Test
+        fun testForEachWithReservedScopeKeyAsItemNameIsRejected() {
+            val taskProcessor = createTaskProcessor()
+            val scope = TestScenarioScope("s1", DefaultTestScenarioState())
+            val parameters = mutableMapOf<String, Any?>(TestScenarioScope.PARAMETER_KEY to scope)
+
+            listOf("forEach", "asyncForEach").forEach { taskName ->
+                val ex = assertThrows<IllegalStateException> {
+                    taskProcessor.process(
+                        FunctionCallExpression(taskName, arrayOf(ListValueExpression(listOf(NumberValueExpression("1"))), StringValueExpression("skellig.scope"))),
+                        MapValueExpression(mapOf()), TaskProcessingContext(parameters)
+                    )
+                }
+                assertEquals("The variable name 'skellig.scope' is reserved for the scenario scope and cannot be assigned", ex.message)
+            }
+            assertSame(scope, parameters[TestScenarioScope.PARAMETER_KEY])
+        }
+
+        @Test
         fun testForEachWithVariablesAndRunningTestStep() {
             val taskProcessor = createTaskProcessor { testName, parameters ->
                 testScenarioState.set(testName, "passed")
@@ -321,6 +362,7 @@ class DefaultTaskProcessorTest {
                 )
             )
             val parameters = mutableMapOf<String, Any?>(
+                Pair(TestScenarioScope.PARAMETER_KEY, scope),
                 Pair(
                     "items",
                     listOf(
@@ -487,10 +529,28 @@ class DefaultTaskProcessorTest {
                     Pair(AlphanumericValueExpression("a"), ListValueExpression(listOf(PropertyValueExpression("result")))),
                 )
             )
-            val parameters = mutableMapOf<String, Any?>(Pair("result", "success"))
+            val parameters = mutableMapOf<String, Any?>(Pair("result", "success"), Pair(TestScenarioScope.PARAMETER_KEY, scope))
             taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(parameters))
 
             assertEquals(listOf("success"), testScenarioState.get("a"))
+        }
+
+        @Test
+        fun testSaveToStateOfTheScopeInParameters() {
+            val taskProcessor = createTaskProcessor()
+            val scopeState = DefaultTestScenarioState()
+            val value = MapValueExpression(mapOf(Pair(AlphanumericValueExpression("a"), PropertyValueExpression("result"))))
+            val parameters = mutableMapOf<String, Any?>(
+                Pair("result", "success"),
+                Pair(TestScenarioScope.PARAMETER_KEY, TestScenarioScope("s1", scopeState))
+            )
+
+            taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(parameters))
+
+            assertAll(
+                { assertEquals("success", scopeState.get("a")) },
+                { assertNull(testScenarioState.get("a")) },
+            )
         }
 
         @Test
@@ -502,12 +562,24 @@ class DefaultTaskProcessorTest {
                     Pair(PropertyValueExpression("a"), ListValueExpression(listOf(PropertyValueExpression("result")))),
                 )
             )
-            val parameters = mutableMapOf<String, Any?>()
+            val parameters = mutableMapOf<String, Any?>(Pair(TestScenarioScope.PARAMETER_KEY, scope))
             val ex = assertThrows<IllegalStateException> {
                 taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(parameters))
             }
 
             assertEquals("Cannot set value to the null key in the Test Scenario State", ex.message)
+        }
+
+        @Test
+        fun testSaveToStateFailsWhenNoScope() {
+            val taskProcessor = createTaskProcessor()
+            val value = MapValueExpression(mapOf(Pair(AlphanumericValueExpression("a"), NumberValueExpression("1"))))
+
+            val ex = assertThrows<IllegalStateException> {
+                taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(mutableMapOf()))
+            }
+
+            assertEquals("Cannot update the Test Scenario State: the test step has no scenario scope", ex.message)
         }
 
         @Test
@@ -616,6 +688,101 @@ class DefaultTaskProcessorTest {
         }
 
         @Test
+        fun testRunTaskWithOwnParametersPassesOnlyThemAndTheCallersScope() {
+            val childParameters = mutableListOf<Map<String, Any?>?>()
+            val taskProcessor = createTaskProcessor { _, parameters ->
+                childParameters.add(parameters)
+                TestStepProcessor.TestStepRunResult(mock<TestStep>())
+            }
+            val scope = TestScenarioScope("caller", DefaultTestScenarioState())
+            val parameters = mutableMapOf<String, Any?>("p1" to "v1", TestScenarioScope.PARAMETER_KEY to scope)
+
+            taskProcessor.process(
+                FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))),
+                runTestWithParameters(mapOf(AlphanumericValueExpression("number") to NumberValueExpression("1"))),
+                TaskProcessingContext(parameters)
+            )
+
+            assertEquals(mapOf("number" to BigDecimal(1), TestScenarioScope.PARAMETER_KEY to scope), childParameters.single())
+        }
+
+        @Test
+        fun testRunTaskCallersScopeWinsOverScopeInOwnParameters() {
+            val childParameters = mutableListOf<Map<String, Any?>?>()
+            val taskProcessor = createTaskProcessor { _, parameters ->
+                childParameters.add(parameters)
+                TestStepProcessor.TestStepRunResult(mock<TestStep>())
+            }
+            val callerScope = TestScenarioScope("caller", DefaultTestScenarioState())
+            val otherScope = TestScenarioScope("other", DefaultTestScenarioState())
+            val parameters = mutableMapOf<String, Any?>(
+                "otherScope" to otherScope,
+                TestScenarioScope.PARAMETER_KEY to callerScope
+            )
+
+            taskProcessor.process(
+                FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))),
+                runTestWithParameters(mapOf(StringValueExpression("skellig.scope") to PropertyValueExpression("otherScope"))),
+                TaskProcessingContext(parameters)
+            )
+
+            assertSame(callerScope, childParameters.single()!![TestScenarioScope.PARAMETER_KEY])
+        }
+
+        @Test
+        fun testRunTaskWithOwnParametersDoesNotModifyCallersParameters() {
+            val taskProcessor = createTaskProcessor()
+            val scope = TestScenarioScope("caller", DefaultTestScenarioState())
+            val parameters = mutableMapOf<String, Any?>("p1" to "v1", TestScenarioScope.PARAMETER_KEY to scope)
+
+            taskProcessor.process(
+                FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))),
+                runTestWithParameters(mapOf(AlphanumericValueExpression("number") to NumberValueExpression("1"))),
+                TaskProcessingContext(parameters)
+            )
+
+            assertEquals(mapOf("p1" to "v1", TestScenarioScope.PARAMETER_KEY to scope), parameters)
+        }
+
+        @Test
+        fun testRunTaskWithOwnParametersWithoutScopeIsAsBefore() {
+            val childParameters = mutableListOf<Map<String, Any?>?>()
+            val taskProcessor = createTaskProcessor { _, parameters ->
+                childParameters.add(parameters)
+                TestStepProcessor.TestStepRunResult(mock<TestStep>())
+            }
+
+            taskProcessor.process(
+                FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))),
+                runTestWithParameters(mapOf(AlphanumericValueExpression("number") to NumberValueExpression("1"))),
+                TaskProcessingContext(mutableMapOf("p1" to "v1"))
+            )
+
+            assertEquals(mapOf("number" to BigDecimal(1)), childParameters.single())
+        }
+
+        @Test
+        fun testRunTaskWithoutOwnParametersPassesCallersParametersWithScope() {
+            val childParameters = mutableListOf<Map<String, Any?>?>()
+            val taskProcessor = createTaskProcessor { _, parameters ->
+                childParameters.add(parameters)
+                TestStepProcessor.TestStepRunResult(mock<TestStep>())
+            }
+            val scope = TestScenarioScope("caller", DefaultTestScenarioState())
+            val parameters = mutableMapOf<String, Any?>("p1" to "v1", TestScenarioScope.PARAMETER_KEY to scope)
+
+            taskProcessor.process(
+                FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression("test A"))),
+                MapValueExpression(mapOf()), TaskProcessingContext(parameters)
+            )
+
+            assertEquals(parameters, childParameters.single())
+        }
+
+        private fun runTestWithParameters(parameters: Map<ValueExpression, ValueExpression>) =
+            MapValueExpression(mapOf(AlphanumericValueExpression("parameters") to MapValueExpression(parameters)))
+
+        @Test
         fun testRunTaskWhenTestStepNameEvaluatedToNull() {
             val taskProcessor = createTaskProcessor()
 
@@ -638,7 +805,6 @@ class DefaultTaskProcessorTest {
 
     private fun createTaskProcessor(runTestDelegate: (String, Map<String, Any?>?) -> TestStepProcessor.TestStepRunResult): DefaultTaskProcessor {
         return DefaultTaskProcessor(
-            testScenarioState,
             { value, parameters -> value?.evaluate(valueExpressionContextFactory.create(parameters)) },
             runTestDelegate
         )

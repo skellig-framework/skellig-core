@@ -11,7 +11,7 @@ class PerformanceTestStepProcessorConfigTest {
     @Test
     fun `config performance processor where config not defined`() {
         val config = PerformanceTestStepProcessorConfig().config(
-            TestStepProcessorConfigDetails(mock(), ConfigFactory.load("empty-performance-test.conf"), mock(), mock(), mock(), mock())
+            TestStepProcessorConfigDetails(ConfigFactory.load("empty-performance-test.conf"), mock(), mock(), mock(), mock())
         )
         assertNull(config, "Config should not be defined")
     }

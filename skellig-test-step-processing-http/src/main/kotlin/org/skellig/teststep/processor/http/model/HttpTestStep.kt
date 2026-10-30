@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.createIndent
 
 /**
@@ -46,8 +47,9 @@ class HttpTestStep(
     val password: String?,
     val headers: Map<String, String?>?,
     val query: Map<String, String?>?,
-    val form: Map<String, String?>?
-) : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+    val form: Map<String, String?>?,
+    scope: TestScenarioScope? = null
+) : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, scope) {
 
     override fun toString(): String {
         return super.toString() +
@@ -110,7 +112,7 @@ class HttpTestStep(
                 execution, timeout, delay, attempts, values, testData, validationDetails,
                 scenarioStateUpdaters, url, services,
                 method ?: error("HTTP method is mandatory for HTTP Test Step"),
-                username, password, headers, query, form
+                username, password, headers, query, form, scope
             )
         }
     }

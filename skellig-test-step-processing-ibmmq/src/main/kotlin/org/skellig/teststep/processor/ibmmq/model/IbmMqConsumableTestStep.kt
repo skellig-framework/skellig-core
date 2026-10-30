@@ -5,6 +5,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 /**
  * Represents a test step that consumes data from IBMMQ queues and optionally responds to the other queues.
@@ -31,9 +32,10 @@ open class IbmMqConsumableTestStep protected constructor(id: String?,
                                                          validationDetails: ValidationNode?,
                                                          scenarioStateUpdaters: List<ScenarioStateUpdater>?,
                                                          val consumeFrom: List<String>,
-                                                         val respondTo: List<String>?)
+                                                         val respondTo: List<String>?,
+                                                         scope: TestScenarioScope? = null)
     : DefaultTestStep(id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, values,
-                      testData, validationDetails, scenarioStateUpdaters) {
+                      testData, validationDetails, scenarioStateUpdaters, scope) {
 
 
     override fun toString(): String {
@@ -62,7 +64,7 @@ open class IbmMqConsumableTestStep protected constructor(id: String?,
                     throw TestStepCreationException("consumeFrom and respondTo must have the same size")
             }
             return IbmMqConsumableTestStep(id, name!!, timeout, values, testData,
-                                           validationDetails, scenarioStateUpdaters, consumeFrom!!, respondTo)
+                                           validationDetails, scenarioStateUpdaters, consumeFrom!!, respondTo, scope)
         }
     }
 }

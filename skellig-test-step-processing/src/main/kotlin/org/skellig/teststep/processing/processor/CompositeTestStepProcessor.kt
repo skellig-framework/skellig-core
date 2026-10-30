@@ -5,7 +5,6 @@ import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
 import org.skellig.teststep.processing.processor.task.DefaultTaskProcessor
 import org.skellig.teststep.processing.processor.task.TaskTestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.ValueExpression
 import org.slf4j.Logger
@@ -17,7 +16,6 @@ import org.slf4j.LoggerFactory
  * If no processor found for the provided test step, then it throws `[TestStepProcessingException]`
  */
 class CompositeTestStepProcessor private constructor(
-    testScenarioState: TestScenarioState,
     valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
     processTestStepDelegate: (String, Map<String, Any?>) -> TestStepRunResult
 ) : TestStepProcessor<TestStep> {
@@ -26,18 +24,9 @@ class CompositeTestStepProcessor private constructor(
     private val testStepProcessors: MutableList<TestStepProcessor<in TestStep>> = mutableListOf()
 
     init {
-        registerTestStepProcessor(
-            DefaultTestStepProcessor.Builder()
-                .withTestScenarioState(testScenarioState)
-                .build()
-        )
-        registerTestStepProcessor(
-            TaskTestStepProcessor(
-                DefaultTaskProcessor(testScenarioState, valueConvertDelegate, processTestStepDelegate),
-                testScenarioState
-            )
-        )
-        registerTestStepProcessor(ClassTestStepProcessor(testScenarioState))
+        registerTestStepProcessor(DefaultTestStepProcessor.Builder().build())
+        registerTestStepProcessor(TaskTestStepProcessor(DefaultTaskProcessor(valueConvertDelegate, processTestStepDelegate)))
+        registerTestStepProcessor(ClassTestStepProcessor())
     }
 
     override fun process(testStep: TestStep): TestStepRunResult {
@@ -89,7 +78,6 @@ class CompositeTestStepProcessor private constructor(
 
         override fun build(): CompositeTestStepProcessor {
             return CompositeTestStepProcessor(
-                testScenarioState!!,
                 valueConvertDelegate!!,
                 processTestStepDelegate!!
             )

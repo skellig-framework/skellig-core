@@ -6,6 +6,7 @@ import org.mockito.kotlin.*
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
 import java.util.concurrent.atomic.AtomicBoolean
@@ -13,10 +14,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal class IbmMqTestStepProcessorTest {
 
+    private val scope get() = TestScenarioScope("test", testScenarioState!!)
+
     class IbmMqTestStepProcessorUnderTest(
-        testScenarioState: TestScenarioState,
         ibmMqChannels: Map<String, IbmMqChannel>
-    ) : IbmMqTestStepProcessor(testScenarioState, ibmMqChannels)
+    ) : IbmMqTestStepProcessor(ibmMqChannels)
 
 
     companion object {
@@ -38,7 +40,7 @@ internal class IbmMqTestStepProcessorTest {
 
         testScenarioState = mock()
 
-        processor = IbmMqTestStepProcessorUnderTest(testScenarioState!!, ibmMqChannels)
+        processor = IbmMqTestStepProcessorUnderTest(ibmMqChannels)
     }
 
     @Test
@@ -48,7 +50,7 @@ internal class IbmMqTestStepProcessorTest {
             .sendTo(setOf("host3"))
             .withTestData("hi")
             .withName("n1")
-            .build()
+            .withScope(scope).build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
@@ -71,7 +73,7 @@ internal class IbmMqTestStepProcessorTest {
                 .sendTo(setOf(CHANNEL_ID))
                 .withTestData("hi")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
 
             val result = processor!!.process(testStep)
 
@@ -88,7 +90,7 @@ internal class IbmMqTestStepProcessorTest {
                 .readFrom(setOf(CHANNEL_ID))
                 .withTestData("hi")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
             whenever(ibmMqChannel.read(anyInt())).thenReturn(response.toByteArray())
 
             val isPassed = AtomicBoolean()
@@ -115,7 +117,7 @@ internal class IbmMqTestStepProcessorTest {
                 .readFrom(setOf(CHANNEL_ID))
                 .withTestData("hi")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
             whenever(ibmMqChannel.read(anyInt())).thenReturn("yo".toByteArray())
 
             processor!!.process(testStep)
@@ -134,7 +136,7 @@ internal class IbmMqTestStepProcessorTest {
                 .withTestData("hi")
                 .withName("n1")
                 .withValidationDetails(expectedResult)
-                .build()
+                .withScope(scope).build()
             whenever(ibmMqChannel.read(anyInt())).thenReturn(response)
 
             doThrow(ValidationException("oops")).whenever(expectedResult)

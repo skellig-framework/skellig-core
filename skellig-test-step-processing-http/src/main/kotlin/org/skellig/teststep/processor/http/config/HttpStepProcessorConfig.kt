@@ -20,7 +20,6 @@ class HttpTestStepProcessorConfig : TestStepProcessorConfig<HttpTestStep> {
             ConfiguredTestStepProcessorDetails(
                 HttpTestStepProcessor.Builder()
                     .withHttpService(details.config)
-                    .withTestScenarioState(details.state)
                     .build(),
                 HttpTestStepFactory(
                     details.testStepRegistry,

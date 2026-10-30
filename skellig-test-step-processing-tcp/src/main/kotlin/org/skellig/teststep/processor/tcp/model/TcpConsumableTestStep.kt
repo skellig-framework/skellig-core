@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 /**
  * Represents a test step that consumes data from TCP channels and optionally responds to the channels.
@@ -33,10 +34,11 @@ open class TcpConsumableTestStep protected constructor(
     scenarioStateUpdaters: List<ScenarioStateUpdater>?,
     val consumeFrom: List<String>,
     val respondTo: List<String>?,
-    readBufferSize: Int
+    readBufferSize: Int,
+    scope: TestScenarioScope? = null
 ) : BaseTcpTestStep(
     id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, values,
-    testData, validationDetails, scenarioStateUpdaters, readBufferSize
+    testData, validationDetails, scenarioStateUpdaters, readBufferSize, scope
 ) {
 
     override fun toString(): String {
@@ -67,7 +69,7 @@ open class TcpConsumableTestStep protected constructor(
             }
             return TcpConsumableTestStep(
                 id, name!!, timeout, values, testData,
-                validationDetails, scenarioStateUpdaters, consumeFrom!!, respondTo, readBufferSize
+                validationDetails, scenarioStateUpdaters, consumeFrom!!, respondTo, readBufferSize, scope
             )
         }
     }

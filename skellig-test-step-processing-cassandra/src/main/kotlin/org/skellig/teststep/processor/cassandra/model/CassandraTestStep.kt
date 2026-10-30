@@ -3,6 +3,7 @@ package org.skellig.teststep.processor.cassandra.model
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 
 /**
@@ -39,15 +40,16 @@ open class CassandraTestStep protected constructor(id: String?,
                                                    servers: Collection<String>?,
                                                    command: String?,
                                                    table: String?,
-                                                   query: String?)
+                                                   query: String?,
+                                                   scope: TestScenarioScope? = null)
     : DatabaseTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
-       scenarioStateUpdaters, servers, command, table, query) {
+       scenarioStateUpdaters, servers, command, table, query, scope) {
 
     class Builder : DatabaseTestStep.Builder<CassandraTestStep>() {
         override fun build(): CassandraTestStep {
             return CassandraTestStep(id, name!!, execution, timeout,
                     delay, attempts, values, testData,
-                    validationDetails, scenarioStateUpdaters, servers, command, table, query)
+                    validationDetails, scenarioStateUpdaters, servers, command, table, query, scope)
         }
     }
 }

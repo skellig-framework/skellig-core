@@ -13,9 +13,8 @@ import org.skellig.teststep.processor.db.DatabaseTestStepProcessor
  * @property dbServers a map of database servers with their corresponding [CassandraRequestExecutor], where key is a server name from [servers][CassandraTestStep.servers]
  * @property testScenarioState the [TestScenarioState] object that holds the state of the test scenario.
  */
-open class CassandraTestStepProcessor protected constructor(dbServers: Map<String, CassandraRequestExecutor>,
-                                                            testScenarioState: TestScenarioState)
-    : DatabaseTestStepProcessor<CassandraRequestExecutor, CassandraTestStep>(dbServers, testScenarioState) {
+open class CassandraTestStepProcessor protected constructor(dbServers: Map<String, CassandraRequestExecutor>)
+    : DatabaseTestStepProcessor<CassandraRequestExecutor, CassandraTestStep>(dbServers) {
 
     override fun getTestStepClass(): Class<CassandraTestStep> = CassandraTestStep::class.java
 
@@ -32,7 +31,7 @@ open class CassandraTestStepProcessor protected constructor(dbServers: Map<Strin
         }
 
         override fun build(): TestStepProcessor<CassandraTestStep> {
-            return CassandraTestStepProcessor(dbServers, testScenarioState!!)
+            return CassandraTestStepProcessor(dbServers)
         }
     }
 }

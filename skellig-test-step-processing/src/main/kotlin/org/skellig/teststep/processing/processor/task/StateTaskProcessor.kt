@@ -1,13 +1,12 @@
 package org.skellig.teststep.processing.processor.task
 
-import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 internal class StateTaskProcessor(
-    private val state: TestScenarioState,
     private val valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
 ) : TaskProcessor {
 
@@ -17,6 +16,8 @@ internal class StateTaskProcessor(
         (task as? AlphanumericValueExpression)?.let {
             when (value) {
                 is MapValueExpression -> {
+                    val state = TestScenarioScope.from(context.parameters)?.state
+                        ?: error("Cannot update the Test Scenario State: the test step has no scenario scope")
                     value.value.forEach { item ->
                         val key = valueConvertDelegate(item.key, context.parameters)?.toString()
                             ?: error("Cannot set value to the null key in the Test Scenario State")

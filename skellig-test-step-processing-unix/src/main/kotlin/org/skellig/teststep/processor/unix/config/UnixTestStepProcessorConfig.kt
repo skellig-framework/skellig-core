@@ -19,7 +19,6 @@ class UnixShellTestStepProcessorConfig : TestStepProcessorConfig<UnixShellTestSt
         return if (details.config.hasPath("unix-shell")) ConfiguredTestStepProcessorDetails(
             UnixShellTestStepProcessor.Builder()
                 .withHosts(details.config)
-                .withTestScenarioState(details.state)
                 .build(),
             UnixShellTestStepFactory(
                 details.testStepRegistry,

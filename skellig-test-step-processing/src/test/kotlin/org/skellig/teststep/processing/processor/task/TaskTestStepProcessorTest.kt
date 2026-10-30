@@ -12,6 +12,7 @@ import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactoryTest
@@ -25,6 +26,7 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
 class TaskTestStepProcessorTest {
 
     private val testScenarioState = mock<TestScenarioState>()
+    private val scope = TestScenarioScope("test", testScenarioState)
     private val valueExpressionContextFactory = ValueExpressionContextFactory(
         DefaultFunctionValueExecutor.Builder()
             .withTestScenarioState(testScenarioState)
@@ -135,15 +137,14 @@ class TaskTestStepProcessorTest {
     )
 
     private fun createTaskTestStep(timeout: Int, task: ValueExpression?, executionType: TestStepExecutionType = TestStepExecutionType.SYNC) =
-        TaskTestStep("", "task", executionType, timeout, 0, 0, null, task, null, null, mutableMapOf())
+        TaskTestStep("", "task", executionType, timeout, 0, 0, null, task, null, null, mutableMapOf(), scope)
 
     private fun createTaskTestStepProcessor(runTestDelegate: (String, Map<String, Any?>?) -> TestStepProcessor.TestStepRunResult): TaskTestStepProcessor {
         return TaskTestStepProcessor(
             DefaultTaskProcessor(
-                testScenarioState,
                 { value, parameters -> value?.evaluate(valueExpressionContextFactory.create(parameters)) },
                 runTestDelegate
-            ), testScenarioState
+            )
         )
     }
 }

@@ -23,10 +23,10 @@ private const val DEFAULT_GRACEFUL_SHUTDOWN_WAIT_SEC = 30L
  * as well as its result after execution. After the result is received, it's validated
  * based on the validation details in the test step.
  *
- * @param testScenarioState The [TestScenarioState] object which stores data during a run of test scenario and accessible
- * in all test step processors. The data can be saved in the state through the details provided in [DefaultTestStep.scenarioStateUpdaters]
+ * The data of the test step and its result are stored in the [TestScenarioState] of the scope of the test step, and
+ * can also be saved in the state through the details provided in [DefaultTestStep.scenarioStateUpdaters]
  */
-abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: TestScenarioState) : ValidatableTestStepProcessor<T>(testScenarioState) {
+abstract class BaseTestStepProcessor<T : DefaultTestStep> : ValidatableTestStepProcessor<T>() {
 
     private val log = logger<BaseTestStepProcessor<*>>()
     private val asyncTaskGroupExecutor = AsyncTaskGroupExecutor()
@@ -34,7 +34,7 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
 
     override fun process(testStep: T): TestStepRunResult {
         val testStepRunResult = DefaultTestStepRunResult(testStep)
-        testScenarioState.set(testStep.getId, testStep)
+        stateOf(testStep).set(testStep.getId, testStep)
 
         when (testStep.execution) {
             TestStepExecutionType.ASYNC -> asyncTaskExecutor.execute {
@@ -79,9 +79,10 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
         var error: RuntimeException? = null
         try {
             result = processTestStep(testStep)
-            testScenarioState.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, result)
+            val state = stateOf(testStep)
+            state.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, result)
             testStep.scenarioStateUpdaters?.let { updaters ->
-                updaters.forEach { it.update(result, testScenarioState) }
+                updaters.forEach { it.update(result, state) }
             }
             validate(testStep, result)
         } catch (ex: Throwable) {
@@ -162,14 +163,6 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep>(testScenarioState: Tes
     }
 
     abstract class Builder<T : TestStep> {
-        protected var testScenarioState: TestScenarioState? = null
-
-        /**
-         * The scenario state is needed to store the data of test step,
-         * as well as its result after processing.
-         */
-        fun withTestScenarioState(testScenarioState: TestScenarioState?) =
-            apply { this.testScenarioState = testScenarioState }
 
         abstract fun build(): TestStepProcessor<T>
     }

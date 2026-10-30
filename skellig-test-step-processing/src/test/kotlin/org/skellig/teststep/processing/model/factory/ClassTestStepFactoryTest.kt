@@ -1,12 +1,16 @@
 package org.skellig.teststep.processing.model.factory
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
+import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.AnyValueExpression
 import org.skellig.teststep.reader.value.expression.PatternValueExpression
@@ -39,6 +43,27 @@ class ClassTestStepFactoryTest {
             { assertTrue(factory.isConstructableFrom(rawTestStep)) },
         )
     }
+
+    @Test
+    fun `when parameters have a scope Then the test step exposes it`() {
+        val scope = TestScenarioScope("s1", DefaultTestScenarioState())
+
+        val testStep = factory.create("test 1", rawTestStep(), mapOf(TestScenarioScope.PARAMETER_KEY to scope))
+
+        assertSame(scope, testStep.scope)
+    }
+
+    @Test
+    fun `when parameters have no scope Then the test step has none`() {
+        assertNull(factory.create("test 1", rawTestStep(), mapOf("a" to "1")).scope)
+    }
+
+    private fun rawTestStep(): Map<ValueExpression, ValueExpression> = mapOf(
+        Pair(AlphanumericValueExpression("id"), AlphanumericValueExpression("100500")),
+        Pair(AlphanumericValueExpression("testStepNamePattern"), PatternValueExpression("run (\\d+) times")),
+        Pair(AlphanumericValueExpression("testStepDefInstance"), AnyValueExpression(mock<Any>())),
+        Pair(AlphanumericValueExpression("testStepMethod"), AnyValueExpression(mock<Method>())),
+    )
 
     @Test
     fun `when test instance is null`() {

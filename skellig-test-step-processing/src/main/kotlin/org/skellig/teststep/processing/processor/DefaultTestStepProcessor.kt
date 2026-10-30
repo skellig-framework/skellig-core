@@ -12,13 +12,13 @@ import org.skellig.teststep.processing.util.logger
  * Processes a [default test step][DefaultTestStep] by running validation of a result from another test step or taken from
  * [TestScenarioState].
  */
-internal class DefaultTestStepProcessor private constructor(testScenarioState: TestScenarioState) : ValidatableTestStepProcessor<DefaultTestStep>(testScenarioState) {
+internal class DefaultTestStepProcessor private constructor() : ValidatableTestStepProcessor<DefaultTestStep>() {
 
     private val log = logger<DefaultTestStepProcessor>()
 
     override fun process(testStep: DefaultTestStep): TestStepRunResult {
         val testStepRunResult = TestStepRunResult(testStep)
-        testScenarioState.set(testStep.getId, testStep)
+        stateOf(testStep).set(testStep.getId, testStep)
         log.info(testStep, "Start to process task of test '${testStep.name}' by running validation only")
         validate(testStep, testStepRunResult)
 
@@ -56,7 +56,7 @@ internal class DefaultTestStepProcessor private constructor(testScenarioState: T
 
     class Builder : BaseTestStepProcessor.Builder<DefaultTestStep>() {
         override fun build(): TestStepProcessor<DefaultTestStep> {
-            return DefaultTestStepProcessor(testScenarioState ?: error("TestScenarioState must be provided"))
+            return DefaultTestStepProcessor()
         }
     }
 

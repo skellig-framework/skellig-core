@@ -5,7 +5,6 @@ import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepFactory
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.TestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 
 /**
@@ -24,7 +23,6 @@ interface TestStepProcessorConfig<T : TestStep> {
 /**
  * Represents the configuration details required for configuring a Test Step Processor.
  *
- * @property state The test scenario state that holds information about running test steps.
  * @property config The configuration object for the test step.
  * @property testStepRegistry The registry for storing and retrieving test steps.
  * @property valueExpressionContextFactory The factory for creating value expression contexts.
@@ -32,7 +30,6 @@ interface TestStepProcessorConfig<T : TestStep> {
  * @property testStepFactory The factory for creating test steps.
  */
 data class TestStepProcessorConfigDetails(
-    val state: TestScenarioState,
     val config: Config,
     val testStepRegistry: TestStepRegistry,
     val valueExpressionContextFactory: ValueExpressionContextFactory,

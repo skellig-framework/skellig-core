@@ -3,6 +3,7 @@ package org.skellig.teststep.processor.tcp.model
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 /**
  * Represents a test step that can have details about where to read data from TCP channels, where to send it and respond upon receive.
@@ -30,8 +31,9 @@ open class TcpTestStep protected constructor(
     val sendTo: Set<String>?,
     val readFrom: Set<String>?,
     val respondTo: Set<String>?,
-    readBufferSize: Int
-) : BaseTcpTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, readBufferSize) {
+    readBufferSize: Int,
+    scope: TestScenarioScope? = null
+) : BaseTcpTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, readBufferSize, scope) {
 
     override fun toString(): String {
         return super.toString() +
@@ -61,7 +63,7 @@ open class TcpTestStep protected constructor(
         override fun build(): TcpTestStep {
             return TcpTestStep(
                 id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails,
-                scenarioStateUpdaters, sendTo, readFrom, respondTo, readBufferSize
+                scenarioStateUpdaters, sendTo, readFrom, respondTo, readBufferSize, scope
             )
         }
     }

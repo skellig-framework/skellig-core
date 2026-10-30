@@ -22,7 +22,7 @@ class UnixShellTestStepProcessorConfigTest {
     @Test
     fun `config unix shell processor where config not defined`() {
         val config = UnixShellTestStepProcessorConfig().config(
-            TestStepProcessorConfigDetails(mock(), ConfigFactory.load("empty-unix-test.conf"), mock(), mock(), mock(), mock())
+            TestStepProcessorConfigDetails(ConfigFactory.load("empty-unix-test.conf"), mock(), mock(), mock(), mock())
         )
         assertNull(config, "Config should not be defined")
     }
@@ -32,7 +32,7 @@ class UnixShellTestStepProcessorConfigTest {
         val state = DefaultTestScenarioState()
         val config = UnixShellTestStepProcessorConfig().config(
             TestStepProcessorConfigDetails(
-                state, ConfigFactory.load("unix-test.conf"), mock(),
+                ConfigFactory.load("unix-test.conf"), mock(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
                         .withTestScenarioState(state)
@@ -59,7 +59,7 @@ class UnixShellTestStepProcessorConfigTest {
         val state = DefaultTestScenarioState()
         val config = UnixShellTestStepProcessorConfig().config(
             TestStepProcessorConfigDetails(
-                state, ConfigFactory.load("unix-test.conf"), mock(),
+                ConfigFactory.load("unix-test.conf"), mock(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
                         .withTestScenarioState(state)

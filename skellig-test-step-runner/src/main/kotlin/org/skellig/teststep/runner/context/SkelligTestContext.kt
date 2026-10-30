@@ -10,6 +10,7 @@ import org.skellig.teststep.processing.processor.CompositeTestStepProcessor
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
@@ -66,6 +67,7 @@ open class SkelligTestContext : Closeable {
     private val log = logger<SkelligTestContext>()
     private var valueExpressionContextFactory: ValueExpressionContextFactory? = null
     private var testScenarioState: TestScenarioState? = null
+    private var defaultScope: TestScenarioScope? = null
     private var rootTestStepProcessor: CompositeTestStepProcessor? = null
     private var rootTestStepFactory: CompositeTestStepFactory? = null
     private var testStepsRegistry: TestStepRegistry? = null
@@ -83,6 +85,7 @@ open class SkelligTestContext : Closeable {
         config = createConfig(classLoader, configPath)
 
         testScenarioState = createTestScenarioState()
+        defaultScope = TestScenarioScope(TestScenarioScope.DEFAULT_ID, testScenarioState!!)
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepReader = createTestStepReader()
         val functionExecutor = createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths, newClassInstanceRegistry)
@@ -119,7 +122,6 @@ open class SkelligTestContext : Closeable {
                 v?.evaluate(valueExpressionContextFactory.create(p))
             }
             .withProcessTestStepDelegate(testStepRunner::run)
-            .withTestScenarioState(testScenarioState)
             .build() as CompositeTestStepProcessor
 
         // initialise additional test step processors if found
@@ -129,7 +131,6 @@ open class SkelligTestContext : Closeable {
                 val testStepProcessorConfig = processorConfig as TestStepProcessorConfig<out TestStep>
                 log.debug { "Found a config for Test Step Processing: '${processorConfig.javaClass.name}'" }
                 val testStepProcessorConfigDetails = TestStepProcessorConfigDetails(
-                    testScenarioState!!,
                     config!!,
                     testStepsRegistry!!,
                     valueExpressionContextFactory,
@@ -201,6 +202,16 @@ open class SkelligTestContext : Closeable {
      */
     fun getTestScenarioState(): TestScenarioState =
         testScenarioState ?: error("TestScenarioState must be initialized first. Did you forget to call 'initialize'?")
+
+    /**
+     * Returns the default [TestScenarioScope] of this context, which wraps the only [TestScenarioState] of the context.
+     * It is the scope to run test steps in when no parallel run is configured.
+     *
+     * @throws IllegalStateException if the context is not initialized.
+     * Make sure to call the 'initialize' method before calling this method.
+     */
+    fun getDefaultScope(): TestScenarioScope =
+        defaultScope ?: error("TestScenarioScope must be initialized first. Did you forget to call 'initialize'?")
 
     /**
      * Returns the configured instance of [ValueExpressionContextFactory].
