@@ -2,7 +2,6 @@ package org.skellig.teststep.processing.processor.task
 
 import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
 
@@ -12,12 +11,10 @@ import org.skellig.teststep.processing.util.logger
  * When all tasks are processed, it waits until they are all finished completely.
  *
  * @param taskProcessor The TaskProcessor used to process the tasks in the [TaskTestStep].
- * @param testScenarioState The [TestScenarioState] object.
  */
 internal class TaskTestStepProcessor(
-    private val taskProcessor: TaskProcessor,
-    testScenarioState: TestScenarioState
-) : BaseTestStepProcessor<TaskTestStep>(testScenarioState) {
+    private val taskProcessor: TaskProcessor
+) : BaseTestStepProcessor<TaskTestStep>() {
 
     private val log = logger<TaskTestStepProcessor>()
 

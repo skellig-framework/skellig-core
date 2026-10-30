@@ -8,11 +8,14 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.db.model.DatabaseTestStep
 
 @DisplayName("Process database test step")
 class DatabaseTestStepProcessorTest {
+
+    private val testScope = TestScenarioScope("test", mock())
 
     companion object {
         private const val SRV_1 = "srv1"
@@ -31,7 +34,7 @@ class DatabaseTestStepProcessorTest {
         )
 
         databaseTestStepProcessor = object : DatabaseTestStepProcessor<DatabaseRequestExecutor, TestDatabaseTestStep>(
-            dbServers, mock<TestScenarioState>()
+            dbServers
         ) {
             override fun getTestStepClass(): Class<*> = TestDatabaseTestStep::class.java
         }
@@ -116,7 +119,7 @@ class DatabaseTestStepProcessorTest {
     @DisplayName("When run only on one db server And server not provided in step Then response is not grouped by servers")
     fun testProcessDatabaseTestStepWhenNoServersProvidedAndOneRegistered() {
         databaseTestStepProcessor = object : DatabaseTestStepProcessor<DatabaseRequestExecutor, TestDatabaseTestStep>(
-            mapOf(Pair("srv2", dbRequestExecutor1)), mock<TestScenarioState>()
+            mapOf(Pair("srv2", dbRequestExecutor1))
         ) {
             override fun getTestStepClass(): Class<*> = TestDatabaseTestStep::class.java
         }
@@ -164,7 +167,7 @@ class DatabaseTestStepProcessorTest {
     }
 
     private inner class TestDatabaseTestStepBuilder : DatabaseTestStep.Builder<TestDatabaseTestStep>() {
-        override fun build(): TestDatabaseTestStep = TestDatabaseTestStep(name!!, servers, command, table, query)
+        override fun build(): TestDatabaseTestStep = TestDatabaseTestStep(name!!, servers, command, table, query, testScope)
     }
 
     private inner class TestDatabaseTestStep(
@@ -172,9 +175,10 @@ class DatabaseTestStepProcessorTest {
         servers: Collection<String>?,
         command: String?,
         table: String?,
-        query: String?
+        query: String?,
+        scope: TestScenarioScope?
     ) : DatabaseTestStep(
         null, name, TestStepExecutionType.SYNC, 0, 0, 0, null, null, null, null,
-        servers, command, table, query
+        servers, command, table, query, scope
     )
 }

@@ -11,6 +11,6 @@ class IbmMqConsumableTestStepProcessorTest {
     @Test
     @DisplayName("Verify correct test step class")
     fun testGetTestStepClass() {
-        assertEquals(IbmMqConsumableTestStep::class.java, IbmMqConsumableTestStepProcessor(emptyMap(), mock()).getTestStepClass())
+        assertEquals(IbmMqConsumableTestStep::class.java, IbmMqConsumableTestStepProcessor(emptyMap()).getTestStepClass())
     }
 }

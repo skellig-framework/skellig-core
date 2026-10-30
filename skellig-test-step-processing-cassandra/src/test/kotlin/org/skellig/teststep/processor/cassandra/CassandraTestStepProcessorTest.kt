@@ -12,7 +12,6 @@ class CassandraTestStepProcessorTest {
         assertEquals(
             CassandraTestStep::class.java,
             CassandraTestStepProcessor.Builder()
-                .withTestScenarioState(mock())
                 .build()
                 .getTestStepClass()
         )

@@ -14,10 +14,9 @@ class ClassTestStep(
     val testStepDefInstance: Any,
     val testStepMethod: Method,
     override val name: String,
-    val parameters: Map<String, Any?>?
-) : TestStep {
-
+    val parameters: Map<String, Any?>?,
     override val scope: TestScenarioScope? = TestScenarioScope.from(parameters)
+) : TestStep {
 
     val getId: String = id
         get() = field.ifEmpty { name }

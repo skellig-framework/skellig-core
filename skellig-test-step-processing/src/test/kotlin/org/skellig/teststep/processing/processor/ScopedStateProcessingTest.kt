@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.mock
 import org.skellig.teststep.processing.model.ClassTestStep
@@ -14,19 +15,19 @@ import org.skellig.teststep.processing.state.TestScenarioScope
 import java.util.regex.Pattern
 
 /**
- * A processor reads and writes the state of the scope of the test step, and only uses its own state
+ * A processor reads and writes only the state of the scope of the test step, and fails
  * when the test step has no scope.
  */
 class ScopedStateProcessingTest {
 
-    private val defaultState = DefaultTestScenarioState()
     private val scopeState = DefaultTestScenarioState()
     private val scope = TestScenarioScope("s1", scopeState)
+    private val otherState = DefaultTestScenarioState()
 
     @Nested
     inner class DefaultTestStepProcessing {
 
-        private val processor = DefaultTestStepProcessor.Builder().withTestScenarioState(defaultState).build()
+        private val processor = DefaultTestStepProcessor.Builder().build()
 
         @Test
         fun testStoresTestStepInStateOfItsScope() {
@@ -36,24 +37,22 @@ class ScopedStateProcessingTest {
 
             assertAll(
                 { assertSame(testStep, scopeState.get("t1")) },
-                { assertNull(defaultState.get("t1")) },
+                { assertNull(otherState.get("t1")) },
             )
         }
 
         @Test
-        fun testStoresTestStepInDefaultStateWhenNoScope() {
-            val testStep = testStep("t1")
+        fun testFailsWhenNoScope() {
+            val ex = assertThrows<IllegalStateException> { processor.process(testStep("t1")) }
 
-            processor.process(testStep)
-
-            assertSame(testStep, defaultState.get("t1"))
+            assertEquals("Test step 't1' has no scenario scope. A test step must be run with a TestScenarioScope", ex.message)
         }
     }
 
     @Nested
     inner class BaseTestStepProcessing {
 
-        private val processor = BaseTestStepProcessorTest.BaseTestStepProcessorForTest(defaultState)
+        private val processor = BaseTestStepProcessorTest.BaseTestStepProcessorForTest()
 
         @Test
         fun testStoresTestStepAndResultInStateOfItsScope() {
@@ -64,8 +63,8 @@ class ScopedStateProcessingTest {
             assertAll(
                 { assertSame(testStep, scopeState.get("t1")) },
                 { assertEquals("processed", scopeState.get("t1_result")) },
-                { assertNull(defaultState.get("t1")) },
-                { assertNull(defaultState.get("t1_result")) },
+                { assertNull(otherState.get("t1")) },
+                { assertNull(otherState.get("t1_result")) },
             )
         }
 
@@ -84,22 +83,15 @@ class ScopedStateProcessingTest {
         }
 
         @Test
-        fun testStoresTestStepAndResultInDefaultStateWhenNoScope() {
-            val testStep = testStep("t1")
-
-            processor.process(testStep)
-
-            assertAll(
-                { assertSame(testStep, defaultState.get("t1")) },
-                { assertEquals("processed", defaultState.get("t1_result")) },
-            )
+        fun testFailsWhenNoScope() {
+            assertThrows<IllegalStateException> { processor.process(testStep("t1")) }
         }
     }
 
     @Nested
     inner class ClassTestStepProcessing {
 
-        private val processor = ClassTestStepProcessor(defaultState)
+        private val processor = ClassTestStepProcessor()
 
         @Test
         fun testStoresResultInStateOfItsScope() {
@@ -109,15 +101,13 @@ class ScopedStateProcessingTest {
 
             assertAll(
                 { assertEquals("done", scopeState.get("c1_result")) },
-                { assertNull(defaultState.get("c1_result")) },
+                { assertNull(otherState.get("c1_result")) },
             )
         }
 
         @Test
-        fun testStoresResultInDefaultStateWhenNoScope() {
-            processor.process(classTestStep(emptyMap()))
-
-            assertEquals("done", defaultState.get("c1_result"))
+        fun testFailsWhenNoScope() {
+            assertThrows<IllegalStateException> { processor.process(classTestStep(emptyMap())) }
         }
 
         @Test

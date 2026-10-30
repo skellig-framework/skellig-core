@@ -23,7 +23,6 @@ class RmqTestStepProcessorConfig : TestStepProcessorConfig<RmqTestStep> {
             ConfiguredTestStepProcessorDetails(
                 RmqTestStepProcessor.Builder()
                     .rmqChannels(details.config)
-                    .withTestScenarioState(details.state)
                     .build(),
                 RmqTestStepFactory(
                     details.testStepRegistry,
@@ -48,7 +47,6 @@ class RmqConsumableTestStepProcessorConfig : TestStepProcessorConfig<RmqConsumab
             ConfiguredTestStepProcessorDetails(
                 RmqConsumableTestStepProcessor.Builder()
                     .rmqChannels(details.config)
-                    .withTestScenarioState(details.state)
                     .build(),
                 RmqConsumableTestStepFactory(
                     details.testStepRegistry,

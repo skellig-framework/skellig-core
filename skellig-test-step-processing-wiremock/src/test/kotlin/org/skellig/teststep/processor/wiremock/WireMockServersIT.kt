@@ -81,7 +81,7 @@ class WireMockServersIT {
 
     @Test
     fun `no wiremock key means no processor is registered`() {
-        val details = TestStepProcessorConfigDetails(mock(), ConfigFactory.parseString("ui { }"), mock(), mock(), mock(), mock())
+        val details = TestStepProcessorConfigDetails(ConfigFactory.parseString("ui { }"), mock(), mock(), mock(), mock())
         assertNull(WireMockTestStepProcessorConfig().config(details))
     }
 

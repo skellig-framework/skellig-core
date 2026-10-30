@@ -19,7 +19,8 @@ class TestScenarioRunnerTest {
     private val hookRunner = mock<SkelligHookRunner>()
     private val testStepRunner = mock<TestStepRunner>()
     private val testScenario = createScenarioWithBeforeAndAfterSteps()
-    private val scenarioRunner = TestScenarioRunner.create(testScenario, 0, testStepRunner, hookRunner, mock(), mock())
+    private val scope = TestScenarioScope("test", mock())
+    private val scenarioRunner = TestScenarioRunner.create(testScenario, 0, testStepRunner, hookRunner, mock(), mock(), scope)
 
     @Test
     fun testRunAndVerifyFeatureBeforeAndAfterTestStepsRun() {
@@ -28,11 +29,11 @@ class TestScenarioRunnerTest {
         val result3 = mock<TestStepProcessor.TestStepRunResult>()
         val result4 = mock<TestStepProcessor.TestStepRunResult>()
         val result5 = mock<TestStepProcessor.TestStepRunResult>()
-        whenever(testStepRunner.run(testScenario.beforeSteps!![0].name, emptyMap())).thenReturn(result1)
-        whenever(testStepRunner.run(testScenario.beforeSteps!![1].name, emptyMap())).thenReturn(result2)
-        whenever(testStepRunner.run(testScenario.afterSteps!![0].name, emptyMap())).thenReturn(result3)
-        whenever(testStepRunner.run(testScenario.afterSteps!![1].name, emptyMap())).thenReturn(result4)
-        whenever(testStepRunner.run(testScenario.steps!![0].name, emptyMap())).thenReturn(result5)
+        whenever(testStepRunner.run(testScenario.beforeSteps!![0].name, emptyMap(), scope)).thenReturn(result1)
+        whenever(testStepRunner.run(testScenario.beforeSteps!![1].name, emptyMap(), scope)).thenReturn(result2)
+        whenever(testStepRunner.run(testScenario.afterSteps!![0].name, emptyMap(), scope)).thenReturn(result3)
+        whenever(testStepRunner.run(testScenario.afterSteps!![1].name, emptyMap(), scope)).thenReturn(result4)
+        whenever(testStepRunner.run(testScenario.steps!![0].name, emptyMap(), scope)).thenReturn(result5)
 
         val notifier = mock<RunNotifier>()
         scenarioRunner.run(notifier)
@@ -70,7 +71,7 @@ class TestScenarioRunnerTest {
     fun testRunStepsInTheScopeOfTheRunner() {
         val scope = TestScenarioScope("s1", mock())
         val scopedRunner = TestScenarioRunner.create(testScenario, 0, testStepRunner, hookRunner, mock(), mock(), scope)
-        whenever(testStepRunner.run(any(), any(), any())).thenReturn(mock<TestStepProcessor.TestStepRunResult>())
+        whenever(testStepRunner.run(any(), any(), eq(scope))).thenReturn(mock<TestStepProcessor.TestStepRunResult>())
 
         scopedRunner.run(mock<RunNotifier>())
 

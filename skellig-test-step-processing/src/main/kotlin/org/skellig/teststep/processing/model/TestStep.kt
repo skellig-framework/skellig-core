@@ -28,3 +28,11 @@ interface TestStep {
         return mapOf(Pair("Properties", toString()))
     }
 }
+
+/**
+ * Returns the scope of this test step, which processors use to read and write the scenario state.
+ *
+ * @throws IllegalStateException if the test step has no scope, which means it was run without one.
+ */
+fun TestStep.getScope(): TestScenarioScope =
+    scope ?: error("Test step '$name' has no scenario scope. A test step must be run with a TestScenarioScope")

@@ -10,7 +10,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
-import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
@@ -23,11 +23,12 @@ private const val DEFAULT_ASYNC_DELAY = 500L
 class BaseTestStepProcessorTest {
 
     private val testScenarioState = DefaultTestScenarioState()
+    private val scope = TestScenarioScope("test", testScenarioState)
 
     @Test
     fun testProcessAsync() {
-        val processor = AsyncBaseTestStepProcessorForTest(testScenarioState)
-        val testStep = DefaultTestStep.DefaultTestStepBuilder()
+        val processor = AsyncBaseTestStepProcessorForTest()
+        val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(scope)
             .withName("n1")
             .withExecution(TestStepExecutionType.ASYNC)
             .build()
@@ -45,9 +46,9 @@ class BaseTestStepProcessorTest {
 
     @Test
     fun testProcessAsyncWithStateUpdate() {
-        val processor = AsyncBaseTestStepProcessorForTest(testScenarioState)
+        val processor = AsyncBaseTestStepProcessorForTest()
         val scenarioStateUpdater = mock<ScenarioStateUpdater>()
-        val testStep = DefaultTestStep.DefaultTestStepBuilder()
+        val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(scope)
             .withName("n1")
             .withExecution(TestStepExecutionType.ASYNC)
             .withScenarioStateUpdater(listOf(scenarioStateUpdater))
@@ -65,9 +66,9 @@ class BaseTestStepProcessorTest {
 
     @Test
     fun `process async and close then verify it waits for the result with timeout`() {
-        val processor = AsyncBaseTestStepProcessorForTest(testScenarioState)
+        val processor = AsyncBaseTestStepProcessorForTest()
         val scenarioStateUpdater = mock<ScenarioStateUpdater>()
-        val testStep = DefaultTestStep.DefaultTestStepBuilder()
+        val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(scope)
             .withName("n1")
             .withExecution(TestStepExecutionType.ASYNC)
             .withScenarioStateUpdater(listOf(scenarioStateUpdater))
@@ -85,7 +86,7 @@ class BaseTestStepProcessorTest {
 
     @Nested
     inner class SyncTestProcessingTest {
-        private val processor = BaseTestStepProcessorForTest(testScenarioState)
+        private val processor = BaseTestStepProcessorForTest()
         private val valueExpressionContextFactory = ValueExpressionContextFactory(
             DefaultFunctionValueExecutor.Builder()
                 .withTestScenarioState(testScenarioState)
@@ -96,7 +97,7 @@ class BaseTestStepProcessorTest {
 
         @Test
         fun testProcess() {
-            val testStep = DefaultTestStep.DefaultTestStepBuilder()
+            val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(scope)
                 .withName("n1")
                 .withId("id1")
                 .build()
@@ -117,7 +118,7 @@ class BaseTestStepProcessorTest {
         @Test
         fun testProcessWithStateUpdate() {
             val parameters = mapOf(Pair("amt", "100"))
-            val testStep = DefaultTestStep.DefaultTestStepBuilder()
+            val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(scope)
                 .withName("n1")
                 .withScenarioStateUpdater(
                     listOf(
@@ -149,18 +150,14 @@ class BaseTestStepProcessorTest {
         }
     }
 
-    class BaseTestStepProcessorForTest(
-        testScenarioState: TestScenarioState,
-    ) : BaseTestStepProcessor<DefaultTestStep>(testScenarioState) {
+    class BaseTestStepProcessorForTest : BaseTestStepProcessor<DefaultTestStep>() {
 
         override fun processTestStep(testStep: DefaultTestStep): Any = DEFAULT_RESULT
 
         override fun getTestStepClass(): Class<*> = DefaultTestStep::class.java
     }
 
-    class AsyncBaseTestStepProcessorForTest(
-        testScenarioState: TestScenarioState,
-    ) : BaseTestStepProcessor<DefaultTestStep>(testScenarioState) {
+    class AsyncBaseTestStepProcessorForTest : BaseTestStepProcessor<DefaultTestStep>() {
 
         override fun processTestStep(testStep: DefaultTestStep): Any {
             Thread.sleep(DEFAULT_ASYNC_DELAY)

@@ -2,7 +2,6 @@ package org.skellig.teststep.processor.ui
 
 import org.openqa.selenium.WebDriver
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.ui.handler.CompositeUiActionHandler
 import org.skellig.teststep.processor.ui.model.UiTestStep
 import java.nio.file.Path
@@ -10,11 +9,10 @@ import java.time.Duration
 
 /** Executes once; readiness polling never repeats a click or the action sequence. */
 internal class UiTestStepProcessor(
-    state: TestScenarioState,
     timeout: Duration,
     private val createDriver: () -> WebDriver,
     screenshotsPath: Path
-) : BaseTestStepProcessor<UiTestStep>(state) {
+) : BaseTestStepProcessor<UiTestStep>() {
     private val screenshotCapturer = UiScreenshotCapturer(screenshotsPath)
     private var browser: WebDriver? = null
     private val uiActionsHandler = CompositeUiActionHandler(timeout)

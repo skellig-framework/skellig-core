@@ -23,6 +23,7 @@ import java.math.BigDecimal
 class DefaultTaskProcessorTest {
 
     private val testScenarioState = DefaultTestScenarioState()
+    private val scope = TestScenarioScope("test", testScenarioState)
     private val valueExpressionContextFactory = ValueExpressionContextFactory(
         DefaultFunctionValueExecutor.Builder()
             .withTestScenarioState(testScenarioState)
@@ -361,6 +362,7 @@ class DefaultTaskProcessorTest {
                 )
             )
             val parameters = mutableMapOf<String, Any?>(
+                Pair(TestScenarioScope.PARAMETER_KEY, scope),
                 Pair(
                     "items",
                     listOf(
@@ -527,7 +529,7 @@ class DefaultTaskProcessorTest {
                     Pair(AlphanumericValueExpression("a"), ListValueExpression(listOf(PropertyValueExpression("result")))),
                 )
             )
-            val parameters = mutableMapOf<String, Any?>(Pair("result", "success"))
+            val parameters = mutableMapOf<String, Any?>(Pair("result", "success"), Pair(TestScenarioScope.PARAMETER_KEY, scope))
             taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(parameters))
 
             assertEquals(listOf("success"), testScenarioState.get("a"))
@@ -560,12 +562,24 @@ class DefaultTaskProcessorTest {
                     Pair(PropertyValueExpression("a"), ListValueExpression(listOf(PropertyValueExpression("result")))),
                 )
             )
-            val parameters = mutableMapOf<String, Any?>()
+            val parameters = mutableMapOf<String, Any?>(Pair(TestScenarioScope.PARAMETER_KEY, scope))
             val ex = assertThrows<IllegalStateException> {
                 taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(parameters))
             }
 
             assertEquals("Cannot set value to the null key in the Test Scenario State", ex.message)
+        }
+
+        @Test
+        fun testSaveToStateFailsWhenNoScope() {
+            val taskProcessor = createTaskProcessor()
+            val value = MapValueExpression(mapOf(Pair(AlphanumericValueExpression("a"), NumberValueExpression("1"))))
+
+            val ex = assertThrows<IllegalStateException> {
+                taskProcessor.process(AlphanumericValueExpression("state"), value, TaskProcessingContext(mutableMapOf()))
+            }
+
+            assertEquals("Cannot update the Test Scenario State: the test step has no scenario scope", ex.message)
         }
 
         @Test
@@ -791,7 +805,6 @@ class DefaultTaskProcessorTest {
 
     private fun createTaskProcessor(runTestDelegate: (String, Map<String, Any?>?) -> TestStepProcessor.TestStepRunResult): DefaultTaskProcessor {
         return DefaultTaskProcessor(
-            testScenarioState,
             { value, parameters -> value?.evaluate(valueExpressionContextFactory.create(parameters)) },
             runTestDelegate
         )

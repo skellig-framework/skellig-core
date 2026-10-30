@@ -23,7 +23,6 @@ class IbmMqTestStepProcessorConfig : TestStepProcessorConfig<IbmMqTestStep> {
             ConfiguredTestStepProcessorDetails(
                 IbmMqTestStepProcessor.Builder()
                     .ibmMqChannels(details.config)
-                    .withTestScenarioState(details.state)
                     .build(),
                 IbmMqTestStepFactory(
                     details.testStepRegistry,
@@ -46,7 +45,6 @@ class IbmMqConsumableTestStepProcessorConfig : TestStepProcessorConfig<IbmMqCons
             ConfiguredTestStepProcessorDetails(
                 IbmMqConsumableTestStepProcessor.Builder()
                     .ibmMqChannels(details.config)
-                    .withTestScenarioState(details.state)
                     .build(),
                 IbmMqConsumableTestStepFactory(
                     details.testStepRegistry,

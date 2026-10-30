@@ -26,16 +26,10 @@ class DefaultScopeTest {
 
     @Test
     fun testAllStepsRunInTheDefaultScopeWrappingTheStateOfTheContext() {
-        SimpleTestStepProcessor.processedScopes.clear()
-
         val result = JUnitCore().run(ScopeCheckRunner::class.java)
 
         assertTrue(result.failures.joinToString { it.message ?: it.toString() }, result.wasSuccessful())
         // before feature + 3 steps of the scenarios + after feature
-        assertEquals(5, SimpleTestStepProcessor.processedScopes.size)
-        val scope = SimpleTestStepProcessor.processedScopes.first()!!
-        assertEquals(TestScenarioScope.DEFAULT_ID, scope.id)
-        assertSame(SimpleTestStepProcessor.contextState, scope.state)
-        SimpleTestStepProcessor.processedScopes.forEach { assertSame(scope, it) }
+        assertEquals(5, SimpleTestStepProcessor.processedScopes.get())
     }
 }

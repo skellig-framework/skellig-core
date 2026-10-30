@@ -5,18 +5,21 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
+import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import java.util.regex.Pattern
 
 class ClassTestStepProcessorTest {
 
-    private val classTestStepProcessor = ClassTestStepProcessor(mock())
+    private val scope = TestScenarioScope("test", DefaultTestScenarioState())
+    private val classTestStepProcessor = ClassTestStepProcessor()
 
     @Test
     fun testProcessCallingMethodWithOneParam() {
         val testStepMethod = javaClass.methods.find { it.name == "runSomething" }
         val testStep = ClassTestStep(
             "", Pattern.compile("run with n = (.+)"), this, testStepMethod!!,
-            "run with n = 10", emptyMap()
+            "run with n = 10", emptyMap(), scope
         )
 
         val runResult = classTestStepProcessor.process(testStep)
@@ -32,7 +35,7 @@ class ClassTestStepProcessorTest {
         val testStepMethod = javaClass.methods.find { it.name == "runSomethingWithMap" }
         val testStep = ClassTestStep(
             "", Pattern.compile("run with n = (.+)"), this, testStepMethod!!,
-            "run with n = 10", mapOf(Pair("p1", "v1"), Pair("p2", "v2"))
+            "run with n = 10", mapOf(Pair("p1", "v1"), Pair("p2", "v2")), scope
         )
 
         val runResult = classTestStepProcessor.process(testStep)
@@ -47,7 +50,7 @@ class ClassTestStepProcessorTest {
         val testStepMethod = javaClass.methods.find { it.name == "runSomethingWithMap" }
         val testStep = ClassTestStep(
             "", Pattern.compile("run with n = (.+)"), this, testStepMethod!!,
-            "run with n = 10", null
+            "run with n = 10", null, scope
         )
 
         val runResult = classTestStepProcessor.process(testStep)
@@ -62,7 +65,7 @@ class ClassTestStepProcessorTest {
         val testStepMethod = javaClass.declaredMethods.find { it.name == "callPrivateMethod" }
         val testStep = ClassTestStep(
             "", Pattern.compile("run with"), this, testStepMethod!!,
-            "run with", emptyMap()
+            "run with", emptyMap(), scope
         )
 
         val runResult = classTestStepProcessor.process(testStep)
@@ -81,7 +84,7 @@ class ClassTestStepProcessorTest {
         val testStepMethod = javaClass.methods.find { it.name == "runSomethingWithMap2" }
         val testStep = ClassTestStep(
             "", Pattern.compile("run with"), this, testStepMethod!!,
-            "run with", mapOf(Pair("a", "b"), Pair("c", "d"))
+            "run with", mapOf(Pair("a", "b"), Pair("c", "d")), scope
         )
 
         val runResult = classTestStepProcessor.process(testStep)

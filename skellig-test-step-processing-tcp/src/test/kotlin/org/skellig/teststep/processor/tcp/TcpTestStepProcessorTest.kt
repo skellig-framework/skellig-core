@@ -9,6 +9,7 @@ import org.mockito.kotlin.*
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.tcp.model.TcpTestStep
 import java.util.*
@@ -16,6 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 internal class TcpTestStepProcessorTest {
+
+    private val scope get() = TestScenarioScope("test", testScenarioState!!)
 
     companion object {
         private const val CHANNEL_ID = "host1"
@@ -34,7 +37,7 @@ internal class TcpTestStepProcessorTest {
                 Pair(CHANNEL_ID_2, tcpChannel2))
 
         testScenarioState = Mockito.mock(TestScenarioState::class.java)
-        processor = TcpTestStepProcessor(tcpChannels, testScenarioState)
+        processor = TcpTestStepProcessor(tcpChannels)
     }
 
 
@@ -45,7 +48,7 @@ internal class TcpTestStepProcessorTest {
             .sendTo(setOf("host3"))
             .withTestData("hi")
             .withName("n1")
-            .build()
+            .withScope(scope).build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
@@ -60,7 +63,7 @@ internal class TcpTestStepProcessorTest {
             .readFrom(setOf("host3"))
             .withTestData("hi")
             .withName("n1")
-            .build()
+            .withScope(scope).build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
@@ -83,7 +86,7 @@ internal class TcpTestStepProcessorTest {
                 .sendTo(setOf(CHANNEL_ID))
                 .withTestData("hi")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
 
             val result = processor!!.process(testStep)
 
@@ -100,7 +103,7 @@ internal class TcpTestStepProcessorTest {
                 .readFrom(setOf(CHANNEL_ID))
                 .withTestData("hi")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(response)
 
             val isPassed = AtomicBoolean()
@@ -127,7 +130,7 @@ internal class TcpTestStepProcessorTest {
                 .readFrom(setOf(CHANNEL_ID))
                 .withTestData("hi")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(Optional.of("yo"))
 
             processor!!.process(testStep)
@@ -146,7 +149,7 @@ internal class TcpTestStepProcessorTest {
                 .withTestData("hi")
                 .withName("n1")
                 .withValidationDetails(expectedResult)
-                .build()
+                .withScope(scope).build()
             whenever(tcpChannel!!.read(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(response)
             doThrow(ValidationException("oops")).whenever(expectedResult)
                 .validate(argThat { args -> (args as Map<*, *>)[CHANNEL_ID] == response })

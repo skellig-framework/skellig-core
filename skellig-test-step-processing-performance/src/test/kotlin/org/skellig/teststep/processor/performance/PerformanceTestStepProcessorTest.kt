@@ -157,7 +157,7 @@ class PerformanceTestStepProcessorTest {
         val state = DefaultTestScenarioState()
         val config = PerformanceTestStepProcessorConfig().config(
             TestStepProcessorConfigDetails(
-                state, ConfigFactory.load("performance-test.conf"), mock(),
+                ConfigFactory.load("performance-test.conf"), mock(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
                         .withTestScenarioState(state)

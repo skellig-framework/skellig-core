@@ -1,7 +1,6 @@
 package org.skellig.teststep.processing.processor.task
 
 import org.skellig.teststep.processing.processor.TestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
@@ -10,7 +9,6 @@ import org.skellig.teststep.reader.value.expression.MapValueExpression
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 internal class DefaultTaskProcessor(
-    testScenarioState: TestScenarioState,
     valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
     processTestStepDelegate: (String, Map<String, Any?>) -> TestStepProcessor.TestStepRunResult
 ) : TaskProcessor {
@@ -24,7 +22,7 @@ internal class DefaultTaskProcessor(
         registerTask(AsyncForeachTaskProcessor(this, valueConvertDelegate))
         registerTask(RunTestTaskProcessor(this, valueConvertDelegate, processTestStepDelegate))
         registerTask(AsyncEachTaskProcessor(this))
-        registerTask(StateTaskProcessor(testScenarioState, valueConvertDelegate))
+        registerTask(StateTaskProcessor(valueConvertDelegate))
         registerTask(RunIfTaskProcessor(this, valueConvertDelegate))
     }
 

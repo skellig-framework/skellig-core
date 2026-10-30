@@ -17,7 +17,7 @@ import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.TestStepRunner
 
 /**
- * @property scope The scope the test steps of the entity run in. If null, they run without a scope.
+ * @property scope The scope the test steps of the entity run in.
  */
 abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     protected val testEntity: SkelligTestEntity,
@@ -27,7 +27,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     protected val beforeHookType: Class<out Annotation>,
     protected val afterHookType: Class<out Annotation>,
     protected val eventDispatcher: SkelligTestEventDispatcher,
-    protected val scope: TestScenarioScope? = null
+    protected val scope: TestScenarioScope
 ) : ParentRunner<T>(testEntity::class.java), SkelligTestEntity {
 
     protected val log = logger<BaseSkelligTestEntityRunner<T>>()
@@ -103,8 +103,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
             val startTime = System.currentTimeMillis()
             try {
                 val parameters = child.testStep.parameters ?: emptyMap()
-                runResult = scope?.let { testStepRunner!!.run(child.testStep.name, parameters, it) }
-                    ?: testStepRunner!!.run(child.testStep.name, parameters)
+                runResult = testStepRunner!!.run(child.testStep.name, parameters, scope)
 
                 // subscribe for result from test step. Usually needed for async test step
                 // however if it's sync, then the function will be called anyway.

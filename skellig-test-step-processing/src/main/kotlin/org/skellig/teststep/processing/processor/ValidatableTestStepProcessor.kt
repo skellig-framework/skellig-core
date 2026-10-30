@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.processor
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
+import org.skellig.teststep.processing.model.getScope
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
@@ -13,15 +14,16 @@ import org.skellig.teststep.processing.util.logger
 /**
  * This is a basic processor for tests steps whose result can be validated.
  */
-abstract class ValidatableTestStepProcessor<T : DefaultTestStep>(protected val testScenarioState: TestScenarioState) : TestStepProcessor<T> {
+abstract class ValidatableTestStepProcessor<T : DefaultTestStep> : TestStepProcessor<T> {
 
     private val log = logger<ValidatableTestStepProcessor<*>>()
 
     /**
-     * The state to read and write when processing the [testStep]: the state of its scope, or [testScenarioState]
-     * if the test step has no scope.
+     * The state to read and write when processing the [testStep]: the state of its scope.
+     *
+     * @throws IllegalStateException if the test step has no scope
      */
-    protected fun stateOf(testStep: TestStep): TestScenarioState = testStep.scope?.state ?: testScenarioState
+    protected fun stateOf(testStep: TestStep): TestScenarioState = testStep.getScope().state
 
     /**
      * Validate test step actual result with expected one.

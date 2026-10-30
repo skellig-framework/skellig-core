@@ -12,7 +12,6 @@ import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.plugin.report.TestStepLogger
 import org.skellig.teststep.processing.state.TestScenarioScope
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.runner.TestStepRunner
 
 private const val BEFORE_FEATURE_NAME = "Before Feature"
@@ -22,23 +21,21 @@ private const val AFTER_FEATURE_NAME = "After Feature"
  * FeatureRunner is responsible for running the test scenarios within a [Feature].
  *
  * @property feature The feature being executed
- * @property testScenarioState The test scenario state with data passed through test steps during a test scenario run.
- * It removes all data after each [TestScenarioRunner] is finished.
  * @property tagsFilter The tags filter to determine which test scenarios to include/exclude based on their tags
  * @property hookRunner The hook runner to run hooks before and after feature execution
  * @property testStepRunner The test step runner to run individual test steps
  * @property testStepLogger The test step logger for logging test steps
- * @property scope The scope the steps of the feature and its scenarios run in. If null, they run without a scope.
+ * @property scope The scope the steps of the feature and its scenarios run in. Its state, which holds data passed through
+ * test steps during a test scenario run, is cleaned after each [TestScenarioRunner] is finished.
  */
 open class FeatureRunner(
     feature: Feature,
-    protected val testScenarioState: TestScenarioState?,
     protected val tagsFilter: TagsFilter,
     hookRunner: SkelligHookRunner,
     testStepRunner: TestStepRunner?,
     testStepLogger: TestStepLogger,
     eventDispatcher: SkelligTestEventDispatcher,
-    scope: TestScenarioScope? = null
+    scope: TestScenarioScope
 ) : BaseSkelligTestEntityRunner<TestScenarioRunner>(
     feature, hookRunner, testStepRunner, testStepLogger,
     BeforeTestFeature::class.java, AfterTestFeature::class.java, eventDispatcher, scope
@@ -94,7 +91,7 @@ open class FeatureRunner(
             child.run(notifier)
         } finally {
             log.info("Cleanup the Test Scenario State")
-            testScenarioState?.clean()
+            scope.state.clean()
         }
     }
 
@@ -117,18 +114,16 @@ open class FeatureRunner(
     }
 
     companion object {
-        @JvmOverloads
         fun create(
             feature: Feature,
             testStepRunner: TestStepRunner?,
-            testScenarioState: TestScenarioState?,
             testStepLogger: TestStepLogger,
             hookRunner: SkelligHookRunner,
             eventDispatcher: SkelligTestEventDispatcher,
             tagsFilter: TagsFilter,
-            scope: TestScenarioScope? = null
+            scope: TestScenarioScope
         ): FeatureRunner {
-            return FeatureRunner(feature, testScenarioState, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher, scope)
+            return FeatureRunner(feature, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher, scope)
         }
     }
 

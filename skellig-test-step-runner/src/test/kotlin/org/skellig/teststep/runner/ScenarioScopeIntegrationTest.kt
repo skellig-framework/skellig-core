@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.state.TestScenarioScope
@@ -53,18 +54,30 @@ class ScenarioScopeIntegrationTest {
         assertAll(
             { assertEquals("A", stateA.get("stored")) },
             { assertEquals("B", stateB.get("stored")) },
-            { assertNull(context.getTestScenarioState().get("stored")) },
+            { assertNull(context.getDefaultScope().state.get("stored")) },
         )
     }
 
     @Test
-    fun testStepsWithoutScopeUseTheStateOfTheContext() {
-        runner.run("Store the value through runTest with parameters", mapOf("value" to "default")).also { expectPass(it) }
+    fun testStepWithoutScopeFails() {
+        val ex = assertThrows<IllegalStateException> {
+            runner.run("Store the value through runTest with parameters", mapOf("value" to "default"))
+        }
+
+        assertEquals(
+            "Test step 'Store the value through runTest with parameters' has no scenario scope. A test step must be run with a TestScenarioScope",
+            ex.message
+        )
+    }
+
+    @Test
+    fun testDefaultScopeWrapsTheStateOfTheContext() {
+        runAndExpectPass("Store the value", "default", context.getDefaultScope())
 
         assertAll(
-            { assertEquals("default", context.getTestScenarioState().get("stored")) },
+            { assertEquals(TestScenarioScope.DEFAULT_ID, context.getDefaultScope().id) },
+            { assertEquals("default", context.getDefaultScope().state.get("stored")) },
             { assertNull(stateA.get("stored")) },
-            { assertNull(stateB.get("stored")) },
         )
     }
 
@@ -76,7 +89,7 @@ class ScenarioScopeIntegrationTest {
         assertAll(
             { assertEquals(stateA, stateA.get("Store the value_result")) },
             { assertEquals(stateB, stateB.get("Store the value_result")) },
-            { assertNull(context.getTestScenarioState().get("Store the value_result")) },
+            { assertNull(context.getDefaultScope().state.get("Store the value_result")) },
         )
     }
 

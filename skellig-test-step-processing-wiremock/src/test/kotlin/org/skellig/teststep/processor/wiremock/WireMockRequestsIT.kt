@@ -108,12 +108,12 @@ class WireMockRequestsIT {
 
     @Test
     fun `a missing request exhausts polling and returns the last result with a validation error`() {
-        app.run { _, runner ->
+        app.run { context, runner ->
             send("/late", "last-result-marker")
             val started = System.nanoTime()
             var result: Any? = null
             var failure: Throwable? = null
-            runner.run("Poll journal", mapOf("attempts" to 3)).subscribe { _, value, error ->
+            runner.run("Poll journal", mapOf("attempts" to 3), context.getDefaultScope()).subscribe { _, value, error ->
                 result = value
                 failure = error
             }

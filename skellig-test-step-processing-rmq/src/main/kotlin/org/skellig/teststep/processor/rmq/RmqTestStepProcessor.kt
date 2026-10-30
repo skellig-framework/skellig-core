@@ -3,7 +3,6 @@ package org.skellig.teststep.processor.rmq
 import com.rabbitmq.client.AMQP
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
@@ -24,8 +23,7 @@ import org.skellig.teststep.processor.rmq.model.RmqTestStep
  */
 open class RmqTestStepProcessor(
     protected val rmqChannels: Map<String, RmqChannel>,
-    testScenarioState: TestScenarioState?
-) : BaseTestStepProcessor<RmqTestStep>(testScenarioState!!) {
+) : BaseTestStepProcessor<RmqTestStep>() {
 
     private val log = logger<RmqTestStepProcessor>()
 
@@ -96,7 +94,7 @@ open class RmqTestStepProcessor(
 
     class Builder : BaseRmqProcessorBuilder<RmqTestStep>() {
         override fun build(): TestStepProcessor<RmqTestStep> {
-            return RmqTestStepProcessor(rmqChannels, testScenarioState)
+            return RmqTestStepProcessor(rmqChannels)
         }
     }
 }

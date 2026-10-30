@@ -24,7 +24,7 @@ class UiTestStepProcessorConfig : TestStepProcessorConfig<UiTestStep> {
             Path.of(path)
         } else Path.of("target", "ui-screenshots")
         return ConfiguredTestStepProcessorDetails(
-            UiTestStepProcessor(details.state, timeout, browser::create, screenshots),
+            UiTestStepProcessor(timeout, browser::create, screenshots),
             UiTestStepFactory(details.testStepRegistry, details.valueExpressionContextFactory, pages)
         )
     }

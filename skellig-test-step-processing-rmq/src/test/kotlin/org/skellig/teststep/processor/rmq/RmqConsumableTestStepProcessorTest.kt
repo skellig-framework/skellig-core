@@ -17,7 +17,7 @@ class RmqConsumableTestStepProcessorTest {
         val rmqChannels = mapOf(
             Pair("local", mock(RmqChannel::class.java)),
         )
-        processor = RmqConsumableTestStepProcessor(rmqChannels, mock(TestScenarioState::class.java))
+        processor = RmqConsumableTestStepProcessor(rmqChannels)
     }
 
     @Test

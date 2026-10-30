@@ -2,8 +2,8 @@ package org.skellig.teststep.processing.processor
 
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
+import org.skellig.teststep.processing.model.getScope
 import org.skellig.teststep.processing.state.TestScenarioScope
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logTestStepResult
 import org.skellig.teststep.processing.util.logger
@@ -15,7 +15,7 @@ import java.lang.reflect.Method
  *
  * @see org.skellig.teststep.runner.annotation.TestStep
  */
-internal class ClassTestStepProcessor(private val testScenarioState: TestScenarioState) : TestStepProcessor<ClassTestStep> {
+internal class ClassTestStepProcessor : TestStepProcessor<ClassTestStep> {
 
     private val log = logger<ClassTestStepProcessor>()
 
@@ -53,7 +53,7 @@ internal class ClassTestStepProcessor(private val testScenarioState: TestScenari
         )
         try {
             response = testStepMethod.invoke(testStepDefInstance, *methodParameters)
-            (testStep.scope?.state ?: testScenarioState).set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, response)
+            testStep.getScope().state.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, response)
         } catch (e: IllegalAccessException) {
             error = TestStepProcessingException("Failed to access non-public method '${testStepDefInstance.javaClass.simpleName}:$testStepMethod'" +
                     " of test step '${testStep.name}'")
