@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 /**
  * The `UnixShellTestStep` class represents a test step that has all details required for [UnixShellTestStepProcessor][org.skellig.teststep.processor.unix.UnixShellTestStepProcessor]
@@ -39,8 +40,9 @@ open class UnixShellTestStep protected constructor(
     scenarioStateUpdaters: List<ScenarioStateUpdater>?,
     val hosts: Collection<String>?,
     private val command: String,
-    private val args: Map<String, String?>?
-) : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+    private val args: Map<String, String?>?,
+    scope: TestScenarioScope? = null
+) : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, scope) {
 
     /**
      * Returns the Unix Shell command.
@@ -103,7 +105,7 @@ open class UnixShellTestStep protected constructor(
         override fun build(): UnixShellTestStep {
             return UnixShellTestStep(
                 id, name, execution, timeout, delay, attempts, values, testData, validationDetails,
-                scenarioStateUpdaters, hosts, command ?: error("Unix Shell Command cannot be null"), args
+                scenarioStateUpdaters, hosts, command ?: error("Unix Shell Command cannot be null"), args, scope
             )
         }
     }

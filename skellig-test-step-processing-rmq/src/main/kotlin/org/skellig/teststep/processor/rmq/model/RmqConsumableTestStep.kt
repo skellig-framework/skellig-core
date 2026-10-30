@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.exception.TestStepCreationException
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 /**
  * Represents a test step that consumes data from RMQ queues and optionally responds to the other queues.
@@ -35,10 +36,11 @@ open class RmqConsumableTestStep protected constructor(
     val consumeFrom: List<String>,
     val respondTo: List<String>?,
     routingKey: String?,
-    properties: Map<String, Any?>?
+    properties: Map<String, Any?>?,
+    scope: TestScenarioScope? = null
 ) : BaseRmqTestStep(
     id, name!!, TestStepExecutionType.ASYNC, timeout, 0, 0, values,
-    testData, validationDetails, scenarioStateUpdaters, routingKey, properties
+    testData, validationDetails, scenarioStateUpdaters, routingKey, properties, scope
 ) {
 
     override fun toString(): String {
@@ -79,7 +81,8 @@ open class RmqConsumableTestStep protected constructor(
                 consumeFrom!!,
                 respondTo,
                 routingKey,
-                properties
+                properties,
+                scope
             )
         }
     }

@@ -30,7 +30,7 @@ class ScopedStateProcessingTest {
 
         @Test
         fun testStoresTestStepInStateOfItsScope() {
-            val testStep = testStep("t1").also { it.scope = scope }
+            val testStep = testStep("t1", scope)
 
             processor.process(testStep)
 
@@ -57,7 +57,7 @@ class ScopedStateProcessingTest {
 
         @Test
         fun testStoresTestStepAndResultInStateOfItsScope() {
-            val testStep = testStep("t1").also { it.scope = scope }
+            val testStep = testStep("t1", scope)
 
             processor.process(testStep)
 
@@ -75,8 +75,8 @@ class ScopedStateProcessingTest {
             val testStep = DefaultTestStep.DefaultTestStepBuilder()
                 .withName("t1")
                 .withScenarioStateUpdater(listOf(updater))
+                .withScope(scope)
                 .build()
-                .also { it.scope = scope }
 
             processor.process(testStep)
 
@@ -150,5 +150,6 @@ class ScopedStateProcessingTest {
         }
     }
 
-    private fun testStep(id: String) = DefaultTestStep.DefaultTestStepBuilder().withId(id).withName(id).build()
+    private fun testStep(id: String, scope: TestScenarioScope? = null) =
+        DefaultTestStep.DefaultTestStepBuilder().withId(id).withName(id).withScope(scope).build()
 }

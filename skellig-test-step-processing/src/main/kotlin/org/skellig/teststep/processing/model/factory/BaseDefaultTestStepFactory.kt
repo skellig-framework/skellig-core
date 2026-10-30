@@ -85,8 +85,8 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
             .withDelay(getDelay(rawTestStep, additionalParameters))
             .withAttempts(getAttempts(rawTestStep, additionalParameters))
             .withScenarioStateUpdater(stateUpdaterFactory.create(rawTestStep, additionalParameters))
+            .withScope(TestScenarioScope.from(parameters))
             .build()
-            .also { it.scope = TestScenarioScope.from(parameters) }
     }
 
     /**
