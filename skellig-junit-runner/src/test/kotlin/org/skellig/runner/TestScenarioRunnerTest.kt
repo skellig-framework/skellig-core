@@ -63,8 +63,8 @@ class TestScenarioRunnerTest {
         scenarioRunner.run(mock<RunNotifier>())
 
         val orderVerifier = Mockito.inOrder(hookRunner)
-        orderVerifier.verify(hookRunner).run(eq(testScenario.tags), eq(BeforeTestScenario::class.java), argThat { true })
-        orderVerifier.verify(hookRunner).run(eq(testScenario.tags), eq(AfterTestScenario::class.java), argThat { true })
+        orderVerifier.verify(hookRunner).run(eq(testScenario.tags), eq(BeforeTestScenario::class.java), eq(scope), argThat { true })
+        orderVerifier.verify(hookRunner).run(eq(testScenario.tags), eq(AfterTestScenario::class.java), eq(scope), argThat { true })
     }
 
     @Test

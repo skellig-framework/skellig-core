@@ -1,5 +1,6 @@
 package org.skellig.feature.hook
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.reflect.InvocationTargetException
@@ -17,14 +18,14 @@ class DefaultSkelligHookRunner(private val testHooksRegistry: SkelligTestHooksRe
         private val LOGGER: Logger = LoggerFactory.getLogger(DefaultSkelligHookRunner::class.java)
     }
 
-    override fun run(tags: Set<String>?, hookType: Class<out Annotation>, onRunCompleted: (String, Throwable?, Long) -> Unit) {
+    override fun run(tags: Set<String>?, hookType: Class<out Annotation>, scope: TestScenarioScope, onRunCompleted: (String, Throwable?, Long) -> Unit) {
         testHooksRegistry.getByTags(hookType, tags)
             .sortedBy { it.order }
             .forEach {
                 val fullName = "${it.instance::class.java.name}.${it.method.name}"
                 LOGGER.info("Run $fullName hook")
                 try {
-                    val duration = measureTimeMillis { it.run() }
+                    val duration = measureTimeMillis { it.run(scope) }
                     onRunCompleted.invoke(fullName, null, duration)
                 } catch (e: InvocationTargetException) {
                     LOGGER.error("Failed to run the $fullName hook")

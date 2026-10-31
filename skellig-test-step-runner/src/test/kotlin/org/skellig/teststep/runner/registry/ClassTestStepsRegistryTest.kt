@@ -3,7 +3,10 @@ package org.skellig.teststep.runner.registry
 import org.mockito.kotlin.mock
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.skellig.teststep.runner.exception.TestStepRegistryException
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.AnyValueExpression
 import org.skellig.teststep.reader.value.expression.PatternValueExpression
@@ -43,6 +46,36 @@ class ClassTestStepsRegistryTest {
         val method = (testSteps.single()[AlphanumericValueExpression("testStepMethod")] as AnyValueExpression).evaluate(mock()) as java.lang.reflect.Method
         val instance = (testSteps.single()[AlphanumericValueExpression("testStepDefInstance")] as AnyValueExpression).evaluate(mock())
         assertEquals("annotated:ab", method.invoke(instance, "a", "b"))
+    }
+
+    @Test
+    fun testRegisterMethodsWithInjectedParameters() {
+        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.injection"), mutableMapOf())
+
+        assertEquals(5, registry.getTestSteps().size)
+    }
+
+    @Test
+    fun testFailWhenParametersDoNotMatchRegexGroups() {
+        val ex = assertThrows<TestStepRegistryException> {
+            ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.mismatch"), mutableMapOf())
+        }
+
+        assertEquals(
+            "Test step method 'org.skellig.teststep.runner.fixture.mismatch.MismatchedSteps.tooFewParameters' has 1 parameter(s)" +
+                    " which are not injected with the scenario state or scope, but the name 'needs (.+) and (.+)' has 2 regex group(s)." +
+                    " Each regex group needs a parameter, in order, optionally followed by a Map of the test step parameters", ex.message
+        )
+    }
+
+    @Test
+    fun testParameterOfTypeAnyIsNotInjectedSoItCountsAsRegexGroup() {
+        val ex = assertThrows<TestStepRegistryException> {
+            ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.mismatchmap"), mutableMapOf())
+        }
+
+        assertTrue(ex.message!!.contains("has 2 parameter(s)"), ex.message)
+        assertTrue(ex.message!!.contains("has 0 regex group(s)"), ex.message)
     }
 }
 

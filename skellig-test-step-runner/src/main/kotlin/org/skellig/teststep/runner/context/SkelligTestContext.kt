@@ -200,6 +200,10 @@ open class SkelligTestContext : Closeable {
      * @return the current state of the test scenario
      * @throws IllegalStateException if the TestScenarioState is not initialized
      */
+    @Deprecated(
+        "Declare a parameter of type TestScenarioState in the test step, hook or function method to get the state of " +
+                "its scenario injected. SkelligTestContextAware stays available for shared services."
+    )
     fun getTestScenarioState(): TestScenarioState =
         testScenarioState ?: error("TestScenarioState must be initialized first. Did you forget to call 'initialize'?")
 

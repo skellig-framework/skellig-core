@@ -3,11 +3,14 @@ package org.skellig.teststep.runner.registry
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.state.ScopeParameters
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.*
 import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.exception.TestStepRegistryException
+import java.lang.reflect.Method
+import java.util.regex.Pattern
 
 /**
  * This class is an implementation of the TestStepRegistry interface.
@@ -71,6 +74,7 @@ internal class ClassTestStepsRegistry(
                 val testStepAnnotation = methodInstance.getAnnotation(TestStep::class.java)
                 val testStepNameId = testStepAnnotation.id
                 val testStepNamePattern = PatternValueExpression(testStepAnnotation.name)
+                validateParameters(methodInstance, testStepAnnotation.name, testStepNamePattern.pattern)
 
                 testStepsPerClass.add(
                     mapOf(
@@ -81,5 +85,23 @@ internal class ClassTestStepsRegistry(
                     )
                 )
             }
+    }
+
+    /**
+     * The parameters which are not injected with the scenario state or scope must be the regex groups of the test step name
+     * in order, optionally followed by a Map for the parameters of the test step.
+     */
+    private fun validateParameters(method: Method, testStepName: String, namePattern: Pattern) {
+        val regexGroupCount = namePattern.matcher("").groupCount()
+        val parameterTypes = method.parameterTypes.filter { !ScopeParameters.isInjected(it) }
+        val takesMap = parameterTypes.isNotEmpty() && parameterTypes.last().isAssignableFrom(Map::class.java)
+        if (parameterTypes.size != regexGroupCount && !(takesMap && parameterTypes.size - 1 == regexGroupCount)) {
+            throw TestStepRegistryException(
+                "Test step method '${method.declaringClass.name}.${method.name}' has ${parameterTypes.size} parameter(s)" +
+                        " which are not injected with the scenario state or scope, but the name '$testStepName'" +
+                        " has $regexGroupCount regex group(s)." +
+                        " Each regex group needs a parameter, in order, optionally followed by a Map of the test step parameters"
+            )
+        }
     }
 }

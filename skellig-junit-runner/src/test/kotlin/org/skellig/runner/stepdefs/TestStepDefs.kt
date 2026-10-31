@@ -6,6 +6,7 @@ import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestScenario
+import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.runner.annotation.TestStep
 import org.skellig.teststep.runner.context.SkelligTestContext
 import org.skellig.teststep.runner.context.SkelligTestContextAware
@@ -66,9 +67,8 @@ class TestStepDefs : SkelligTestContextAware {
 
     // verify result from a class-based test step, retrieved from the state.
     @TestStep(name = "Check log printed record: '(.+)'")
-    fun checkResultAfterLog(expectedResult: String?) {
-        val testScenarioState = context?.getTestScenarioState()
-        val result = testScenarioState?.get("log1_result")
+    fun checkResultAfterLog(expectedResult: String?, testScenarioState: TestScenarioState) {
+        val result = testScenarioState.get("log1_result")
 
         assertEquals(expectedResult, result.toString())
     }
@@ -80,8 +80,7 @@ class TestStepDefs : SkelligTestContextAware {
     }
 
     @TestStep("Run (.+) with (.*)\\s*parameters")
-    fun testTestStepWithManyParameters(value: String?, size: String?, notSupplied: Any?, parameters: Map<String, String?>) {
-        assertNull(notSupplied)
+    fun testTestStepWithManyParameters(value: String?, size: String?, parameters: Map<String, String?>) {
         assertNotNull(value)
         assertEquals(size?.trim()?.toInt() ?: 0, parameters.size)
     }

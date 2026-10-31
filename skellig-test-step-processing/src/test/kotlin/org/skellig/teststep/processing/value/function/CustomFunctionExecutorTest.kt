@@ -3,6 +3,8 @@ package org.skellig.teststep.processing.value.function
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import org.skellig.teststep.processing.value.exception.FunctionRegistryException
 
@@ -42,6 +44,46 @@ class CustomFunctionExecutorTest {
         assertTrue(ex.message!!.startsWith(expected), ex.message)
         assertTrue(ex.message!!.contains("'org.skellig.teststep.processing.fixture.duplicate.DuplicateFunctionsA.same'"), ex.message)
         assertTrue(ex.message!!.contains("'org.skellig.teststep.processing.fixture.duplicate.DuplicateFunctionsB.same'"), ex.message)
+    }
+
+    @Test
+    fun `inject the state into a function at any position and fill the rest by arguments in order`() {
+        val state = DefaultTestScenarioState().apply { set("k", "-v-") }
+        val scope = TestScenarioScope("s1", state)
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.injection"))
+
+        assertAll(
+            { assertEquals("-v-", executor.execute("stateFirst", null, arrayOf("k"), scope)) },
+            { assertEquals("a-v-b", executor.execute("stateInMiddle", null, arrayOf("a", "b"), scope)) },
+            { assertEquals("a-s1", executor.execute("scopeLast", null, arrayOf("a"), scope)) },
+        )
+    }
+
+    @Test
+    fun `function without injected parameters works with and without scope`() {
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.injection"))
+
+        assertAll(
+            { assertEquals("ab", executor.execute("noInjection", null, arrayOf("a", "b"))) },
+            { assertEquals("ab", executor.execute("noInjection", null, arrayOf("a", "b"), TestScenarioScope("s1", DefaultTestScenarioState()))) },
+        )
+    }
+
+    @Test
+    fun `parameter of type Any is not injected`() {
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.injection"))
+        val scope = TestScenarioScope("s1", DefaultTestScenarioState())
+
+        assertEquals("arg", executor.execute("anyIsNotInjected", null, arrayOf("arg"), scope))
+    }
+
+    @Test
+    fun `fail when function needs the scenario scope but there is none`() {
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.injection"))
+
+        val ex = assertThrows<FunctionExecutionException> { executor.execute("stateFirst", null, arrayOf("k")) }
+
+        assertEquals("Function 'stateFirst' requires the scope of a test scenario but it is called outside of one", ex.message)
     }
 
     @Test

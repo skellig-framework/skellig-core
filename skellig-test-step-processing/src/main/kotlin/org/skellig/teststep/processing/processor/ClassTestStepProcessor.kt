@@ -3,6 +3,7 @@ package org.skellig.teststep.processing.processor
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
 import org.skellig.teststep.processing.model.getScope
+import org.skellig.teststep.processing.state.ScopeParameters
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logTestStepResult
@@ -76,23 +77,32 @@ internal class ClassTestStepProcessor : TestStepProcessor<ClassTestStep> {
         parameters: Map<String, Any?>?
     ): Array<Any?> {
         val testStepMethod = testStep.testStepMethod
-        val testStepNamePattern = testStep.testStepNamePattern
-        val matcher = testStepNamePattern.matcher(testStepName)
-        val methodParameters = arrayOfNulls<Any>(testStepMethod.parameterCount)
+        val parameterTypes = testStepMethod.parameterTypes
+        val matcher = testStep.testStepNamePattern.matcher(testStepName)
+        val methodParameters = arrayOfNulls<Any>(parameterTypes.size)
 
-        var index = 0
+        val regexGroups = mutableListOf<String?>()
         while (matcher.find()) {
             for (i in 1..matcher.groupCount()) {
-                methodParameters[index++] = matcher.group(i)
+                regexGroups.add(matcher.group(i))
             }
         }
-        // if method has parameters then add the parameters map at the end of the list.
-        if (testStepMethod.parameterCount > 0) {
-            val lastParamType = testStepMethod.parameterTypes[testStepMethod.parameterCount - 1]
-            if (lastParamType.isAssignableFrom(Map::class.java)) {
-                // the scope is not for the user code, which only sees the parameters of the test step
-                methodParameters[testStepMethod.parameterCount - 1] = parameters?.let { TestScenarioScope.removeFrom(it) }
+
+        // the state and the scope go to the parameters of exactly these types, the rest are filled by regex groups in order.
+        var nextRegexGroup = 0
+        var lastNonInjectedIndex = -1
+        parameterTypes.forEachIndexed { index, type ->
+            if (ScopeParameters.isInjected(type)) {
+                methodParameters[index] = ScopeParameters.valueFor(type, testStep.getScope())
+            } else {
+                lastNonInjectedIndex = index
+                if (nextRegexGroup < regexGroups.size) methodParameters[index] = regexGroups[nextRegexGroup++]
             }
+        }
+        // if the last of the other parameters can take the Map, then it gets the parameters of the test step.
+        if (lastNonInjectedIndex >= 0 && parameterTypes[lastNonInjectedIndex].isAssignableFrom(Map::class.java)) {
+            // the scope is not for the user code, which only sees the parameters of the test step
+            methodParameters[lastNonInjectedIndex] = parameters?.let { TestScenarioScope.removeFrom(it) }
         }
         return methodParameters
     }

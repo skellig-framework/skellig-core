@@ -2,6 +2,8 @@ package org.skellig.teststep.processing.value.function
 
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
+import org.skellig.teststep.processing.state.ScopeParameters
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import org.skellig.teststep.processing.value.exception.FunctionRegistryException
 import org.slf4j.Logger
@@ -47,11 +49,30 @@ class CustomFunctionExecutor(
         }
     }
 
-    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
-        return functions[name]?.let {
-            return if (args.isNotEmpty()) it.method.invoke(it.instance, *args)
-            else it.method.invoke(it.instance)
-        } ?: throw FunctionExecutionException("Function '$name' was not found")
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? = execute(name, value, args, null)
+
+    override fun execute(name: String, value: Any?, args: Array<Any?>, scope: TestScenarioScope?): Any? {
+        val function = functions[name] ?: throw FunctionExecutionException("Function '$name' was not found")
+        return function.method.invoke(function.instance, *createMethodArguments(name, function.method, args, scope))
+    }
+
+    /**
+     * Parameters of the method which are injected (see [ScopeParameters]) receive the state or the scope.
+     * All other parameters receive the call arguments in order, so the injected ones never count as call arguments.
+     */
+    private fun createMethodArguments(name: String, method: Method, args: Array<Any?>, scope: TestScenarioScope?): Array<Any?> {
+        if (method.parameterTypes.none { ScopeParameters.isInjected(it) }) return args
+
+        val remainingArgs = args.iterator()
+        return method.parameterTypes.map { type ->
+            if (ScopeParameters.isInjected(type)) {
+                val currentScope = scope ?: throw FunctionExecutionException(
+                    "Function '$name' requires the scope of a test scenario but it is called outside of one"
+                )
+                ScopeParameters.valueFor(type, currentScope)
+            } else if (remainingArgs.hasNext()) remainingArgs.next()
+            else throw FunctionExecutionException("Function '$name' was called with ${args.size} arguments, which is not enough")
+        }.toTypedArray()
     }
 
     override fun getFunctionName(): String = ""

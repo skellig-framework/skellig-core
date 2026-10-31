@@ -136,8 +136,8 @@ class FeatureRunnerTest {
         featureRunner.run(mock<RunNotifier>())
 
         val orderVerifier = Mockito.inOrder(hookRunner)
-        orderVerifier.verify(hookRunner).run(eq(feature.tags), eq(BeforeTestFeature::class.java), argThat { true })
-        orderVerifier.verify(hookRunner).run(eq(feature.tags), eq(AfterTestFeature::class.java), argThat { true })
+        orderVerifier.verify(hookRunner).run(eq(feature.tags), eq(BeforeTestFeature::class.java), eq(scope), argThat { true })
+        orderVerifier.verify(hookRunner).run(eq(feature.tags), eq(AfterTestFeature::class.java), eq(scope), argThat { true })
     }
 
     @Test
@@ -147,12 +147,12 @@ class FeatureRunnerTest {
         val expectedBeforeDuration: Long = 10
         val expectedAfterDuration: Long = 100
         doAnswer {
-            it.getArgument<(String, Throwable?, Long) -> Unit>(2).invoke(expectedBeforeMethodName, null, expectedBeforeDuration)
-        }.whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestFeature::class.java), argThat { true })
+            it.getArgument<(String, Throwable?, Long) -> Unit>(3).invoke(expectedBeforeMethodName, null, expectedBeforeDuration)
+        }.whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestFeature::class.java), eq(scope), argThat { true })
 
         doAnswer {
-            it.getArgument<(String, Throwable?, Long) -> Unit>(2).invoke(expectedAfterMethodName, null, expectedAfterDuration)
-        }.whenever(hookRunner).run(eq(feature.tags), eq(AfterTestFeature::class.java), argThat { true })
+            it.getArgument<(String, Throwable?, Long) -> Unit>(3).invoke(expectedAfterMethodName, null, expectedAfterDuration)
+        }.whenever(hookRunner).run(eq(feature.tags), eq(AfterTestFeature::class.java), eq(scope), argThat { true })
 
         featureRunner.run(mock<RunNotifier>())
 
@@ -178,8 +178,8 @@ class FeatureRunnerTest {
     @Test
     fun testRunWhenBeforeFeatureHookFailedThenVerifyFailureNotification() {
         doAnswer {
-            it.getArgument<(String, Throwable?, Long) -> Unit>(2).invoke("m1", RuntimeException("error"), 0)
-        }.whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestFeature::class.java), argThat { true })
+            it.getArgument<(String, Throwable?, Long) -> Unit>(3).invoke("m1", RuntimeException("error"), 0)
+        }.whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestFeature::class.java), eq(scope), argThat { true })
 
         val notifier = mock<RunNotifier>()
         featureRunner.run(notifier)
@@ -194,7 +194,7 @@ class FeatureRunnerTest {
         featureRunner.run(notifier)
 
         doThrow(RuntimeException("scenario error"))
-            .whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestScenario::class.java), argThat { true })
+            .whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestScenario::class.java), eq(scope), argThat { true })
 
         featureRunner.run(notifier)
 

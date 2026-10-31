@@ -1,5 +1,7 @@
 package org.skellig.feature.hook
 
+import org.skellig.teststep.processing.state.ScopeParameters
+import org.skellig.teststep.processing.state.TestScenarioScope
 import java.lang.reflect.Method
 
 /**
@@ -21,12 +23,15 @@ class SkelligHook(
     /**
      * Executes the method associated with a [SkelligHook] instance.
      * This method uses reflection to invoke the method on the provided instance.
+     * A parameter of the method of type `TestScenarioState` receives the state of the [scope],
+     * and a parameter of type `TestScenarioScope` receives the [scope] itself.
      *
+     * @param scope The scope of the scenario, or of the feature, the hook runs for.
      * @throws Throwable if an exception occurs during the invocation of the method.
      *
      * @see SkelligHook
      */
-    fun run() {
-        method.invoke(instance)
+    fun run(scope: TestScenarioScope) {
+        method.invoke(instance, *method.parameterTypes.map { ScopeParameters.valueFor(it, scope) }.toTypedArray())
     }
 }
