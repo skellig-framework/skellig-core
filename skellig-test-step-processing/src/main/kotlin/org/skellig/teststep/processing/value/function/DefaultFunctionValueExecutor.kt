@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
@@ -31,13 +32,15 @@ class DefaultFunctionValueExecutor private constructor(
     private val objectValueFunctionExecutor: FunctionValueExecutor,
 ) : FunctionValueExecutor {
 
-    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? = execute(name, value, args, null)
+
+    override fun execute(name: String, value: Any?, args: Array<Any?>, scope: TestScenarioScope?): Any? {
         val executor = if (functions.containsKey(name)) functions[name]
         else if (value != null) objectValueFunctionExecutor
         // if no function found, then try the custom one if registered.
         else customFunctionExecutor
 
-        return executor?.execute(name, value, args)
+        return executor?.execute(name, value, args, scope)
     }
 
     override fun getFunctionName(): String = ""

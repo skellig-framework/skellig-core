@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.TaskUtils.runTask
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
@@ -16,7 +17,10 @@ import java.math.BigDecimal
  * - get(`<key>`, `<attempts>`, `<delay>`) - periodically tries to get value from [TestScenarioState] with max `<attempts>` and
  * delaying next attempt on `<delay>` milliseconds.
  *
- * @property testScenarioState the [TestScenarioState] instance to retrieve values from
+ * The state is the one of the [TestScenarioScope] the function is executed in. If there is no scope, then
+ * [testScenarioState] is used.
+ *
+ * @property testScenarioState the default [TestScenarioState] instance to retrieve values from, when there is no scope
  */
 class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : FunctionValueExecutor {
 
@@ -24,7 +28,10 @@ class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : F
         private val LOGGER = LoggerFactory.getLogger(GetFromStateFunctionExecutor::class.java)
     }
 
-    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? = execute(name, value, args, null)
+
+    override fun execute(name: String, value: Any?, args: Array<Any?>, scope: TestScenarioScope?): Any? {
+        val testScenarioState = scope?.state ?: testScenarioState
         return when (args.size) {
             1 -> {
                 val key = args[0]?.toString() ?: "null"

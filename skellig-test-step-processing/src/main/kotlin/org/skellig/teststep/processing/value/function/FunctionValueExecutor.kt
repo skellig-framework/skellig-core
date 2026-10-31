@@ -1,5 +1,7 @@
 package org.skellig.teststep.processing.value.function
 
+import org.skellig.teststep.processing.state.TestScenarioScope
+
 /**
  * Interface representing an executor for Skellig functions or used in Skellig Test Step files.
  *
@@ -28,6 +30,21 @@ interface FunctionValueExecutor {
      * @return the result of the function execution
      */
     fun execute(name: String, value: Any?, args: Array<Any?>): Any?
+
+    /**
+     * Executes a function with the given name and arguments, for the scenario of the given scope.
+     *
+     * Functions which work with the state of a scenario must override this method and use the state of the [scope].
+     * By default, it ignores the [scope] and calls [FunctionValueExecutor.execute] without it, so implementations
+     * which are not aware of scopes keep working unchanged.
+     *
+     * @param name the name of the function to execute
+     * @param value the value associated with the function (optional). See the same parameter in the method without scope.
+     * @param args the arguments to pass to the function
+     * @param scope the scope of the scenario the function is executed in, or null if the function is executed outside of one.
+     * @return the result of the function execution
+     */
+    fun execute(name: String, value: Any?, args: Array<Any?>, scope: TestScenarioScope?): Any? = execute(name, value, args)
 
     /**
      * Gets the name of the function. Used in registration of [FunctionValueExecutor].

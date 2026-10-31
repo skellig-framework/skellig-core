@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.value.expression.*
@@ -23,6 +24,23 @@ class ValueExpressionContextFactoryTest {
                 .build(),
             DefaultPropertyExtractor(null)
         )
+
+    @Test
+    fun testFunctionCallsReadStateOfScopeInParameters() {
+        val scopeState = DefaultTestScenarioState().apply { set("k", "scoped") }
+        testScenarioState.set("k", "default")
+        val parameters = mapOf<String, Any?>(TestScenarioScope.PARAMETER_KEY to TestScenarioScope("s1", scopeState))
+        val get = FunctionCallExpression("get", arrayOf(StringValueExpression("k")))
+
+        assertAll(
+            { assertEquals("scoped", get.evaluate(factory.create(parameters))) },
+            { assertEquals("scoped", get.evaluate(factory.create("result", parameters))) },
+            { assertEquals("scoped", get.evaluate(factory.createForValidation("v", parameters))) },
+            { assertEquals("scoped", get.evaluate(factory.createForValidationAsCallChain("v", parameters))) },
+            { assertEquals("scoped", factory.create(parameters).onFunctionCall("get", null, arrayOf("k"))) },
+            { assertEquals("default", get.evaluate(factory.create(emptyMap()))) },
+        )
+    }
 
     @Test
     fun testConvertWithNoParametersAndNoDefault() {

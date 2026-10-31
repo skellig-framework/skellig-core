@@ -32,3 +32,21 @@ name ("Store the value through runTest with parameters of its own scope") {
         }
     }
 }
+
+name ("Read the seed in every expression") {
+    values {
+        fromProperty = get(seed)
+    }
+    state {
+        fromStateUpdate = get(seed)
+    }
+    validate {
+        get(seed) = ${expectedSeed}
+        ${fromProperty} = ${expectedSeed}
+    }
+    task {
+        state {
+            fromTask = get(seed)
+        }
+    }
+}

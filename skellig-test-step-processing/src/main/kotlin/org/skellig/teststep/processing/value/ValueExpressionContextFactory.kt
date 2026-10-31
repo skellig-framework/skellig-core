@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.value
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.function.FunctionValueExecutor
 import org.skellig.teststep.processing.value.property.PropertyExtractor
 import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression.Companion.RESULT
@@ -25,16 +26,12 @@ class ValueExpressionContextFactory(
     private val referenceExtractor: PropertyExtractor
 ) {
 
-    private val onFunctionCall = { name: String, ownerValue: Any?, args: Array<Any?> ->
-        functionExecutor.execute(name, ownerValue, args)
-    }
-
     /**
      * Creates a new instance of [ValueExpressionContext] using the provided parameters.
      *
      * The created [ValueExpressionContext] has [ValueExpressionContext.evaluationType] as [EvaluationType.DEFAULT].
      */
-    fun create(parameters: Map<String, Any?>): ValueExpressionContext = ValueExpressionContext(EvaluationType.DEFAULT, onFunctionCall, createOnGetReferenceValue(parameters))
+    fun create(parameters: Map<String, Any?>): ValueExpressionContext = ValueExpressionContext(EvaluationType.DEFAULT, createOnFunctionCall(parameters), createOnGetReferenceValue(parameters))
 
     /**
      * Creates a new [ValueExpressionContext] instance using the provided parameters and result to be used in
@@ -49,7 +46,7 @@ class ValueExpressionContextFactory(
     fun create(result: Any?, parameters: Map<String, Any?>): ValueExpressionContext =
         ValueExpressionContext(
             EvaluationType.DEFAULT,
-            createOnFunctionCallForResult(result),
+            createOnFunctionCallForResult(result, parameters),
             createOnGetReferenceValue(parameters)
         )
 
@@ -66,7 +63,7 @@ class ValueExpressionContextFactory(
     fun createForValidationAsCallChain(value: Any?, parameters: Map<String, Any?>): ValueExpressionContext {
         val context = ValueExpressionContext(
             EvaluationType.CALL_CHAIN,
-            createOnFunctionCallForValidation(value),
+            createOnFunctionCallForValidation(value, parameters),
             createOnGetReferenceValue(parameters)
         )
         context.value = value
@@ -85,7 +82,7 @@ class ValueExpressionContextFactory(
     fun createForValidation(value: Any?, parameters: Map<String, Any?>): ValueExpressionContext {
         val context = ValueExpressionContext(
             EvaluationType.DEFAULT,
-            createOnFunctionCallForValidation(value),
+            createOnFunctionCallForValidation(value, parameters),
             createOnGetReferenceValue(parameters)
         )
         return context
@@ -96,15 +93,27 @@ class ValueExpressionContextFactory(
             referenceExtractor.extractFrom(name, parameters) ?: default()
         }
 
-    private fun createOnFunctionCallForValidation(parentValue: Any?) =
-        { name: String, ownerValue: Any?, args: Array<Any?> ->
-            if (name == THIS) parentValue
-            else functionExecutor.execute(name, ownerValue, args)
+    // Functions are called for the scope found in the parameters, so each context calls them for its own scenario.
+    private fun createOnFunctionCall(parameters: Map<String, Any?>): (String, Any?, Array<Any?>) -> Any? {
+        val scope = TestScenarioScope.from(parameters)
+        return { name: String, ownerValue: Any?, args: Array<Any?> ->
+            functionExecutor.execute(name, ownerValue, args, scope)
         }
+    }
 
-    private fun createOnFunctionCallForResult(parentValue: Any?) =
-        { name: String, ownerValue: Any?, args: Array<Any?> ->
-            if (name == RESULT) parentValue
-            else functionExecutor.execute(name, ownerValue, args)
+    private fun createOnFunctionCallForValidation(parentValue: Any?, parameters: Map<String, Any?>): (String, Any?, Array<Any?>) -> Any? {
+        val scope = TestScenarioScope.from(parameters)
+        return { name: String, ownerValue: Any?, args: Array<Any?> ->
+            if (name == THIS) parentValue
+            else functionExecutor.execute(name, ownerValue, args, scope)
         }
+    }
+
+    private fun createOnFunctionCallForResult(parentValue: Any?, parameters: Map<String, Any?>): (String, Any?, Array<Any?>) -> Any? {
+        val scope = TestScenarioScope.from(parameters)
+        return { name: String, ownerValue: Any?, args: Array<Any?> ->
+            if (name == RESULT) parentValue
+            else functionExecutor.execute(name, ownerValue, args, scope)
+        }
+    }
 }
