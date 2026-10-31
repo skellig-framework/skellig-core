@@ -15,7 +15,6 @@ class CassandraTestStepProcessorConfig : TestStepProcessorConfig<CassandraTestSt
             ConfiguredTestStepProcessorDetails(
                 CassandraTestStepProcessor.Builder()
                     .withDbServers(details.config)
-                    .withTestScenarioState(details.state)
                     .build(),
                 CassandraTestStepFactory(
                     details.testStepRegistry,

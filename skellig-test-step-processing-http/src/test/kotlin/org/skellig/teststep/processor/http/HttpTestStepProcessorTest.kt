@@ -3,11 +3,14 @@ package org.skellig.teststep.processor.http
 import org.junit.jupiter.api.*
 import org.mockito.kotlin.*
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processor.http.model.HttpResponse
 import org.skellig.teststep.processor.http.model.HttpTestStep
 import java.util.concurrent.atomic.AtomicBoolean
 
 class HttpTestStepProcessorTest {
+
+private val scope = TestScenarioScope("test", mock())
 
     companion object {
         private const val SRV_2 = "srv2"
@@ -24,7 +27,7 @@ class HttpTestStepProcessorTest {
         @BeforeEach
         fun setUp() {
             val channels = mapOf(Pair("srv1", httpChannel))
-            processor = HttpTestStepProcessor(channels, mock())
+            processor = HttpTestStepProcessor(channels)
         }
 
         @Test
@@ -35,7 +38,7 @@ class HttpTestStepProcessorTest {
                 .withUrl("/a/b/c")
                 .withMethod("POST")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
 
             val response1 = HttpResponse.Builder().build()
             whenever(httpChannel.send(argThat { r -> r!!.url == "/a/b/c" })).thenReturn(response1)
@@ -57,7 +60,7 @@ class HttpTestStepProcessorTest {
                 .withUrl("/a/b/c")
                 .withMethod("POST")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
 
             whenever(httpChannel.send(any())).thenReturn(HttpResponse.Builder().build())
 
@@ -89,7 +92,7 @@ class HttpTestStepProcessorTest {
                 Pair("srv1", httpChannel),
                 Pair("srv2", httpChannel2)
             )
-            processor = HttpTestStepProcessor(channels, mock())
+            processor = HttpTestStepProcessor(channels)
         }
 
         @Test
@@ -100,7 +103,7 @@ class HttpTestStepProcessorTest {
                 .withUrl("/a/b/c")
                 .withMethod("POST")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
             val response1 = HttpResponse.Builder().build()
             val response2 = HttpResponse.Builder().build()
 
@@ -125,7 +128,7 @@ class HttpTestStepProcessorTest {
                 .withUrl("/a/b/c")
                 .withMethod("POST")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
 
             whenever(httpChannel.send(any())).thenReturn(HttpResponse.Builder().build())
             whenever(httpChannel2.send(any())).thenThrow(IllegalArgumentException("Failed to send request"))
@@ -148,7 +151,7 @@ class HttpTestStepProcessorTest {
                 .withUrl("/a/b/c")
                 .withMethod("POST")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)
@@ -170,7 +173,7 @@ class HttpTestStepProcessorTest {
                 .withUrl("/a/b/c")
                 .withMethod("POST")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
 
             val isPassed = AtomicBoolean()
             processor!!.process(httpTestStep)

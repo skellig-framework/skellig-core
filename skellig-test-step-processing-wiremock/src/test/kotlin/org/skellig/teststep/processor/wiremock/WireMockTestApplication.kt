@@ -2,6 +2,7 @@ package org.skellig.teststep.processor.wiremock
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.net.ServerSocket
@@ -19,27 +20,32 @@ internal class WireMockTestApplication(
     private val steps: List<String> = listOf("wiremock/steps.sts")
 ) {
     private val client = HttpClient.newHttpClient()
+    private lateinit var scope: TestScenarioScope
 
     fun run(test: (SkelligTestContext, TestStepRunner) -> Unit) {
         val config = ConfigFactory.parseString(hocon).resolve()
         val context = object : SkelligTestContext() {
             override fun createConfig(classLoader: ClassLoader, configPath: String?): Config = config
         }
-        context.use { test(it, it.initialize(javaClass.classLoader, steps)) }
+        context.use {
+            val runner = it.initialize(javaClass.classLoader, steps)
+            scope = it.getDefaultScope()
+            test(it, runner)
+        }
     }
 
     /** Runs a step and returns its result, failing the test with the step's error if it has one. */
     fun TestStepRunner.runStep(name: String, parameters: Map<String, Any?> = emptyMap()): Any? {
         var result: Any? = null
         var error: Throwable? = null
-        run(name, parameters).subscribe { _, r, e -> result = r; error = e }
+        run(name, parameters, scope).subscribe { _, r, e -> result = r; error = e }
         error?.let { throw it }
         return result
     }
 
     fun run(runner: TestStepRunner, name: String): Throwable? {
         var error: Throwable? = null
-        runner.run(name).subscribe { _, _, e -> error = e }
+        runner.run(name, emptyMap(), scope).subscribe { _, _, e -> error = e }
         return error
     }
 

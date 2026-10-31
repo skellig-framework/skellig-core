@@ -1,0 +1,34 @@
+name ("Store the value") {
+    task {
+        state {
+            stored = ${value}
+        }
+    }
+}
+
+name ("Store the value through runTest without parameters") {
+    task {
+        runTest("Store the value") {}
+    }
+}
+
+name ("Store the value through runTest with parameters") {
+    task {
+        runTest("Store the value") {
+            parameters {
+                value = ${value}
+            }
+        }
+    }
+}
+
+name ("Store the value through runTest with parameters of its own scope") {
+    task {
+        runTest("Store the value") {
+            parameters {
+                value = ${value}
+                "skellig.scope" = "not a scope"
+            }
+        }
+    }
+}

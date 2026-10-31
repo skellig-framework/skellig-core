@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.processor.task
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
@@ -12,6 +13,7 @@ internal class VariableTaskProcessor(
     override fun process(task: ValueExpression?, value: ValueExpression?, context: TaskProcessingContext) {
         val key = valueConvertDelegate(task, context.parameters)?.toString()
             ?: error("Cannot assign value to the null key")
+        TestScenarioScope.checkVariableName(key)
         val convertedValue = valueConvertDelegate(value, context.parameters)
         context.parameters[key] = convertedValue
 

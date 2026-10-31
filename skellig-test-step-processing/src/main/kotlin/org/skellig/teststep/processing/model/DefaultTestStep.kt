@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.model
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.PropertyFormatUtils
 import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStringCollection
 
@@ -25,6 +26,8 @@ import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStri
  * @param scenarioStateUpdaters defines a structure which represents a list of property - value pairs to be stored in
  * [state][org.skellig.teststep.processing.state.TestScenarioState]. This structure is processed by [TestStepProcessor][org.skellig.teststep.processing.processor.TestStepProcessor]
  * when its relevant [TestStep] is processed and received a result before validation.
+ * @param scope the scope of the scenario this test step runs in. It is set by the test step factory from the parameters
+ * of the test step. If null, the processors use the state they were created with.
  */
 open class DefaultTestStep(
     val id: String? = null,
@@ -36,7 +39,8 @@ open class DefaultTestStep(
     val values: Map<String, Any?>? = null,
     val testData: Any? = null,
     val validationDetails: ValidationNode? = null,
-    val scenarioStateUpdaters: List<ScenarioStateUpdater>? = null
+    val scenarioStateUpdaters: List<ScenarioStateUpdater>? = null,
+    override val scope: TestScenarioScope? = null
 ) : TestStep {
 
     /**
@@ -49,7 +53,7 @@ open class DefaultTestStep(
         override fun build(): DefaultTestStep {
             return DefaultTestStep(
                 id, name ?: error("Name of the Test Step must be set"),
-                execution, timeout, delay, 0, values, testData, validationDetails, scenarioStateUpdaters
+                execution, timeout, delay, 0, values, testData, validationDetails, scenarioStateUpdaters, scope
             )
         }
     }
@@ -81,7 +85,8 @@ open class DefaultTestStep(
         protected var timeout: Int = 0,
         protected var delay: Int = 0,
         protected var attempts: Int = 0,
-        protected var scenarioStateUpdaters: List<ScenarioStateUpdater>? = null
+        protected var scenarioStateUpdaters: List<ScenarioStateUpdater>? = null,
+        protected var scope: TestScenarioScope? = null
     ) {
 
         fun withId(id: String?) = apply { this.id = id }
@@ -103,6 +108,9 @@ open class DefaultTestStep(
         fun withAttempts(attempts: Int) = apply { this.attempts = attempts }
 
         fun withScenarioStateUpdater(scenarioStateUpdaters: List<ScenarioStateUpdater>?) = apply { this.scenarioStateUpdaters = scenarioStateUpdaters }
+
+        fun withScope(scope: TestScenarioScope?) = apply { this.scope = scope }
+
         abstract fun build(): T
     }
 }

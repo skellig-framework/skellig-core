@@ -11,7 +11,6 @@ class JdbcTestStepProcessorTest {
     fun `get test step class`() {
         assertEquals(JdbcTestStep::class.java,
             JdbcTestStepProcessor.Builder()
-                .withTestScenarioState(mock())
                 .build()
                 .getTestStepClass())
     }

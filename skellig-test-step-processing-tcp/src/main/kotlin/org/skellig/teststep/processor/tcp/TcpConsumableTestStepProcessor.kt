@@ -4,7 +4,6 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
@@ -21,14 +20,13 @@ import org.skellig.teststep.processor.tcp.model.TcpConsumableTestStep
  */
 open class TcpConsumableTestStepProcessor(
     protected val tcpChannels: Map<String, TcpChannel>,
-    testScenarioState: TestScenarioState?,
-) : ValidatableTestStepProcessor<TcpConsumableTestStep>(testScenarioState!!) {
+) : ValidatableTestStepProcessor<TcpConsumableTestStep>() {
 
     private val log = logger<TcpConsumableTestStepProcessor>()
 
     override fun process(testStep: TcpConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
-        testScenarioState.set(testStep.getId, testStep)
+        stateOf(testStep).set(testStep.getId, testStep)
 
         log.info(testStep, "Start to consume messages for test step '${testStep.name}' from TCP channels ${testStep.consumeFrom}")
         consume(testStep, testStep.consumeFrom, testStepRunResult)
@@ -98,7 +96,7 @@ open class TcpConsumableTestStepProcessor(
 
     class Builder : BaseTcpProcessorBuilder<TcpConsumableTestStep>() {
         override fun build(): TestStepProcessor<TcpConsumableTestStep> {
-            return TcpConsumableTestStepProcessor(tcpChannels, testScenarioState)
+            return TcpConsumableTestStepProcessor(tcpChannels)
         }
     }
 }

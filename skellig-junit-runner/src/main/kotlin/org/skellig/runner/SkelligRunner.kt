@@ -59,7 +59,8 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         val testStepRunner = skelligTestContext.initialize(
             clazz.classLoader, skelligOptions.testSteps.toList(), config, classInstanceRegistry
         )
-        val testScenarioState = skelligTestContext.getTestScenarioState()
+        // without a parallel run, all scenarios share the only state of the context through its default scope
+        val defaultScope = skelligTestContext.getDefaultScope()
 
         val testStepLogger = DefaultTestStepLogger()
         skelligTestContext.config?.let {
@@ -89,11 +90,11 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
                                 FeatureRunner.create(
                                     feature,
                                     testStepRunner,
-                                    testScenarioState,
                                     testStepLogger,
                                     hookRunner,
                                     eventDispatcher,
-                                    tagsFilter
+                                    tagsFilter,
+                                    defaultScope
                                 )
                             }
                             .toCollection(children)

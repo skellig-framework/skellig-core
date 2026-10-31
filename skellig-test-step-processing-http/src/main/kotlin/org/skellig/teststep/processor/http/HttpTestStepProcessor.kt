@@ -5,7 +5,6 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.TestStepProcessorInitException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
@@ -35,8 +34,7 @@ import java.util.concurrent.TimeoutException
  */
 class HttpTestStepProcessor(
     private val httpServices: Map<String, HttpChannel>,
-    testScenarioState: TestScenarioState
-) : BaseTestStepProcessor<HttpTestStep>(testScenarioState) {
+) : BaseTestStepProcessor<HttpTestStep>() {
 
     private val log = logger<HttpTestStepProcessor>()
 
@@ -148,7 +146,7 @@ class HttpTestStepProcessor(
             if (httpChannelPerService.isEmpty()) {
                 throw TestStepProcessorInitException("No HTTP services were registered for the processor")
             }
-            return HttpTestStepProcessor(httpChannelPerService, testScenarioState!!)
+            return HttpTestStepProcessor(httpChannelPerService)
         }
 
     }

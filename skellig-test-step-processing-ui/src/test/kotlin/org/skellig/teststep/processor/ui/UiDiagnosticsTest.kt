@@ -90,7 +90,7 @@ class UiDiagnosticsTest {
         }
         context.use {
             val runner = it.initialize(javaClass.classLoader, listOf("ui/steps.sts"))
-            runner.run("Navigate twice for screenshots").subscribe { _, response, error ->
+            runner.run("Navigate twice for screenshots", emptyMap(), it.getDefaultScope()).subscribe { _, response, error ->
                 failure = error
                 if (error == null) assertEquals(setOf("url", "pages"), (response as Map<*, *>).keys)
             }

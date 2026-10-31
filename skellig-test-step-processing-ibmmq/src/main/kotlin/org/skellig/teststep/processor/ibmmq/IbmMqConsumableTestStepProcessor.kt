@@ -3,7 +3,6 @@ package org.skellig.teststep.processor.ibmmq
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
@@ -21,14 +20,13 @@ import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
  */
 open class IbmMqConsumableTestStepProcessor(
     protected val ibmMqChannels: Map<String, IbmMqChannel>,
-    testScenarioState: TestScenarioState?,
-) : ValidatableTestStepProcessor<IbmMqConsumableTestStep>(testScenarioState!!) {
+) : ValidatableTestStepProcessor<IbmMqConsumableTestStep>() {
 
     private val log = logger<IbmMqConsumableTestStepProcessor>()
 
     override fun process(testStep: IbmMqConsumableTestStep): TestStepProcessor.TestStepRunResult {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
-        testScenarioState.set(testStep.getId, testStep)
+        stateOf(testStep).set(testStep.getId, testStep)
 
         log.info(testStep, "Start to consume messages for test step '${testStep.name}' from IBMMQ queues ${testStep.consumeFrom}")
         consume(testStep, testStep.consumeFrom, testStepRunResult)
@@ -98,7 +96,7 @@ open class IbmMqConsumableTestStepProcessor(
 
     class Builder : BaseIbmMqTestStepProcessorBuilder<IbmMqConsumableTestStep>() {
         override fun build(): TestStepProcessor<IbmMqConsumableTestStep> {
-            return IbmMqConsumableTestStepProcessor(ibmMqChannels, testScenarioState)
+            return IbmMqConsumableTestStepProcessor(ibmMqChannels)
         }
     }
 }

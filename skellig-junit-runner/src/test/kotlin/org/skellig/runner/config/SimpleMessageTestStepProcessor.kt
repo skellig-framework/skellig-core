@@ -9,7 +9,7 @@ import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.TaskUtils.runTask
 import java.util.*
 
-class SimpleMessageTestStepProcessor private constructor(testScenarioState: TestScenarioState?) : BaseTestStepProcessor<SimpleMessageTestStep>(testScenarioState!!) {
+class SimpleMessageTestStepProcessor private constructor() : BaseTestStepProcessor<SimpleMessageTestStep>() {
 
     private var latestReceivedMessage: MutableMap<Any, Any?>? = null
 
@@ -37,14 +37,9 @@ class SimpleMessageTestStepProcessor private constructor(testScenarioState: Test
     }
 
     class Builder {
-        private var testScenarioState: TestScenarioState? = null
-
-        fun withTestScenarioState(testScenarioState: TestScenarioState?) = apply {
-            this.testScenarioState = testScenarioState
-        }
 
         fun build(): TestStepProcessor<SimpleMessageTestStep> {
-            return SimpleMessageTestStepProcessor(testScenarioState)
+            return SimpleMessageTestStepProcessor()
         }
     }
 }
@@ -52,9 +47,7 @@ class SimpleMessageTestStepProcessor private constructor(testScenarioState: Test
 class SimpleMessageTestStepProcessorConfig : TestStepProcessorConfig<SimpleMessageTestStep> {
     override fun config(details: TestStepProcessorConfigDetails): ConfiguredTestStepProcessorDetails<SimpleMessageTestStep> {
         return ConfiguredTestStepProcessorDetails(
-            SimpleMessageTestStepProcessor.Builder()
-                .withTestScenarioState(details.state)
-                .build(),
+            SimpleMessageTestStepProcessor.Builder().build(),
             SimpleMessageTestStepFactory(
                 details.testStepRegistry,
                 details.valueExpressionContextFactory,

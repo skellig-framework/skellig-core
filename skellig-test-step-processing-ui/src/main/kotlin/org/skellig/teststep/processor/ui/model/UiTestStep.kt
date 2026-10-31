@@ -2,6 +2,7 @@ package org.skellig.teststep.processor.ui.model
 
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 open class UiAction {
     data class Navigate(val url: String) : UiAction()
@@ -27,7 +28,7 @@ enum class SelectBy { TEXT, VALUE }
 class UiTestStep private constructor(builder: Builder) : DefaultTestStep(
     builder.stepId, builder.stepName, TestStepExecutionType.SYNC,
     builder.stepTimeout, builder.stepDelay, builder.stepAttempts, builder.stepValues,
-    builder.stepData, builder.stepValidation, builder.stepStateUpdaters
+    builder.stepData, builder.stepValidation, builder.stepStateUpdaters, builder.stepScope
 ) {
     internal val actions = builder.actions.toList()
 
@@ -41,6 +42,7 @@ class UiTestStep private constructor(builder: Builder) : DefaultTestStep(
         val stepData get() = testData
         val stepValidation get() = validationDetails
         val stepStateUpdaters get() = scenarioStateUpdaters
+        val stepScope get() = scope
 
         override fun build(): UiTestStep {
             require(execution == TestStepExecutionType.SYNC) { "UI test steps currently require synchronous execution" }

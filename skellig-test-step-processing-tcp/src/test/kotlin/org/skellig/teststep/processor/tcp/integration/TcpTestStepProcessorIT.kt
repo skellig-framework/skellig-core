@@ -181,7 +181,6 @@ internal class TcpTestStepProcessorIT {
         // some dependencies are mocked because they won't be used in the test
         val config = TcpTestStepProcessorConfig().config(
             TestStepProcessorConfigDetails(
-                state,
                 ConfigFactory.load(this.javaClass.classLoader, "tcp-integration-test.conf"),
                 mock<TestStepRegistry>(),
                 ValueExpressionContextFactory(
@@ -194,12 +193,11 @@ internal class TcpTestStepProcessorIT {
                 mock<TestStepFactory<TestStep>>(),
             )
         )!!
-        testStepFactory = config.testStepFactory
+        testStepFactory = config.testStepFactory.inScope(org.skellig.teststep.processing.state.TestScenarioScope("it", state))
         testStepProcessor = config.testStepProcessor
 
         val config2 = TcpConsumableTestStepProcessorConfig().config(
             TestStepProcessorConfigDetails(
-                state,
                 ConfigFactory.load(this.javaClass.classLoader, "tcp-integration-test.conf"),
                 mock<TestStepRegistry>(),
                 ValueExpressionContextFactory(
@@ -212,7 +210,7 @@ internal class TcpTestStepProcessorIT {
                 mock<TestStepFactory<TestStep>>(),
             )
         )!!
-        testStepConsumableFactory = config2.testStepFactory
+        testStepConsumableFactory = config2.testStepFactory.inScope(org.skellig.teststep.processing.state.TestScenarioScope("it", state))
         testStepConsumableProcessor = config2.testStepProcessor
     }
 
@@ -308,4 +306,19 @@ internal class TcpTestStepProcessorIT {
         }
     }
 
+}
+
+
+/** Runs the created test steps in a scope of its own, as every test step must have one. */
+private fun <T : org.skellig.teststep.processing.model.TestStep> TestStepFactory<T>.inScope(
+    scope: org.skellig.teststep.processing.state.TestScenarioScope
+): TestStepFactory<T> {
+    val delegate = this
+    return object : TestStepFactory<T> {
+        override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): T =
+            delegate.create(testStepName, rawTestStep, org.skellig.teststep.processing.state.TestScenarioScope.addTo(parameters, scope))
+
+        override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean =
+            delegate.isConstructableFrom(rawTestStep)
+    }
 }

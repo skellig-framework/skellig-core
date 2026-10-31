@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.model
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.reader.value.expression.ValueExpression
 
 /**
@@ -17,6 +18,7 @@ import org.skellig.teststep.reader.value.expression.ValueExpression
  * @param validationDetails The validation node for validating the task output.
  * @param scenarioStateUpdaters The list of [ScenarioStateUpdater] to update the test scenario state after executing the task.
  * @param parameters The mutable map of additional parameters specific to the task.
+ * @param scope The scope of the scenario the test step runs in.
  */
 class TaskTestStep(
     id: String?,
@@ -30,7 +32,8 @@ class TaskTestStep(
     validationDetails: ValidationNode?,
     scenarioStateUpdaters: List<ScenarioStateUpdater>?,
     val parameters: MutableMap<String, Any?>,
-) : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+    scope: TestScenarioScope? = null,
+) : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, scope) {
 
     fun getTask(): ValueExpression? = testData as? ValueExpression?
 
@@ -52,7 +55,7 @@ class TaskTestStep(
             return TaskTestStep(
                 id, name, execution, timeout, delay, attempts, values, task,
                 validationDetails, scenarioStateUpdaters,
-                parameters ?: error("Parameters are mandatory for TaskTestStep")
+                parameters ?: error("Parameters are mandatory for TaskTestStep"), scope
             )
         }
     }

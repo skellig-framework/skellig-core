@@ -2,7 +2,6 @@ package org.skellig.teststep.processor.ibmmq
 
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
@@ -23,9 +22,8 @@ import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
  * @param testScenarioState The state of the test scenario.
  */
 open class IbmMqTestStepProcessor protected constructor(
-    testScenarioState: TestScenarioState,
     private val ibmMqChannels: Map<String, IbmMqChannel>
-) : BaseTestStepProcessor<IbmMqTestStep>(testScenarioState) {
+) : BaseTestStepProcessor<IbmMqTestStep>() {
 
     private val log = logger<IbmMqTestStepProcessor>()
 
@@ -96,7 +94,6 @@ open class IbmMqTestStepProcessor protected constructor(
     class Builder : BaseIbmMqTestStepProcessorBuilder<IbmMqTestStep>() {
         override fun build(): TestStepProcessor<IbmMqTestStep> {
             return IbmMqTestStepProcessor(
-                testScenarioState ?: error("Test Scenario State is mandatory for IbmMqTestStepProcessor"),
                 ibmMqChannels
             )
         }

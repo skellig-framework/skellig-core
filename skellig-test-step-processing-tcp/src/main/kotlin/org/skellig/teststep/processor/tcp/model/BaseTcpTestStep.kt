@@ -4,6 +4,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 abstract class BaseTcpTestStep protected constructor(id: String?,
                                                      name: String,
@@ -15,8 +16,9 @@ abstract class BaseTcpTestStep protected constructor(id: String?,
                                                      testData: Any?,
                                                      validationDetails: ValidationNode?,
                                                      scenarioStateUpdaters: List<ScenarioStateUpdater>?,
-                                                     val readBufferSize: Int)
-    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+                                                     val readBufferSize: Int,
+                                                     scope: TestScenarioScope? = null)
+    : DefaultTestStep(id, name, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, scope) {
 
     override fun toString(): String {
         return super.toString() + "readBufferSize = $readBufferSize\n"

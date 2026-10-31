@@ -5,6 +5,7 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.model.ValidationNode
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.PropertyFormatUtils.Companion.toStringCollection
 import java.util.*
 
@@ -20,8 +21,9 @@ open class BaseRmqTestStep protected constructor(
     validationDetails: ValidationNode?,
     scenarioStateUpdaters: List<ScenarioStateUpdater>?,
     val routingKey: String?,
-    val properties: Map<String, Any?>?
-) : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters) {
+    val properties: Map<String, Any?>?,
+    scope: TestScenarioScope? = null
+) : DefaultTestStep(id, name!!, execution, timeout, delay, attempts, values, testData, validationDetails, scenarioStateUpdaters, scope) {
 
     fun getAmqpProperties(): AMQP.BasicProperties? =
         properties?.let {

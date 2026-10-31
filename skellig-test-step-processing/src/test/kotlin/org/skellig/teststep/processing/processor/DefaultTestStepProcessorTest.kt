@@ -10,17 +10,17 @@ import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 class DefaultTestStepProcessorTest {
 
     private val testScenarioState = DefaultTestScenarioState()
-    private val testStepProcessor = DefaultTestStepProcessor.Builder()
-        .withTestScenarioState(testScenarioState)
-        .build()
+    private val scope = TestScenarioScope("test", testScenarioState)
+    private val testStepProcessor = DefaultTestStepProcessor.Builder().build()
 
     @Test
     fun testProcessStepWithoutValidation() {
-        val testStep = DefaultTestStep.DefaultTestStepBuilder()
+        val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(scope)
             .withName("n1")
             .withId("id1")
             .build()
@@ -66,7 +66,7 @@ class DefaultTestStepProcessorTest {
 
     private fun createTestStep(): Pair<ValidationNode, DefaultTestStep> {
         val validationNode = mock<ValidationNode>()
-        val testStep = DefaultTestStep.DefaultTestStepBuilder()
+        val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(scope)
             .withName("n1")
             .withValidationDetails(validationNode)
             .withTimeout(1000)

@@ -12,7 +12,7 @@ class CassandraTestStepProcessorConfigTest {
         assertNull(
             CassandraTestStepProcessorConfig().config(
                 TestStepProcessorConfigDetails(
-                    mock(), mock(), mock(), mock(), mock(), mock()
+                    mock(), mock(), mock(), mock(), mock()
                 )
             )
         )

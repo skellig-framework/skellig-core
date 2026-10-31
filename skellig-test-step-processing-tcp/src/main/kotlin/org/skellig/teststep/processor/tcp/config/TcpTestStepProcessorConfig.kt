@@ -22,7 +22,6 @@ class TcpTestStepProcessorConfig : TestStepProcessorConfig<TcpTestStep> {
         return if (details.config.hasPath("tcp")) ConfiguredTestStepProcessorDetails(
             TcpTestStepProcessor.Builder()
                 .tcpChannels(details.config)
-                .withTestScenarioState(details.state)
                 .build(),
             TcpTestStepFactory(
                 details.testStepRegistry,
@@ -44,7 +43,6 @@ class TcpConsumableTestStepProcessorConfig : TestStepProcessorConfig<TcpConsumab
         return if (details.config.hasPath("tcp")) ConfiguredTestStepProcessorDetails(
             TcpConsumableTestStepProcessor.Builder()
                 .tcpChannels(details.config)
-                .withTestScenarioState(details.state)
                 .build(),
             TcpConsumableTestStepFactory(
                 details.testStepRegistry,

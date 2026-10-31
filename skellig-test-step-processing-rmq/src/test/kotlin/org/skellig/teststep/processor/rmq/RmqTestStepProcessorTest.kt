@@ -10,6 +10,7 @@ import org.mockito.kotlin.*
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.model.ValidationNode
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processor.rmq.model.RmqTestStep
 import java.util.concurrent.atomic.AtomicBoolean
@@ -17,6 +18,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 @DisplayName("Test rmq")
 class RmqTestStepProcessorTest {
+
+    private val scope get() = TestScenarioScope("test", testScenarioState)
 
     companion object {
         private const val CHANNEL_NAME = "host1"
@@ -35,7 +38,7 @@ class RmqTestStepProcessorTest {
             Pair(CHANNEL_NAME_2, rmqChannel2)
         )
 
-        processor = RmqTestStepProcessor(rmqChannels, testScenarioState)
+        processor = RmqTestStepProcessor(rmqChannels)
     }
 
     @Test
@@ -45,7 +48,7 @@ class RmqTestStepProcessorTest {
             .sendTo(setOf("host3"))
             .withTestData("hi")
             .withName("n1")
-            .build()
+            .withScope(scope).build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
@@ -60,7 +63,7 @@ class RmqTestStepProcessorTest {
             .readFrom(setOf("host3"))
             .withTestData("hi")
             .withName("n1")
-            .build()
+            .withScope(scope).build()
         val ref: AtomicReference<Exception> = AtomicReference<Exception>()
 
         processor!!.process(testStep).subscribe { _, _, e -> ref.set(e) }
@@ -77,7 +80,7 @@ class RmqTestStepProcessorTest {
                 .sendTo(setOf(CHANNEL_NAME))
                 .withTestData("hi")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
 
             val result = processor!!.process(testStep)
 
@@ -94,7 +97,7 @@ class RmqTestStepProcessorTest {
                 .readFrom(setOf(CHANNEL_NAME))
                 .withTestData("hi")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
             whenever(rmqChannel!!.read(ArgumentMatchers.any())).thenReturn(response.toByteArray())
 
             val isPassed = AtomicBoolean()
@@ -121,7 +124,7 @@ class RmqTestStepProcessorTest {
                 .readFrom(setOf(CHANNEL_NAME))
                 .withTestData("hi")
                 .withName("n1")
-                .build()
+                .withScope(scope).build()
             whenever(rmqChannel!!.read(ArgumentMatchers.anyInt())).thenReturn("yo".toByteArray())
 
             processor!!.process(testStep)
@@ -140,7 +143,7 @@ class RmqTestStepProcessorTest {
                 .withTestData("hi")
                 .withName("n1")
                 .withValidationDetails(expectedResult)
-                .build()
+                .withScope(scope).build()
             whenever(rmqChannel!!.read(ArgumentMatchers.any())).thenReturn(response)
             doThrow(ValidationException("oops")).whenever(expectedResult)
                 .validate(argThat { args -> (args as Map<*, *>)[CHANNEL_NAME] == response })

@@ -13,6 +13,8 @@ import org.skellig.teststep.processing.model.*
 import org.skellig.teststep.processing.model.GroupedValidationNode
 import org.skellig.teststep.processing.model.PairValidationNode
 import org.skellig.teststep.processing.model.ValidationNodes
+import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactoryTest
@@ -536,6 +538,24 @@ class DefaultTestStepFactoryTest {
         val testStep = testStepFactory!!.create("test 1", rawTestStep, emptyMap())
 
         assertEquals(TestStepExecutionType.fromName(type), testStep.execution)
+    }
+
+    @Test
+    @DisplayName("With scope in the parameters Then the test step exposes it")
+    fun testCreateTestStepWithScope() {
+        val scope = TestScenarioScope("s1", DefaultTestScenarioState())
+
+        val testStep = testStepFactory!!.create("test 1", emptyMap(), mapOf(TestScenarioScope.PARAMETER_KEY to scope))
+
+        assertSame(scope, testStep.scope)
+    }
+
+    @Test
+    @DisplayName("Without scope in the parameters Then the test step has no scope")
+    fun testCreateTestStepWithoutScope() {
+        val testStep = testStepFactory!!.create("test 1", emptyMap(), mapOf("a" to "b"))
+
+        assertNull(testStep.scope)
     }
 
     @Test

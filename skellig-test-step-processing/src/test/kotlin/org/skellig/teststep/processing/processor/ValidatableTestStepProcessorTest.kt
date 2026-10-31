@@ -47,7 +47,7 @@ class ValidatableTestStepProcessorTest {
         assertFalse(TestableValidatableStepProcessor().testIsValid(testStep, data))
     }
 
-    inner class TestableValidatableStepProcessor : ValidatableTestStepProcessor<DefaultTestStep>(mock()) {
+    inner class TestableValidatableStepProcessor : ValidatableTestStepProcessor<DefaultTestStep>() {
 
         override fun process(testStep: DefaultTestStep): TestStepProcessor.TestStepRunResult {
 

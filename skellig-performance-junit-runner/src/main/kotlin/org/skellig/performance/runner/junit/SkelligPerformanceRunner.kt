@@ -61,7 +61,7 @@ open class SkelligPerformanceRunner(clazz: Class<*>) : ParentRunner<PerformanceT
         notifier.fireTestStarted(childDescription)
         try {
             skelligTestContext.use {
-                testStepRunner.run(child.testName)
+                testStepRunner.run(child.testName, emptyMap(), skelligTestContext.getDefaultScope())
                     .subscribe { _, r, e ->
                         val longRunResult = r as? LongRunResponse
                         longRunResult?.getTimeSeries()?.forEach {

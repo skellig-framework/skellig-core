@@ -1,0 +1,4 @@
+name ("Capture the scenario scope") {
+    id = capture_scope
+    captureData = scope
+}

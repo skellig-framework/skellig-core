@@ -2,7 +2,6 @@ package org.skellig.teststep.processor.tcp
 
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.info
 import org.skellig.teststep.processing.util.logger
@@ -23,8 +22,7 @@ import org.skellig.teststep.processor.tcp.model.TcpTestStep
  */
 open class TcpTestStepProcessor(
     private val tcpChannels: Map<String, TcpChannel>,
-    testScenarioState: TestScenarioState?
-) : BaseTestStepProcessor<TcpTestStep>(testScenarioState!!) {
+) : BaseTestStepProcessor<TcpTestStep>() {
 
     private val log = logger<TcpTestStepProcessor>()
 
@@ -93,7 +91,7 @@ open class TcpTestStepProcessor(
 
     class Builder : BaseTcpProcessorBuilder<TcpTestStep>() {
         override fun build(): TestStepProcessor<TcpTestStep> {
-            return TcpTestStepProcessor(tcpChannels, testScenarioState)
+            return TcpTestStepProcessor(tcpChannels)
         }
     }
 }

@@ -3,12 +3,13 @@ package org.skellig.teststep.processor.wiremock.model
 import com.github.tomakehurst.wiremock.matching.RequestPattern
 import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
+import org.skellig.teststep.processing.state.TestScenarioScope
 
 /** Mock server step; [operation] selects what it does. Supports stub registration, request journal reads and resets. */
 class WireMockTestStep private constructor(builder: Builder) : DefaultTestStep(
     builder.stepId, builder.stepName, TestStepExecutionType.SYNC,
     builder.stepTimeout, builder.stepDelay, builder.stepAttempts, builder.stepValues,
-    builder.stepData, builder.stepValidation, builder.stepStateUpdaters
+    builder.stepData, builder.stepValidation, builder.stepStateUpdaters, builder.stepScope
 ) {
     internal val operation: String = builder.operation ?: error("WireMock test step operation is required")
 
@@ -38,6 +39,7 @@ class WireMockTestStep private constructor(builder: Builder) : DefaultTestStep(
         val stepData get() = testData
         val stepValidation get() = validationDetails
         val stepStateUpdaters get() = scenarioStateUpdaters
+        val stepScope get() = scope
 
         override fun build() = WireMockTestStep(this)
     }

@@ -7,9 +7,12 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processor.unix.model.UnixShellTestStep
 
 internal class UnixShellTestStepProcessorTest {
+
+    private val scope = TestScenarioScope("test", mock())
 
     private var processor: UnixShellTestStepProcessor? = null
     private var sshClient = mock<DefaultSshClient>()
@@ -22,7 +25,7 @@ internal class UnixShellTestStepProcessorTest {
             Pair("h2", sshClient2)
         )
 
-        processor = UnixShellTestStepProcessor(mock(), hosts)
+        processor = UnixShellTestStepProcessor(hosts)
     }
 
     @Test
@@ -31,7 +34,7 @@ internal class UnixShellTestStepProcessorTest {
             .withHosts(emptyList())
             .withCommand("ls")
             .withName("n1")
-            .build()
+            .withScope(scope).build()
 
         processor!!.process(testStep)
             .subscribe { _, _, e ->
@@ -46,12 +49,12 @@ internal class UnixShellTestStepProcessorTest {
     fun testRunCommandToNoHostWhenOneWasRegistered() {
         val hosts = mapOf(Pair("h1", sshClient))
 
-        processor = UnixShellTestStepProcessor(mock(), hosts)
+        processor = UnixShellTestStepProcessor(hosts)
 
         val testStep = UnixShellTestStep.Builder()
             .withCommand("ls")
             .withName("n1")
-            .build()
+            .withScope(scope).build()
 
         whenever(sshClient.runShellCommand(testStep.getCommand(), testStep.timeout)).thenReturn("r1")
 
@@ -67,7 +70,7 @@ internal class UnixShellTestStepProcessorTest {
             .withHosts(listOf("h3"))
             .withCommand("ls")
             .withName("n1")
-            .build()
+            .withScope(scope).build()
 
         processor!!.process(testStep)
             .subscribe { _, _, e ->
@@ -84,7 +87,7 @@ internal class UnixShellTestStepProcessorTest {
             .withHosts(listOf("h1"))
             .withCommand("ls -l")
             .withName("n1")
-            .build()
+            .withScope(scope).build()
         whenever(sshClient.runShellCommand(testStep.getCommand(), testStep.timeout)).thenReturn("r1")
 
         processor!!.process(testStep)
@@ -106,7 +109,7 @@ internal class UnixShellTestStepProcessorTest {
             .withCommand("cmd1")
             .withArgs(args)
             .withName("n1")
-            .build()
+            .withScope(scope).build()
         whenever(sshClient.runShellCommand(testStep.getCommand(), testStep.timeout)).thenReturn("r1")
         whenever(sshClient2.runShellCommand(testStep.getCommand(), testStep.timeout)).thenReturn("r2")
 

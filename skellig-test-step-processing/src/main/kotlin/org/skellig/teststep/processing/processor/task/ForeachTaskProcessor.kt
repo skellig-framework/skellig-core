@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.processor.task
 
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.FunctionCallExpression
 import org.skellig.teststep.reader.value.expression.MapValueExpression
@@ -56,7 +57,9 @@ internal open class ForeachTaskProcessor(
     }
 
     private fun extractItemName(task: FunctionCallExpression, parameters: MutableMap<String, Any?>): String {
-        return if (task.args.size > 1) valueConvertDelegate(task.args[1], parameters)?.toString() ?: IT else IT
+        val itemName = if (task.args.size > 1) valueConvertDelegate(task.args[1], parameters)?.toString() ?: IT else IT
+        TestScenarioScope.checkVariableName(itemName)
+        return itemName
     }
 
     override fun getTaskName(): String = "forEach"

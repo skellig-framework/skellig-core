@@ -13,9 +13,8 @@ import org.skellig.teststep.processor.jdbc.model.JdbcTestStep
  * @property dbServers a map of database servers with their corresponding [JdbcRequestExecutor], where key is a server name from [servers][JdbcTestStep.servers]
  * @property testScenarioState the [TestScenarioState] object that holds the state of the test scenario.
  */
-open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, JdbcRequestExecutor>,
-                                                       testScenarioState: TestScenarioState)
-    : DatabaseTestStepProcessor<JdbcRequestExecutor, JdbcTestStep>(dbServers, testScenarioState) {
+open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, JdbcRequestExecutor>)
+    : DatabaseTestStepProcessor<JdbcRequestExecutor, JdbcTestStep>(dbServers) {
 
     override fun getTestStepClass(): Class<*> = JdbcTestStep::class.java
 
@@ -32,7 +31,7 @@ open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, Jd
         }
 
         override fun build(): TestStepProcessor<JdbcTestStep> {
-            return JdbcTestStepProcessor(dbServers, testScenarioState!!)
+            return JdbcTestStepProcessor(dbServers)
         }
     }
 }

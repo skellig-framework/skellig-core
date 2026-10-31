@@ -19,6 +19,7 @@ import org.skellig.feature.hook.annotation.BeforeTestScenario
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.plugin.report.TestStepLogger
 import org.skellig.teststep.processing.processor.TestStepProcessor
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.PropertyFormatUtils
 import org.skellig.teststep.runner.TestStepRunner
@@ -27,13 +28,14 @@ import org.skellig.teststep.runner.TestStepRunner
 class FeatureRunnerTest {
 
     private val testScenarioState = mock<TestScenarioState>()
+    private val scope = TestScenarioScope("test", testScenarioState)
     private val feature = createFeature()
     private val hookRunner = mock<SkelligHookRunner>()
     private val testStepRunner = mock<TestStepRunner>()
     private val testStepLogger = mock<TestStepLogger>()
     private val eventDispatcher = mock<SkelligTestEventDispatcher>()
     private val featureRunner = FeatureRunner.create(
-        feature, testStepRunner, testScenarioState, testStepLogger, hookRunner, eventDispatcher, TagsFilter(emptySet(), emptySet())
+        feature, testStepRunner, testStepLogger, hookRunner, eventDispatcher, TagsFilter(emptySet(), emptySet()), scope
     )
 
     @Test
@@ -64,7 +66,7 @@ class FeatureRunnerTest {
             val testStepRunResult = TestStepProcessor.TestStepRunResult(mock())
             testStepRunResult.notify(null, RuntimeException("Error"))
             testStepRunResult
-        }.whenever(testStepRunner).run(feature.scenarios!![0].steps!![0].name, emptyMap())
+        }.whenever(testStepRunner).run(feature.scenarios!![0].steps!![0].name, emptyMap(), scope)
 
         val expectedLogRecords = listOf("log record 1")
         whenever(testStepLogger.getLogsAndClean()).thenReturn(expectedLogRecords)
@@ -86,7 +88,7 @@ class FeatureRunnerTest {
         whenever(testStep.getFullInfo()).thenReturn(mock())
 
         val testStepRunResult = TestStepProcessor.TestStepRunResult(testStep)
-        whenever(testStepRunner.run(feature.scenarios!![0].steps!![0].name, emptyMap())).thenReturn(testStepRunResult)
+        whenever(testStepRunner.run(feature.scenarios!![0].steps!![0].name, emptyMap(), scope)).thenReturn(testStepRunResult)
 
         featureRunner.run(mock<RunNotifier>())
         testStepRunResult.notify(expectedResponse, null)
@@ -105,7 +107,7 @@ class FeatureRunnerTest {
     @Test
     fun testRunWhenTestStepFailsAndVerifyReportHasCorrectData() {
         val testStepRunResult = TestStepProcessor.TestStepRunResult(mock())
-        whenever(testStepRunner.run(feature.scenarios!![0].steps!![0].name, emptyMap())).thenReturn(testStepRunResult)
+        whenever(testStepRunner.run(feature.scenarios!![0].steps!![0].name, emptyMap(), scope)).thenReturn(testStepRunResult)
 
         featureRunner.run(mock<RunNotifier>())
         assertThrows<RuntimeException> { testStepRunResult.notify(null, RuntimeException("Error")) }
@@ -119,7 +121,7 @@ class FeatureRunnerTest {
         doAnswer {
             testStepRunResult.notify(null, RuntimeException("Error"))
             testStepRunResult
-        }.whenever(testStepRunner).run(feature.scenarios!![0].steps!![0].name, emptyMap())
+        }.whenever(testStepRunner).run(feature.scenarios!![0].steps!![0].name, emptyMap(), scope)
 
         val notifier = mock<RunNotifier>()
         featureRunner.run(notifier)
@@ -203,17 +205,17 @@ class FeatureRunnerTest {
     fun testRunAndVerifyFeatureBeforeAndAfterTestStepsRun() {
         val feature = createFeatureWithBeforeAndAfterSteps()
         val featureRunner = FeatureRunner(
-            feature, testScenarioState, TagsFilter(emptySet(), emptySet()),
-            hookRunner, testStepRunner, mock<TestStepLogger>(), eventDispatcher
+            feature, TagsFilter(emptySet(), emptySet()),
+            hookRunner, testStepRunner, mock<TestStepLogger>(), eventDispatcher, scope
         )
         val result1 = mock<TestStepProcessor.TestStepRunResult>()
         val result2 = mock<TestStepProcessor.TestStepRunResult>()
         val result3 = mock<TestStepProcessor.TestStepRunResult>()
         val result4 = mock<TestStepProcessor.TestStepRunResult>()
-        whenever(testStepRunner.run(feature.beforeSteps!![0].name, emptyMap())).thenReturn(result1)
-        whenever(testStepRunner.run(feature.beforeSteps!![1].name, emptyMap())).thenReturn(result2)
-        whenever(testStepRunner.run(feature.afterSteps!![0].name, emptyMap())).thenReturn(result3)
-        whenever(testStepRunner.run(feature.afterSteps!![1].name, emptyMap())).thenReturn(result4)
+        whenever(testStepRunner.run(feature.beforeSteps!![0].name, emptyMap(), scope)).thenReturn(result1)
+        whenever(testStepRunner.run(feature.beforeSteps!![1].name, emptyMap(), scope)).thenReturn(result2)
+        whenever(testStepRunner.run(feature.afterSteps!![0].name, emptyMap(), scope)).thenReturn(result3)
+        whenever(testStepRunner.run(feature.afterSteps!![1].name, emptyMap(), scope)).thenReturn(result4)
 
         val notifier = mock<RunNotifier>()
         featureRunner.run(notifier)
@@ -240,18 +242,18 @@ class FeatureRunnerTest {
     fun testRunWhenBeforeStepFailsOnWaitingResult() {
         val feature = createFeatureWithBeforeAndAfterSteps()
         val featureRunner = FeatureRunner(
-            feature, testScenarioState, TagsFilter(emptySet(), emptySet()),
-            hookRunner, testStepRunner, mock<TestStepLogger>(), eventDispatcher
+            feature, TagsFilter(emptySet(), emptySet()),
+            hookRunner, testStepRunner, mock<TestStepLogger>(), eventDispatcher, scope
         )
 
         val result1 = mock<TestStepProcessor.TestStepRunResult>()
         val result2 = mock<TestStepProcessor.TestStepRunResult>()
         val result3 = mock<TestStepProcessor.TestStepRunResult>()
         val result4 = mock<TestStepProcessor.TestStepRunResult>()
-        whenever(testStepRunner.run(feature.beforeSteps!![0].name, emptyMap())).thenReturn(result1)
-        whenever(testStepRunner.run(feature.beforeSteps!![1].name, emptyMap())).thenReturn(result2)
-        whenever(testStepRunner.run(feature.afterSteps!![0].name, emptyMap())).thenReturn(result3)
-        whenever(testStepRunner.run(feature.afterSteps!![1].name, emptyMap())).thenReturn(result4)
+        whenever(testStepRunner.run(feature.beforeSteps!![0].name, emptyMap(), scope)).thenReturn(result1)
+        whenever(testStepRunner.run(feature.beforeSteps!![1].name, emptyMap(), scope)).thenReturn(result2)
+        whenever(testStepRunner.run(feature.afterSteps!![0].name, emptyMap(), scope)).thenReturn(result3)
+        whenever(testStepRunner.run(feature.afterSteps!![1].name, emptyMap(), scope)).thenReturn(result4)
 
         whenever(result1.awaitResult()).thenThrow(RuntimeException("internal error"))
         whenever(result4.awaitResult()).thenThrow(RuntimeException("internal error 2"))
@@ -274,7 +276,7 @@ class FeatureRunnerTest {
     @Test
     fun testRunWhenTestStepFailsOnWaitingResult() {
         val result1 = mock<TestStepProcessor.TestStepRunResult>()
-        whenever(testStepRunner.run(feature.scenarios!![0].steps!![0].name, emptyMap())).thenReturn(result1)
+        whenever(testStepRunner.run(feature.scenarios!![0].steps!![0].name, emptyMap(), scope)).thenReturn(result1)
         whenever(result1.awaitResult()).thenThrow(RuntimeException("internal error"))
 
         val notifier = mock<RunNotifier>()
@@ -286,7 +288,7 @@ class FeatureRunnerTest {
     @Test
     fun testRunWhenTestStepFailsOnUserInterrupt() {
         doThrow(StoppedByUserException())
-            .whenever(testStepRunner).run(feature.scenarios!![0].steps!![0].name, emptyMap())
+            .whenever(testStepRunner).run(feature.scenarios!![0].steps!![0].name, emptyMap(), scope)
 
         org.junit.jupiter.api.assertThrows<StoppedByUserException> { featureRunner.run(mock<RunNotifier>()) }
     }
