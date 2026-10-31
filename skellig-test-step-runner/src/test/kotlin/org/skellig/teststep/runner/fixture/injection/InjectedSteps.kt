@@ -21,4 +21,8 @@ class InjectedSteps {
     @TestStep(name = "only injected")
     fun onlyInjected(scope: TestScenarioScope) {
     }
+
+    @TestStep(name = "no scope")
+    fun noScope() {
+    }
 }

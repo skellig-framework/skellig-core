@@ -52,7 +52,7 @@ class ClassTestStepsRegistryTest {
     fun testRegisterMethodsWithInjectedParameters() {
         val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.injection"), mutableMapOf())
 
-        assertEquals(4, registry.getTestSteps().size)
+        assertEquals(5, registry.getTestSteps().size)
     }
 
     @Test
