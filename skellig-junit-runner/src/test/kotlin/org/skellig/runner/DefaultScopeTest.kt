@@ -3,6 +3,7 @@ package org.skellig.runner
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.JUnitCore
 import org.junit.runner.RunWith
@@ -23,6 +24,12 @@ class DefaultScopeTest {
         config = "test.conf"
     )
     class ScopeCheckRunner
+
+    @Before
+    fun resetProcessedStepsCounter() {
+        // the counter is shared by all the tests which run steps with SimpleTestStepProcessor in the same JVM
+        SimpleTestStepProcessor.processedScopes.set(0)
+    }
 
     @Test
     fun testAllStepsRunInTheDefaultScopeWrappingTheStateOfTheContext() {
