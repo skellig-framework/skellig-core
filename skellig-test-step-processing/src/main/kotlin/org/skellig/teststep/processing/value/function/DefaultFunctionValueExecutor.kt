@@ -1,6 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
-import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processing.value.function.collection.*
@@ -31,13 +31,15 @@ class DefaultFunctionValueExecutor private constructor(
     private val objectValueFunctionExecutor: FunctionValueExecutor,
 ) : FunctionValueExecutor {
 
-    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? {
+    override fun execute(name: String, value: Any?, args: Array<Any?>): Any? = execute(name, value, args, null)
+
+    override fun execute(name: String, value: Any?, args: Array<Any?>, scope: TestScenarioScope?): Any? {
         val executor = if (functions.containsKey(name)) functions[name]
         else if (value != null) objectValueFunctionExecutor
         // if no function found, then try the custom one if registered.
         else customFunctionExecutor
 
-        return executor?.execute(name, value, args)
+        return executor?.execute(name, value, args, scope)
     }
 
     override fun getFunctionName(): String = ""
@@ -47,13 +49,9 @@ class DefaultFunctionValueExecutor private constructor(
         private val log = logger<Builder>()
 
         private val functions = mutableMapOf<String, FunctionValueExecutor>()
-        private var testScenarioState: TestScenarioState? = null
         private var classLoader: ClassLoader? = null
         private var classPaths: Collection<String>? = null
         private var classInstanceRegistry: MutableMap<Class<*>, Any>? = null
-
-        fun withTestScenarioState(testScenarioState: TestScenarioState?) =
-            apply { this.testScenarioState = testScenarioState }
 
         /**
          * Sets the class loader to be used for some internal Skellig Functions.
@@ -93,8 +91,6 @@ class DefaultFunctionValueExecutor private constructor(
          * as well as all found custom functions in classes or registered through [FunctionsConfig][org.skellig.teststep.processing.value.config.FunctionsConfig].
          */
         fun build(): FunctionValueExecutor {
-            Objects.requireNonNull(testScenarioState, "Test Scenario State must be provided")
-
             this.withFunctionValueExecutor(JsonPathFunctionExecutor())
             this.withFunctionValueExecutor(JsonToMapTestStepFunctionExecutor())
             this.withFunctionValueExecutor(JsonToListTestStepFunctionExecutor())
@@ -133,7 +129,7 @@ class DefaultFunctionValueExecutor private constructor(
             this.withFunctionValueExecutor(SortFunctionExecutor())
             this.withFunctionValueExecutor(SumOfFunctionExecutor())
             this.withFunctionValueExecutor(IfFunctionExecutor())
-            this.withFunctionValueExecutor(GetFromStateFunctionExecutor(testScenarioState!!))
+            this.withFunctionValueExecutor(GetFromStateFunctionExecutor())
             this.withFunctionValueExecutor(RandomFunctionExecutor())
             this.withFunctionValueExecutor(IncrementFunctionExecutor())
             this.withFunctionValueExecutor(CurrentDateTimeFunctionExecutor())

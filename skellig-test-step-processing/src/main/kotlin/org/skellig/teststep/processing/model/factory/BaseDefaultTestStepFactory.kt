@@ -45,7 +45,6 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 
     private var validationDetailsFactory = ValidationNodeFactory(valueExpressionContextFactory)
     private var stateUpdaterFactory = StateUpdaterFactory(valueExpressionContextFactory)
-    private val testDataContext = valueExpressionContextFactory.create(emptyMap())
 
     override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): T {
         val parentTestSteps = rawTestStep[PARENT_KEYWORD]
@@ -180,7 +179,7 @@ abstract class BaseDefaultTestStepFactory<T : DefaultTestStep>(
 
     private fun convertTestData(value: ValueExpression?, defaultTestDataConverter: String?, parameters: Map<String, Any?>): Any? {
         val convertedValue = convertValue<Any?>(value, parameters)
-        return (defaultTestDataConverter?.let { testDataContext.onFunctionCall(it, null, arrayOf(convertedValue)) } ?: convertedValue)
+        return (defaultTestDataConverter?.let { valueExpressionContextFactory.create(parameters).onFunctionCall(it, null, arrayOf(convertedValue)) } ?: convertedValue)
     }
 
     /**

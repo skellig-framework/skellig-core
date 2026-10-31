@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.value.expression.*
@@ -14,15 +15,32 @@ class ValueExpressionContextFactoryTest {
 
     private val expectedResult = "something"
     private val testScenarioState = DefaultTestScenarioState()
+    private val scopeParameters = mapOf<String, Any?>(TestScenarioScope.PARAMETER_KEY to TestScenarioScope("default", testScenarioState))
     private val factory =
         ValueExpressionContextFactory(
             DefaultFunctionValueExecutor.Builder()
-                .withTestScenarioState(testScenarioState)
                 .withClassPaths(listOf("org.skellig.teststep.processing.value"))
                 .withClassLoader(ValueExpressionContextFactoryTest::class.java.classLoader)
                 .build(),
             DefaultPropertyExtractor(null)
         )
+
+    @Test
+    fun testFunctionCallsReadStateOfScopeInParameters() {
+        val scopeState = DefaultTestScenarioState().apply { set("k", "scoped") }
+        testScenarioState.set("k", "default")
+        val parameters = mapOf<String, Any?>(TestScenarioScope.PARAMETER_KEY to TestScenarioScope("s1", scopeState))
+        val get = FunctionCallExpression("get", arrayOf(StringValueExpression("k")))
+
+        assertAll(
+            { assertEquals("scoped", get.evaluate(factory.create(parameters))) },
+            { assertEquals("scoped", get.evaluate(factory.create("result", parameters))) },
+            { assertEquals("scoped", get.evaluate(factory.createForValidation("v", parameters))) },
+            { assertEquals("scoped", get.evaluate(factory.createForValidationAsCallChain("v", parameters))) },
+            { assertEquals("scoped", factory.create(parameters).onFunctionCall("get", null, arrayOf("k"))) },
+            { assertThrows(FunctionExecutionException::class.java) { get.evaluate(factory.create(emptyMap())) } },
+        )
+    }
 
     @Test
     fun testConvertWithNoParametersAndNoDefault() {
@@ -84,7 +102,7 @@ class ValueExpressionContextFactoryTest {
                     FunctionCallExpression("get", arrayOf(StringValueExpression("key1"))),
                     FunctionCallExpression("getTotalSize", emptyArray())
                 )
-            ).evaluate(factory.create(emptyMap()))
+            ).evaluate(factory.create(scopeParameters))
         )
 
         assertEquals(
@@ -94,7 +112,7 @@ class ValueExpressionContextFactoryTest {
                     FunctionCallExpression("get", arrayOf(StringValueExpression("key1"))),
                     FunctionCallExpression("appendSecondName", arrayOf(AlphanumericValueExpression("second name")))
                 )
-            ).evaluate(factory.create(emptyMap()))
+            ).evaluate(factory.create(scopeParameters))
         )
 
         assertEquals(
@@ -105,7 +123,7 @@ class ValueExpressionContextFactoryTest {
                     FunctionCallExpression("mergeNames", arrayOf(PropertyValueExpression("param1", null), StringValueExpression("|")))
                 )
             ).evaluate(
-                factory.create(mapOf(Pair("param1", listOf("a", "b", "c"))))
+                factory.create(scopeParameters + mapOf("param1" to listOf("a", "b", "c")))
             )
         )
 
@@ -117,7 +135,7 @@ class ValueExpressionContextFactoryTest {
                     FunctionCallExpression("convertToMap", arrayOf(BooleanValueExpression("true"))),
                     FunctionCallExpression("size", emptyArray())
                 )
-            ).evaluate(factory.create(emptyMap()))
+            ).evaluate(factory.create(scopeParameters))
         )
     }
 
@@ -149,7 +167,7 @@ class ValueExpressionContextFactoryTest {
                     FunctionCallExpression("get", arrayOf(AlphanumericValueExpression("a"))),
                     FunctionCallExpression("fromRegex", arrayOf(StringValueExpression("some([\\w\\\\'.\\\"]+)")))
                 )
-            ).evaluate(factory.create(emptyMap()))
+            ).evaluate(factory.create(scopeParameters))
         )
     }
 
@@ -163,7 +181,7 @@ class ValueExpressionContextFactoryTest {
                     FunctionCallExpression("get", arrayOf(AlphanumericValueExpression("a"))),
                     FunctionCallExpression("fromRegex", arrayOf(StringValueExpression("__\\\"(\\w+)\\\"__")))
                 )
-            ).evaluate(factory.create(emptyMap()))
+            ).evaluate(factory.create(scopeParameters))
         )
     }
 
@@ -175,7 +193,7 @@ class ValueExpressionContextFactoryTest {
 
     @Test
     fun testComplexExtractionPath() {
-        assertEquals(9, CallChainExpression(listOf(StringValueExpression("some.text"), FunctionCallExpression("length", emptyArray()))).evaluate(factory.create(emptyMap())))
+        assertEquals(9, CallChainExpression(listOf(StringValueExpression("some.text"), FunctionCallExpression("length", emptyArray()))).evaluate(factory.create(scopeParameters)))
 
         testScenarioState.set("key.1", mapOf(Pair("key.2", mapOf(Pair("key.3", "v")))))
 
@@ -186,7 +204,7 @@ class ValueExpressionContextFactoryTest {
                     StringValueExpression("key.2"),
                     StringValueExpression("key.3")
                 )
-            ).evaluate(factory.create(emptyMap()))
+            ).evaluate(factory.create(scopeParameters))
         )
     }
 

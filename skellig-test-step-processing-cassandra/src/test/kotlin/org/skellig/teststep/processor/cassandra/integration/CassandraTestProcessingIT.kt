@@ -292,7 +292,6 @@ class CassandraTestProcessingIT {
                     mock<TestStepRegistry>(),
                     ValueExpressionContextFactory(
                         DefaultFunctionValueExecutor.Builder()
-                            .withTestScenarioState(state)
                             .withClassLoader(CassandraTestProcessingIT::class.java.classLoader)
                             .build(), DefaultPropertyExtractor(null)
                     ),

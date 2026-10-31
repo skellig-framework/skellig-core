@@ -160,7 +160,6 @@ class PerformanceTestStepProcessorTest {
                 ConfigFactory.load("performance-test.conf"), mock(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
-                        .withTestScenarioState(state)
                         .withClassLoader(this.javaClass.classLoader)
                         .build(), DefaultPropertyExtractor(null)
                 ), testStepProcessor, testStepFactory

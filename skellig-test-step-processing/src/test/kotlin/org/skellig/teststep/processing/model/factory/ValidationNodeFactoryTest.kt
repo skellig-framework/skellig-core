@@ -24,8 +24,7 @@ class ValidationNodeFactoryTest {
     fun setUp() {
         validationDetailsFactory = ValidationNodeFactory(
             ValueExpressionContextFactory(
-                DefaultFunctionValueExecutor.Builder()
-                    .withTestScenarioState(DefaultTestScenarioState()).build(), mock()
+                DefaultFunctionValueExecutor.Builder().build(), mock()
             )
         )
     }

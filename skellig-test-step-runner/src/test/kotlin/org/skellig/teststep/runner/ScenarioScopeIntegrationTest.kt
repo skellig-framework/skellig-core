@@ -93,6 +93,25 @@ class ScenarioScopeIntegrationTest {
         )
     }
 
+    @Test
+    fun testFunctionsReadTheStateOfTheScopeOfTheStep() {
+        stateA.set("seed", "seed-A")
+        stateB.set("seed", "seed-B")
+        context.getDefaultScope().state.set("seed", "seed-default")
+
+        expectPass(runner.run("Read the seed in every expression", mapOf("expectedSeed" to "seed-A"), scopeA))
+        expectPass(runner.run("Read the seed in every expression", mapOf("expectedSeed" to "seed-B"), scopeB))
+
+        assertAll(
+            { assertEquals("seed-A", stateA.get("fromStateUpdate")) },
+            { assertEquals("seed-B", stateB.get("fromStateUpdate")) },
+            { assertEquals("seed-A", stateA.get("fromTask")) },
+            { assertEquals("seed-B", stateB.get("fromTask")) },
+            { assertNull(context.getDefaultScope().state.get("fromStateUpdate")) },
+            { assertNull(context.getDefaultScope().state.get("fromTask")) },
+        )
+    }
+
     private fun runAndExpectPass(testStepName: String, value: String, scope: TestScenarioScope) =
         expectPass(runner.run(testStepName, mapOf("value" to value), scope))
 

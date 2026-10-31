@@ -30,7 +30,6 @@ class PerformanceTestStepFactoryTest {
         testStepFactory,
         ValueExpressionContextFactory(
             DefaultFunctionValueExecutor.Builder()
-                .withTestScenarioState(mock())
                 .withClassLoader(this.javaClass.classLoader)
                 .build(), DefaultPropertyExtractor(null)
         )

@@ -26,7 +26,6 @@ class DefaultTaskProcessorTest {
     private val scope = TestScenarioScope("test", testScenarioState)
     private val valueExpressionContextFactory = ValueExpressionContextFactory(
         DefaultFunctionValueExecutor.Builder()
-            .withTestScenarioState(testScenarioState)
             .withClassLoader(ValueExpressionContextFactoryTest::class.java.classLoader)
             .build(),
         DefaultPropertyExtractor(null)
@@ -47,7 +46,7 @@ class DefaultTaskProcessorTest {
                     Pair(AlphanumericValueExpression("c"), MathOperationExpression("*", FunctionCallExpression("get", arrayOf(AlphanumericValueExpression("delta"))), PropertyValueExpression("b"))),
                 )
             )
-            val parameters = mutableMapOf<String, Any?>()
+            val parameters = mutableMapOf<String, Any?>(TestScenarioScope.PARAMETER_KEY to scope)
             taskProcessor.process(null, value, TaskProcessingContext(parameters))
 
             assertAll(
@@ -74,7 +73,7 @@ class DefaultTaskProcessorTest {
                     Pair(AlphanumericValueExpression("b"), ListValueExpression(listOf(AlphanumericValueExpression("v2")))),
                 )
             )
-            val parameters = mutableMapOf<String, Any?>()
+            val parameters = mutableMapOf<String, Any?>(TestScenarioScope.PARAMETER_KEY to scope)
             taskProcessor.process(null, value, TaskProcessingContext(parameters))
 
             assertAll(
@@ -140,7 +139,7 @@ class DefaultTaskProcessorTest {
                     Pair(AlphanumericValueExpression("b"), ListValueExpression(listOf(AlphanumericValueExpression("v2")))),
                 )
             )
-            val parameters = mutableMapOf<String, Any?>()
+            val parameters = mutableMapOf<String, Any?>(TestScenarioScope.PARAMETER_KEY to scope)
             taskProcessor.process(AlphanumericValueExpression("asyncEach"), value, TaskProcessingContext(parameters))
 
             assertAll(

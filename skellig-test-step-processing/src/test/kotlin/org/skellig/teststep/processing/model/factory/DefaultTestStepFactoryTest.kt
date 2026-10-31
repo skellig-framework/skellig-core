@@ -37,7 +37,6 @@ class DefaultTestStepFactoryTest {
             .withValueExpressionContextFactory(
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
-                        .withTestScenarioState(testScenarioState)
                         .withClassLoader(ValueExpressionContextFactoryTest::class.java.classLoader)
                         .build(),
                     DefaultPropertyExtractor(null)
@@ -67,7 +66,7 @@ class DefaultTestStepFactoryTest {
             ),
             Pair(AlphanumericValueExpression("payload"), PropertyValueExpression("names", null))
         )
-        val parameters = Collections.singletonMap("amt", "100")
+        val parameters = mapOf("amt" to "100", TestScenarioScope.PARAMETER_KEY to TestScenarioScope("s1", testScenarioState))
 
         val testStep = testStepFactory!!.create("test 1", rawTestStep, parameters)
 
