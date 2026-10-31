@@ -19,7 +19,6 @@ class ValueExpressionContextFactoryTest {
     private val factory =
         ValueExpressionContextFactory(
             DefaultFunctionValueExecutor.Builder()
-                .withTestScenarioState(testScenarioState)
                 .withClassPaths(listOf("org.skellig.teststep.processing.value"))
                 .withClassLoader(ValueExpressionContextFactoryTest::class.java.classLoader)
                 .build(),

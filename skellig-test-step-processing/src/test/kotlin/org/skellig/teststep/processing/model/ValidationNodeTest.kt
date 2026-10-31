@@ -20,7 +20,7 @@ class ValidationNodeTest {
 
     private val valueExpressionContextFactory =
         ValueExpressionContextFactory(
-            DefaultFunctionValueExecutor.Builder().withTestScenarioState(DefaultTestScenarioState()).build(),
+            DefaultFunctionValueExecutor.Builder().build(),
             DefaultPropertyExtractor(null)
         )
 

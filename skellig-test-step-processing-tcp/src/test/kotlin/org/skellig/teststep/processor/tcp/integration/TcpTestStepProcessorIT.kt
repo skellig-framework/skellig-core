@@ -185,7 +185,6 @@ internal class TcpTestStepProcessorIT {
                 mock<TestStepRegistry>(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
-                        .withTestScenarioState(state)
                         .withClassLoader(this.javaClass.classLoader)
                         .build(), DefaultPropertyExtractor(null)
                 ),
@@ -202,7 +201,6 @@ internal class TcpTestStepProcessorIT {
                 mock<TestStepRegistry>(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
-                        .withTestScenarioState(state)
                         .withClassLoader(this.javaClass.classLoader)
                         .build(), DefaultPropertyExtractor(null)
                 ),

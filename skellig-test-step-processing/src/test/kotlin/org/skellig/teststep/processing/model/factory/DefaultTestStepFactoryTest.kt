@@ -37,7 +37,6 @@ class DefaultTestStepFactoryTest {
             .withValueExpressionContextFactory(
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
-                        .withTestScenarioState(testScenarioState)
                         .withClassLoader(ValueExpressionContextFactoryTest::class.java.classLoader)
                         .build(),
                     DefaultPropertyExtractor(null)

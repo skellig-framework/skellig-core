@@ -254,7 +254,6 @@ open class SkelligTestContext : Closeable {
             .withClassInstanceRegistry(classInstanceRegistry)
             .withClassLoader(classLoader)
             .withClassPaths(testStepClassPaths)
-            .withTestScenarioState(testScenarioState)
             .build()
     }
 

@@ -238,7 +238,6 @@ internal class JdbcTestProcessingIT {
                 mock<TestStepRegistry>(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
-                        .withTestScenarioState(state)
                         .withClassLoader(JdbcTestProcessingIT::class.java.classLoader)
                         .build(), DefaultPropertyExtractor(null)
                 ),

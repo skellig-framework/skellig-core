@@ -320,7 +320,6 @@ class HttpTestStepProcessingIT {
                 mock<TestStepRegistry>(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
-                        .withTestScenarioState(state)
                         .withClassLoader(this.javaClass.classLoader)
                         .build(), DefaultPropertyExtractor(null)
                 ),

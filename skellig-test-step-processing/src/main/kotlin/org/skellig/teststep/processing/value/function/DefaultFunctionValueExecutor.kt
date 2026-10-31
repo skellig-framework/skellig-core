@@ -1,7 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
 import org.skellig.teststep.processing.state.TestScenarioScope
-import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.processing.value.function.collection.*
@@ -53,10 +52,6 @@ class DefaultFunctionValueExecutor private constructor(
         private var classLoader: ClassLoader? = null
         private var classPaths: Collection<String>? = null
         private var classInstanceRegistry: MutableMap<Class<*>, Any>? = null
-
-        @Deprecated("Functions use the state of the scope of the test step. This value is ignored.")
-        @Suppress("UNUSED_PARAMETER")
-        fun withTestScenarioState(testScenarioState: TestScenarioState?) = apply { }
 
         /**
          * Sets the class loader to be used for some internal Skellig Functions.

@@ -26,7 +26,6 @@ class DefaultTaskProcessorTest {
     private val scope = TestScenarioScope("test", testScenarioState)
     private val valueExpressionContextFactory = ValueExpressionContextFactory(
         DefaultFunctionValueExecutor.Builder()
-            .withTestScenarioState(testScenarioState)
             .withClassLoader(ValueExpressionContextFactoryTest::class.java.classLoader)
             .build(),
         DefaultPropertyExtractor(null)

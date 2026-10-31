@@ -35,7 +35,6 @@ class UnixShellTestStepProcessorConfigTest {
                 ConfigFactory.load("unix-test.conf"), mock(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
-                        .withTestScenarioState(state)
                         .withClassLoader(this.javaClass.classLoader)
                         .build(), DefaultPropertyExtractor(null)
                 ), mock(), mock()
@@ -62,7 +61,6 @@ class UnixShellTestStepProcessorConfigTest {
                 ConfigFactory.load("unix-test.conf"), mock(),
                 ValueExpressionContextFactory(
                     DefaultFunctionValueExecutor.Builder()
-                        .withTestScenarioState(state)
                         .withClassLoader(this.javaClass.classLoader)
                         .build(), DefaultPropertyExtractor(null)
                 ), mock(), mock()

@@ -89,7 +89,6 @@ class BaseTestStepProcessorTest {
         private val processor = BaseTestStepProcessorForTest()
         private val valueExpressionContextFactory = ValueExpressionContextFactory(
             DefaultFunctionValueExecutor.Builder()
-                .withTestScenarioState(testScenarioState)
                 .withClassLoader(BaseTestStepProcessorTest::class.java.classLoader)
                 .build(),
             DefaultPropertyExtractor(null)
