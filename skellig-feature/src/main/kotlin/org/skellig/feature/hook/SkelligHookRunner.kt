@@ -1,5 +1,7 @@
 package org.skellig.feature.hook
 
+import org.skellig.teststep.processing.state.TestScenarioScope
+
 /**
  * SkelligHookRunner is an interface that defines the contract for running hooks based on tags and hook type.
  */
@@ -12,11 +14,13 @@ interface SkelligHookRunner {
      * @param hookType The type of hook annotation, such as: @[BeforeTestFeature][org.skellig.feature.hook.annotation.BeforeTestFeature],
      * [BeforeTestScenario][org.skellig.feature.hook.annotation.BeforeTestScenario], [AfterTestFeature][org.skellig.feature.hook.annotation.AfterTestFeature]
      * [BeforeTestScenario][org.skellig.feature.hook.annotation.BeforeTestScenario]
+     * @param scope The scope the hooks run in. Hook methods which declare a parameter of type `TestScenarioState`
+     *              or `TestScenarioScope` receive the state of this scope or the scope itself.
      * @param onRunCompleted The callback function to be called after each hook is executed. It takes three parameters:
      *                       hookName: The name of the executed hook.
      *                       e: The Throwable if an exception occurred during the execution of the hook, or null otherwise.
      *                       duration: The duration of the hook execution in milliseconds.
      */
-    fun run(tags: Set<String>?, hookType: Class<out Annotation>, onRunCompleted: (String, Throwable?, Long) -> Unit)
+    fun run(tags: Set<String>?, hookType: Class<out Annotation>, scope: TestScenarioScope, onRunCompleted: (String, Throwable?, Long) -> Unit)
 
 }

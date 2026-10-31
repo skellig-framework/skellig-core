@@ -6,7 +6,7 @@ class OverloadedSteps {
 
     fun step(a: String): String = "unannotated-1:$a"
 
-    @TestStep(id = "overloaded", name = "overloaded step")
+    @TestStep(id = "overloaded", name = "overloaded step (.+) (.+)")
     fun step(a: String, b: String): String = "annotated:$a$b"
 
     fun step(a: String, b: String, c: String): String = "unannotated-3:$a$b$c"

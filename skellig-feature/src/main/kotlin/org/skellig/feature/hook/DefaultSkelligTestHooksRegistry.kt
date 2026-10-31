@@ -7,8 +7,10 @@ import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestScenario
+import org.skellig.teststep.processing.state.ScopeParameters
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.lang.reflect.Method
 
 /**
  * Default implementation of the [SkelligTestHooksRegistry] interface.
@@ -80,14 +82,25 @@ class DefaultSkelligTestHooksRegistry(
                     }
                 }
 
-                val method = instance::class.java.methods.find { method -> method.name == m.name }
+                val method = instance::class.java.methods.find { method -> method.name == m.name && method.isAnnotationPresent(hookType) }
                 method?.let { methodInstance ->
+                    validateParameters(methodInstance)
                     val annotation = methodInstance.getAnnotation(hookType)
                     val tags = extractTagsFromHookAnnotation(annotation)
                     val order = extractOrderFromHookAnnotation(annotation)
                     hooks.add(SkelligHook(tags, methodInstance, instance, order, hookType))
                 }
             }
+    }
+
+    private fun validateParameters(method: Method) {
+        method.parameterTypes.firstOrNull { !ScopeParameters.isInjected(it) }?.let {
+            throw SkelligClassInstanceRegistryException(
+                "Hook method '${method.declaringClass.name}.${method.name}' has a parameter of type '${it.name}'" +
+                        " which cannot be injected." +
+                        " Hooks can only declare parameters of type TestScenarioState or TestScenarioScope", null
+            )
+        }
     }
 
     private fun extractTagsFromHookAnnotation(annotation: Annotation): Set<String>? {

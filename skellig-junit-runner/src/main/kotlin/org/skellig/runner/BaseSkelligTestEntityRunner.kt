@@ -74,7 +74,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     private fun runHooks(
         hookType: Class<out Annotation>
     ) {
-        hookRunner.run(testEntity.getEntityTags(), hookType) { hookName, e, duration ->
+        hookRunner.run(testEntity.getEntityTags(), hookType, scope) { hookName, e, duration ->
             dispatchHookFinishedEvent(hookName, duration, e, hookType)
             if (e != null) {
                 throw e

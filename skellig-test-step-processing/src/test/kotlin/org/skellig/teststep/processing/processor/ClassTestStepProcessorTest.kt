@@ -7,6 +7,7 @@ import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.state.TestScenarioScope
+import org.skellig.teststep.processing.state.TestScenarioState
 import java.util.regex.Pattern
 
 class ClassTestStepProcessorTest {
@@ -94,6 +95,45 @@ class ClassTestStepProcessorTest {
     }
 
     @Test
+    fun testProcessInjectsStateOfStepScopeAndFillsRegexGroupsAndMap() {
+        val ownScope = TestScenarioScope("own", DefaultTestScenarioState())
+        val steps = InjectingSteps()
+        val testStep = ClassTestStep(
+            "", Pattern.compile("run (.+) and (.+)"), steps, steps.javaClass.methods.find { it.name == "stateInTheMiddle" }!!,
+            "run x and y", mapOf("p" to "v", TestScenarioScope.PARAMETER_KEY to ownScope), ownScope
+        )
+
+        classTestStepProcessor.process(testStep).subscribe { _, _, e -> assertNull(e) }
+
+        assertEquals(listOf("x", ownScope.state, "y", mapOf("p" to "v")), steps.received)
+    }
+
+    @Test
+    fun testProcessInjectsScope() {
+        val ownScope = TestScenarioScope("own", DefaultTestScenarioState())
+        val steps = InjectingSteps()
+        val testStep = ClassTestStep(
+            "", Pattern.compile("run"), steps, steps.javaClass.methods.find { it.name == "scopeOnly" }!!, "run", emptyMap(), ownScope
+        )
+
+        classTestStepProcessor.process(testStep).subscribe { _, _, e -> assertNull(e) }
+
+        assertEquals(listOf(ownScope), steps.received)
+    }
+
+    @Test
+    fun testProcessDoesNotInjectIntoParameterOfTypeAny() {
+        val steps = InjectingSteps()
+        val testStep = ClassTestStep(
+            "", Pattern.compile("run (.+) (.+)"), steps, steps.javaClass.methods.find { it.name == "anyParameter" }!!, "run x y", emptyMap(), scope
+        )
+
+        classTestStepProcessor.process(testStep).subscribe { _, _, e -> assertNull(e) }
+
+        assertEquals(listOf("x", "y"), steps.received)
+    }
+
+    @Test
     fun testGetTestStepClass() {
         assertEquals(ClassTestStep::class.java, classTestStepProcessor.getTestStepClass())
     }
@@ -116,5 +156,22 @@ class ClassTestStepProcessorTest {
         assertNull(someData)
         assertEquals("b", params["a"])
         assertEquals("d", params["c"])
+    }
+}
+
+class InjectingSteps {
+
+    val received = mutableListOf<Any?>()
+
+    fun stateInTheMiddle(a: String, state: TestScenarioState, b: String, parameters: Map<String, Any?>) {
+        received.addAll(listOf(a, state, b, parameters))
+    }
+
+    fun scopeOnly(scope: TestScenarioScope) {
+        received.add(scope)
+    }
+
+    fun anyParameter(any: Any?, other: String) {
+        received.addAll(listOf(any, other))
     }
 }
