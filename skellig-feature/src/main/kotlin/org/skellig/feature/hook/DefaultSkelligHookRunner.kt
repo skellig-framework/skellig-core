@@ -22,7 +22,7 @@ class DefaultSkelligHookRunner(private val testHooksRegistry: SkelligTestHooksRe
         testHooksRegistry.getByTags(hookType, tags)
             .sortedBy { it.order }
             .forEach {
-                val fullName = "${it.instance::class.java.name}.${it.method.name}"
+                val fullName = "${it.hookClass.name}.${it.method.name}"
                 LOGGER.info("Run $fullName hook")
                 try {
                     val duration = measureTimeMillis { it.run(scope) }

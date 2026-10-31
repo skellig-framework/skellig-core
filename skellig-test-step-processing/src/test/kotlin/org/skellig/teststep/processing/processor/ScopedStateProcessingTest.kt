@@ -112,34 +112,34 @@ class ScopedStateProcessingTest {
 
         @Test
         fun testMethodParametersMapDoesNotContainTheScope() {
-            receivedParameters = null
             val testStep = ClassTestStep(
-                "c2", Pattern.compile("run"), this@ClassTestStepProcessing,
-                ClassTestStepProcessing::class.java.getMethod("runWithMap", Map::class.java), "run",
+                "c2", Pattern.compile("run"), ScopedSteps::class.java,
+                ScopedSteps::class.java.getMethod("runWithMap", Map::class.java), "run",
                 mapOf("a" to "b", TestScenarioScope.PARAMETER_KEY to scope)
             )
 
             processor.process(testStep)
 
-            assertEquals(mapOf("a" to "b"), receivedParameters)
+            assertEquals(mapOf("a" to "b"), scope.parallelGroup.instanceOf(ScopedSteps::class.java).receivedParameters)
         }
 
         private fun classTestStep(parameters: Map<String, Any?>) = ClassTestStep(
-            "c1", Pattern.compile("run"), this@ClassTestStepProcessing,
-            ClassTestStepProcessing::class.java.getMethod("run"), "run", parameters
+            "c1", Pattern.compile("run"), ScopedSteps::class.java,
+            ScopedSteps::class.java.getMethod("run"), "run", parameters
         )
-
-        private var receivedParameters: Map<*, *>? = null
-
-        @Suppress("unused")
-        fun run() = "done"
-
-        @Suppress("unused")
-        fun runWithMap(parameters: Map<*, *>) {
-            receivedParameters = parameters
-        }
     }
 
     private fun testStep(id: String, scope: TestScenarioScope? = null) =
         DefaultTestStep.DefaultTestStepBuilder().withId(id).withName(id).withScope(scope).build()
+}
+
+class ScopedSteps {
+
+    var receivedParameters: Map<*, *>? = null
+
+    fun run() = "done"
+
+    fun runWithMap(parameters: Map<*, *>) {
+        receivedParameters = parameters
+    }
 }

@@ -19,7 +19,6 @@ import org.skellig.runner.exception.FeatureRunnerException
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.jvm.jvmErasure
 
@@ -54,12 +53,10 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
 
         log.info("Reading the config from file '${skelligOptions.config}'")
         val config = getConfig(skelligOptions.config)
-        val classInstanceRegistry = ConcurrentHashMap<Class<*>, Any>()
         skelligTestContext = skelligOptions.context.createInstance()
-        val testStepRunner = skelligTestContext.initialize(
-            clazz.classLoader, skelligOptions.testSteps.toList(), config, classInstanceRegistry
-        )
-        // without a parallel run, all scenarios share the only state of the context through its default scope
+        val testStepRunner = skelligTestContext.initialize(clazz.classLoader, skelligOptions.testSteps.toList(), config)
+        // without a parallel run, all scenarios share the only state and the instances of the user classes of the context
+        // through its default scope
         val defaultScope = skelligTestContext.getDefaultScope()
 
         val testStepLogger = DefaultTestStepLogger()
@@ -69,7 +66,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         }
 
         val featureParser = DefaultFeatureParser()
-        val hookRunner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(skelligOptions.testSteps.toList(), classInstanceRegistry))
+        val hookRunner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(skelligOptions.testSteps.toList()))
 
         val includeTags = readTags(skelligOptions.includeTags.toSet(), "skellig.includeTags")
         val excludeTags = readTags(skelligOptions.excludeTags.toSet(), "skellig.excludeTags")

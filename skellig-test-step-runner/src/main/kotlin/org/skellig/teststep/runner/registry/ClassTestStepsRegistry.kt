@@ -3,6 +3,7 @@ package org.skellig.teststep.runner.registry
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
+import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.ScopeParameters
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
@@ -17,18 +18,21 @@ import java.util.regex.Pattern
  * It is responsible for scanning classes in the given packages and loading test step methods marked with the [@TestStep][TestStep] annotation.
  * The loaded test steps are stored in the testStepsPerClass collection and can be retrieved using the getByName, getById, and getTestSteps methods.
  *
+ * The registry keeps the class and the method of every test step, not an instance: no instance is created here, and a
+ * test step method is called on the instance of its class which belongs to the parallel group of the scope the test step
+ * runs in. Classes without a public constructor without arguments fail registration, so the failure is not postponed
+ * until the class is first used.
+ *
  * @property packagesToScan the packages to scan for test step methods
- * @property classInstanceRegistry the registry for storing instances of test step classes
  */
 internal class ClassTestStepsRegistry(
-    packagesToScan: Collection<String>,
-    private val classInstanceRegistry: MutableMap<Class<*>, Any>
+    packagesToScan: Collection<String>
 ) : TestStepRegistry {
 
     companion object {
         private val ID = AlphanumericValueExpression("id")
         private val TEST_STEP_NAME_PATTERN = AlphanumericValueExpression("testStepNamePattern")
-        private val TEST_STEP_DEF_INSTANCE = AlphanumericValueExpression("testStepDefInstance")
+        private val TEST_STEP_DEF_CLASS = AlphanumericValueExpression("testStepDefClass")
         private val TEST_STEP_METHOD = AlphanumericValueExpression("testStepMethod")
     }
 
@@ -62,12 +66,11 @@ internal class ClassTestStepsRegistry(
             .forEach { m ->
                 log.debug { "Extract test step from method in '${m.name}' of '${classInfo.name}'" }
 
-                val instance = classInstanceRegistry.computeIfAbsent(classInfo.loadClass()) { type ->
-                    try {
-                        type.getDeclaredConstructor().newInstance()
-                    } catch (ex: NoSuchMethodException) {
-                        throw TestStepRegistryException("Failed to instantiate class '${type.name}'", ex)
-                    }
+                val stepDefClass = classInfo.loadClass()
+                try {
+                    ParallelGroupContext.requireNoArgConstructor(stepDefClass)
+                } catch (ex: NoSuchMethodException) {
+                    throw TestStepRegistryException("Failed to instantiate class '${stepDefClass.name}'", ex)
                 }
 
                 val methodInstance = m.loadClassAndGetMethod()
@@ -80,7 +83,7 @@ internal class ClassTestStepsRegistry(
                     mapOf(
                         Pair(ID, StringValueExpression(testStepNameId)),
                         Pair(TEST_STEP_NAME_PATTERN, testStepNamePattern),
-                        Pair(TEST_STEP_DEF_INSTANCE, AnyValueExpression(instance)),
+                        Pair(TEST_STEP_DEF_CLASS, AnyValueExpression(stepDefClass)),
                         Pair(TEST_STEP_METHOD, AnyValueExpression(methodInstance))
                     )
                 )

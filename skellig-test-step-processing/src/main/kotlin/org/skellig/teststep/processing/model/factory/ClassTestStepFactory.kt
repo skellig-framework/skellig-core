@@ -21,15 +21,18 @@ internal class ClassTestStepFactory : TestStepFactory<ClassTestStep> {
     companion object {
         private val idValueExpression = AlphanumericValueExpression("id")
         private val testStepNamePattern = AlphanumericValueExpression("testStepNamePattern")
-        private val testStepDefInstance = AlphanumericValueExpression("testStepDefInstance")
+        private val testStepDefClass = AlphanumericValueExpression("testStepDefClass")
         private val testStepMethod = AlphanumericValueExpression("testStepMethod")
     }
 
     override fun create(testStepName: String, rawTestStep: Map<ValueExpression, ValueExpression?>, parameters: Map<String, Any?>): ClassTestStep {
 
-        val testStepClassInstance = (rawTestStep[testStepDefInstance]?.evaluate(ValueExpressionContext.EMPTY)
+        val rawClass = rawTestStep[testStepDefClass]?.evaluate(ValueExpressionContext.EMPTY)
             ?: error("Failed to create ClassTestStep for the test step '$testStepName'. " +
-                    "No class instance found."))
+                    "No step definition class found.")
+        val testStepClass = rawClass as? Class<*>
+            ?: error("Failed to create ClassTestStep for the test step '$testStepName'. " +
+                    "Expected a Class instance but found '${rawClass.javaClass}'")
         val rawMethod = rawTestStep[testStepMethod]?.evaluate(ValueExpressionContext.EMPTY)
         val method = rawMethod as? Method?
 
@@ -38,7 +41,7 @@ internal class ClassTestStepFactory : TestStepFactory<ClassTestStep> {
             (rawTestStep[testStepNamePattern] as? PatternValueExpression)?.pattern
                 ?: error("Failed to create ClassTestStep for the test step '$testStepName'. " +
                         "No regex pattern found."),
-            testStepClassInstance,
+            testStepClass,
             method?: error("Failed to create ClassTestStep for the test step '$testStepName'. " +
                         "Expected a Method instance but found '${rawMethod?.javaClass}'"),
             testStepName,
@@ -48,7 +51,7 @@ internal class ClassTestStepFactory : TestStepFactory<ClassTestStep> {
 
     override fun isConstructableFrom(rawTestStep: Map<ValueExpression, ValueExpression?>): Boolean {
         return rawTestStep.containsKey(testStepNamePattern) &&
-                rawTestStep.containsKey(testStepDefInstance) &&
+                rawTestStep.containsKey(testStepDefClass) &&
                 rawTestStep.containsKey(testStepMethod)
     }
 

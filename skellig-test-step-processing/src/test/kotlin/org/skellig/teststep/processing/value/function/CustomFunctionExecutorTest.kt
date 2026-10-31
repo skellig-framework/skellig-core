@@ -3,7 +3,10 @@ package org.skellig.teststep.processing.value.function
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.skellig.teststep.processing.fixture.instances.CountingFunctions
+import org.skellig.teststep.processing.fixture.lazyfunctions.LazyFunctions
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
 import org.skellig.teststep.processing.value.exception.FunctionRegistryException
@@ -84,6 +87,68 @@ class CustomFunctionExecutorTest {
         val ex = assertThrows<FunctionExecutionException> { executor.execute("stateFirst", null, arrayOf("k")) }
 
         assertEquals("Function 'stateFirst' requires the scope of a test scenario but it is called outside of one", ex.message)
+    }
+
+    @Test
+    fun `call a function on the instance of the parallel group of the scope`() {
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.instances"))
+        val group1 = ParallelGroupContext("g1")
+        val group2 = ParallelGroupContext("g2")
+        val scopeOfGroup1 = TestScenarioScope("s1", DefaultTestScenarioState(), group1)
+        val otherScopeOfGroup1 = TestScenarioScope("s2", DefaultTestScenarioState(), group1)
+        val scopeOfGroup2 = TestScenarioScope("s3", DefaultTestScenarioState(), group2)
+
+        val results = listOf(scopeOfGroup1, otherScopeOfGroup1, scopeOfGroup2).map { executor.execute("nextCall", null, emptyArray(), it) }
+
+        assertEquals(listOf(1, 2, 1), results)
+    }
+
+    @Test
+    fun `functions of the same class share the instance within a parallel group`() {
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.instances"))
+        val scope = TestScenarioScope("s1", DefaultTestScenarioState(), ParallelGroupContext("g1"))
+
+        val results = listOf("nextCall", "otherFunctionOfTheSameClass", "nextCall").map { executor.execute(it, null, emptyArray(), scope) }
+
+        assertEquals(listOf(1, 2, 3), results)
+    }
+
+    @Test
+    fun `function shares the instance with the class used through the parallel group`() {
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.instances"))
+        val group = ParallelGroupContext("g1")
+        val scope = TestScenarioScope("s1", DefaultTestScenarioState(), group)
+
+        executor.execute("nextCall", null, emptyArray(), scope)
+
+        assertEquals(2, group.instanceOf(CountingFunctions::class.java).nextCall())
+    }
+
+    @Test
+    fun `functions called without a scope use the default parallel group of the executor`() {
+        val defaultGroup = ParallelGroupContext(ParallelGroupContext.DEFAULT_KEY)
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.instances"), defaultGroup)
+
+        val results = (1..2).map { executor.execute("nextCall", null, emptyArray()) }
+
+        assertAll(
+            { assertEquals(listOf(1, 2), results) },
+            { assertEquals(3, defaultGroup.instanceOf(CountingFunctions::class.java).nextCall()) },
+        )
+    }
+
+    @Test
+    fun `function classes are not instantiated until a function is called`() {
+        LazyFunctions.created.set(0)
+        val group = ParallelGroupContext("g1")
+
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.lazyfunctions"))
+        assertEquals(0, LazyFunctions.created.get())
+
+        executor.execute("something", null, emptyArray(), TestScenarioScope("s1", DefaultTestScenarioState(), group))
+        executor.execute("something", null, emptyArray(), TestScenarioScope("s2", DefaultTestScenarioState(), group))
+
+        assertEquals(1, LazyFunctions.created.get())
     }
 
     @Test

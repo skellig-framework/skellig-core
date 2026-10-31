@@ -6,6 +6,7 @@ import org.mockito.kotlin.mock
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.model.ClassTestStep
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import java.util.regex.Pattern
@@ -19,7 +20,7 @@ class ClassTestStepProcessorTest {
     fun testProcessCallingMethodWithOneParam() {
         val testStepMethod = javaClass.methods.find { it.name == "runSomething" }
         val testStep = ClassTestStep(
-            "", Pattern.compile("run with n = (.+)"), this, testStepMethod!!,
+            "", Pattern.compile("run with n = (.+)"), javaClass, testStepMethod!!,
             "run with n = 10", emptyMap(), scope
         )
 
@@ -35,7 +36,7 @@ class ClassTestStepProcessorTest {
     fun testProcessCallingMethodWithOneParamAndMapOfParams() {
         val testStepMethod = javaClass.methods.find { it.name == "runSomethingWithMap" }
         val testStep = ClassTestStep(
-            "", Pattern.compile("run with n = (.+)"), this, testStepMethod!!,
+            "", Pattern.compile("run with n = (.+)"), javaClass, testStepMethod!!,
             "run with n = 10", mapOf(Pair("p1", "v1"), Pair("p2", "v2")), scope
         )
 
@@ -50,7 +51,7 @@ class ClassTestStepProcessorTest {
     fun testProcessCallingMethodWhenMapOfParamsNotSet() {
         val testStepMethod = javaClass.methods.find { it.name == "runSomethingWithMap" }
         val testStep = ClassTestStep(
-            "", Pattern.compile("run with n = (.+)"), this, testStepMethod!!,
+            "", Pattern.compile("run with n = (.+)"), javaClass, testStepMethod!!,
             "run with n = 10", null, scope
         )
 
@@ -65,7 +66,7 @@ class ClassTestStepProcessorTest {
     fun testProcessCallingMethodWithPrivateAccess() {
         val testStepMethod = javaClass.declaredMethods.find { it.name == "callPrivateMethod" }
         val testStep = ClassTestStep(
-            "", Pattern.compile("run with"), this, testStepMethod!!,
+            "", Pattern.compile("run with"), javaClass, testStepMethod!!,
             "run with", emptyMap(), scope
         )
 
@@ -84,7 +85,7 @@ class ClassTestStepProcessorTest {
     fun testProcessCallingMethodWhenHasMapArgumentBeforeParameters() {
         val testStepMethod = javaClass.methods.find { it.name == "runSomethingWithMap2" }
         val testStep = ClassTestStep(
-            "", Pattern.compile("run with"), this, testStepMethod!!,
+            "", Pattern.compile("run with"), javaClass, testStepMethod!!,
             "run with", mapOf(Pair("a", "b"), Pair("c", "d")), scope
         )
 
@@ -97,41 +98,102 @@ class ClassTestStepProcessorTest {
     @Test
     fun testProcessInjectsStateOfStepScopeAndFillsRegexGroupsAndMap() {
         val ownScope = TestScenarioScope("own", DefaultTestScenarioState())
-        val steps = InjectingSteps()
         val testStep = ClassTestStep(
-            "", Pattern.compile("run (.+) and (.+)"), steps, steps.javaClass.methods.find { it.name == "stateInTheMiddle" }!!,
+            "", Pattern.compile("run (.+) and (.+)"), InjectingSteps::class.java, InjectingSteps::class.java.methods.find { it.name == "stateInTheMiddle" }!!,
             "run x and y", mapOf("p" to "v", TestScenarioScope.PARAMETER_KEY to ownScope), ownScope
         )
 
         classTestStepProcessor.process(testStep).subscribe { _, _, e -> assertNull(e) }
 
-        assertEquals(listOf("x", ownScope.state, "y", mapOf("p" to "v")), steps.received)
+        assertEquals(listOf("x", ownScope.state, "y", mapOf("p" to "v")), ownScope.parallelGroup.instanceOf(InjectingSteps::class.java).received)
     }
 
     @Test
     fun testProcessInjectsScope() {
         val ownScope = TestScenarioScope("own", DefaultTestScenarioState())
-        val steps = InjectingSteps()
         val testStep = ClassTestStep(
-            "", Pattern.compile("run"), steps, steps.javaClass.methods.find { it.name == "scopeOnly" }!!, "run", emptyMap(), ownScope
+            "", Pattern.compile("run"), InjectingSteps::class.java, InjectingSteps::class.java.methods.find { it.name == "scopeOnly" }!!, "run", emptyMap(), ownScope
         )
 
         classTestStepProcessor.process(testStep).subscribe { _, _, e -> assertNull(e) }
 
-        assertEquals(listOf(ownScope), steps.received)
+        assertEquals(listOf(ownScope), ownScope.parallelGroup.instanceOf(InjectingSteps::class.java).received)
     }
 
     @Test
     fun testProcessDoesNotInjectIntoParameterOfTypeAny() {
-        val steps = InjectingSteps()
         val testStep = ClassTestStep(
-            "", Pattern.compile("run (.+) (.+)"), steps, steps.javaClass.methods.find { it.name == "anyParameter" }!!, "run x y", emptyMap(), scope
+            "", Pattern.compile("run (.+) (.+)"), InjectingSteps::class.java, InjectingSteps::class.java.methods.find { it.name == "anyParameter" }!!, "run x y", emptyMap(), scope
         )
 
         classTestStepProcessor.process(testStep).subscribe { _, _, e -> assertNull(e) }
 
-        assertEquals(listOf("x", "y"), steps.received)
+        assertEquals(listOf("x", "y"), scope.parallelGroup.instanceOf(InjectingSteps::class.java).received)
     }
+
+    @Test
+    fun testProcessCallsMethodOnTheInstanceOfTheParallelGroupOfTheScope() {
+        val group1 = ParallelGroupContext("g1")
+        val group2 = ParallelGroupContext("g2")
+        val scope1 = TestScenarioScope("s1", DefaultTestScenarioState(), group1)
+        val scope2 = TestScenarioScope("s2", DefaultTestScenarioState(), group1)
+        val scope3 = TestScenarioScope("s3", DefaultTestScenarioState(), group2)
+
+        listOf(scope1, scope2, scope3).forEach { process("count", it) }
+
+        assertAll(
+            { assertEquals(2, group1.instanceOf(CountingSteps::class.java).calls) },
+            { assertEquals(1, group2.instanceOf(CountingSteps::class.java).calls) },
+        )
+    }
+
+    @Test
+    fun testProcessKeepsFieldsOfTheInstanceBetweenStepsOfTheSameParallelGroup() {
+        val group = ParallelGroupContext("g1")
+
+        process("count", TestScenarioScope("s1", DefaultTestScenarioState(), group))
+        process("count", TestScenarioScope("s2", DefaultTestScenarioState(), group))
+
+        assertEquals(listOf(1, 2), group.instanceOf(CountingSteps::class.java).results)
+    }
+
+    @Test
+    fun testProcessStoresResultInTheStateOfTheScope() {
+        val ownScope = TestScenarioScope("own", DefaultTestScenarioState())
+
+        process("count", ownScope)
+
+        assertEquals(1, ownScope.state.get("count_result"))
+    }
+
+    @Test
+    fun testProcessFailsWhenTheStepHasNoScope() {
+        val testStep = ClassTestStep("", Pattern.compile("count"), CountingSteps::class.java, countMethod(), "count", emptyMap(), null)
+
+        val ex = assertThrows(IllegalStateException::class.java) { classTestStepProcessor.process(testStep) }
+
+        assertEquals("Test step 'count' has no scenario scope. A test step must be run with a TestScenarioScope", ex.message)
+    }
+
+    @Test
+    fun testProcessFailsWhenInstanceOfTheClassCannotBeCreated() {
+        val ownScope = TestScenarioScope("own", DefaultTestScenarioState(), ParallelGroupContext("g1"))
+        val testStep = ClassTestStep(
+            "", Pattern.compile("count"), BrokenSteps::class.java, BrokenSteps::class.java.methods.find { it.name == "step" }!!,
+            "count", emptyMap(), ownScope
+        )
+
+        val ex = assertThrows(IllegalStateException::class.java) { classTestStepProcessor.process(testStep) }
+
+        assertEquals("Failed to create an instance of class '${BrokenSteps::class.java.name}' in parallel group 'g1'", ex.message)
+    }
+
+    private fun process(name: String, scope: TestScenarioScope) {
+        val testStep = ClassTestStep("", Pattern.compile(name), CountingSteps::class.java, countMethod(), name, emptyMap(), scope)
+        classTestStepProcessor.process(testStep).subscribe { _, _, e -> assertNull(e) }
+    }
+
+    private fun countMethod() = CountingSteps::class.java.methods.find { it.name == "count" }!!
 
     @Test
     fun testGetTestStepClass() {
@@ -173,5 +235,27 @@ class InjectingSteps {
 
     fun anyParameter(any: Any?, other: String) {
         received.addAll(listOf(any, other))
+    }
+}
+
+class CountingSteps {
+
+    var calls = 0
+    val results = mutableListOf<Int>()
+
+    fun count(): Int {
+        calls++
+        results.add(calls)
+        return calls
+    }
+}
+
+class BrokenSteps {
+
+    init {
+        throw RuntimeException("cannot be created")
+    }
+
+    fun step() {
     }
 }

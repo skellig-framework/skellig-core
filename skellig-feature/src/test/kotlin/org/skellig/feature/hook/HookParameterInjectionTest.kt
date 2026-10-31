@@ -18,7 +18,7 @@ class HookParameterInjectionTest {
 
     private val state = DefaultTestScenarioState()
     private val scope = TestScenarioScope("s1", state)
-    private val runner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.injection"), mutableMapOf()))
+    private val runner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.injection")))
 
     @Test
     fun testHookWithStateParameterReceivesStateOfScope() {
@@ -65,7 +65,7 @@ class HookParameterInjectionTest {
     @Test
     fun testHookWithUnsupportedParameterFailsAtStartup() {
         val ex = assertThrows<SkelligClassInstanceRegistryException> {
-            DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.injectioninvalid"), mutableMapOf())
+            DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.injectioninvalid"))
         }
 
         assertEquals(

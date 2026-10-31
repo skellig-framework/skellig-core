@@ -7,11 +7,14 @@ import java.util.regex.Pattern
 
 /**
  * A test step which references to a method of a class.
+ *
+ * The step holds the [testStepDefClass] and not an instance of it: the method is called on the instance which belongs
+ * to the parallel group of the [scope] the step runs in.
  */
 class ClassTestStep(
     val id: String,
     val testStepNamePattern: Pattern,
-    val testStepDefInstance: Any,
+    val testStepDefClass: Class<*>,
     val testStepMethod: Method,
     override val name: String,
     val parameters: Map<String, Any?>?,
@@ -22,7 +25,7 @@ class ClassTestStep(
         get() = field.ifEmpty { name }
 
     override fun toString(): String {
-        return "test step instance = ${testStepDefInstance.javaClass.simpleName}\n" +
+        return "test step class = ${testStepDefClass.simpleName}\n" +
                 "method name = ${testStepMethod.name}\n" +
                 (parameters?.let { if(it.isNotEmpty()) PropertyFormatUtils.toStringCollection(it.entries, "parameters {", "}", 0) else "" } ?: "")
     }

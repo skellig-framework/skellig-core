@@ -15,11 +15,11 @@ class ClassTestStepTest {
         whenever(testStepMethod.name).thenReturn("testStepMethod")
 
         val toString = ClassTestStep(
-            "test-id-1", Pattern.compile(".+"), this, testStepMethod, "Run something",
+            "test-id-1", Pattern.compile(".+"), javaClass, testStepMethod, "Run something",
             mapOf(Pair("p1", "900"), Pair("p2", "none"))
         ).toString()
 
-        assertEquals("test step instance = ClassTestStepTest\n" +
+        assertEquals("test step class = ClassTestStepTest\n" +
                 "method name = testStepMethod\n" +
                 "parameters {\n" +
                 "  p1 = 900\n" +

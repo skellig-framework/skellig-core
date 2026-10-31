@@ -1,0 +1,7 @@
+name ("Record the function instance") {
+    task {
+        state {
+            recorded = recordFunctionInstance()
+        }
+    }
+}

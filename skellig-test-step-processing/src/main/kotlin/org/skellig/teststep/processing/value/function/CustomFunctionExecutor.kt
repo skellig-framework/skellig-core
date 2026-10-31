@@ -2,6 +2,7 @@ package org.skellig.teststep.processing.value.function
 
 import io.github.classgraph.ClassGraph
 import io.github.classgraph.ClassInfo
+import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.ScopeParameters
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.value.exception.FunctionExecutionException
@@ -18,14 +19,19 @@ import java.lang.reflect.Method
  *
  * Throws [FunctionExecutionException] if function is not found in the registry when calling [CustomFunctionExecutor.execute].
  *
+ * The executor keeps the classes and methods of the functions, not instances. A function is called on the instance of its
+ * class which belongs to the [parallel group][TestScenarioScope.parallelGroup] of the scope the function is called in,
+ * so a function and a test step method of the same class share one instance within a parallel group.
+ * A class without a public constructor without arguments fails registration, so the failure is not postponed
+ * until the class is first used.
+ *
  * @param packages The packages to scan for custom functions with @[Function]
- * @param classInstanceRegistry The registry of class instances. This registry keeps instances of classes instantiated earlier, so they can be reused elsewhere.
- * An example of where such classes can be instantiated are Test Step definition classes which may have test step
- * methods as well as methods marked as @[Function]. If not provided, then a new [HashMap] is assigned.
+ * @param defaultParallelGroup The parallel group whose instances are used when a function is called without a scope.
+ * If not provided, then the executor has a parallel group of its own.
  */
 class CustomFunctionExecutor(
     packages: Collection<String>?,
-    private val classInstanceRegistry: MutableMap<Class<*>, Any> = mutableMapOf()
+    private val defaultParallelGroup: ParallelGroupContext = ParallelGroupContext(ParallelGroupContext.DEFAULT_KEY)
 ) : FunctionValueExecutor {
 
     companion object {
@@ -53,7 +59,8 @@ class CustomFunctionExecutor(
 
     override fun execute(name: String, value: Any?, args: Array<Any?>, scope: TestScenarioScope?): Any? {
         val function = functions[name] ?: throw FunctionExecutionException("Function '$name' was not found")
-        return function.method.invoke(function.instance, *createMethodArguments(name, function.method, args, scope))
+        val instance = (scope?.parallelGroup ?: defaultParallelGroup).instanceOf(function.functionClass)
+        return function.method.invoke(instance, *createMethodArguments(name, function.method, args, scope))
     }
 
     /**
@@ -83,12 +90,11 @@ class CustomFunctionExecutor(
             .forEach { m ->
                 LOGGER.debug("Extract test step from method in '${m.name}' of '${classInfo.name}'")
 
-                val foundClassInstance = classInstanceRegistry.computeIfAbsent(classInfo.loadClass()) { type ->
-                    try {
-                        type.getDeclaredConstructor().newInstance()
-                    } catch (ex: Exception) {
-                        throw FunctionRegistryException("Failed to instantiate class '${type.name}'", ex)
-                    }
+                val functionClass = classInfo.loadClass()
+                try {
+                    ParallelGroupContext.requireNoArgConstructor(functionClass)
+                } catch (ex: NoSuchMethodException) {
+                    throw FunctionRegistryException("Failed to instantiate class '${functionClass.name}'", ex)
                 }
                 val method = m.loadClassAndGetMethod()
                 functions[method.name]?.let { existing ->
@@ -98,11 +104,11 @@ class CustomFunctionExecutor(
                                 "'${method.declaringClass.name}.${method.name}'"
                     )
                 }
-                functions[method.name] = CustomFunction(foundClassInstance, method)
+                functions[method.name] = CustomFunction(functionClass, method)
             }
     }
 
-    private data class CustomFunction(val instance: Any, val method: Method)
+    private data class CustomFunction(val functionClass: Class<*>, val method: Method)
 }
 
 /**

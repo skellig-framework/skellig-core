@@ -457,7 +457,7 @@ class UiScenarioIT {
             override fun testFailure(failure: Failure) { failures.add(failure) }
         })
         TestScenarioRunner.create(scenario.build().single(), 1, runner,
-            DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("ui-no-hooks"), mutableMapOf())),
+            DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("ui-no-hooks"))),
             DefaultTestStepLogger(), dispatcher, context.getDefaultScope()).run(notifier)
         return failures
     }

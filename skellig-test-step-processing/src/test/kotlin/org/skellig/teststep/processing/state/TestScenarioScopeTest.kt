@@ -19,6 +19,35 @@ class TestScenarioScopeTest {
     }
 
     @Test
+    fun testRefersToItsParallelGroupContext() {
+        val parallelGroup = ParallelGroupContext("g1")
+
+        val scope = TestScenarioScope("s1", state, parallelGroup)
+
+        assertSame(parallelGroup, scope.parallelGroup)
+    }
+
+    @Test
+    fun testScopesOfTheSameParallelGroupGetTheSameInstanceOfAClass() {
+        val parallelGroup = ParallelGroupContext("g1")
+        val scope1 = TestScenarioScope("s1", state, parallelGroup)
+        val scope2 = TestScenarioScope("s2", DefaultTestScenarioState(), parallelGroup)
+
+        assertSame(scope1.parallelGroup.instanceOf(CounterStepDefs::class.java), scope2.parallelGroup.instanceOf(CounterStepDefs::class.java))
+    }
+
+    @Test
+    fun testScopeWithoutParallelGroupGetsItsOwnOne() {
+        val scope1 = TestScenarioScope("s1", state)
+        val scope2 = TestScenarioScope("s2", DefaultTestScenarioState())
+
+        assertAll(
+            { assertEquals(ParallelGroupContext.DEFAULT_KEY, scope1.parallelGroup.key) },
+            { assertNotSame(scope1.parallelGroup, scope2.parallelGroup) },
+        )
+    }
+
+    @Test
     fun testPrintsAsShortScopeId() {
         assertEquals("scope(s1)", TestScenarioScope("s1", state).toString())
     }
