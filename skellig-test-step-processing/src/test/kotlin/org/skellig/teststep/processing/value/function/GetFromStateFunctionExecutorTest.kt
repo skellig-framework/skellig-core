@@ -5,9 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
@@ -19,13 +17,19 @@ import java.math.BigDecimal
 @DisplayName("get from state")
 class GetFromStateFunctionExecutorTest {
 
-    private var getFromStateFunctionExecutor: GetFromStateFunctionExecutor? = null
+    private val executor = GetFromStateFunctionExecutor()
     private var testScenarioState: TestScenarioState? = null
+    private var getFromStateFunctionExecutor: ScopedExecutor? = null
+
+    // runs the function in a scope which has the mocked state
+    private class ScopedExecutor(private val executor: GetFromStateFunctionExecutor, private val scope: TestScenarioScope) {
+        fun execute(name: String, value: Any?, args: Array<Any?>) = executor.execute(name, value, args, scope)
+    }
 
     @BeforeEach
     fun setUp() {
         testScenarioState = mock()
-        getFromStateFunctionExecutor = GetFromStateFunctionExecutor(testScenarioState!!)
+        getFromStateFunctionExecutor = ScopedExecutor(executor, TestScenarioScope("s1", testScenarioState!!))
     }
 
     @Test
@@ -101,40 +105,29 @@ class GetFromStateFunctionExecutorTest {
     }
 
     @Test
-    fun `when scope is provided then reads from the state of the scope`() {
-        whenever(testScenarioState!!.get("key")).thenReturn("default")
-        val scopeState = DefaultTestScenarioState().apply { set("key", "scoped") }
-
-        assertEquals(
-            "scoped",
-            getFromStateFunctionExecutor!!.execute("get", null, arrayOf("key"), TestScenarioScope("s1", scopeState))
-        )
-    }
-
-    @Test
     fun `when scope is provided then sets the default value in the state of the scope`() {
         val scopeState = DefaultTestScenarioState()
 
-        getFromStateFunctionExecutor!!.execute("get", null, arrayOf("key", "v1"), TestScenarioScope("s1", scopeState))
+        executor.execute("get", null, arrayOf("key", "v1"), TestScenarioScope("s1", scopeState))
 
         assertEquals("v1", scopeState.get("key"))
-        verify(testScenarioState!!, never()).set(any(), any())
     }
 
     @Test
-    fun `when scope is null then reads from the default state`() {
-        whenever(testScenarioState!!.get("key")).thenReturn("default")
-
-        assertEquals("default", getFromStateFunctionExecutor!!.execute("get", null, arrayOf("key"), null))
+    fun `when scope is null then fails`() {
+        val ex = assertThrows(FunctionExecutionException::class.java) {
+            executor.execute("get", null, arrayOf("key"), null)
+        }
+        assertEquals("Function `get` requires a Test Scenario Scope, but the step has none", ex.message)
     }
 
     @Test
     fun `executor which is not aware of scope is executed without it`() {
-        val executor = object : FunctionValueExecutor {
+        val legacy = object : FunctionValueExecutor {
             override fun execute(name: String, value: Any?, args: Array<Any?>): Any? = "legacy ${args[0]}"
             override fun getFunctionName(): String = "legacy"
         }
 
-        assertEquals("legacy a", executor.execute("legacy", null, arrayOf("a"), TestScenarioScope("s1", DefaultTestScenarioState())))
+        assertEquals("legacy a", legacy.execute("legacy", null, arrayOf("a"), TestScenarioScope("s1", DefaultTestScenarioState())))
     }
 }

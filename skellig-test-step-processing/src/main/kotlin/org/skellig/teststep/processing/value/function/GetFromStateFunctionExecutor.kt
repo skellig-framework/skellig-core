@@ -17,12 +17,9 @@ import java.math.BigDecimal
  * - get(`<key>`, `<attempts>`, `<delay>`) - periodically tries to get value from [TestScenarioState] with max `<attempts>` and
  * delaying next attempt on `<delay>` milliseconds.
  *
- * The state is the one of the [TestScenarioScope] the function is executed in. If there is no scope, then
- * [testScenarioState] is used.
- *
- * @property testScenarioState the default [TestScenarioState] instance to retrieve values from, when there is no scope
+ * The state is the one of the [TestScenarioScope] the function is executed in. The function fails if there is no scope.
  */
-class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : FunctionValueExecutor {
+class GetFromStateFunctionExecutor : FunctionValueExecutor {
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(GetFromStateFunctionExecutor::class.java)
@@ -31,7 +28,8 @@ class GetFromStateFunctionExecutor(val testScenarioState: TestScenarioState) : F
     override fun execute(name: String, value: Any?, args: Array<Any?>): Any? = execute(name, value, args, null)
 
     override fun execute(name: String, value: Any?, args: Array<Any?>, scope: TestScenarioScope?): Any? {
-        val testScenarioState = scope?.state ?: testScenarioState
+        val testScenarioState = scope?.state
+            ?: throw FunctionExecutionException("Function `${getFunctionName()}` requires a Test Scenario Scope, but the step has none")
         return when (args.size) {
             1 -> {
                 val key = args[0]?.toString() ?: "null"

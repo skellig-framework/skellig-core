@@ -50,13 +50,13 @@ class DefaultFunctionValueExecutor private constructor(
         private val log = logger<Builder>()
 
         private val functions = mutableMapOf<String, FunctionValueExecutor>()
-        private var testScenarioState: TestScenarioState? = null
         private var classLoader: ClassLoader? = null
         private var classPaths: Collection<String>? = null
         private var classInstanceRegistry: MutableMap<Class<*>, Any>? = null
 
-        fun withTestScenarioState(testScenarioState: TestScenarioState?) =
-            apply { this.testScenarioState = testScenarioState }
+        @Deprecated("Functions use the state of the scope of the test step. This value is ignored.")
+        @Suppress("UNUSED_PARAMETER")
+        fun withTestScenarioState(testScenarioState: TestScenarioState?) = apply { }
 
         /**
          * Sets the class loader to be used for some internal Skellig Functions.
@@ -96,8 +96,6 @@ class DefaultFunctionValueExecutor private constructor(
          * as well as all found custom functions in classes or registered through [FunctionsConfig][org.skellig.teststep.processing.value.config.FunctionsConfig].
          */
         fun build(): FunctionValueExecutor {
-            Objects.requireNonNull(testScenarioState, "Test Scenario State must be provided")
-
             this.withFunctionValueExecutor(JsonPathFunctionExecutor())
             this.withFunctionValueExecutor(JsonToMapTestStepFunctionExecutor())
             this.withFunctionValueExecutor(JsonToListTestStepFunctionExecutor())
@@ -136,7 +134,7 @@ class DefaultFunctionValueExecutor private constructor(
             this.withFunctionValueExecutor(SortFunctionExecutor())
             this.withFunctionValueExecutor(SumOfFunctionExecutor())
             this.withFunctionValueExecutor(IfFunctionExecutor())
-            this.withFunctionValueExecutor(GetFromStateFunctionExecutor(testScenarioState!!))
+            this.withFunctionValueExecutor(GetFromStateFunctionExecutor())
             this.withFunctionValueExecutor(RandomFunctionExecutor())
             this.withFunctionValueExecutor(IncrementFunctionExecutor())
             this.withFunctionValueExecutor(CurrentDateTimeFunctionExecutor())

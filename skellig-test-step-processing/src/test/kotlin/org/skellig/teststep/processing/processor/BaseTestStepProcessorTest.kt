@@ -117,7 +117,7 @@ class BaseTestStepProcessorTest {
 
         @Test
         fun testProcessWithStateUpdate() {
-            val parameters = mapOf(Pair("amt", "100"))
+            val parameters = mapOf(Pair("amt", "100"), Pair(TestScenarioScope.PARAMETER_KEY, scope))
             val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(scope)
                 .withName("n1")
                 .withScenarioStateUpdater(
