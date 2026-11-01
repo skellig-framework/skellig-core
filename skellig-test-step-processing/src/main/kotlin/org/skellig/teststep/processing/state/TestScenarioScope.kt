@@ -7,10 +7,20 @@ package org.skellig.teststep.processing.state
  * and the step factories copy it onto the built test step. Processors use the state of the scope of
  * the test step they process.
  *
+ * The scope also refers to the [ParallelGroupContext] of the parallel group the scenario runs in, which gives the
+ * step, hook and function classes their instances.
+ *
  * @property id Identifies the scope in logs and reports. It is never used to look up state.
  * @property state The state of the scenario the scope belongs to.
+ * @property parallelGroup The context of the parallel group the scenario runs in. The scopes of all scenarios of
+ * a parallel group must refer to the same context. A scope created without one, which is only meant for code
+ * outside a Skellig run, gets a new context of its own, which is not known to the Skellig context.
  */
-class TestScenarioScope(val id: String, val state: TestScenarioState) {
+class TestScenarioScope(
+    val id: String,
+    val state: TestScenarioState,
+    val parallelGroup: ParallelGroupContext = ParallelGroupContext(ParallelGroupContext.DEFAULT_KEY)
+) {
 
     override fun toString(): String = "scope($id)"
 

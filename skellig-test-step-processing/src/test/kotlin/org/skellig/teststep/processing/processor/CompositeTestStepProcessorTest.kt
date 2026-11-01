@@ -76,7 +76,7 @@ class CompositeTestStepProcessorTest {
 
         assertNotNull(compositeProcessor.process(testStep))
         assertNotNull(compositeProcessor.process(TaskTestStep("t1", "t1", TestStepExecutionType.SYNC, 0, 0, 0, null, null, null, null, mutableMapOf(), scope)))
-        assertNotNull(compositeProcessor.process(ClassTestStep("i1", Pattern.compile(".+"), this, javaClass.methods[0], "n2", emptyMap(), scope)))
+        assertNotNull(compositeProcessor.process(ClassTestStep("i1", Pattern.compile(".+"), javaClass, javaClass.methods[0], "n2", emptyMap(), scope)))
     }
 
     @Test

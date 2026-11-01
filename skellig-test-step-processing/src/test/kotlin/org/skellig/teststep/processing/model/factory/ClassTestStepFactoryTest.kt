@@ -24,12 +24,11 @@ class ClassTestStepFactoryTest {
 
     @Test
     fun `when all data correct`() {
-        val instance = mock<Any>()
         val method = mock<Method>()
         val rawTestStep: Map<ValueExpression, ValueExpression> = mapOf(
             Pair(AlphanumericValueExpression("id"), AlphanumericValueExpression("100500")),
             Pair(AlphanumericValueExpression("testStepNamePattern"), PatternValueExpression("run (\\d+) times")),
-            Pair(AlphanumericValueExpression("testStepDefInstance"), AnyValueExpression(instance)),
+            Pair(AlphanumericValueExpression("testStepDefClass"), AnyValueExpression(ClassTestStepFactoryTest::class.java)),
             Pair(AlphanumericValueExpression("testStepMethod"), AnyValueExpression(method)),
         )
         val testStep = factory.create("test 1", rawTestStep, mapOf(Pair("a", "1")))
@@ -38,7 +37,7 @@ class ClassTestStepFactoryTest {
             { assertEquals("100500", testStep.getId) },
             { assertEquals("test 1", testStep.name) },
             { assertEquals("run (\\d+) times", testStep.testStepNamePattern.pattern()) },
-            { assertEquals(instance, testStep.testStepDefInstance) },
+            { assertEquals(ClassTestStepFactoryTest::class.java, testStep.testStepDefClass) },
             { assertEquals(method, testStep.testStepMethod) },
             { assertTrue(factory.isConstructableFrom(rawTestStep)) },
         )
@@ -61,12 +60,12 @@ class ClassTestStepFactoryTest {
     private fun rawTestStep(): Map<ValueExpression, ValueExpression> = mapOf(
         Pair(AlphanumericValueExpression("id"), AlphanumericValueExpression("100500")),
         Pair(AlphanumericValueExpression("testStepNamePattern"), PatternValueExpression("run (\\d+) times")),
-        Pair(AlphanumericValueExpression("testStepDefInstance"), AnyValueExpression(mock<Any>())),
+        Pair(AlphanumericValueExpression("testStepDefClass"), AnyValueExpression(ClassTestStepFactoryTest::class.java)),
         Pair(AlphanumericValueExpression("testStepMethod"), AnyValueExpression(mock<Method>())),
     )
 
     @Test
-    fun `when test instance is null`() {
+    fun `when test step class is null`() {
         val ex = assertThrows<IllegalStateException> {
             factory.create(
                 "test 1",
@@ -78,7 +77,26 @@ class ClassTestStepFactoryTest {
                 emptyMap()
             )
         }
-        assertEquals("Failed to create ClassTestStep for the test step 'test 1'. No class instance found.", ex.message)
+        assertEquals("Failed to create ClassTestStep for the test step 'test 1'. No step definition class found.", ex.message)
+    }
+
+    @Test
+    fun `when test step class is not a class`() {
+        val ex = assertThrows<IllegalStateException> {
+            factory.create(
+                "test 1",
+                mapOf(
+                    Pair(AlphanumericValueExpression("id"), AlphanumericValueExpression("100500")),
+                    Pair(AlphanumericValueExpression("testStepNamePattern"), PatternValueExpression("run (\\d+) times")),
+                    Pair(AlphanumericValueExpression("testStepDefClass"), AnyValueExpression(this)),
+                    Pair(AlphanumericValueExpression("testStepMethod"), AnyValueExpression(mock<Method>())),
+                ),
+                emptyMap()
+            )
+        }
+        assertEquals(
+            "Failed to create ClassTestStep for the test step 'test 1'. Expected a Class instance but found '${javaClass}'", ex.message
+        )
     }
 
     @Test
@@ -89,7 +107,7 @@ class ClassTestStepFactoryTest {
                 mapOf(
                     Pair(AlphanumericValueExpression("id"), AlphanumericValueExpression("100500")),
                     Pair(AlphanumericValueExpression("testStepNamePattern"), PatternValueExpression("run (\\d+) times")),
-                    Pair(AlphanumericValueExpression("testStepDefInstance"), AnyValueExpression(this)),
+                    Pair(AlphanumericValueExpression("testStepDefClass"), AnyValueExpression(javaClass)),
                 ),
                 emptyMap()
             )
@@ -105,7 +123,7 @@ class ClassTestStepFactoryTest {
                 mapOf(
                     Pair(AlphanumericValueExpression("id"), AlphanumericValueExpression("100500")),
                     Pair(AlphanumericValueExpression("testStepNamePattern"), PatternValueExpression("run (\\d+) times")),
-                    Pair(AlphanumericValueExpression("testStepDefInstance"), AnyValueExpression(this)),
+                    Pair(AlphanumericValueExpression("testStepDefClass"), AnyValueExpression(javaClass)),
                     Pair(AlphanumericValueExpression("testStepMethod"), AnyValueExpression("method")),
                 ),
                 emptyMap()
@@ -121,7 +139,7 @@ class ClassTestStepFactoryTest {
                 "test 1",
                 mapOf(
                     Pair(AlphanumericValueExpression("id"), AlphanumericValueExpression("100500")),
-                    Pair(AlphanumericValueExpression("testStepDefInstance"), AnyValueExpression(this)),
+                    Pair(AlphanumericValueExpression("testStepDefClass"), AnyValueExpression(javaClass)),
                     Pair(AlphanumericValueExpression("testStepMethod"), AnyValueExpression(mock<Method>())),
                 ),
                 emptyMap()

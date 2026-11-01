@@ -15,7 +15,7 @@ class DefaultSkelligHookRunnerTest {
 
     @Test
     fun testRun() {
-        val runner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"), mutableMapOf()))
+        val runner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook")))
 
         var fullName = ""
         var error: Throwable? = null
@@ -30,7 +30,7 @@ class DefaultSkelligHookRunnerTest {
 
     @Test
     fun testRunWithCorrectOrder() {
-        val runner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"), mutableMapOf()))
+        val runner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook")))
 
         val listOfRunHooks = mutableListOf<String>()
         runner.run(setOf("@T1"), BeforeTestScenario::class.java, scope) { n, _, _ ->
@@ -43,7 +43,7 @@ class DefaultSkelligHookRunnerTest {
 
     @Test
     fun testRunWithError() {
-        val runner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"), mutableMapOf()))
+        val runner = DefaultSkelligHookRunner(DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook")))
 
         var fullName = ""
         var error: Throwable? = null

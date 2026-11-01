@@ -7,6 +7,7 @@ import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestScenario
+import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.ScopeParameters
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,15 +23,14 @@ import java.lang.reflect.Method
  * - [BeforeTestScenario]
  * - [AfterTestFeature]
  * - [BeforeTestScenario]
- * and register them internally, using cached class instances from [classInstanceRegistry]
+ * and register them internally with their classes. No instances are created here: a hook runs on the instance of its class
+ * which belongs to the parallel group of the scope it runs in, see [SkelligHook.run]. Classes without a public
+ * constructor without arguments fail registration, so the failure is not postponed until the class is first used.
  *
  * @param packages The collection of packages to scan for hook annotations.
- * @param classInstanceRegistry The cache of the class instances, created previously in other places for instantiating
- * test step classes or those with custom functions.
  */
 class DefaultSkelligTestHooksRegistry(
-    packages: Collection<String>,
-    private val classInstanceRegistry: MutableMap<Class<*>, Any>
+    packages: Collection<String>
 ) : SkelligTestHooksRegistry {
 
     companion object {
@@ -71,24 +71,23 @@ class DefaultSkelligTestHooksRegistry(
             .forEach { m ->
                 LOGGER.debug("Extract @BeforeTestScenario hook from method in '${m.name}' of '${classInfo.name}'")
 
-                val instance = classInstanceRegistry.computeIfAbsent(classInfo.loadClass()) { type ->
-                    try {
-                        type.getDeclaredConstructor().newInstance()
-                    } catch (ex: NoSuchMethodException) {
-                        throw SkelligClassInstanceRegistryException(
-                            "Failed to instantiate class '${type.name}'." +
-                                    " The hook class must have default constructor.", ex
-                        )
-                    }
+                val hookClass = classInfo.loadClass()
+                try {
+                    ParallelGroupContext.requireNoArgConstructor(hookClass)
+                } catch (ex: NoSuchMethodException) {
+                    throw SkelligClassInstanceRegistryException(
+                        "Failed to instantiate class '${hookClass.name}'." +
+                                " The hook class must have default constructor.", ex
+                    )
                 }
 
-                val method = instance::class.java.methods.find { method -> method.name == m.name && method.isAnnotationPresent(hookType) }
+                val method = hookClass.methods.find { method -> method.name == m.name && method.isAnnotationPresent(hookType) }
                 method?.let { methodInstance ->
                     validateParameters(methodInstance)
                     val annotation = methodInstance.getAnnotation(hookType)
                     val tags = extractTagsFromHookAnnotation(annotation)
                     val order = extractOrderFromHookAnnotation(annotation)
-                    hooks.add(SkelligHook(tags, methodInstance, instance, order, hookType))
+                    hooks.add(SkelligHook(tags, methodInstance, hookClass, order, hookType))
                 }
             }
     }

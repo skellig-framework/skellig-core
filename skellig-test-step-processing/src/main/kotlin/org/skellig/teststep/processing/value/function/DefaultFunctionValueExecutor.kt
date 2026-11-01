@@ -1,5 +1,6 @@
 package org.skellig.teststep.processing.value.function
 
+import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
@@ -51,7 +52,7 @@ class DefaultFunctionValueExecutor private constructor(
         private val functions = mutableMapOf<String, FunctionValueExecutor>()
         private var classLoader: ClassLoader? = null
         private var classPaths: Collection<String>? = null
-        private var classInstanceRegistry: MutableMap<Class<*>, Any>? = null
+        private var parallelGroup: ParallelGroupContext? = null
 
         /**
          * Sets the class loader to be used for some internal Skellig Functions.
@@ -78,13 +79,13 @@ class DefaultFunctionValueExecutor private constructor(
         }
 
         /**
-         * Sets the class instance registry to be used for registration of custom functions marked with @[Function].
-         * This registry keeps instances of classes instantiated earlier, so they can be reused elsewhere.
-         * An example of where such classes can be instantiated are Test Step definition classes which may have test step
-         * methods as well as methods marked as @[Function].
+         * Sets the parallel group whose instances of classes with functions marked with @[Function] are used when
+         * a function is called without a scope. A function called in a scope uses the instance of the parallel group
+         * of that scope. Test Step definition classes may have test step methods as well as methods marked as @[Function],
+         * which share the instance of the parallel group.
          */
-        fun withClassInstanceRegistry(classInstanceRegistry: MutableMap<Class<*>, Any>) =
-            apply { this.classInstanceRegistry = classInstanceRegistry }
+        fun withParallelGroup(parallelGroup: ParallelGroupContext) =
+            apply { this.parallelGroup = parallelGroup }
 
         /**
          * Builds and returns an instance of the [DefaultFunctionValueExecutor] with all built-in Skellig Functions,
@@ -149,7 +150,7 @@ class DefaultFunctionValueExecutor private constructor(
 
             return DefaultFunctionValueExecutor(
                 functions,
-                CustomFunctionExecutor(classPaths, classInstanceRegistry ?: mutableMapOf()),
+                CustomFunctionExecutor(classPaths, parallelGroup ?: ParallelGroupContext(ParallelGroupContext.DEFAULT_KEY)),
                 FromObjectFunctionExecutor()
             )
         }

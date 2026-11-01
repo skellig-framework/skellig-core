@@ -1,0 +1,8 @@
+Feature: Step definitions, hooks and functions use one instance without a parallel run
+
+    Scenario: First scenario
+        * Record the step definition instance
+        * Record the function instance
+
+    Scenario: Second scenario
+        * Record the step definition instance

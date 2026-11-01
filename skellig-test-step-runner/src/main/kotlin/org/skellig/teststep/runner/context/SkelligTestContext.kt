@@ -10,6 +10,7 @@ import org.skellig.teststep.processing.processor.CompositeTestStepProcessor
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfig
 import org.skellig.teststep.processing.processor.config.TestStepProcessorConfigDetails
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.debug
@@ -23,7 +24,6 @@ import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
 import org.skellig.teststep.reader.TestStepReader
 import org.skellig.teststep.reader.sts.StsReader
 import org.skellig.teststep.reader.value.expression.ValueExpression
-import org.skellig.teststep.reader.value.expression.ValueExpressionContext
 import org.skellig.teststep.runner.DefaultTestStepRunner
 import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.exception.TestStepRegistryException
@@ -34,7 +34,6 @@ import org.skellig.teststep.runner.registry.TestStepsRegistry
 import java.io.Closeable
 import java.net.URI
 import java.net.URISyntaxException
-import java.util.concurrent.ConcurrentHashMap
 
 private const val DEFAULT_PACKAGE_TO_SCAN = "org.skellig.teststep.processor"
 
@@ -72,25 +71,23 @@ open class SkelligTestContext : Closeable {
     private var rootTestStepFactory: CompositeTestStepFactory? = null
     private var testStepsRegistry: TestStepRegistry? = null
 
-    fun initialize(
-        classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null,
-        classInstanceRegistry: MutableMap<Class<*>, Any>? = null
-    ): TestStepRunner {
+    fun initialize(classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null): TestStepRunner {
         log.info(
             "Initializing Skellig Context with test steps in '$testStepPaths'" +
                     configPath?.let { "and config file '$it'" }
         )
-        val newClassInstanceRegistry = classInstanceRegistry ?: ConcurrentHashMap<Class<*>, Any>()
 
         config = createConfig(classLoader, configPath)
 
         testScenarioState = createTestScenarioState()
-        defaultScope = TestScenarioScope(TestScenarioScope.DEFAULT_ID, testScenarioState!!)
+        // without a parallel run, all scenarios use the one default parallel group, so each class has one instance
+        val defaultParallelGroup = createParallelGroupContext(ParallelGroupContext.DEFAULT_KEY)
+        defaultScope = TestScenarioScope(TestScenarioScope.DEFAULT_ID, testScenarioState!!, defaultParallelGroup)
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepReader = createTestStepReader()
-        val functionExecutor = createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths, newClassInstanceRegistry)
+        val functionExecutor = createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths, defaultParallelGroup)
 
-        testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths, newClassInstanceRegistry)
+        testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths)
 
         valueExpressionContextFactory = ValueExpressionContextFactory(
             functionExecutor,
@@ -154,21 +151,13 @@ open class SkelligTestContext : Closeable {
         testStepPaths: List<String>,
         classLoader: ClassLoader,
         testStepReader: TestStepReader,
-        testStepClassPaths: Collection<String>,
-        classInstanceRegistry: MutableMap<Class<*>, Any>
+        testStepClassPaths: Collection<String>
     ): CachedTestStepsRegistry {
         val paths = extractTestStepPaths(testStepPaths, classLoader)
         val testStepsRegistry = TestStepsRegistry(TestStepFileExtension.STS, testStepReader)
         testStepsRegistry.registerFoundTestStepsInPath(paths)
 
-        val classTestStepsRegistry = ClassTestStepsRegistry(testStepClassPaths, classInstanceRegistry)
-        classTestStepsRegistry.getTestSteps().forEach { testStep ->
-            testStep.values
-                .mapNotNull { it?.evaluate(ValueExpressionContext.EMPTY) }
-                .filterIsInstance<SkelligTestContextAware>()
-                .forEach { it.setSkelligTestContext(this) }
-        }
-        return CachedTestStepsRegistry(listOf(testStepsRegistry, classTestStepsRegistry))
+        return CachedTestStepsRegistry(listOf(testStepsRegistry, ClassTestStepsRegistry(testStepClassPaths)))
     }
 
     private fun extractTestStepPackages(testStepPaths: Collection<String>): Collection<String> {
@@ -218,6 +207,14 @@ open class SkelligTestContext : Closeable {
         defaultScope ?: error("TestScenarioScope must be initialized first. Did you forget to call 'initialize'?")
 
     /**
+     * Creates a [ParallelGroupContext] for a parallel group with the given [key]. The context creates the instances of
+     * test step definition, hook and function classes of the parallel group, and gives this Skellig context to those of
+     * them which implement [SkelligTestContextAware], when it creates them.
+     */
+    fun createParallelGroupContext(key: String): ParallelGroupContext =
+        ParallelGroupContext(key) { injectTestContextIfRequired(it) }
+
+    /**
      * Returns the configured instance of [ValueExpressionContextFactory].
      *
      * @throws IllegalStateException if [ValueExpressionContextFactory] is not initialized.
@@ -242,7 +239,7 @@ open class SkelligTestContext : Closeable {
         classLoader: ClassLoader,
         testScenarioState: TestScenarioState?,
         testStepClassPaths: Collection<String>,
-        classInstanceRegistry: MutableMap<Class<*>, Any>
+        parallelGroup: ParallelGroupContext
     ): FunctionValueExecutor {
         val functionExecutorBuilder = DefaultFunctionValueExecutor.Builder()
 
@@ -255,7 +252,7 @@ open class SkelligTestContext : Closeable {
             }
 
         return functionExecutorBuilder
-            .withClassInstanceRegistry(classInstanceRegistry)
+            .withParallelGroup(parallelGroup)
             .withClassLoader(classLoader)
             .withClassPaths(testStepClassPaths)
             .build()
@@ -327,13 +324,19 @@ open class SkelligTestContext : Closeable {
     }
 
     /**
-     * Closes the Skellig Context by shutting down all registered test step processors.
+     * Closes the Skellig Context by shutting down all registered test step processors, and dropping the instances
+     * of the default parallel group.
      */
     override fun close() {
-        rootTestStepProcessor?.let {
-            log.info("Shutting down the Skellig Context")
-            it.close()
-            log.info("Skellig Context has been shut down")
+        try {
+            rootTestStepProcessor?.let {
+                log.info("Shutting down the Skellig Context")
+                it.close()
+                log.info("Skellig Context has been shut down")
+            }
+        } finally {
+            // the instances are dropped even if a processor fails to close
+            defaultScope?.parallelGroup?.close()
         }
     }
 

@@ -1,0 +1,7 @@
+name ("Read the calls through the function") {
+    task {
+        state {
+            callsSeenByFunction = callsSoFar()
+        }
+    }
+}

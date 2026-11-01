@@ -10,13 +10,13 @@ import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.AfterTestScenario
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestScenario
+import org.skellig.feature.lazy.LazyHooks
 
 class DefaultSkelligTestHooksRegistryTest {
 
     @Test
     fun testRegisterHooks() {
-        val classInstanceRegistry = mutableMapOf<Class<*>, Any>()
-        val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"), classInstanceRegistry)
+        val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"))
 
         val hooks = registry.getHooks()
         val beforeScenarioHooks = hooks.filter { it.type == BeforeTestScenario::class.java }
@@ -25,25 +25,22 @@ class DefaultSkelligTestHooksRegistryTest {
         val afterTestFeatureHook = hooks.find { it.type == AfterTestFeature::class.java }
 
         val methods = HookClass::class.java.methods
-        val instance = classInstanceRegistry[HookClass::class.java]
         assertAll(
-            { assertEquals(1, classInstanceRegistry.size) },
-
             { assertTrue(beforeScenarioHooks.any { h -> h.method == methods.find { it.name == "beforeScenario" } }) },
             { assertTrue(beforeScenarioHooks.any { h -> h.method == methods.find { it.name == "beforeScenario2" } }) },
 
             { assertEquals(methods.find { it.name == "afterScenario" }, afterScenarioHook?.method) },
-            { assertEquals(instance, afterScenarioHook?.instance) },
+            { assertEquals(HookClass::class.java, afterScenarioHook?.hookClass) },
             { assertEquals(2, afterScenarioHook?.order) },
             { assertEquals(setOf("@T3"), afterScenarioHook?.tags) },
 
             { assertEquals(methods.find { it.name == "beforeAll" }, beforeTestFeatureHook?.method) },
-            { assertEquals(instance, beforeTestFeatureHook?.instance) },
+            { assertEquals(HookClass::class.java, beforeTestFeatureHook?.hookClass) },
             { assertEquals(3, beforeTestFeatureHook?.order) },
             { assertEquals(setOf("@T4"), beforeTestFeatureHook?.tags) },
 
             { assertEquals(methods.find { it.name == "afterAll" }, afterTestFeatureHook?.method) },
-            { assertEquals(instance, afterTestFeatureHook?.instance) },
+            { assertEquals(HookClass::class.java, afterTestFeatureHook?.hookClass) },
             { assertEquals(4, afterTestFeatureHook?.order) },
             { assertEquals(setOf("@T5"), afterTestFeatureHook?.tags) },
         )
@@ -51,7 +48,7 @@ class DefaultSkelligTestHooksRegistryTest {
 
     @Test
     fun testRegisterHooksAndGetByTags() {
-        val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"), mutableMapOf())
+        val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"))
 
         val beforeHooks = registry.getByTags(BeforeTestScenario::class.java, setOf("@T0", "@T2"))
         val afterHooks = registry.getByTags(AfterTestScenario::class.java, setOf("@T1", "@T2", "@T3", "@T6", "@T10"))
@@ -69,7 +66,7 @@ class DefaultSkelligTestHooksRegistryTest {
 
     @Test
     fun testRegisterHooksAndGetByTagsWithEmptyTags() {
-        val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"), mutableMapOf())
+        val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"))
 
         assertEquals(1, registry.getByTags(BeforeTestScenario::class.java, emptySet()).size)
         assertEquals(1, registry.getByTags(BeforeTestScenario::class.java, null).size)
@@ -81,15 +78,28 @@ class DefaultSkelligTestHooksRegistryTest {
 
     @Test
     fun testRegisterHooksAndGetByTagsWithIgnoredPrivateMethod() {
-        val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"), mutableMapOf())
+        val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.hook"))
 
         assertTrue(registry.getByTags(AfterTestScenario::class.java, emptySet()).isEmpty())
     }
 
     @Test
+    fun testHookClassesAreNotInstantiatedAtStartup() {
+        LazyHooks.created.set(0)
+
+        val registry = DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.lazy"))
+
+        assertAll(
+            { assertEquals(1, registry.getHooks().size) },
+            { assertEquals(LazyHooks::class.java, registry.getHooks().single().hookClass) },
+            { assertEquals(0, LazyHooks.created.get()) },
+        )
+    }
+
+    @Test
     fun testRegisterHooksWhereClassWithArgsConstructor() {
         val ex = assertThrows<SkelligClassInstanceRegistryException> {
-            DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.invalid"), mutableMapOf())
+            DefaultSkelligTestHooksRegistry(listOf("org.skellig.feature.invalid"))
         }
         assertEquals(
             "Failed to instantiate class 'org.skellig.feature.invalid.HookClassWithArgsConstructor'. " +

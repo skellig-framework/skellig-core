@@ -11,20 +11,21 @@ import org.skellig.teststep.reader.value.expression.AlphanumericValueExpression
 import org.skellig.teststep.reader.value.expression.AnyValueExpression
 import org.skellig.teststep.reader.value.expression.PatternValueExpression
 import org.skellig.teststep.runner.annotation.TestStep
+import org.skellig.teststep.runner.fixture.lazysteps.LazySteps
 
 class ClassTestStepsRegistryTest {
 
 
     @Test
     fun testExtractTestStepsNonExistingPath() {
-        val registry = ClassTestStepsRegistry(listOf("invalid.package"), mutableMapOf())
+        val registry = ClassTestStepsRegistry(listOf("invalid.package"))
 
         assertEquals(0, registry.getTestSteps().size)
     }
 
     @Test
     fun testExtractTestStepsFromClasses() {
-        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.registry"), mutableMapOf())
+        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.registry"))
 
         val testSteps = registry.getTestSteps()
         val firstStep = testSteps.first() as Map<*,*>
@@ -33,32 +34,53 @@ class ClassTestStepsRegistryTest {
             { assertEquals(4, testSteps.first().size) },
             { assertEquals("step1", firstStep[AlphanumericValueExpression("id")].toString()) },
             { assertEquals("test A", (firstStep[AlphanumericValueExpression("testStepNamePattern")] as PatternValueExpression).pattern.pattern()) },
-            { assertEquals(Steps::class.java, (firstStep[AlphanumericValueExpression("testStepDefInstance")] as AnyValueExpression).evaluate(mock()).javaClass) },
+            { assertEquals(Steps::class.java, (firstStep[AlphanumericValueExpression("testStepDefClass")] as AnyValueExpression).evaluate(mock())) },
             { assertEquals(Steps::class.java.methods[0], (firstStep[AlphanumericValueExpression("testStepMethod")] as AnyValueExpression).evaluate(mock())) }
         )
     }
 
     @Test
     fun testExtractAnnotatedOverloadOnly() {
-        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.overload"), mutableMapOf())
+        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.overload"))
 
         val testSteps = registry.getTestSteps()
         val method = (testSteps.single()[AlphanumericValueExpression("testStepMethod")] as AnyValueExpression).evaluate(mock()) as java.lang.reflect.Method
-        val instance = (testSteps.single()[AlphanumericValueExpression("testStepDefInstance")] as AnyValueExpression).evaluate(mock())
-        assertEquals("annotated:ab", method.invoke(instance, "a", "b"))
+        val stepClass = (testSteps.single()[AlphanumericValueExpression("testStepDefClass")] as AnyValueExpression).evaluate(mock()) as Class<*>
+        assertEquals("annotated:ab", method.invoke(stepClass.getDeclaredConstructor().newInstance(), "a", "b"))
     }
 
     @Test
     fun testRegisterMethodsWithInjectedParameters() {
-        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.injection"), mutableMapOf())
+        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.injection"))
 
         assertEquals(5, registry.getTestSteps().size)
     }
 
     @Test
+    fun testStepDefClassesAreNotInstantiatedAtStartup() {
+        LazySteps.created.set(0)
+
+        val registry = ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.lazysteps"))
+
+        assertAll(
+            { assertEquals(1, registry.getTestSteps().size) },
+            { assertEquals(0, LazySteps.created.get()) },
+        )
+    }
+
+    @Test
+    fun testFailWhenClassHasNoConstructorWithoutArguments() {
+        val ex = assertThrows<TestStepRegistryException> {
+            ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.noargs"))
+        }
+
+        assertEquals("Failed to instantiate class 'org.skellig.teststep.runner.fixture.noargs.StepsWithoutNoArgConstructor'", ex.message)
+    }
+
+    @Test
     fun testFailWhenParametersDoNotMatchRegexGroups() {
         val ex = assertThrows<TestStepRegistryException> {
-            ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.mismatch"), mutableMapOf())
+            ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.mismatch"))
         }
 
         assertEquals(
@@ -71,7 +93,7 @@ class ClassTestStepsRegistryTest {
     @Test
     fun testParameterOfTypeAnyIsNotInjectedSoItCountsAsRegexGroup() {
         val ex = assertThrows<TestStepRegistryException> {
-            ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.mismatchmap"), mutableMapOf())
+            ClassTestStepsRegistry(listOf("org.skellig.teststep.runner.fixture.mismatchmap"))
         }
 
         assertTrue(ex.message!!.contains("has 2 parameter(s)"), ex.message)

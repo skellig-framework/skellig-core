@@ -42,21 +42,23 @@ internal class ClassTestStepProcessor : TestStepProcessor<ClassTestStep> {
         testStepMethod: Method,
         methodParameters: Array<Any?>
     ): TestStepProcessor.TestStepRunResult {
+        val scope = testStep.getScope()
+        // each parallel group has its own instance of the class, and a group keeps it between its scenarios
+        val testStepDefInstance = scope.parallelGroup.instanceOf(testStep.testStepDefClass)
         val result = TestStepProcessor.TestStepRunResult(testStep)
-        val testStepDefInstance = testStep.testStepDefInstance
         var response: Any? = null
         var error: TestStepProcessingException? = null
 
         log.info(
             testStep,
-            "Invoke method '${testStepDefInstance.javaClass}:$testStepMethod'" +
+            "Invoke method '${testStep.testStepDefClass}:$testStepMethod'" +
                     if (log.isDebugEnabled) "(${getParametersAsString(methodParameters)})" else ""
         )
         try {
             response = testStepMethod.invoke(testStepDefInstance, *methodParameters)
-            testStep.getScope().state.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, response)
+            scope.state.set(testStep.getId + TestStepProcessor.RESULT_SAVE_SUFFIX, response)
         } catch (e: IllegalAccessException) {
-            error = TestStepProcessingException("Failed to access non-public method '${testStepDefInstance.javaClass.simpleName}:$testStepMethod'" +
+            error = TestStepProcessingException("Failed to access non-public method '${testStep.testStepDefClass.simpleName}:$testStepMethod'" +
                     " of test step '${testStep.name}'")
         } catch (e: InvocationTargetException) {
             var targetException: Throwable = e
