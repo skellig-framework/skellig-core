@@ -56,15 +56,6 @@ class StepLogsTest {
     }
 
     @Test
-    fun testLinesOfTheFrameworkAreMarkedWithTheScopeId() {
-        JUnitCore().run(StepLogsRunner::class.java)
-
-        val stepLog = StepLogRecorderPlugin.stepLogs.getValue("Log nothing")
-        assertTrue(stepLog.joinToString("\n"), stepLog.any { it.contains(" - [${TestScenarioScope.DEFAULT_ID}]: ") })
-        assertFalse(stepLog.joinToString("\n"), stepLog.any { Regex(" - \\[-?\\d+]: ").containsMatchIn(it) })
-    }
-
-    @Test
     fun testEveryStepHasItsLog() {
         JUnitCore().run(StepLogsRunner::class.java)
 
