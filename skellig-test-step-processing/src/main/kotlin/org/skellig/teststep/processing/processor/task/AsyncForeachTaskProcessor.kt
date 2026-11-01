@@ -1,6 +1,8 @@
 package org.skellig.teststep.processing.processor.task
 
 import kotlinx.coroutines.*
+import org.skellig.teststep.processing.state.TestScenarioScope
+import org.skellig.teststep.processing.util.ScopeLogContext
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.ValueExpression
@@ -14,7 +16,8 @@ internal class AsyncForeachTaskProcessor(
 
     override fun forEach(items: Iterable<*>, itemName: String, context: TaskProcessingContext, value: ValueExpression) {
         log.info("Run the task '${getTaskName()}' asynchronously each iteration of sub-tasks and wait until finished")
-        runBlocking {
+        // the workers of the dispatcher are shared by all scopes, so they get the scope for the log events of the tasks
+        runBlocking(ScopeLogContext.coroutineContext(TestScenarioScope.from(context.parameters))) {
             withContext(Dispatchers.Default) {
                 forEachAsync(items, itemName, context, value)
             }

@@ -107,7 +107,7 @@ open class FeatureRunner(
     override fun dispatchHookFinishedEvent(hookName: String, duration: Long, e: Throwable?, hookType: Class<out Annotation>) {
         eventDispatcher.dispatch(
             HookFinishedEvent(
-                hookName, testEntity.getId(), null, testStepLogger.getLogsAndClean(), Result(duration, e, null),
+                hookName, testEntity.getId(), null, testStepLogger.getLogsAndClean(scope.id), Result(duration, e, null),
                 if (hookType == BeforeTestFeature::class.java) ExecutionSequenceType.BEFORE else ExecutionSequenceType.AFTER
             )
         )

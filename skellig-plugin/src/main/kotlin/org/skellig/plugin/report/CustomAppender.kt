@@ -2,6 +2,7 @@ package org.skellig.plugin.report
 
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.spi.LoggingEvent
+import org.skellig.teststep.processing.util.ScopeLogContext
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -11,6 +12,10 @@ import java.util.*
 
 /**
  * Appends log events to a [TestStepLogger] which are used in report generation.
+ *
+ * A log event belongs to the scope whose id is in the log context (MDC) of the thread that logged it, under
+ * [ScopeLogContext.KEY], whatever its message is. The log events logged by a thread which was not given a scope
+ * belong to no scope.
  *
  * @see [org.skellig.runner.junit.report.ReportGenerator]
  *
@@ -26,12 +31,14 @@ class CustomAppender(private val testStepLogger: TestStepLogger) : AppenderSkele
         val eventTime =
             LocalDateTime.ofInstant(Instant.ofEpochMilli(event.timeStamp), TimeZone.getDefault().toZoneId())
 
-        testStepLogger.log("${eventTime.format(DATE_TIME_FORMAT)} ${event.getLevel()} " +
-                "${event.locationInformation.fullInfo} - ${event.message}")
+        testStepLogger.log(
+            event.getMDC(ScopeLogContext.KEY)?.toString(),
+            "${eventTime.format(DATE_TIME_FORMAT)} ${event.getLevel()} ${event.locationInformation.fullInfo} - ${event.message}"
+        )
     }
 
     override fun close() {
-        testStepLogger.getLogsAndClean()
+        testStepLogger.clear()
     }
 
     override fun requiresLayout(): Boolean {

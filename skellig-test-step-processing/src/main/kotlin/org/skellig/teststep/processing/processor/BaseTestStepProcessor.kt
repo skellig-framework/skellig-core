@@ -7,7 +7,9 @@ import org.skellig.teststep.processing.model.DefaultTestStep
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.processor.TestStepProcessor.TestStepRunResult
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
+import org.skellig.teststep.processing.util.ScopeLogContext
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logTestStepResult
 import org.skellig.teststep.processing.util.logger
@@ -37,9 +39,13 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep> : ValidatableTestStepP
         stateOf(testStep).set(testStep.getId, testStep)
 
         when (testStep.execution) {
+            // a worker of the pool serves any scope and can have the log context of the scope that created it,
+            // so the scope of the test step is always given to it
             TestStepExecutionType.ASYNC -> asyncTaskExecutor.execute {
-                log.debug(testStep) { "Run the test step asynchronously" }
-                processAndValidate(testStep, testStepRunResult)
+                ScopeLogContext.runWith(testStep.scope) {
+                    log.debug(testStep) { "Run the test step asynchronously" }
+                    processAndValidate(testStep, testStepRunResult)
+                }
             }
 
             else -> processAndValidate(testStep, testStepRunResult)
@@ -97,7 +103,9 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep> : ValidatableTestStepP
     }
 
     protected fun <R> runTasksAsyncAndWait(tasks: Map<*, () -> R>, testStep: T): Map<Any?, R?> {
-        return asyncTaskGroupExecutor.runTasksAsyncAndWait(tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout)
+        return asyncTaskGroupExecutor.runTasksAsyncAndWait(
+            tasks, { isValid(testStep, it) }, testStep.delay, testStep.attempts, testStep.timeout, testStep.scope
+        )
     }
 
     class AsyncTaskGroupExecutor {
@@ -107,9 +115,11 @@ abstract class BaseTestStepProcessor<T : DefaultTestStep> : ValidatableTestStepP
         fun <R> runTasksAsyncAndWait(
             tasks: Map<*, () -> R>,
             stopCondition: (Map<*, R?>) -> Boolean = { true },
-            delay: Int = 0, attempts: Int = 0, timeout: Int = 0
+            delay: Int = 0, attempts: Int = 0, timeout: Int = 0,
+            scope: TestScenarioScope? = null
         ): Map<Any?, R?> {
-            return runBlocking {
+            // the workers of the dispatcher are shared by all scopes, so they get the scope for the log events of the tasks
+            return runBlocking(ScopeLogContext.coroutineContext(scope)) {
                 withContext(Dispatchers.IO) {
                     forEachAsync(tasks, stopCondition, delay, attempts, timeout, mapOf<Any, R?>())
                 }
