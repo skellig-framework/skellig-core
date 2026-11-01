@@ -13,6 +13,10 @@ import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.state.TestScenarioScope
+import org.skellig.teststep.processing.util.ScopeLogContext
+import org.skellig.teststep.processing.util.withCoroutineWorkersOfScope
+import org.apache.log4j.MDC
+import java.util.concurrent.CopyOnWriteArrayList
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.ValueExpressionContextFactoryTest
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
@@ -233,6 +237,52 @@ class DefaultTaskProcessorTest {
             val ex = assertThrows<RuntimeException> { taskProcessor.process(AlphanumericValueExpression("asyncEach"), value, TaskProcessingContext(parameters)) }
 
             assertEquals("failed", ex.message)
+        }
+    }
+
+    @Nested
+    inner class ScopeInLogContextTest {
+
+        private val scopeIdsOfRunTests = CopyOnWriteArrayList<String?>()
+
+        private fun createTaskProcessorWhichRecordsScopeIdOfRunTest() =
+            createTaskProcessor { _, _ ->
+                scopeIdsOfRunTests.add(ScopeLogContext.currentScopeId())
+                TestStepProcessor.TestStepRunResult(mock<TestStep>())
+            }
+
+        private fun runTestTask(name: String) =
+            FunctionCallExpression("runTest", arrayOf(AlphanumericValueExpression(name))) to MapValueExpression(mapOf())
+
+        @Test
+        fun testAsyncEachRunsSubTasksWithScopeIdInLogContext() {
+            val value = MapValueExpression(mapOf(runTestTask("test A"), runTestTask("test B"), runTestTask("test C")))
+            val parameters = mutableMapOf<String, Any?>(TestScenarioScope.PARAMETER_KEY to scope)
+
+            withCoroutineWorkersOfScope("other-scope") {
+                createTaskProcessorWhichRecordsScopeIdOfRunTest()
+                    .process(AlphanumericValueExpression("asyncEach"), value, TaskProcessingContext(parameters))
+            }
+
+            assertEquals(List<String?>(3) { "test" }, scopeIdsOfRunTests.toList())
+        }
+
+        @Test
+        fun testAsyncForEachRunsIterationsWithScopeIdInLogContext() {
+            val value = MapValueExpression(mapOf(runTestTask("test A")))
+            val parameters = mutableMapOf<String, Any?>(
+                TestScenarioScope.PARAMETER_KEY to scope,
+                "items" to List(32) { it }
+            )
+
+            withCoroutineWorkersOfScope("other-scope") {
+                createTaskProcessorWhichRecordsScopeIdOfRunTest().process(
+                    FunctionCallExpression("asyncForEach", arrayOf(PropertyValueExpression("items"), AlphanumericValueExpression("i"))),
+                    value, TaskProcessingContext(parameters)
+                )
+            }
+
+            assertEquals(List<String?>(32) { "test" }, scopeIdsOfRunTests.toList())
         }
     }
 

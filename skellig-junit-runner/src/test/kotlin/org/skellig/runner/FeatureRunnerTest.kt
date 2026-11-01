@@ -1,6 +1,8 @@
 package org.skellig.runner
 
 import org.junit.Test
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.runner.notification.RunNotifier
@@ -22,6 +24,7 @@ import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.PropertyFormatUtils
+import org.skellig.teststep.processing.util.ScopeLogContext
 import org.skellig.teststep.runner.TestStepRunner
 
 
@@ -117,6 +120,35 @@ class FeatureRunnerTest {
                 })
             }
         )
+    }
+
+    @Test
+    fun testRunAndVerifyScopeIsInLogContextOnlyWhileTestStepsRun() {
+        val scopeIdsWhileTestStepsRun = mutableListOf<String?>()
+        doAnswer {
+            scopeIdsWhileTestStepsRun.add(ScopeLogContext.currentScopeId())
+            TestStepProcessor.TestStepRunResult(mock())
+        }.whenever(testStepRunner).run(any(), any(), eq(scope))
+
+        featureRunner.run(mock<RunNotifier>())
+
+        assertEquals(listOf<String?>(scope.id, scope.id), scopeIdsWhileTestStepsRun)
+        assertNull(ScopeLogContext.currentScopeId())
+    }
+
+    @Test
+    fun testRunAndVerifyScopeIsInLogContextOnlyWhileHooksRun() {
+        val scopeIdsWhileHooksRun = mutableListOf<String?>()
+        doAnswer {
+            scopeIdsWhileHooksRun.add(ScopeLogContext.currentScopeId())
+            null
+        }.whenever(hookRunner).run(anyOrNull(), any(), eq(scope), any())
+
+        featureRunner.run(mock<RunNotifier>())
+
+        // before and after hooks of the feature and of its scenario
+        assertEquals(List<String?>(4) { scope.id }, scopeIdsWhileHooksRun)
+        assertNull(ScopeLogContext.currentScopeId())
     }
 
     @Test

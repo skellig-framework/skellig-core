@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.skellig.teststep.processing.state.DefaultTestScenarioState
+import org.skellig.teststep.processing.state.TestScenarioScope
+import org.skellig.teststep.processing.util.ScopeLogContext
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.TimeZone
@@ -37,7 +40,7 @@ class CustomAppenderTest {
     @Test
     fun testLogOfScope() {
         val testStepLogger = Mockito.mock<TestStepLogger>()
-        val event = createEvent("[scope-1]: text")
+        val event = createEvent("text", "scope-1")
         val eventTime =
             LocalDateTime.ofInstant(Instant.ofEpochMilli(event.timeStamp), TimeZone.getDefault().toZoneId())
 
@@ -46,33 +49,24 @@ class CustomAppenderTest {
         verify(testStepLogger).log(
             "scope-1",
             "${eventTime.format(CustomAppender.DATE_TIME_FORMAT)} ${event.getLevel()} " +
-                    "${event.locationInformation.fullInfo} - [scope-1]: text"
+                    "${event.locationInformation.fullInfo} - text"
         )
     }
 
     @Test
-    fun testLogOfScopeWithClosingSquareBracketInId() {
+    fun testLogOfScopeWhenMessageStartsWithAnotherScopeId() {
         val testStepLogger = Mockito.mock<TestStepLogger>()
 
-        CustomAppender(testStepLogger).doAppend(createEvent("[a]b]: text [c]: d"))
+        CustomAppender(testStepLogger).doAppend(createEvent("[scope-2]: text", "scope-1"))
 
-        verify(testStepLogger).log(Mockito.eq("a]b"), Mockito.anyString())
+        verify(testStepLogger).log(Mockito.eq("scope-1"), Mockito.anyString())
     }
 
     @Test
-    fun testLogWhenSquareBracketsAreNotFollowedByColon() {
+    fun testLogWhenMessageStartsWithScopeIdButThereIsNoScopeInLogContext() {
         val testStepLogger = Mockito.mock<TestStepLogger>()
 
-        CustomAppender(testStepLogger).doAppend(createEvent("[1, 2] is not a scope"))
-
-        verify(testStepLogger).log(Mockito.isNull(), Mockito.anyString())
-    }
-
-    @Test
-    fun testLogWhenSquareBracketsAreNotAtTheStart() {
-        val testStepLogger = Mockito.mock<TestStepLogger>()
-
-        CustomAppender(testStepLogger).doAppend(createEvent("text [scope-1]: text"))
+        CustomAppender(testStepLogger).doAppend(createEvent("[scope-1]: text"))
 
         verify(testStepLogger).log(Mockito.isNull(), Mockito.anyString())
     }
@@ -92,7 +86,7 @@ class CustomAppenderTest {
     }
 
     @Test
-    fun testScopesLoggingAtTheSameTimeCollectOnlyTheirOwnLines() {
+    fun testScopesLoggingAtTheSameTimeCollectOnlyTheirOwnLinesWhateverTheMessageIs() {
         val testStepLogger = DefaultTestStepLogger()
         val logger = Logger.getLogger("CustomAppenderTest.testScopesLoggingAtTheSameTime")
         val appender = CustomAppender(testStepLogger)
@@ -109,7 +103,10 @@ class CustomAppenderTest {
             val futures = scopeIds.map { scopeId ->
                 executor.submit {
                     startSignal.await()
-                    repeat(linesPerScope) { logger.info("[$scopeId]: line $it") }
+                    // the lines have no scope id in the message, as the ones logged by user code or libraries
+                    ScopeLogContext.runWith(TestScenarioScope(scopeId, DefaultTestScenarioState())) {
+                        repeat(linesPerScope) { logger.info("line $it") }
+                    }
                 }
             }
             startSignal.countDown()
@@ -123,13 +120,14 @@ class CustomAppenderTest {
             val lines = testStepLogger.getLogsAndClean(scopeId)
             assertEquals(linesPerScope, lines.size, "Lines of $scopeId")
             lines.forEachIndexed { index, line ->
-                assertTrue(line.endsWith(" - [$scopeId]: line $index"), "Line of $scopeId: $line")
+                assertTrue(line.endsWith(" - line $index"), "Line of $scopeId: $line")
             }
         }
     }
 
-    private fun createEvent(message: String): LoggingEvent {
+    private fun createEvent(message: String, scopeId: String? = null): LoggingEvent {
         val event = Mockito.mock<LoggingEvent>()
+        scopeId?.let { whenever(event.getMDC(ScopeLogContext.KEY)).thenReturn(it) }
         whenever(event.getTimeStamp()).thenReturn(System.currentTimeMillis())
         whenever(event.message).thenReturn(message)
         whenever(event.locationInformation).thenReturn(LocationInfo("file", "classname", "method", "line"))
