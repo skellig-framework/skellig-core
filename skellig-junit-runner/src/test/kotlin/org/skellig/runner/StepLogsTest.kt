@@ -22,8 +22,8 @@ import org.skellig.teststep.processing.state.TestScenarioScope
 
 /**
  * Without a parallel run configured, the log records of the step in a report are the same as before scenario scopes
- * had their own log buffers: all the lines logged while the step runs, and the lines of the framework are prefixed
- * with the id of the scope.
+ * had their own log buffers: all the lines logged while the step runs, and none of the other steps. Sub-tasks that run
+ * on shared workers are given the scope of the step in the log context.
  */
 class StepLogsTest {
 
