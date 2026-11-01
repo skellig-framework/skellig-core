@@ -16,11 +16,12 @@ class CustomFunctionExecutorTest {
     @Test
     fun `register functions from class with default constructor`() {
         val converter = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.value.function"))
+        val scope = TestScenarioScope("s1", DefaultTestScenarioState())
 
-        assertTrue(converter.execute("lessThan", null, arrayOf("1", "2")) as Boolean)
-        assertFalse(converter.execute("isEmpty", null, arrayOf("gggg", "")) as Boolean)
-        assertNull(converter.execute("runSomething", null, emptyArray())) // no return means null
-        assertThrows(FunctionExecutionException::class.java) { converter.execute("runNotExisting", null, emptyArray()) }
+        assertTrue(converter.execute("lessThan", null, arrayOf("1", "2"), scope) as Boolean)
+        assertFalse(converter.execute("isEmpty", null, arrayOf("gggg", ""), scope) as Boolean)
+        assertNull(converter.execute("runSomething", null, emptyArray(), scope)) // no return means null
+        assertThrows(FunctionExecutionException::class.java) { converter.execute("runNotExisting", null, emptyArray(), scope) }
     }
 
     @Test
@@ -35,7 +36,9 @@ class CustomFunctionExecutorTest {
     fun `execute the annotated overload of a function`() {
         val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.overload"))
 
-        assertEquals("annotated:ab", executor.execute("combine", null, arrayOf("a", "b")))
+        val scope = TestScenarioScope("s1", DefaultTestScenarioState())
+
+        assertEquals("annotated:ab", executor.execute("combine", null, arrayOf("a", "b"), scope))
     }
 
     @Test
@@ -63,13 +66,10 @@ class CustomFunctionExecutorTest {
     }
 
     @Test
-    fun `function without injected parameters works with and without scope`() {
+    fun `function without injected parameters works with a scope`() {
         val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.injection"))
 
-        assertAll(
-            { assertEquals("ab", executor.execute("noInjection", null, arrayOf("a", "b"))) },
-            { assertEquals("ab", executor.execute("noInjection", null, arrayOf("a", "b"), TestScenarioScope("s1", DefaultTestScenarioState()))) },
-        )
+        assertEquals("ab", executor.execute("noInjection", null, arrayOf("a", "b"), TestScenarioScope("s1", DefaultTestScenarioState())))
     }
 
     @Test
@@ -87,6 +87,24 @@ class CustomFunctionExecutorTest {
         val ex = assertThrows<FunctionExecutionException> { executor.execute("stateFirst", null, arrayOf("k")) }
 
         assertEquals("Function 'stateFirst' requires the scope of a test scenario but it is called outside of one", ex.message)
+    }
+
+    @Test
+    fun `fail when function without injected parameters is called without a scope`() {
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.injection"))
+
+        val ex = assertThrows<FunctionExecutionException> { executor.execute("noInjection", null, arrayOf("a", "b")) }
+
+        assertEquals("Function 'noInjection' requires the scope of a test scenario but it is called outside of one", ex.message)
+    }
+
+    @Test
+    fun `function that is not registered is reported as not found even without a scope`() {
+        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.injection"))
+
+        val ex = assertThrows<FunctionExecutionException> { executor.execute("notRegistered", null, emptyArray()) }
+
+        assertEquals("Function 'notRegistered' was not found", ex.message)
     }
 
     @Test
@@ -122,19 +140,6 @@ class CustomFunctionExecutorTest {
         executor.execute("nextCall", null, emptyArray(), scope)
 
         assertEquals(2, group.instanceOf(CountingFunctions::class.java).nextCall())
-    }
-
-    @Test
-    fun `functions called without a scope use the default parallel group of the executor`() {
-        val defaultGroup = ParallelGroupContext(ParallelGroupContext.DEFAULT_KEY)
-        val executor = CustomFunctionExecutor(listOf("org.skellig.teststep.processing.fixture.instances"), defaultGroup)
-
-        val results = (1..2).map { executor.execute("nextCall", null, emptyArray()) }
-
-        assertAll(
-            { assertEquals(listOf(1, 2), results) },
-            { assertEquals(3, defaultGroup.instanceOf(CountingFunctions::class.java).nextCall()) },
-        )
     }
 
     @Test

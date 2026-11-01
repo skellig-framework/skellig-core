@@ -25,13 +25,13 @@ import java.lang.reflect.Method
  * A class without a public constructor without arguments fails registration, so the failure is not postponed
  * until the class is first used.
  *
+ * Every function relies on the scope it is called with, which gives the instance and the injected parameters, so
+ * calling a registered function without a scope fails with [FunctionExecutionException].
+ *
  * @param packages The packages to scan for custom functions with @[Function]
- * @param defaultParallelGroup The parallel group whose instances are used when a function is called without a scope.
- * If not provided, then the executor has a parallel group of its own.
  */
 class CustomFunctionExecutor(
-    packages: Collection<String>?,
-    private val defaultParallelGroup: ParallelGroupContext = ParallelGroupContext(ParallelGroupContext.DEFAULT_KEY)
+    packages: Collection<String>?
 ) : FunctionValueExecutor {
 
     companion object {
@@ -59,25 +59,24 @@ class CustomFunctionExecutor(
 
     override fun execute(name: String, value: Any?, args: Array<Any?>, scope: TestScenarioScope?): Any? {
         val function = functions[name] ?: throw FunctionExecutionException("Function '$name' was not found")
-        val instance = (scope?.parallelGroup ?: defaultParallelGroup).instanceOf(function.functionClass)
-        return function.method.invoke(instance, *createMethodArguments(name, function.method, args, scope))
+        val currentScope = scope ?: throw FunctionExecutionException(
+            "Function '$name' requires the scope of a test scenario but it is called outside of one"
+        )
+        val instance = currentScope.parallelGroup.instanceOf(function.functionClass)
+        return function.method.invoke(instance, *createMethodArguments(name, function.method, args, currentScope))
     }
 
     /**
      * Parameters of the method which are injected (see [ScopeParameters]) receive the state or the scope.
      * All other parameters receive the call arguments in order, so the injected ones never count as call arguments.
      */
-    private fun createMethodArguments(name: String, method: Method, args: Array<Any?>, scope: TestScenarioScope?): Array<Any?> {
+    private fun createMethodArguments(name: String, method: Method, args: Array<Any?>, scope: TestScenarioScope): Array<Any?> {
         if (method.parameterTypes.none { ScopeParameters.isInjected(it) }) return args
 
         val remainingArgs = args.iterator()
         return method.parameterTypes.map { type ->
-            if (ScopeParameters.isInjected(type)) {
-                val currentScope = scope ?: throw FunctionExecutionException(
-                    "Function '$name' requires the scope of a test scenario but it is called outside of one"
-                )
-                ScopeParameters.valueFor(type, currentScope)
-            } else if (remainingArgs.hasNext()) remainingArgs.next()
+            if (ScopeParameters.isInjected(type)) ScopeParameters.valueFor(type, scope)
+            else if (remainingArgs.hasNext()) remainingArgs.next()
             else throw FunctionExecutionException("Function '$name' was called with ${args.size} arguments, which is not enough")
         }.toTypedArray()
     }

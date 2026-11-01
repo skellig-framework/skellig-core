@@ -85,7 +85,7 @@ open class SkelligTestContext : Closeable {
         defaultScope = TestScenarioScope(TestScenarioScope.DEFAULT_ID, testScenarioState!!, defaultParallelGroup)
         val testStepClassPaths = extractTestStepPackages(testStepPaths)
         val testStepReader = createTestStepReader()
-        val functionExecutor = createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths, defaultParallelGroup)
+        val functionExecutor = createFunctionExecutor(classLoader, testScenarioState, testStepClassPaths)
 
         testStepsRegistry = createTestStepsRegistry(testStepPaths, classLoader, testStepReader, testStepClassPaths)
 
@@ -238,8 +238,7 @@ open class SkelligTestContext : Closeable {
     private fun createFunctionExecutor(
         classLoader: ClassLoader,
         testScenarioState: TestScenarioState?,
-        testStepClassPaths: Collection<String>,
-        parallelGroup: ParallelGroupContext
+        testStepClassPaths: Collection<String>
     ): FunctionValueExecutor {
         val functionExecutorBuilder = DefaultFunctionValueExecutor.Builder()
 
@@ -252,7 +251,6 @@ open class SkelligTestContext : Closeable {
             }
 
         return functionExecutorBuilder
-            .withParallelGroup(parallelGroup)
             .withClassLoader(classLoader)
             .withClassPaths(testStepClassPaths)
             .build()

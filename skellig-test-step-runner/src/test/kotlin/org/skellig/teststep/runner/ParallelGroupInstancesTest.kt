@@ -111,7 +111,7 @@ class ParallelGroupInstancesTest {
     }
 
     @Test
-    fun testFunctionCalledWithoutScopeUsesTheInstancesOfTheDefaultParallelGroup() {
+    fun testFunctionCalledInTheDefaultScopeUsesTheInstancesOfTheDefaultParallelGroup() {
         val defaultScope = context.getDefaultScope()
         countTheCall(defaultScope)
         countTheCall(defaultScope)

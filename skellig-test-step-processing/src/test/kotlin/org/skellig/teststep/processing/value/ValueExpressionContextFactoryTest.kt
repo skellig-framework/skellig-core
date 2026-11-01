@@ -147,7 +147,7 @@ class ValueExpressionContextFactoryTest {
 
     @Test
     fun testWhenRunCustomFunction() {
-        assertEquals("run successfully", FunctionCallExpression("customFunc", emptyArray()).evaluate(factory.create(emptyMap())))
+        assertEquals("run successfully", FunctionCallExpression("customFunc", emptyArray()).evaluate(factory.create(scopeParameters)))
     }
 
 

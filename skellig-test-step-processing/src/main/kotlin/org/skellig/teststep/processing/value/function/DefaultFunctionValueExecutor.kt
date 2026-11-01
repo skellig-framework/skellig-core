@@ -1,6 +1,5 @@
 package org.skellig.teststep.processing.value.function
 
-import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.debug
 import org.skellig.teststep.processing.util.logger
@@ -52,7 +51,6 @@ class DefaultFunctionValueExecutor private constructor(
         private val functions = mutableMapOf<String, FunctionValueExecutor>()
         private var classLoader: ClassLoader? = null
         private var classPaths: Collection<String>? = null
-        private var parallelGroup: ParallelGroupContext? = null
 
         /**
          * Sets the class loader to be used for some internal Skellig Functions.
@@ -77,15 +75,6 @@ class DefaultFunctionValueExecutor private constructor(
             }
             apply { functions[functionValueExecutor.getFunctionName()] = functionValueExecutor }
         }
-
-        /**
-         * Sets the parallel group whose instances of classes with functions marked with @[Function] are used when
-         * a function is called without a scope. A function called in a scope uses the instance of the parallel group
-         * of that scope. Test Step definition classes may have test step methods as well as methods marked as @[Function],
-         * which share the instance of the parallel group.
-         */
-        fun withParallelGroup(parallelGroup: ParallelGroupContext) =
-            apply { this.parallelGroup = parallelGroup }
 
         /**
          * Builds and returns an instance of the [DefaultFunctionValueExecutor] with all built-in Skellig Functions,
@@ -150,7 +139,7 @@ class DefaultFunctionValueExecutor private constructor(
 
             return DefaultFunctionValueExecutor(
                 functions,
-                CustomFunctionExecutor(classPaths, parallelGroup ?: ParallelGroupContext(ParallelGroupContext.DEFAULT_KEY)),
+                CustomFunctionExecutor(classPaths),
                 FromObjectFunctionExecutor()
             )
         }
