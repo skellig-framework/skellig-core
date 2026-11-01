@@ -99,7 +99,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
             eventDispatcher.dispatch(testStepFinishedEvent)
         } else {
             notifier.fireTestStarted(childDescription)
-            testStepLogger.clear()
+            testStepLogger.clear(scope.id)
             val startTime = System.currentTimeMillis()
             try {
                 val parameters = child.testStep.parameters ?: emptyMap()
@@ -137,7 +137,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
                 testStepFinishedEvent.executionStatus = TestExecutionStatus.FAILED
             } finally {
                 testStepFinishedEvent.executionStatus = TestExecutionStatus.PASSED
-                testStepFinishedEvent.logRecords = testStepLogger.getLogsAndClean()
+                testStepFinishedEvent.logRecords = testStepLogger.getLogsAndClean(scope.id)
                 runResult?.let { testStepRunResults.add(it) }
 
                 notifier.fireTestFinished(childDescription)

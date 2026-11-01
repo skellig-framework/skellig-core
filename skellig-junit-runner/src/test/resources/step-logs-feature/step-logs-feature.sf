@@ -1,0 +1,6 @@
+Feature: Step logs are collected per scope
+
+    Scenario: First scenario
+        * Log first message
+        * Log second message
+        * Log nothing

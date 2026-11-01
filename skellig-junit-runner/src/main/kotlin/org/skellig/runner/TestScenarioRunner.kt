@@ -92,7 +92,7 @@ open class TestScenarioRunner protected constructor(
     override fun dispatchHookFinishedEvent(hookName: String, duration: Long, e: Throwable?, hookType: Class<out Annotation>) {
         eventDispatcher.dispatch(
             HookFinishedEvent(
-                hookName, parentFeatureId, testEntity.getId(), testStepLogger.getLogsAndClean(), Result(duration, e, null),
+                hookName, parentFeatureId, testEntity.getId(), testStepLogger.getLogsAndClean(scope.id), Result(duration, e, null),
                 if (hookType == BeforeTestScenario::class.java) ExecutionSequenceType.BEFORE else ExecutionSequenceType.AFTER
             )
         )

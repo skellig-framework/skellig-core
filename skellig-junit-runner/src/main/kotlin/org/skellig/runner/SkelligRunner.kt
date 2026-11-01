@@ -59,7 +59,9 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         // through its default scope
         val defaultScope = skelligTestContext.getDefaultScope()
 
-        val testStepLogger = DefaultTestStepLogger()
+        // without a parallel run, there is only the default scope, so it collects also the lines which are not marked
+        // with the id of a scope, as all of them belong to the scenario that runs
+        val testStepLogger = DefaultTestStepLogger(defaultScope.id)
         skelligTestContext.config?.let {
             if (it.hasPath(REPORT_LOG_ENABLED) && it.getBoolean(REPORT_LOG_ENABLED))
                 BasicConfigurator.configure(CustomAppender(testStepLogger))

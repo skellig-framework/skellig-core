@@ -13,14 +13,21 @@ fun Logger.logTestStepResult(testStep: TestStep, result: Any?, error: Throwable?
     this.debug(testStep) { "Notify the subscribers with result of test processing" }
 }
 
-fun Logger.info(testStep: TestStep, message: String) = this.info("[${testStep.hashCode()}]: $message")
+fun Logger.info(testStep: TestStep, message: String) = this.info(testStep.withScopePrefix(message))
 
-fun Logger.error(testStep: TestStep, message: String) = this.info("[${testStep.hashCode()}]: $message")
+fun Logger.error(testStep: TestStep, message: String) = this.info(testStep.withScopePrefix(message))
 
 fun Logger.debug(lazyMessage: () -> String) {
     if (this.isDebugEnabled) this.debug(lazyMessage())
 }
 
 fun Logger.debug(testStep: TestStep, lazyMessage: () -> String) {
-    if (this.isDebugEnabled) this.debug("[${testStep.hashCode()}]: ${lazyMessage()}")
+    if (this.isDebugEnabled) this.debug(testStep.withScopePrefix(lazyMessage()))
 }
+
+/**
+ * Prefixes the message with the id of the scope of the test step, as `[<scope id>]: <message>`.
+ * The report plugin collects a log line for the scenario scope whose id it starts with.
+ * A test step without a scope has no prefix, as the log line then belongs to no scope.
+ */
+private fun TestStep.withScopePrefix(message: String): String = scope?.let { "[${it.id}]: $message" } ?: message
