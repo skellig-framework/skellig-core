@@ -25,7 +25,7 @@ class DefaultParallelGroupTest {
 
     @Before
     fun resetRecordedInstances() {
-        SingleInstanceStepDefs.seen.clear()
+        SingleInstanceStepDefs.stepDefExecutionRecorder.clear()
     }
 
     @Test
@@ -34,7 +34,8 @@ class DefaultParallelGroupTest {
 
         assertTrue(result.failures.joinToString { it.message ?: it.toString() }, result.wasSuccessful())
         // a hook and a step in each of 2 scenarios, and a function in the first one
-        assertEquals(5, SingleInstanceStepDefs.seen.size)
-        assertEquals(1, SingleInstanceStepDefs.seen.map { System.identityHashCode(it) }.toSet().size)
+        assertEquals(5, SingleInstanceStepDefs.stepDefExecutionRecorder.size)
+        // make sure all instances are the same
+        assertEquals(1, SingleInstanceStepDefs.stepDefExecutionRecorder.map { System.identityHashCode(it) }.toSet().size)
     }
 }

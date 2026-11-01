@@ -12,18 +12,18 @@ class SingleInstanceStepDefs {
 
     @BeforeTestScenario
     fun beforeScenario() {
-        seen.add(this)
+        stepDefExecutionRecorder.add(this)
     }
 
     @TestStep(name = "Record the step definition instance")
     fun recordStepDefinitionInstance() {
-        seen.add(this)
+        stepDefExecutionRecorder.add(this)
     }
 
     @Function
-    fun recordFunctionInstance(): Boolean = seen.add(this)
+    fun recordFunctionInstance(): Boolean = stepDefExecutionRecorder.add(this)
 
     companion object {
-        val seen = CopyOnWriteArrayList<Any>()
+        val stepDefExecutionRecorder = CopyOnWriteArrayList<Any>()
     }
 }
