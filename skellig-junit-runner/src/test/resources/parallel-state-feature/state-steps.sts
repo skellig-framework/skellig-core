@@ -1,0 +1,72 @@
+name ("Store (\w+) in the state of the scenario") {
+    task {
+        value = ${1}
+        runTest("Store the value from the parameters of the caller") {}
+        runTest("Store the value from the own parameters") {
+            parameters {
+                ownValue = ${value}
+            }
+        }
+        forEach(listOf(1, 2), i) {
+            state {
+                forEachValue = ${value}
+            }
+        }
+        asyncForEach(listOf(1, 2), i) {
+            runTest("Store the value asynchronously") {
+                parameters {
+                    asyncValue = ${value}
+                }
+            }
+        }
+        // a task has one 'state' section only, so everything which the task stores is in it
+        state {
+            builtInValue = ${value}
+            functionValue = storeInStateByFunction(${value})
+        }
+    }
+}
+
+name ("Store the value from the parameters of the caller") {
+    task {
+        state {
+            callerParametersValue = ${value}
+        }
+    }
+}
+
+name ("Store the value from the own parameters") {
+    task {
+        state {
+            ownParametersValue = ${ownValue}
+        }
+    }
+}
+
+name ("Store the value asynchronously") {
+    task {
+        state {
+            asyncStoredValue = ${asyncValue}
+        }
+    }
+}
+
+name ("Verify (\w+) is in the state of the scenario") {
+    validate {
+        get(builtInValue) = ${1}
+        get(callerParametersValue) = ${1}
+        get(ownParametersValue) = ${1}
+        get(forEachValue) = ${1}
+        get(asyncStoredValue) = ${1}
+        get(functionValue) = ${1}
+        get(classStepValue) = ${1}
+    }
+}
+
+name ("Verify nothing is left in the state of the scenario") {
+    validate {
+        get(builtInValue, nothing) = nothing
+        get(classStepValue, nothing) = nothing
+        get(functionValue, nothing) = nothing
+    }
+}

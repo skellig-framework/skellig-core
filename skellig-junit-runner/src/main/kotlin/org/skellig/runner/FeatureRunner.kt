@@ -11,6 +11,7 @@ import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.plugin.report.TestStepLogger
+import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.runner.TestStepRunner
 
@@ -25,8 +26,13 @@ private const val AFTER_FEATURE_NAME = "After Feature"
  * @property hookRunner The hook runner to run hooks before and after feature execution
  * @property testStepRunner The test step runner to run individual test steps
  * @property testStepLogger The test step logger for logging test steps
- * @property scope The scope the steps of the feature and its scenarios run in. Its state, which holds data passed through
+ * @property scope The scope the hooks of the feature, and its steps before and after the feature, run in. Without a
+ * [scenarioScopeFactory], also the scope the steps of its scenarios run in, and its state, which holds data passed through
  * test steps during a test scenario run, is cleaned after each [TestScenarioRunner] is finished.
+ * @property scenarioScopeFactory Creates the scope of a scenario from the id of the scope. It is set when the feature is
+ * a parallel group of its own: every scenario then runs in its own scope with a state of its own, which is dropped when
+ * the scenario has finished, and the instances of the [ParallelGroupContext] of [scope], which all the scopes must refer
+ * to, are dropped when the feature has finished.
  */
 open class FeatureRunner(
     feature: Feature,
@@ -35,7 +41,8 @@ open class FeatureRunner(
     testStepRunner: TestStepRunner?,
     testStepLogger: TestStepLogger,
     eventDispatcher: SkelligTestEventDispatcher,
-    scope: TestScenarioScope
+    scope: TestScenarioScope,
+    private val scenarioScopeFactory: ((String) -> TestScenarioScope)? = null
 ) : BaseSkelligTestEntityRunner<TestScenarioRunner>(
     feature, hookRunner, testStepRunner, testStepLogger,
     BeforeTestFeature::class.java, AfterTestFeature::class.java, eventDispatcher, scope
@@ -68,7 +75,13 @@ open class FeatureRunner(
 
             feature.scenarios
                 ?.filter { tagsFilter.checkTagsAreIncluded(it.tags) }
-                ?.forEach { testScenarioRunners!!.add(TestScenarioRunner.create(it, testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scope)) }
+                ?.forEach {
+                    testScenarioRunners!!.add(
+                        TestScenarioRunner.create(
+                            it, testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scopeOf(it)
+                        )
+                    )
+                }
 
             feature.afterSteps?.let {
                 testScenarioRunners!!.add(
@@ -82,6 +95,13 @@ open class FeatureRunner(
         return testScenarioRunners
     }
 
+    /**
+     * The scope the steps of the [scenario] run in: a new one of its own if the feature creates them, otherwise the one
+     * of the feature.
+     */
+    private fun scopeOf(scenario: TestScenario): TestScenarioScope =
+        scenarioScopeFactory?.invoke("${testEntity.getEntityName()}/${scenario.name}#${Integer.toHexString(scenario.getId())}") ?: scope
+
     override fun describeChild(child: TestScenarioRunner): Description {
         return child.description
     }
@@ -90,8 +110,13 @@ open class FeatureRunner(
         try {
             child.run(notifier)
         } finally {
-            log.info("Cleanup the Test Scenario State")
-            scope.state.clean()
+            if (scenarioScopeFactory == null) {
+                log.info("Cleanup the Test Scenario State")
+                scope.state.clean()
+            } else {
+                // the state of a scenario of its own is not needed once the scenario has finished
+                child.scenarioScope.takeIf { it !== scope }?.state?.clean()
+            }
         }
     }
 
@@ -100,6 +125,7 @@ open class FeatureRunner(
             eventDispatcher.dispatch(FeatureStartedEvent(testEntity as Feature))
             super.run(notifier)
         } finally {
+            if (scenarioScopeFactory != null) scope.parallelGroup.close()
             eventDispatcher.dispatch(FeatureFinishedEvent(testEntity.getId()))
         }
     }
@@ -121,9 +147,10 @@ open class FeatureRunner(
             hookRunner: SkelligHookRunner,
             eventDispatcher: SkelligTestEventDispatcher,
             tagsFilter: TagsFilter,
-            scope: TestScenarioScope
+            scope: TestScenarioScope,
+            scenarioScopeFactory: ((String) -> TestScenarioScope)? = null
         ): FeatureRunner {
-            return FeatureRunner(feature, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher, scope)
+            return FeatureRunner(feature, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher, scope, scenarioScopeFactory)
         }
     }
 

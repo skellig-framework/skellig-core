@@ -1,0 +1,4 @@
+Feature: Barrier feature one
+
+    Scenario: Meet the other feature from feature one
+        * Meet the other feature

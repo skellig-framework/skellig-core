@@ -1,0 +1,11 @@
+name ("Verify the setup state is in the state of the feature") {
+    validate {
+        get(setupValue) = stored
+    }
+}
+
+name ("Verify the setup state is not in the state of the scenario") {
+    validate {
+        get(setupValue, missing) = missing
+    }
+}

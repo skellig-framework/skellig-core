@@ -54,6 +54,22 @@ class FeatureRunnerTest {
     }
 
     @Test
+    fun testRunWhenScenariosHaveScopesOfTheirOwnThenOnlyTheirOwnStateIsCleanedAfterTheScenario() {
+        val scenarioState = mock<TestScenarioState>()
+        val scenarioScope = TestScenarioScope("scenario", scenarioState)
+        val featureRunner = FeatureRunner.create(
+            feature, testStepRunner, testStepLogger, hookRunner, eventDispatcher, TagsFilter(emptySet(), emptySet()), scope
+        ) { scenarioScope }
+
+        featureRunner.run(mock<RunNotifier>())
+
+        assertAll(
+            { verify(scenarioState).clean() },
+            { verify(testScenarioState, never()).clean() }
+        )
+    }
+
+    @Test
     fun testRunAndVerifyLogIsAttached() {
         val expectedLogRecords = listOf("log record 1")
         whenever(testStepLogger.getLogsAndClean(scope.id)).thenReturn(expectedLogRecords)

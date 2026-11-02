@@ -1,0 +1,11 @@
+Feature: Order feature A
+
+    Scenario: A1
+        * Meet the other feature
+        * Record the run of scenario A1 of feature A
+
+    Scenario: A2
+        * Record the run of scenario A2 of feature A
+
+    Scenario: A3
+        * Record the run of scenario A3 of feature A

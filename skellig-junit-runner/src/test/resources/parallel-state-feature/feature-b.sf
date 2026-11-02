@@ -1,0 +1,10 @@
+Feature: State feature B
+
+    Scenario: First scenario of B
+        * Store B in the state of the scenario
+        * Store B in the state by a class step
+        * Meet the other feature
+        * Verify B is in the state of the scenario
+
+    Scenario: Second scenario of B
+        * Verify nothing is left in the state of the scenario

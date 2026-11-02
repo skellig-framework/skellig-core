@@ -1,22 +1,30 @@
 package org.skellig.runner
 
+import com.typesafe.config.ConfigFactory
 import org.apache.log4j.BasicConfigurator
 import org.junit.runner.Description
 import org.junit.runner.notification.RunNotifier
 import org.junit.runners.ParentRunner
-import org.junit.runners.model.RunnerScheduler
 import org.junit.runners.model.Statement
 import org.skellig.feature.Feature
 import org.skellig.feature.event.*
 import org.skellig.feature.hook.DefaultSkelligHookRunner
 import org.skellig.feature.hook.DefaultSkelligTestHooksRegistry
+import org.skellig.feature.hook.SkelligHookRunner
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.feature.parser.DefaultFeatureParser
 import org.skellig.plugin.report.CustomAppender
 import org.skellig.plugin.report.DefaultTestStepLogger
+import org.skellig.plugin.report.TestStepLogger
 import org.skellig.runner.annotation.SkelligOptions
 import org.skellig.runner.exception.FeatureRunnerException
+import org.skellig.runner.exception.ParallelConfigException
+import org.skellig.runner.parallel.ParallelConfig
+import org.skellig.runner.parallel.ParallelGroupScheduler
+import org.skellig.runner.parallel.ParallelMode
+import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.logger
+import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.nio.file.Paths
 import kotlin.reflect.full.createInstance
@@ -43,6 +51,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
     private val log = logger<SkelligRunner>()
     private val children = mutableListOf<FeatureRunner>()
     private var skelligTestContext: SkelligTestContext
+    private val parallelConfig: ParallelConfig
     private val eventDispatcher = DefaultSkelligTestEventDispatcher()
 
     init {
@@ -52,16 +61,26 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         initPlugins(clazz)
 
         log.info("Reading the config from file '${skelligOptions.config}'")
-        val config = getConfig(skelligOptions.config)
+        // without a configuration file, the context has no configuration
+        val config = getConfig(skelligOptions.config).takeIf { it.isNotBlank() }
         skelligTestContext = skelligOptions.context.createInstance()
         val testStepRunner = skelligTestContext.initialize(clazz.classLoader, skelligOptions.testSteps.toList(), config)
+        parallelConfig = try {
+            readParallelConfig(clazz.classLoader)
+        } catch (e: Exception) {
+            // the context has started its processors already
+            skelligTestContext.close()
+            throw e
+        }
+        skelligTestContext.parallelRun = parallelConfig.isParallel
         // without a parallel run, all scenarios share the only state and the instances of the user classes of the context
         // through its default scope
         val defaultScope = skelligTestContext.getDefaultScope()
 
-        // without a parallel run, there is only the default scope, so it collects also the lines which were logged by
-        // threads that were not given a scope, as all of them belong to the scenario that runs
-        val testStepLogger = DefaultTestStepLogger(defaultScope.id)
+        // without a parallel run, there is only the default scope, so it also collects the lines which were logged by
+        // threads that were not given a scope, as all of them belong to the scenario that runs.
+        // With parallel scenarios, such a line can not be attributed to any of them, so it is dropped
+        val testStepLogger = DefaultTestStepLogger(defaultScope.id.takeUnless { parallelConfig.isParallel })
         skelligTestContext.config?.let {
             if (it.hasPath(REPORT_LOG_ENABLED) && it.getBoolean(REPORT_LOG_ENABLED))
                 BasicConfigurator.configure(CustomAppender(testStepLogger))
@@ -86,15 +105,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
                                         it.scenarios?.any { testScenario -> tagsFilter.checkTagsAreIncluded(testScenario.tags) } == true
                             }
                             .map { feature: Feature ->
-                                FeatureRunner.create(
-                                    feature,
-                                    testStepRunner,
-                                    testStepLogger,
-                                    hookRunner,
-                                    eventDispatcher,
-                                    tagsFilter,
-                                    defaultScope
-                                )
+                                createFeatureRunner(feature, testStepRunner, testStepLogger, hookRunner, tagsFilter, defaultScope)
                             }
                             .toCollection(children)
                         if (features.isEmpty()) throwNoFeaturesFoundError(featureResourcePath, includeTags, excludeTags)
@@ -108,6 +119,31 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
                     "and features from '${skelligOptions.features.joinToString(",")}'"
         )
     }
+
+    private fun createFeatureRunner(
+        feature: Feature,
+        testStepRunner: TestStepRunner,
+        testStepLogger: TestStepLogger,
+        hookRunner: SkelligHookRunner,
+        tagsFilter: TagsFilter,
+        defaultScope: TestScenarioScope
+    ): FeatureRunner =
+        if (parallelConfig.mode == ParallelMode.FEATURE) {
+            // a feature is a parallel group, so its scenarios and its hooks share the instances of the user classes,
+            // while every scenario has a state of its own
+            val parallelGroup = skelligTestContext.createParallelGroupContext(feature.name)
+            // a scope collects its log from the start, so the lines logged by its hooks are reported too
+            val createScope = { scopeId: String ->
+                skelligTestContext.createScope(scopeId, parallelGroup).also { testStepLogger.clear(it.id) }
+            }
+            FeatureRunner.create(
+                feature, testStepRunner, testStepLogger, hookRunner, eventDispatcher, tagsFilter,
+                createScope("${feature.name}#${Integer.toHexString(feature.getId())}"), createScope
+            )
+        } else {
+            // everything runs in the default scope, which wraps the only state of the context
+            FeatureRunner.create(feature, testStepRunner, testStepLogger, hookRunner, eventDispatcher, tagsFilter, defaultScope)
+        }
 
     private fun initPlugins(clazz: Class<*>) {
         clazz.getDeclaredAnnotationsByType(SkelligOptions.Plugin::class.java).forEach { skelligPluginOptions ->
@@ -151,16 +187,35 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
     override fun childrenInvoker(notifier: RunNotifier): Statement? {
         return object : Statement() {
             override fun evaluate() {
+                val features = getChildren()
+                val scheduler =
+                    if (parallelConfig.isParallel) ParallelGroupScheduler.fixedPool(parallelConfig.workersFor(features.size))
+                    else ParallelGroupScheduler.sequential()
                 try {
-                    getChildren().forEach { feature -> scheduler.schedule { runChild(feature, notifier) } }
-                } catch (ex: Exception) {
+                    features.forEach { feature -> scheduler.schedule { runChild(feature, notifier) } }
+                } finally {
+                    // waits for all the features and reports the first unexpected exception
                     scheduler.finished()
                 }
             }
         }
     }
 
+    private fun readParallelConfig(classLoader: ClassLoader): ParallelConfig {
+        // without a configuration file the defaults of the runner and the system properties still apply
+        val config = skelligTestContext.config ?: ConfigFactory.defaultOverrides(classLoader)
+        return ParallelConfig.read(config.withFallback(ConfigFactory.defaultReference(classLoader))).also {
+            if (it.mode == ParallelMode.SCENARIO || it.mode == ParallelMode.TAG) {
+                throw ParallelConfigException(
+                    "Parallel mode '${it.mode.configValue}' is not supported yet, the supported modes are: " +
+                            "${ParallelMode.NONE.configValue}, ${ParallelMode.FEATURE.configValue}"
+                )
+            }
+        }
+    }
+
     protected fun getConfig(config: String): String {
+        if (!config.contains("\${")) return config
         val key = config.substringAfter("\${").substringBefore("}")
         val property = System.getProperty(key, "")
         return config.replace("\${$key}", property)
@@ -171,16 +226,6 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
 
     private fun throwNoFeaturesFoundError(featureResourcePath: String, includeTags: Set<String>, excludeTags: Set<String>) {
         error("No features were found in '${featureResourcePath}' with the included tags '${includeTags}' and excluded tags '${excludeTags}')")
-    }
-
-    private val scheduler = object : RunnerScheduler {
-        override fun schedule(childStatement: Runnable?) {
-            childStatement?.run()
-        }
-
-        override fun finished() {
-
-        }
     }
 
 }

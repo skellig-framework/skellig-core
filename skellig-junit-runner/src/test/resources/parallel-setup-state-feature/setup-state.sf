@@ -1,0 +1,8 @@
+@SetupState
+Feature: Feature setup shares its state
+
+    Before Feature:
+        * Verify the setup state is in the state of the feature
+
+    Scenario: A scenario of its own
+        * Verify the setup state is not in the state of the scenario
