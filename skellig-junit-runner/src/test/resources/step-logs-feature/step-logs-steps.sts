@@ -1,0 +1,11 @@
+name ("Record the log scope in async tasks") {
+    task {
+        asyncForEach(listOf(1, 2, 3, 4, 5, 6, 7, 8), i) {
+            runTest("Record the log scope") {}
+        }
+        asyncEach {
+            runTest("Record the log scope") {}
+            runTest("Record the log scope again") {}
+        }
+    }
+}

@@ -13,6 +13,7 @@ import org.skellig.plugin.report.TestStepLogger
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.util.PropertyFormatUtils
+import org.skellig.teststep.processing.util.ScopeLogContext
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.TestStepRunner
 
@@ -74,10 +75,13 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     private fun runHooks(
         hookType: Class<out Annotation>
     ) {
-        hookRunner.run(testEntity.getEntityTags(), hookType, scope) { hookName, e, duration ->
-            dispatchHookFinishedEvent(hookName, duration, e, hookType)
-            if (e != null) {
-                throw e
+        // the log events of the hooks are attributed to the scope, whatever they say
+        ScopeLogContext.runWith(scope) {
+            hookRunner.run(testEntity.getEntityTags(), hookType, scope) { hookName, e, duration ->
+                dispatchHookFinishedEvent(hookName, duration, e, hookType)
+                if (e != null) {
+                    throw e
+                }
             }
         }
     }
@@ -99,11 +103,12 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
             eventDispatcher.dispatch(testStepFinishedEvent)
         } else {
             notifier.fireTestStarted(childDescription)
-            testStepLogger.clear()
+            testStepLogger.clear(scope.id)
             val startTime = System.currentTimeMillis()
             try {
                 val parameters = child.testStep.parameters ?: emptyMap()
-                runResult = testStepRunner!!.run(child.testStep.name, parameters, scope)
+                // the log events of the test step are attributed to the scope, whatever they say
+                runResult = ScopeLogContext.runWith(scope) { testStepRunner!!.run(child.testStep.name, parameters, scope) }
 
                 // subscribe for result from test step. Usually needed for async test step
                 // however if it's sync, then the function will be called anyway.
@@ -137,7 +142,7 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
                 testStepFinishedEvent.executionStatus = TestExecutionStatus.FAILED
             } finally {
                 testStepFinishedEvent.executionStatus = TestExecutionStatus.PASSED
-                testStepFinishedEvent.logRecords = testStepLogger.getLogsAndClean()
+                testStepFinishedEvent.logRecords = testStepLogger.getLogsAndClean(scope.id)
                 runResult?.let { testStepRunResults.add(it) }
 
                 notifier.fireTestFinished(childDescription)

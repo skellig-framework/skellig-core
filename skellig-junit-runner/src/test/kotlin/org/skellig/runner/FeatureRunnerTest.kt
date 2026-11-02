@@ -1,6 +1,8 @@
 package org.skellig.runner
 
 import org.junit.Test
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.runner.notification.RunNotifier
@@ -22,6 +24,7 @@ import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.processing.state.TestScenarioState
 import org.skellig.teststep.processing.util.PropertyFormatUtils
+import org.skellig.teststep.processing.util.ScopeLogContext
 import org.skellig.teststep.runner.TestStepRunner
 
 
@@ -53,7 +56,7 @@ class FeatureRunnerTest {
     @Test
     fun testRunAndVerifyLogIsAttached() {
         val expectedLogRecords = listOf("log record 1")
-        whenever(testStepLogger.getLogsAndClean()).thenReturn(expectedLogRecords)
+        whenever(testStepLogger.getLogsAndClean(scope.id)).thenReturn(expectedLogRecords)
 
         featureRunner.run(mock<RunNotifier>())
 
@@ -69,7 +72,7 @@ class FeatureRunnerTest {
         }.whenever(testStepRunner).run(feature.scenarios!![0].steps!![0].name, emptyMap(), scope)
 
         val expectedLogRecords = listOf("log record 1")
-        whenever(testStepLogger.getLogsAndClean()).thenReturn(expectedLogRecords)
+        whenever(testStepLogger.getLogsAndClean(scope.id)).thenReturn(expectedLogRecords)
 
         featureRunner.run(mock<RunNotifier>())
 
@@ -79,6 +82,73 @@ class FeatureRunnerTest {
         verify(eventDispatcher).dispatch(argThat { e ->
             e is TestStepProcessingFinishedEvent && e.result.errorLog != null
         })
+    }
+
+    @Test
+    fun testRunAndVerifyOnlyLogOfTheScopeIsClearedBeforeAndTakenAfterTestStep() {
+        featureRunner.run(mock<RunNotifier>())
+
+        val orderVerifier = Mockito.inOrder(testStepLogger, testStepRunner)
+        orderVerifier.verify(testStepLogger).clear(scope.id)
+        orderVerifier.verify(testStepRunner).run(eq(feature.scenarios!![0].steps!![0].name), any(), eq(scope))
+        orderVerifier.verify(testStepLogger).getLogsAndClean(scope.id)
+        verify(testStepLogger, never()).clear()
+    }
+
+    @Test
+    fun testRunAndVerifyLogIsAttachedToHookReport() {
+        val expectedLogRecords = listOf("hook log record")
+        whenever(testStepLogger.getLogsAndClean(scope.id)).thenReturn(expectedLogRecords)
+        doAnswer {
+            it.getArgument<(String, Throwable?, Long) -> Unit>(3).invoke("beforeHook", null, 1)
+        }.whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestFeature::class.java), eq(scope), argThat { true })
+        doAnswer {
+            it.getArgument<(String, Throwable?, Long) -> Unit>(3).invoke("beforeScenarioHook", null, 1)
+        }.whenever(hookRunner).run(eq(feature.tags), eq(BeforeTestScenario::class.java), eq(scope), argThat { true })
+
+        featureRunner.run(mock<RunNotifier>())
+
+        assertAll(
+            {
+                verify(eventDispatcher).dispatch(argThat { e ->
+                    e is HookFinishedEvent && e.methodName == "beforeHook" && e.logRecords == expectedLogRecords
+                })
+            },
+            {
+                verify(eventDispatcher).dispatch(argThat { e ->
+                    e is HookFinishedEvent && e.methodName == "beforeScenarioHook" && e.logRecords == expectedLogRecords
+                })
+            }
+        )
+    }
+
+    @Test
+    fun testRunAndVerifyScopeIsInLogContextOnlyWhileTestStepsRun() {
+        val scopeIdsWhileTestStepsRun = mutableListOf<String?>()
+        doAnswer {
+            scopeIdsWhileTestStepsRun.add(ScopeLogContext.currentScopeId())
+            TestStepProcessor.TestStepRunResult(mock())
+        }.whenever(testStepRunner).run(any(), any(), eq(scope))
+
+        featureRunner.run(mock<RunNotifier>())
+
+        assertEquals(listOf<String?>(scope.id, scope.id), scopeIdsWhileTestStepsRun)
+        assertNull(ScopeLogContext.currentScopeId())
+    }
+
+    @Test
+    fun testRunAndVerifyScopeIsInLogContextOnlyWhileHooksRun() {
+        val scopeIdsWhileHooksRun = mutableListOf<String?>()
+        doAnswer {
+            scopeIdsWhileHooksRun.add(ScopeLogContext.currentScopeId())
+            null
+        }.whenever(hookRunner).run(anyOrNull(), any(), eq(scope), any())
+
+        featureRunner.run(mock<RunNotifier>())
+
+        // before and after hooks of the feature and of its scenario
+        assertEquals(List<String?>(4) { scope.id }, scopeIdsWhileHooksRun)
+        assertNull(ScopeLogContext.currentScopeId())
     }
 
     @Test

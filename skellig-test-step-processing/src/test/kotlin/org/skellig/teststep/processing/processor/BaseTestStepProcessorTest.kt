@@ -11,6 +11,11 @@ import org.skellig.teststep.processing.model.ScenarioStateUpdater
 import org.skellig.teststep.processing.model.TestStepExecutionType
 import org.skellig.teststep.processing.state.DefaultTestScenarioState
 import org.skellig.teststep.processing.state.TestScenarioScope
+import org.skellig.teststep.processing.util.ScopeLogContext
+import org.skellig.teststep.processing.util.withCoroutineWorkersOfScope
+import org.apache.log4j.MDC
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import org.skellig.teststep.processing.value.ValueExpressionContextFactory
 import org.skellig.teststep.processing.value.function.DefaultFunctionValueExecutor
 import org.skellig.teststep.processing.value.property.DefaultPropertyExtractor
@@ -146,6 +151,64 @@ class BaseTestStepProcessorTest {
 
             assertEquals(BigDecimal("100"), testScenarioState.get("a"))
             assertEquals("${DEFAULT_RESULT}100", testScenarioState.get("b"))
+        }
+    }
+
+    @Nested
+    inner class ScopeInLogContextTest {
+
+        @Test
+        fun `async test step runs with the scope id in log context although its worker was created for another scope`() {
+            val scopeIds = mutableListOf<String?>()
+            val processor = object : BaseTestStepProcessor<DefaultTestStep>() {
+                override fun processTestStep(testStep: DefaultTestStep): Any {
+                    scopeIds.add(ScopeLogContext.currentScopeId())
+                    return DEFAULT_RESULT
+                }
+
+                override fun getTestStepClass(): Class<*> = DefaultTestStep::class.java
+            }
+            val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(TestScenarioScope("scope-1", testScenarioState))
+                .withName("n1")
+                .withExecution(TestStepExecutionType.ASYNC)
+                .build()
+            val finished = CountDownLatch(1)
+
+            // the only worker of the processor is created by a thread of another scope and inherits its log context
+            MDC.put(ScopeLogContext.KEY, "other-scope")
+            try {
+                processor.process(testStep).subscribe { _, _, _ -> finished.countDown() }
+            } finally {
+                MDC.remove(ScopeLogContext.KEY)
+            }
+            assertEquals(true, finished.await(10, TimeUnit.SECONDS))
+
+            assertEquals(listOf<String?>("scope-1"), scopeIds)
+        }
+
+        @Test
+        fun `tasks of test step run on shared workers with the scope id in log context`() {
+            val processor = object : BaseTestStepProcessor<DefaultTestStep>() {
+                override fun processTestStep(testStep: DefaultTestStep): Any =
+                    runTasksAsyncAndWait(
+                        mapOf<String, () -> String?>(
+                            "a" to { ScopeLogContext.currentScopeId() },
+                            "b" to { ScopeLogContext.currentScopeId() }
+                        ), testStep
+                    )
+
+                override fun getTestStepClass(): Class<*> = DefaultTestStep::class.java
+            }
+            val testStep = DefaultTestStep.DefaultTestStepBuilder().withScope(TestScenarioScope("scope-1", testScenarioState))
+                .withName("n1")
+                .build()
+
+            var result: Any? = null
+            withCoroutineWorkersOfScope("other-scope") {
+                processor.process(testStep).subscribe { _, r, _ -> result = r }
+            }
+
+            assertEquals(mapOf("a" to "scope-1", "b" to "scope-1"), result)
         }
     }
 

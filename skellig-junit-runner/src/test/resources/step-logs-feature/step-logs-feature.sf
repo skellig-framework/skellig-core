@@ -1,0 +1,9 @@
+Feature: Step logs are collected per scope
+
+    Scenario: First scenario
+        * Log first message
+        * Log second message
+        * Log nothing
+
+    Scenario: Second scenario
+        * Record the log scope in async tasks
