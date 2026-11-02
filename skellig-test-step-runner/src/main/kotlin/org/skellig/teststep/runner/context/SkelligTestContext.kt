@@ -71,13 +71,6 @@ open class SkelligTestContext : Closeable {
     private var rootTestStepFactory: CompositeTestStepFactory? = null
     private var testStepsRegistry: TestStepRegistry? = null
 
-    /**
-     * True if the scenarios run in parallel, which the runner that runs them sets before they start. Every scenario has
-     * its own state then, so the only state of the context, which is [getTestScenarioState], is not available.
-     */
-    @Volatile
-    var parallelRun: Boolean = false
-
     fun initialize(classLoader: ClassLoader, testStepPaths: List<String>, configPath: String? = null): TestStepRunner {
         log.info(
             "Initializing Skellig Context with test steps in '$testStepPaths'" +
@@ -195,18 +188,12 @@ open class SkelligTestContext : Closeable {
      *
      * @return the current state of the test scenario
      * @throws IllegalStateException if the TestScenarioState is not initialized, or if scenarios run in parallel
-     * ([parallelRun]), as every scenario has a state of its own and this one belongs to none of them
      */
     @Deprecated(
         "Declare a parameter of type TestScenarioState in the test step, hook or function method to get the state of " +
                 "its scenario injected. SkelligTestContextAware stays available for shared services."
     )
     fun getTestScenarioState(): TestScenarioState {
-        check(!parallelRun) {
-            "The Test Scenario State of the context cannot be used when scenarios run in parallel, as every scenario " +
-                    "has a state of its own. Declare a parameter of type TestScenarioState in the test step, hook or " +
-                    "function method to get the state of its scenario injected."
-        }
         return testScenarioState ?: error("TestScenarioState must be initialized first. Did you forget to call 'initialize'?")
     }
 

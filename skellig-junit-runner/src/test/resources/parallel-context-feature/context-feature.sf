@@ -1,4 +1,0 @@
-Feature: Step definitions which read the state through the context
-
-    Scenario: Read the state through the context
-        * Read the state through the context
