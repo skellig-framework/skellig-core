@@ -1,0 +1,10 @@
+@GateHooks
+Feature: Healthy feature
+
+    Scenario: Healthy scenario 1
+        * Record the start of gate scenario H1
+        * Record the end of gate scenario H1
+
+    Scenario: Healthy scenario 2
+        * Record the start of gate scenario H2
+        * Record the end of gate scenario H2

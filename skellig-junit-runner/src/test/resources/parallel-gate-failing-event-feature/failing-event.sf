@@ -1,0 +1,10 @@
+Feature: Failing event feature
+
+    Scenario: Failing event scenario 1
+        * Record the start of gate scenario 1
+
+    Scenario: Failing event scenario 2
+        * Record the start of gate scenario 2
+
+    Scenario: Failing event scenario 3
+        * Record the start of gate scenario 3
