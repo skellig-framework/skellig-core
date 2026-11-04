@@ -1,0 +1,4 @@
+Feature: Passing feature
+
+    Scenario: Passing scenario
+        * Record the run of scenario P1 of feature P

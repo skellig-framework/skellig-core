@@ -47,6 +47,12 @@ open class TestScenarioRunner protected constructor(
 
     private var description: Description? = null
 
+    /**
+     * The scope the test steps of the scenario run in.
+     */
+    val scenarioScope: TestScenarioScope
+        get() = scope
+
     override fun getChildren(): List<TestStepWrapper>? {
         val testScenario = testEntity as TestScenario
         var testSteps: List<TestStepWrapper>? = null

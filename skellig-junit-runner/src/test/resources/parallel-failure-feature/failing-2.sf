@@ -1,0 +1,4 @@
+Feature: Failing feature 2
+
+    Scenario: Failing scenario 2
+        * Record the run of scenario F2 of feature F2

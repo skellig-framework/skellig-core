@@ -1,0 +1,9 @@
+@ParallelHooks
+Feature: Hooks feature B
+
+    Scenario: Hooks B1
+        * Meet the other feature
+        * Record the run in the hooks feature B
+
+    Scenario: Hooks B2
+        * Record the run in the hooks feature B
