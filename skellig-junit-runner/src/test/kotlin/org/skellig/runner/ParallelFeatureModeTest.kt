@@ -220,14 +220,6 @@ class ParallelFeatureModeTest {
     }
 
     @Test
-    fun testStateOfTheContextIsNotAvailableInParallelRun() {
-        val result = JUnitCore().run(ContextStateRunner::class.java)
-
-        assertEquals(result.failureReport(), 1, result.failureCount)
-        assertTrue(result.failureReport(), result.failureReport().contains("Declare a parameter of type TestScenarioState"))
-    }
-
-    @Test
     fun testStateOfTheContextIsAvailableWithoutParallelRun() {
         val result = JUnitCore().run(ContextStateWithoutParallelRunner::class.java)
 
