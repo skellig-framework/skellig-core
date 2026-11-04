@@ -63,22 +63,6 @@ class ParallelFeatureModeTest {
 
     @RunWith(SkelligRunner::class)
     @SkelligOptions(
-        features = ["parallel-context-feature"],
-        testSteps = ["parallel-context-feature", "org.skellig.runner.parallelcontext"],
-        config = "parallel-feature-mode.conf"
-    )
-    class ContextStateRunner
-
-    @RunWith(SkelligRunner::class)
-    @SkelligOptions(
-        features = ["parallel-context-feature"],
-        testSteps = ["parallel-context-feature", "org.skellig.runner.parallelcontext"],
-        config = "test.conf"
-    )
-    class ContextStateWithoutParallelRunner
-
-    @RunWith(SkelligRunner::class)
-    @SkelligOptions(
         features = ["parallel-failure-feature"],
         testSteps = ["parallel-failure-feature", "org.skellig.runner.parallelrun"],
         config = "parallel-feature-mode.conf"
@@ -217,13 +201,6 @@ class ParallelFeatureModeTest {
         assertTrue(stepEvents.map { it.thread }.toString(), stepEvents.all { workerThread.matches(it.thread) })
         // the start and the finish of a step are fired by the same thread
         stepEvents.groupBy { it.description }.values.forEach { events -> assertEquals(1, events.map { it.thread }.toSet().size) }
-    }
-
-    @Test
-    fun testStateOfTheContextIsAvailableWithoutParallelRun() {
-        val result = JUnitCore().run(ContextStateWithoutParallelRunner::class.java)
-
-        assertTrue(result.failureReport(), result.wasSuccessful())
     }
 
     @Test

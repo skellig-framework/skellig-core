@@ -51,7 +51,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
     private val log = logger<SkelligRunner>()
     private val children = mutableListOf<FeatureRunner>()
     private var skelligTestContext: SkelligTestContext
-    private val parallelConfig: ParallelConfig?
+    private val parallelConfig: ParallelConfig
     private val eventDispatcher = DefaultSkelligTestEventDispatcher()
 
     init {
@@ -65,14 +65,14 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         val config = getConfig(skelligOptions.config).takeIf { it.isNotBlank() }
         skelligTestContext = skelligOptions.context.createInstance()
         val testStepRunner = skelligTestContext.initialize(clazz.classLoader, skelligOptions.testSteps.toList(), config)
-        parallelConfig = initParallelConfig()
+        parallelConfig = initParallelConfig(clazz.classLoader)
 
         val defaultScope = skelligTestContext.getDefaultScope()
 
         // without a parallel run, there is only the default scope, so it also collects the lines which were logged by
         // threads that were not given a scope, as all of them belong to the scenario that runs.
         // With parallel scenarios, such a line can not be attributed to any of them, so it is dropped
-        val testStepLogger = DefaultTestStepLogger(defaultScope.id.takeUnless { parallelConfig?.isParallel ?: false })
+        val testStepLogger = DefaultTestStepLogger(defaultScope.id.takeUnless { parallelConfig.isParallel })
         skelligTestContext.config?.let {
             if (it.hasPath(REPORT_LOG_ENABLED) && it.getBoolean(REPORT_LOG_ENABLED))
                 BasicConfigurator.configure(CustomAppender(testStepLogger))
@@ -120,7 +120,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
         tagsFilter: TagsFilter,
         defaultScope: TestScenarioScope
     ): FeatureRunner =
-        if (parallelConfig?.mode == ParallelMode.FEATURE) {
+        if (parallelConfig.mode == ParallelMode.FEATURE) {
             // a feature is a parallel group, so its scenarios and its hooks share the instances of the user classes,
             // while every scenario has a state of its own
             val parallelGroup = skelligTestContext.createParallelGroupContext(feature.name)
@@ -181,7 +181,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
             override fun evaluate() {
                 val features = getChildren()
                 val scheduler =
-                    if (parallelConfig?.isParallel == true) ParallelGroupScheduler.fixedPool(parallelConfig.workersFor(features.size))
+                    if (parallelConfig.isParallel) ParallelGroupScheduler.fixedPool(parallelConfig.workersFor(features.size))
                     else ParallelGroupScheduler.sequential()
                 try {
                     features.forEach { feature -> scheduler.schedule { runChild(feature, notifier) } }
@@ -194,19 +194,21 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<FeatureRunner>(clazz) {
     }
 
 
-    private fun initParallelConfig(): ParallelConfig? {
+    private fun initParallelConfig(classLoader: ClassLoader): ParallelConfig {
         try {
-            return skelligTestContext.config?.let { config ->
-                ParallelConfig.read(config).also {
-                    if (it.mode == ParallelMode.SCENARIO || it.mode == ParallelMode.TAG) {
-                        throw ParallelConfigException(
-                            "Parallel mode '${it.mode.configValue}' is not supported yet, the supported modes are: " +
-                                    "${ParallelMode.NONE.configValue}, ${ParallelMode.FEATURE.configValue}"
-                        )
-                    }
+            // without a configuration file, the defaults of the runner and the system properties still apply
+            val config = (skelligTestContext.config ?: ConfigFactory.defaultOverrides(classLoader))
+                .withFallback(ConfigFactory.defaultReference(classLoader))
+            return ParallelConfig.read(config).also {
+                if (it.mode == ParallelMode.SCENARIO || it.mode == ParallelMode.TAG) {
+                    throw ParallelConfigException(
+                        "Parallel mode '${it.mode.configValue}' is not supported yet, the supported modes are: " +
+                                "${ParallelMode.NONE.configValue}, ${ParallelMode.FEATURE.configValue}"
+                    )
                 }
             }
         } catch (e: Exception) {
+            // the context has started its processors already
             skelligTestContext.close()
             throw e
         }
