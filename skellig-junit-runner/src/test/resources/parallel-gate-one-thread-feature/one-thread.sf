@@ -1,0 +1,20 @@
+@GateHooks
+Feature: One thread feature
+
+    Before Feature:
+        * Record the gate step before the feature
+
+    Scenario: One thread scenario 1
+        * Record the start of gate scenario 1
+        * Record the end of gate scenario 1
+
+    Scenario: One thread scenario 2
+        * Record the start of gate scenario 2
+        * Record the end of gate scenario 2
+
+    Scenario: One thread scenario 3
+        * Record the start of gate scenario 3
+        * Record the end of gate scenario 3
+
+    After Feature:
+        * Record the gate step after the feature

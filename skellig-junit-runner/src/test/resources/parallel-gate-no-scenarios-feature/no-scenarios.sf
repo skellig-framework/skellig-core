@@ -1,0 +1,12 @@
+@GateHooks
+Feature: No scenarios feature
+
+    Before Feature:
+        * Record the gate step before the feature
+
+    @Excluded
+    Scenario: Excluded gate scenario
+        * Record the start of gate scenario 1
+
+    After Feature:
+        * Record the gate step after the feature

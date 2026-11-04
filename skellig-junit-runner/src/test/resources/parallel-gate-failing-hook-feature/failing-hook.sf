@@ -1,0 +1,17 @@
+@FailingGateHook
+Feature: Failing hook feature
+
+    Before Feature:
+        * Record the gate step before the feature
+
+    Scenario: Failing hook scenario 1
+        * Record the start of gate scenario F1
+
+    Scenario: Failing hook scenario 2
+        * Record the start of gate scenario F2
+
+    Scenario: Failing hook scenario 3
+        * Record the start of gate scenario F3
+
+    After Feature:
+        * Record the gate step after the feature
