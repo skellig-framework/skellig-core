@@ -145,13 +145,18 @@ class ParallelConfigTest {
 
     @Test
     fun testModesWhichAreNotSupportedYetFailWhenRunnerIsCreated() {
-        listOf("scenario", "tag").forEach { mode ->
-            setSystemProperties("skellig.parallel.mode" to mode)
+        setSystemProperties("skellig.parallel.mode" to "tag")
 
-            val ex = assertThrows<ParallelConfigException>(mode) { SkelligRunner(NoConfigFileRunner::class.java) }
+        val ex = assertThrows<ParallelConfigException> { SkelligRunner(NoConfigFileRunner::class.java) }
 
-            assertEquals("Parallel mode '$mode' is not supported yet, the supported modes are: none, feature", ex.message)
-        }
+        assertEquals("Parallel mode 'tag' is not supported yet, the supported modes are: none, feature, scenario", ex.message)
+    }
+
+    @Test
+    fun testScenarioModeIsSupported() {
+        setSystemProperties("skellig.parallel.mode" to "scenario")
+
+        SkelligRunner(NoConfigFileRunner::class.java)
     }
 
     @Test

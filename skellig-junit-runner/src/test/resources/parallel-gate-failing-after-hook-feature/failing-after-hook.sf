@@ -1,0 +1,13 @@
+@FailingAfterGateHook
+Feature: Failing after hook feature
+
+    Scenario: Failing after hook scenario 1
+        * Record the start of gate scenario 1
+        * Record the end of gate scenario 1
+
+    Scenario: Failing after hook scenario 2
+        * Record the start of gate scenario 2
+        * Record the end of gate scenario 2
+
+    After Feature:
+        * Record the gate step after the feature

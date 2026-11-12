@@ -11,12 +11,13 @@ import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.plugin.report.TestStepLogger
+import org.skellig.runner.parallel.ParallelGroup
 import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.runner.TestStepRunner
 
-private const val BEFORE_FEATURE_NAME = "Before Feature"
-private const val AFTER_FEATURE_NAME = "After Feature"
+internal const val BEFORE_FEATURE_NAME = "Before Feature"
+internal const val AFTER_FEATURE_NAME = "After Feature"
 
 /**
  * FeatureRunner is responsible for running the test scenarios within a [Feature].
@@ -46,7 +47,7 @@ open class FeatureRunner(
 ) : BaseSkelligTestEntityRunner<TestScenarioRunner>(
     feature, hookRunner, testStepRunner, testStepLogger,
     BeforeTestFeature::class.java, AfterTestFeature::class.java, eventDispatcher, scope
-) {
+), SkelligFeatureRunner {
 
     private var description: Description? = null
     private var testScenarioRunners: MutableList<TestScenarioRunner>? = null
@@ -138,6 +139,11 @@ open class FeatureRunner(
             )
         )
     }
+
+    /**
+     * The feature is one parallel group, whose scenarios run in order.
+     */
+    override fun createParallelGroups(): List<ParallelGroup> = listOf(ParallelGroup(getEntityName(), listOf { notifier -> run(notifier) }))
 
     companion object {
         fun create(

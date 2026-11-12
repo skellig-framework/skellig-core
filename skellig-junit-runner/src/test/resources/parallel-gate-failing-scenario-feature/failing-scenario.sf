@@ -1,0 +1,16 @@
+@GateHooks
+Feature: Failing scenario feature
+
+    Before Feature:
+        * Record the gate step before the feature
+
+    Scenario: Failing gate scenario
+        * Record the start of gate scenario 1
+        * Fail the gate scenario
+
+    Scenario: Passing gate scenario
+        * Record the start of gate scenario 2
+        * Record the end of gate scenario 2
+
+    After Feature:
+        * Record the gate step after the feature
