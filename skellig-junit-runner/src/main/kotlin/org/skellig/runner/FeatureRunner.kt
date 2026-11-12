@@ -1,9 +1,7 @@
 package org.skellig.runner
 
-import org.junit.internal.runners.model.EachTestNotifier
 import org.junit.runner.Description
 import org.junit.runner.notification.RunNotifier
-import org.junit.runner.notification.StoppedByUserException
 import org.skellig.feature.Feature
 import org.skellig.feature.TestScenario
 import org.skellig.feature.TestStep
@@ -13,13 +11,13 @@ import org.skellig.feature.hook.annotation.AfterTestFeature
 import org.skellig.feature.hook.annotation.BeforeTestFeature
 import org.skellig.feature.metadata.TagsFilter
 import org.skellig.plugin.report.TestStepLogger
-import org.skellig.runner.parallel.FeatureGate
+import org.skellig.runner.parallel.ParallelGroup
 import org.skellig.teststep.processing.state.ParallelGroupContext
 import org.skellig.teststep.processing.state.TestScenarioScope
 import org.skellig.teststep.runner.TestStepRunner
 
-private const val BEFORE_FEATURE_NAME = "Before Feature"
-private const val AFTER_FEATURE_NAME = "After Feature"
+internal const val BEFORE_FEATURE_NAME = "Before Feature"
+internal const val AFTER_FEATURE_NAME = "After Feature"
 
 /**
  * FeatureRunner is responsible for running the test scenarios within a [Feature].
@@ -32,12 +30,10 @@ private const val AFTER_FEATURE_NAME = "After Feature"
  * @property scope The scope the hooks of the feature, and its steps before and after the feature, run in. Without a
  * [scenarioScopeFactory], also the scope the steps of its scenarios run in, and its state, which holds data passed through
  * test steps during a test scenario run, is cleaned after each [TestScenarioRunner] is finished.
- * @property scenarioScopeFactory Creates the scope of a scenario from the id of the scope. It is set when the scenarios
- * of the feature run in parallel: every scenario then runs in its own scope with a state of its own, which is dropped
- * when the scenario has finished. If the feature is a parallel group of its own, then the scopes refer to the
- * [ParallelGroupContext] of [scope], and its instances are dropped when the feature has finished. If every scenario
- * is a parallel group of its own, then each scope refers to a [ParallelGroupContext] of its own, which is dropped
- * when the scenario has finished, and the one of [scope] belongs to the setup and the teardown of the feature only.
+ * @property scenarioScopeFactory Creates the scope of a scenario from the id of the scope. It is set when the feature is
+ * a parallel group of its own: every scenario then runs in its own scope with a state of its own, which is dropped when
+ * the scenario has finished, and the instances of the [ParallelGroupContext] of [scope], which all the scopes must refer
+ * to, are dropped when the feature has finished.
  */
 open class FeatureRunner(
     feature: Feature,
@@ -51,76 +47,53 @@ open class FeatureRunner(
 ) : BaseSkelligTestEntityRunner<TestScenarioRunner>(
     feature, hookRunner, testStepRunner, testStepLogger,
     BeforeTestFeature::class.java, AfterTestFeature::class.java, eventDispatcher, scope
-) {
+), SkelligFeatureRunner {
 
-    private var featureDescription: Description? = null
-    private var allRunners: List<TestScenarioRunner>? = null
-    private var beforeFeatureRunner: TestScenarioRunner? = null
-    private var afterFeatureRunner: TestScenarioRunner? = null
-    private var scenarios: List<TestScenarioRunner> = emptyList()
+    private var description: Description? = null
+    private var testScenarioRunners: MutableList<TestScenarioRunner>? = null
 
-    // the setup and the teardown of the feature can be run by different threads, but never at the same time
-    @Volatile
-    private var suiteNotifier: EachTestNotifier? = null
-    private val gate by lazy { FeatureGate(scenarioRunners.size) }
-
-    /**
-     * The runners of the scenarios of the feature which are not excluded by tags, in the order of the feature,
-     * without the steps before and after the feature.
-     */
-    internal val scenarioRunners: List<TestScenarioRunner>
-        get() {
-            createRunners()
-            return scenarios
-        }
-
-    @Synchronized
     override fun getDescription(): Description {
-        if (featureDescription == null) {
-            featureDescription = Description.createSuiteDescription(name, getId())
-            children?.forEach { featureDescription!!.addChild(describeChild(it)) }
+        if (description == null) {
+            description = Description.createSuiteDescription(name, getId())
+            children?.forEach { description!!.addChild(describeChild(it)) }
         }
-        return featureDescription ?: error("Failed to create description of feature: " + testEntity.getEntityName())
+        return description ?: error("Failed to create description of feature: " + testEntity.getEntityName())
     }
 
     override fun getChildren(): List<TestScenarioRunner>? {
-        createRunners()
-        return allRunners
-    }
-
-    /**
-     * Creates the runners of the steps before the feature, of its scenarios and of the steps after the feature once.
-     * It can be called from the threads of different parallel groups.
-     */
-    @Synchronized
-    private fun createRunners() {
-        if (allRunners == null) {
+        if (testScenarioRunners == null) {
+            testScenarioRunners = mutableListOf()
             val feature = testEntity as Feature
 
-            beforeFeatureRunner = feature.beforeSteps?.let {
-                TestScenarioRunner.create(
-                    TestScenarioWrapper(feature.filePath + ":$BEFORE_FEATURE_NAME", BEFORE_FEATURE_NAME, it, null),
-                    testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scope
-                )
-            }
-
-            scenarios = feature.scenarios
-                ?.filter { tagsFilter.checkTagsAreIncluded(it.tags) }
-                ?.map {
+            feature.beforeSteps?.let {
+                testScenarioRunners!!.add(
                     TestScenarioRunner.create(
-                        it, testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scopeOf(it)
+                        TestScenarioWrapper(feature.filePath + ":$BEFORE_FEATURE_NAME", BEFORE_FEATURE_NAME, it, null),
+                        testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scope
                     )
-                } ?: emptyList()
-
-            afterFeatureRunner = feature.afterSteps?.let {
-                TestScenarioRunner.create(
-                    TestScenarioWrapper(feature.filePath + ":$AFTER_FEATURE_NAME", AFTER_FEATURE_NAME, null, it),
-                    testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scope
                 )
             }
 
-            allRunners = listOfNotNull(beforeFeatureRunner) + scenarios + listOfNotNull(afterFeatureRunner)
+            feature.scenarios
+                ?.filter { tagsFilter.checkTagsAreIncluded(it.tags) }
+                ?.forEach {
+                    testScenarioRunners!!.add(
+                        TestScenarioRunner.create(
+                            it, testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scopeOf(it)
+                        )
+                    )
+                }
+
+            feature.afterSteps?.let {
+                testScenarioRunners!!.add(
+                    TestScenarioRunner.create(
+                        TestScenarioWrapper(feature.filePath + ":$AFTER_FEATURE_NAME", AFTER_FEATURE_NAME, null, it),
+                        testEntity.getId(), testStepRunner, hookRunner, testStepLogger, eventDispatcher, scope
+                    )
+                )
+            }
         }
+        return testScenarioRunners
     }
 
     /**
@@ -142,21 +115,12 @@ open class FeatureRunner(
                 log.info("Cleanup the Test Scenario State")
                 scope.state.clean()
             } else {
-                val scenarioScope = child.scenarioScope
-                if (scenarioScope !== scope) {
-                    // the state of a scenario of its own is not needed once the scenario has finished
-                    scenarioScope.state.clean()
-                    // and neither are the instances of a scenario which is a parallel group of its own
-                    if (scenarioScope.parallelGroup !== scope.parallelGroup) scenarioScope.parallelGroup.close()
-                }
+                // the state of a scenario of its own is not needed once the scenario has finished
+                child.scenarioScope.takeIf { it !== scope }?.state?.clean()
             }
         }
     }
 
-    /**
-     * Runs the whole feature: its setup, all its scenarios one after another, and its teardown.
-     * It must not be used together with [runScenario].
-     */
     override fun run(notifier: RunNotifier) {
         try {
             eventDispatcher.dispatch(FeatureStartedEvent(testEntity as Feature))
@@ -164,71 +128,6 @@ open class FeatureRunner(
         } finally {
             if (scenarioScopeFactory != null) scope.parallelGroup.close()
             eventDispatcher.dispatch(FeatureFinishedEvent(testEntity.getId()))
-        }
-    }
-
-    /**
-     * Runs one [scenario] of the feature, which must be one of [scenarioRunners], when the scenarios of the feature run in
-     * different parallel groups. All the scenarios of the feature must be run this way, and the feature must not be
-     * run as a whole with [run].
-     *
-     * The setup of the feature, that is the suite started, the hooks before the feature and the steps before it, runs
-     * once, when the first scenario is reached by any parallel group, while the other parallel groups wait for it.
-     * The scenario runs after the setup, unless the setup has failed with a hook, which skips all scenarios of the
-     * feature. The teardown of the feature, that is the steps after it, the hooks after it, waiting for the results of
-     * asynchronous steps, and the suite finished, runs once, when the last scenario of the feature is done, whether
-     * it has run, has failed or has been skipped. After a failure of the setup, the teardown only closes the suite.
-     *
-     * The setup and the teardown run in the scope of the feature, and in its parallel group,
-     * whichever thread runs them.
-     */
-    internal fun runScenario(scenario: TestScenarioRunner, notifier: RunNotifier) {
-        try {
-            if (gate.enter { setUp(notifier) }) runChild(scenario, notifier)
-        } finally {
-            if (gate.leave()) tearDown(notifier)
-        }
-    }
-
-    private fun setUp(notifier: RunNotifier): Boolean {
-        eventDispatcher.dispatch(FeatureStartedEvent(testEntity as Feature))
-        val testNotifier = EachTestNotifier(notifier, getDescription())
-        testNotifier.fireTestSuiteStarted()
-        suiteNotifier = testNotifier
-        return try {
-            runBeforeHooks(notifier)
-            beforeFeatureRunner?.let { runChild(it, notifier) }
-            true
-        } catch (e: StoppedByUserException) {
-            throw e
-        } catch (e: Throwable) {
-            testNotifier.addFailure(e)
-            false
-        }
-    }
-
-    private fun tearDown(notifier: RunNotifier) {
-        val testNotifier = suiteNotifier
-        try {
-            // after a failing hook before the feature, the steps and hooks after it do not run, as the feature has not started
-            if (testNotifier != null && gate.isSetupSucceeded) {
-                try {
-                    afterFeatureRunner?.let { runChild(it, notifier) }
-                    runAfterHooks(notifier)
-                } catch (e: StoppedByUserException) {
-                    throw e
-                } catch (e: Throwable) {
-                    testNotifier.addFailure(e)
-                }
-            }
-        } finally {
-            try {
-                awaitForTestStepRunResults(testStepRunResults, notifier)
-                testNotifier?.fireTestSuiteFinished()
-            } finally {
-                scope.parallelGroup.close()
-                eventDispatcher.dispatch(FeatureFinishedEvent(testEntity.getId()))
-            }
         }
     }
 
@@ -240,6 +139,11 @@ open class FeatureRunner(
             )
         )
     }
+
+    /**
+     * The feature is one parallel group, whose scenarios run in order.
+     */
+    override fun createParallelGroups(): List<ParallelGroup> = listOf(ParallelGroup(getEntityName(), listOf { notifier -> run(notifier) }))
 
     companion object {
         fun create(

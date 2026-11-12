@@ -287,19 +287,14 @@ class ParallelScenarioModeTest {
     }
 
     @Test
-    fun testFeatureWithoutScenariosToRunStillRunsItsSetupAndTeardownOnce() {
+    fun testFeatureWithoutScenariosToRunRunsNeitherItsHooksNorItsStepsBeforeAndAfter() {
         val listener = RecordingRunListener()
 
         val result = JUnitCore().apply { addListener(listener) }.run(NoScenariosRunner::class.java)
 
         assertTrue(result.failureReport(), result.wasSuccessful())
-        assertEquals(listOf("before feature finished", "before feature started"), recorded("hook").map { it.what }.filter { it.startsWith("before") }.sorted())
-        assertEquals(1, recorded("step", "before feature step sees: set by the setup").size)
-        assertEquals(1, recorded("step", "after feature step sees: set by the setup").size)
-        assertEquals(1, recorded("hook", "after feature sees: set by the setup").size)
-        assertTrue(ParallelRunRecorder.runs.none { it.owner == "scenario" })
-        assertEquals(1, listener.events.count { it.type == Type.SUITE_STARTED && it.description.displayName == "No scenarios feature" })
-        assertEquals(1, listener.events.count { it.type == Type.SUITE_FINISHED && it.description.displayName == "No scenarios feature" })
+        assertTrue("Something has run: ${describe(ParallelRunRecorder.runs)}", ParallelRunRecorder.runs.isEmpty())
+        assertTrue(listener.events.none { it.description.displayName == "No scenarios feature" })
     }
 
     @Test
