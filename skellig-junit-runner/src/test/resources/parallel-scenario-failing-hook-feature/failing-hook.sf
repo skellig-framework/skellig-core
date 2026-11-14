@@ -1,0 +1,14 @@
+@ScenarioMode @FailingHook
+Feature: Failing hook feature
+
+    Before Feature:
+        * Record the setup step
+
+    Scenario: F1
+        * Record the scenario step F1
+
+    Scenario: F2
+        * Record the scenario step F2
+
+    After Feature:
+        * Record the teardown step

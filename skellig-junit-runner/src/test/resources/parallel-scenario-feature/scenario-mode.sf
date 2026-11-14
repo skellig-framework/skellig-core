@@ -1,0 +1,16 @@
+@ScenarioMode
+Feature: Scenario mode feature
+
+    Before Feature:
+        * Record the setup step
+
+    Scenario: S1
+        * Meet the other scenario
+        * Record the scenario step S1
+
+    Scenario: S2
+        * Meet the other scenario
+        * Record the scenario step S2
+
+    After Feature:
+        * Record the teardown step

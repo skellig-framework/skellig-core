@@ -1,0 +1,4 @@
+Feature: Passing feature next to the failing hook
+
+    Scenario: P1
+        * Record the scenario step P1
