@@ -121,7 +121,8 @@ class ParallelScenarioModeTest {
         val result = JUnitCore().run(OneThreadRunner::class.java)
 
         assertTrue(result.failureReport(), result.wasSuccessful())
-        assertEquals(setOf("skellig-parallel-1"), recordedRunsOf("scenario").map { it.thread }.toSet())
+        // the feature takes the only worker thread, so it runs its scenarios itself
+        assertEquals(setOf("skellig-parallel-1"), ParallelRunRecorder.runs.map { it.thread }.toSet())
     }
 
     @Test
@@ -145,8 +146,9 @@ class ParallelScenarioModeTest {
         assertEquals(4, ofFeature.size)
         ofFeature.forEach { assertSame(ofFeature[0].instance, it.instance) }
         recordedRunsOf("scenario").forEach { assertNotSame(ofFeature[0].instance, it.instance) }
-        // on the thread of the feature, which does not take a worker thread from the scenarios
-        assertTrue(ofFeature.map { it.thread }.toString(), ofFeature.all { it.thread == "skellig-feature-1" })
+        // on the worker thread which runs the feature
+        assertEquals(ofFeature.map { it.thread }.toString(), 1, ofFeature.map { it.thread }.toSet().size)
+        assertTrue(ofFeature[0].thread, workerThread.matches(ofFeature[0].thread))
     }
 
     @Test

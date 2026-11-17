@@ -28,7 +28,6 @@ import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.nio.file.Paths
-import java.util.concurrent.ExecutorService
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.jvm.jvmErasure
 
@@ -49,7 +48,6 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
 
     companion object {
         private const val REPORT_LOG_ENABLED = "report.log.enabled"
-        private const val FEATURE_THREAD_NAME = "skellig-feature"
     }
 
     private val log = logger<SkelligRunner>()
@@ -58,8 +56,15 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
     private val parallelConfig: ParallelConfig
     private val eventDispatcher = DefaultSkelligTestEventDispatcher()
 
-    // the worker threads which the scenarios of all the features run on, when every scenario is a parallel group
-    private var scenarioWorkers: ExecutorService? = null
+    // runs the features, and their scenarios too when every scenario is a parallel group, so it is created when the run starts
+    private val scheduler by lazy {
+        when (parallelConfig.mode) {
+            ParallelMode.NONE -> ParallelGroupScheduler.sequential()
+            // a feature and its scenarios take the worker threads from the same pool, whatever the number of features is
+            ParallelMode.SCENARIO -> ParallelGroupScheduler.fixedPool(parallelConfig.workersFor())
+            else -> ParallelGroupScheduler.fixedPool(parallelConfig.workersFor(children.size))
+        }
+    }
 
     init {
         log.info("Start to initialize Skellig Runner")
@@ -150,7 +155,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
                     feature, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher,
                     createScope(featureScopeId, skelligTestContext.createParallelGroupContext(feature.name)),
                     { scopeId -> createScope(scopeId, skelligTestContext.createParallelGroupContext(scopeId)) },
-                    { ParallelGroupScheduler.on(scenarioWorkers ?: error("The scenarios of '${feature.name}' have no worker threads to run on")) }
+                    scheduler
                 )
 
             // everything runs in the default scope, which wraps the only state of the context
@@ -200,29 +205,11 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
     override fun childrenInvoker(notifier: RunNotifier): Statement? {
         return object : Statement() {
             override fun evaluate() {
-                val features = getChildren()
-                val scheduler = when (parallelConfig.mode) {
-                    ParallelMode.NONE -> ParallelGroupScheduler.sequential()
-                    ParallelMode.SCENARIO -> {
-                        // the scenarios of all the features share the worker threads, which start when there is a scenario
-                        // for them. Every feature has a thread of its own, which runs the setup of the feature, hands its
-                        // scenarios to the workers, waits for them and runs its teardown, so features do not wait for
-                        // each other
-                        scenarioWorkers = ParallelGroupScheduler.workerPool(parallelConfig.workersFor())
-                        ParallelGroupScheduler.fixedPool(features.size.coerceAtLeast(1), FEATURE_THREAD_NAME)
-                    }
-
-                    else -> ParallelGroupScheduler.fixedPool(parallelConfig.workersFor(features.size))
-                }
                 try {
-                    features.forEach { feature -> scheduler.schedule { runChild(feature, notifier) } }
+                    getChildren().forEach { feature -> scheduler.schedule { runChild(feature, notifier) } }
                 } finally {
-                    try {
-                        // waits for all the features and reports the first unexpected exception
-                        scheduler.finished()
-                    } finally {
-                        scenarioWorkers?.shutdown()
-                    }
+                    // waits for all the features and reports the first unexpected exception
+                    scheduler.finished()
                 }
             }
         }
