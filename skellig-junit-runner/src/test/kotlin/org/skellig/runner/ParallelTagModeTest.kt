@@ -234,6 +234,50 @@ class ParallelTagModeTest {
             ParallelRunRecorder.runs.map { it.what })
     }
 
+    @RunWith(SkelligRunner::class)
+    @SkelligOptions(features = ["parallel-tag/repeated.sf"],
+        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
+    class RepeatedNamesRunner
+
+    @Test
+    fun repeatedScenarioNamesRetainTheirDistinctTagGroups() {
+        ParallelRunRecorder.reset(barrierTimeoutSeconds = 1)
+        val result = JUnitCore().run(RepeatedNamesRunner::class.java)
+        assertTrue(result.failureReport(), result.wasSuccessful())
+        assertEquals(setOf("A", "B"), scenarioRuns().map { it.what }.toSet())
+        assertEquals(2, scenarioRuns().map { it.instance }.toSet().size)
+    }
+
+    @Test
+    fun repeatedScenarioNamesRetainTheirOwnUntaggedGroups() = withSettings("tag.groups" to "", "tag.untagged" to "own-group") {
+        repeatedScenarioNamesRetainTheirDistinctTagGroups()
+    }
+
+    @RunWith(SkelligRunner::class)
+    @SkelligOptions(features = ["parallel-tag/repeated.sf"], includeTags = ["@B"],
+        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
+    class FilteredRepeatedNamesRunner
+
+    @Test
+    fun filteringFirstDeclarationDoesNotLoseLaterSameNamedScenario() {
+        ParallelRunRecorder.reset(parties = 1)
+        val result = JUnitCore().run(FilteredRepeatedNamesRunner::class.java)
+        assertTrue(result.failureReport(), result.wasSuccessful())
+        assertEquals(listOf("B"), scenarioRuns().map { it.what })
+    }
+
+    @RunWith(SkelligRunner::class)
+    @SkelligOptions(features = ["parallel-tag/repeated-conflict.sf"],
+        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
+    class ConflictingRepeatedNamesRunner
+
+    @Test
+    fun laterSameNamedScenarioStillGetsMultipleTagValidation() = withSettings("tag.on-multiple" to "fail") {
+        val error = assertThrows(ParallelConfigException::class.java) { SkelligRunner(ConflictingRepeatedNamesRunner::class.java) }
+        assertTrue(error.message, error.message!!.contains("@A") && error.message!!.contains("@B"))
+        assertTrue(ParallelRunRecorder.runs.isEmpty())
+    }
+
     private fun scenarioRuns() = ParallelRunRecorder.runs.filter { it.owner == "scenario" }
 
     private fun withSettings(vararg settings: Pair<String, String>, block: () -> Unit) {

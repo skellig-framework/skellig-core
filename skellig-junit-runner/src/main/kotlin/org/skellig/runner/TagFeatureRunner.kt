@@ -27,14 +27,16 @@ internal class TagFeatureRunner(
     testStepLogger: TestStepLogger,
     eventDispatcher: SkelligTestEventDispatcher,
     scope: TestScenarioScope,
-    private val createScope: (TestScenario) -> TestScenarioScope
+    private val createScope: (TestScenario, Int) -> TestScenarioScope
 ) : BaseFeatureRunner(feature, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher, scope, { scope }) {
     val scenarios: List<TestScenarioRunner> get() = testScenarios
     private val remaining by lazy { AtomicInteger(scenarios.size) }
+    // Scopes are created by the lazy scenario list, in declaration order, even for repeated names.
+    private var nextScenarioIndex = 0
     private var started = false
     private var setupSucceeded = false
 
-    override fun scopeOf(scenario: TestScenario) = createScope(scenario)
+    override fun scopeOf(scenario: TestScenario) = createScope(scenario, nextScenarioIndex++)
 
     @Synchronized
     private fun start(notifier: RunNotifier): Boolean {

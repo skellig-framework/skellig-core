@@ -29,6 +29,7 @@ import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.nio.file.Paths
+import java.util.IdentityHashMap
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.jvm.jvmErasure
 
@@ -55,7 +56,9 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
     private val children = mutableListOf<BaseFeatureRunner>()
     private var skelligTestContext: SkelligTestContext
     private val parallelConfig: ParallelConfig
-    private var tagGroups = emptyMap<TestScenario, ParallelGroupContext>()
+    // Distinct declarations can have equal paths, but must retain separate group assignments.
+    private val tagGroups = IdentityHashMap<TestScenario, ParallelGroupContext>()
+    private val tagGroupOrder = mutableListOf<ParallelGroupContext>()
     private val eventDispatcher = DefaultSkelligTestEventDispatcher()
 
     // runs the features, and their scenarios too when every scenario is a parallel group, so it is created when the run starts
@@ -121,10 +124,11 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
         try {
             if (parallelConfig.mode == ParallelMode.TAG) {
                 val plan = TagGroupPlan.create(parsedFeatures, tagsFilter, parallelConfig)
-                tagGroups = plan.flatMap { (key, scenarios) ->
+                plan.forEach { (key, scenarios) ->
                     val group = skelligTestContext.createParallelGroupContext(key)
-                    scenarios.map { it to group }
-                }.toMap()
+                    tagGroupOrder.add(group)
+                    scenarios.forEach { tagGroups[it] = group }
+                }
             }
             parsedFeatures.mapTo(children) {
                 createFeatureRunner(it, testStepRunner, testStepLogger, hookRunner, tagsFilter, defaultScope)
@@ -176,7 +180,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
             ParallelMode.TAG -> TagFeatureRunner(
                 feature, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher,
                 createScope(featureScopeId, skelligTestContext.createParallelGroupContext(featureScopeId)),
-                { scenario -> createScope("$featureScopeId/${scenario.path}", tagGroups.getValue(scenario)) }
+                { scenario, index -> createScope("$featureScopeId/$index/${scenario.path}", tagGroups.getValue(scenario)) }
             )
 
             // everything runs in the default scope, which wraps the only state of the context
@@ -231,7 +235,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
                         val work = children.filterIsInstance<TagFeatureRunner>().flatMap { feature ->
                             feature.scenarios.map { scenario -> feature to scenario }
                         }.groupBy { (_, scenario) -> scenario.scenarioScope.parallelGroup }
-                        tagGroups.values.distinct().forEach { group ->
+                        tagGroupOrder.forEach { group ->
                             scheduler.schedule {
                                 try {
                                     work[group].orEmpty().forEach { (feature, scenario) -> feature.runChild(scenario, notifier) }

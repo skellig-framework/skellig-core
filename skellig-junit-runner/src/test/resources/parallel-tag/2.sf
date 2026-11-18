@@ -4,11 +4,11 @@ Feature: Tag feature 2
         * Record the setup step
     @A
     Scenario: A2
-        
+
         * Record the scenario step A2
     @B
     Scenario: B2
-        
+
         * Record the scenario step B2
     After Feature:
         * Record the teardown step
