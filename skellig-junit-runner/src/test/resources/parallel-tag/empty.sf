@@ -1,0 +1,9 @@
+@ScenarioMode
+Feature: Empty feature
+    Before Feature:
+        * Record the setup step
+    @Skip
+    Scenario: Excluded
+        * Fail the step
+    After Feature:
+        * Record the teardown step

@@ -1,0 +1,14 @@
+@ScenarioMode
+Feature: Tag feature 1
+    Before Feature:
+        * Record the setup step
+    @A
+    Scenario: A1
+        * Meet the other scenario
+        * Record the scenario step A1
+    @B
+    Scenario: B1
+        * Meet the other scenario
+        * Record the scenario step B1
+    After Feature:
+        * Record the teardown step
