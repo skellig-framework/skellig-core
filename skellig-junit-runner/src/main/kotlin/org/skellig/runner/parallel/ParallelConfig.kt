@@ -32,9 +32,10 @@ class ParallelConfig(
 
     /**
      * The number of worker threads to run [parallelGroups] parallel groups: the configured number of threads,
-     * or the number of processors if it is 0, but never more than the groups to run, and at least one.
+     * or the number of processors if it is 0, but never more than the groups to run, if their number is known,
+     * and at least one.
      */
-    fun workersFor(parallelGroups: Int): Int =
+    fun workersFor(parallelGroups: Int = Int.MAX_VALUE): Int =
         minOf(if (threads == 0) Runtime.getRuntime().availableProcessors() else threads, parallelGroups).coerceAtLeast(1)
 
     companion object {

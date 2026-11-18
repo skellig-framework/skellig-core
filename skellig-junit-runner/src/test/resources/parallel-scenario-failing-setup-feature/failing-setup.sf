@@ -1,0 +1,14 @@
+@ScenarioMode
+Feature: Failing setup step feature
+
+    Before Feature:
+        * Fail the step
+
+    Scenario: S1
+        * Record the scenario step S1
+
+    Scenario: S2
+        * Record the scenario step S2
+
+    After Feature:
+        * Record the teardown step
