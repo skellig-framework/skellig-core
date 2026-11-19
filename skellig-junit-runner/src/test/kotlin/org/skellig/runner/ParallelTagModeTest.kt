@@ -96,6 +96,11 @@ class ParallelTagModeTest {
     }
 
     @Test
+    fun unusedConfiguredTagsDoNotTakeWorkersFromActiveQueues() = withSettings("tag.groups" to "@A,@Unused,@B") {
+        assertTagQueues()
+    }
+
+    @Test
     fun withoutConfiguredGroupsOrPatternScenarioTagsSelectQueues() = withSettings("tag.groups" to "") {
         assertTagQueues()
     }

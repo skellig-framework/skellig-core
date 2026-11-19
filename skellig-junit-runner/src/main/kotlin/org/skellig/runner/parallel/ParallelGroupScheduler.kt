@@ -28,10 +28,6 @@ class ParallelGroupScheduler private constructor(
     private val tagAssignments = linkedMapOf<String, Int>()
     private val tagGroups = linkedMapOf<String, ParallelGroupContext>()
 
-    init {
-        tagConfig?.tagGroups?.distinct()?.forEach { tag -> tagAssignments[tag] = tagAssignments.size % tagWorkers.size }
-    }
-
     override fun schedule(childStatement: Runnable) {
         // Feature discovery and allocation stay in declaration order. Only their queued work runs on the workers.
         if (tagConfig != null) childStatement.run() else futures.add(submit(childStatement))
@@ -57,6 +53,7 @@ class ParallelGroupScheduler private constructor(
     /** Enqueues work on the tag's assigned worker and returns without waiting for execution. */
     fun schedule(tag: String, work: Runnable): CompletableFuture<Unit> {
         check(tagConfig != null) { "Tag allocation requires a tagged scheduler" }
+        // Only participating tags consume assignments; unused configured tags must not leave workers idle.
         val worker = tagAssignments.getOrPut(tag) { tagAssignments.size % tagWorkers.size }
         val result = CompletableFuture<Unit>()
         futures.add(result)
