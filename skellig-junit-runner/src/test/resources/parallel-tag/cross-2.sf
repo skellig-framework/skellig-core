@@ -1,0 +1,5 @@
+Feature: Cross feature 2
+    @B
+    Scenario: B
+        * Meet the other scenario
+        * Record the scenario step B

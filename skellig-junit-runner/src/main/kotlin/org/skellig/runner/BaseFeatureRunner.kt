@@ -102,11 +102,14 @@ abstract class BaseFeatureRunner(
     }
 
     override fun run(notifier: RunNotifier) {
+        eventDispatcher.dispatch(FeatureStartedEvent(testEntity as Feature))
+        super.run(notifier)
+    }
+
+    override fun onRunCompleted() {
         try {
-            eventDispatcher.dispatch(FeatureStartedEvent(testEntity as Feature))
-            super.run(notifier)
-        } finally {
             if (scenarioScopeFactory != null) scope.parallelGroup.close()
+        } finally {
             eventDispatcher.dispatch(FeatureFinishedEvent(testEntity.getId()))
         }
     }

@@ -47,7 +47,7 @@ class ParallelConfigTest {
     private val parallelProperties = listOf(
         "skellig.parallel", "skellig.parallel.mode", "skellig.parallel.threads", "skellig.parallel.tag.groups",
         "skellig.parallel.tag.groups.0", "skellig.parallel.exclusive-tags", "skellig.parallel.tag.pattern",
-        "skellig.parallel.tag.on-multiple", "skellig.parallel.tag.untagged", "skellig.parallel.exclusive-tags.0"
+        "skellig.parallel.exclusive-tags.0"
     )
 
     @Before
@@ -112,8 +112,6 @@ class ParallelConfigTest {
         listOf(
             "skellig.parallel.threads" to "-1",
             "skellig.parallel.threads" to "many",
-            "skellig.parallel.tag.on-multiple" to "all",
-            "skellig.parallel.tag.untagged" to "ignore",
             "skellig.parallel.tag.pattern" to "(",
             "skellig.parallel.tag.groups.0" to "payments",
             "skellig.parallel.exclusive-tags.0" to "performance"
@@ -163,8 +161,7 @@ class ParallelConfigTest {
     fun testValidValuesOfAllKeysAreAccepted() {
         setSystemProperties(
             "skellig.parallel.mode" to "none", "skellig.parallel.threads" to "0", "skellig.parallel.tag.groups.0" to "@payments",
-            "skellig.parallel.tag.pattern" to "^@group-.+", "skellig.parallel.tag.on-multiple" to "first",
-            "skellig.parallel.tag.untagged" to "per-feature", "skellig.parallel.exclusive-tags.0" to "@performance"
+            "skellig.parallel.tag.pattern" to "^@group-.+", "skellig.parallel.exclusive-tags.0" to "@performance"
         )
 
         SkelligRunner(NoConfigFileRunner::class.java)

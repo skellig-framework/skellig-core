@@ -17,7 +17,7 @@ Skellig is Automation/Performance Testing Framework with focus on writing tests 
 * [Browser UI journeys](skellig-test-step-processing-ui/README.md) with Selenium, reusable XPath pages, state capture, validation, and screenshots
 * Remote Unix commands with response validation
 * Performance testing with build-in or Prometheus metrics
-* [Tag-based parallel execution](docs/guides/tag-parallel-execution.md) with sequential scenarios within each group
+* [Tag-based parallel execution](docs/guides/tag-parallel-execution.md) with sequential scenarios on each tag’s worker queue
 
 ### Sample test
 A simple and quick test which demonstrates how to write a test using Skellig Framework. This test books a ticket by

@@ -1,43 +1,44 @@
 # Tag-based parallel execution
 
-Set `skellig.parallel.mode = tag` to run groups concurrently. Scenarios within each group run sequentially in feature order, then scenario declaration order, even when a group spans several features. Each scenario has its own state; step, hook, and function instances are shared by scenarios in the same group.
+Set `skellig.parallel.mode = tag` to submit scenarios to tag-specific worker queues. Each tag stays on the same worker thread throughout the run. Work for a tag executes sequentially in submission order, including across features. Different workers can execute concurrently.
 
 ```hocon
 skellig.parallel {
     mode = tag
     threads = 4
-    tag {
-        groups = ["@payments", "@orders"]
-        on-multiple = merge
-        untagged = shared-group
-    }
+    tag.groups = ["@payments", "@orders"]
 }
 ```
 
-`threads = 0` uses the available processor count. With one worker, groups run sequentially in configured order. With multiple workers, start order between groups is not guaranteed.
+`threads = 0` uses the available processor count. The scheduler creates at most that many workers. When tags outnumber workers, multiple tag queues share a worker while retaining separate class instances. With one worker, all work runs in submission order. A feature submits its scenarios without waiting for execution, so scenarios from later features can overlap earlier features.
 
-Instead of `tag.groups`, set `tag.pattern`, for example `"@group-.+"`. The regex matches the whole tag, including `@`. Matching tags are discovered in feature/scenario/tag encounter order. A nonempty `tag.groups` takes precedence over the pattern.
+## Selecting a queue
 
-For a scenario carrying multiple group tags, `tag.on-multiple` chooses:
+- With `tag.groups`, the first configured tag present on the scenario selects its queue.
+- Otherwise, `tag.pattern` can select tags by a full regex match, including `@`, for example `"@group-.+"`. The first matching scenario tag selects the queue.
+- With neither setting, the scenario's first tag selects its queue.
+- A scenario without a matching tag uses the default queue.
 
-- `merge` (default): join all matching groups before execution. Merging is transitive: scenarios tagged `@A @B` and `@B @C` put A, B, and C in one sequential group. Declaration order is preserved across the merged group.
-- `first`: use the first matching entry in `tag.groups`, or the first discovered group when using a pattern.
-- `fail`: reject the run during runner initialization, naming the scenario and conflicting tags, before any feature hooks execute.
+Each scenario runs once. There are no `tag.on-multiple` or `tag.untagged` settings. Only scenarios selected by include/exclude filtering are submitted. Repeated scenario names remain distinct submissions with separate scopes.
 
-For scenarios with no matching group tag, `tag.untagged` chooses:
+## Feature hooks and step blocks
 
-- `shared-group` (default): one sequential group for all untagged scenarios.
-- `own-group`: a separate group for each scenario.
-- `per-feature`: one sequential group per feature.
+Each queue used by a feature receives this sequence:
 
-Only scenarios selected by the include/exclude tag filter participate in grouping or merging.
+1. Matching `@BeforeTestFeature` methods and untagged before-feature methods, in hook order.
+2. The “Before Feature” step block, if present.
+3. That feature's scenarios assigned to the queue, in declaration order.
+4. The “After Feature” step block, if present.
+5. Matching `@AfterTestFeature` methods and untagged after-feature methods, in hook order.
 
-## Feature lifecycle
+An annotated feature hook matches when its tags intersect the tags of any selected scenario of that feature on the queue. An untagged feature hook always matches. Step blocks have no tags of their own and run once on each participating queue. A feature with no selected scenarios queues no hooks or step blocks.
 
-The first group to reach a feature runs its before hooks and “Before Feature” steps; other groups wait for setup to finish. The last scenario to finish runs “After Feature” steps and after hooks. Setup and teardown share a separate feature scope and instances, even when different workers execute them. No worker waits for the entire feature to finish before moving on to another feature.
+All of this work uses the queue's worker and class instances. Feature setup and teardown share a state separate from scenario state, and every scenario has its own state. `@BeforeTestScenario` and `@AfterTestScenario` methods remain part of scenario execution; feature step blocks do not trigger them.
 
-A failed before-feature hook skips that feature's scenarios and teardown and closes its suite. A failed “Before Feature” step is reported but allows scenarios to run. Scenario failures still allow feature teardown. Feature events surround the scenarios in JUnit and Skellig reports.
+A failing before-feature hook skips that feature's scenarios and teardown on its queue; other queues continue. A failing “Before Feature” step is reported but allows scenarios to run. Scenario failures still allow teardown. Feature suite and report completion wait for all of the feature's queued work. The test context closes only after all queues and completion callbacks finish.
 
 ## Example-table tags
 
-The existing parser accumulates example-table tags. A row inherits feature tags, scenario tags, its table's tags, **and tags from preceding example tables of that scenario**. A later untagged table retains earlier table tags too. For example, tables tagged `@A`, then `@B`, then an untagged table produce rows with group tags `@A`, `@A @B`, and `@A @B`, respectively. With the default `merge`, A and B therefore become one group; with `fail`, initialization rejects the later rows. Tag mode preserves this parser behavior.
+The existing parser accumulates example-table tags. Rows inherit feature tags, scenario tags, their table's tags, and tags from earlier example tables of the same scenario. A later untagged table retains earlier table tags too.
+
+For example, tables tagged `@A`, then `@B`, then an untagged table give their rows tags containing `@A`, then `@A @B`, then `@A @B`. With `tag.groups = ["@B", "@A"]`, the first table's rows use queue A and the later rows use queue B. This does not merge queues or duplicate scenarios.

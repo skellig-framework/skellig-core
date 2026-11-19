@@ -18,8 +18,6 @@ import org.skellig.plugin.report.DefaultTestStepLogger
 import org.skellig.plugin.report.TestStepLogger
 import org.skellig.runner.annotation.SkelligOptions
 import org.skellig.runner.exception.FeatureRunnerException
-import org.skellig.feature.TestScenario
-import org.skellig.runner.parallel.TagGroupPlan
 import org.skellig.runner.parallel.ParallelConfig
 import org.skellig.runner.parallel.ParallelGroupScheduler
 import org.skellig.runner.parallel.ParallelMode
@@ -29,7 +27,6 @@ import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.runner.TestStepRunner
 import org.skellig.teststep.runner.context.SkelligTestContext
 import java.nio.file.Paths
-import java.util.IdentityHashMap
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.jvm.jvmErasure
 
@@ -56,9 +53,6 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
     private val children = mutableListOf<BaseFeatureRunner>()
     private var skelligTestContext: SkelligTestContext
     private val parallelConfig: ParallelConfig
-    // Distinct declarations can have equal paths, but must retain separate group assignments.
-    private val tagGroups = IdentityHashMap<TestScenario, ParallelGroupContext>()
-    private val tagGroupOrder = mutableListOf<ParallelGroupContext>()
     private val eventDispatcher = DefaultSkelligTestEventDispatcher()
 
     // runs the features, and their scenarios too when every scenario is a parallel group, so it is created when the run starts
@@ -66,7 +60,8 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
         when (parallelConfig.mode) {
             ParallelMode.NONE -> ParallelGroupScheduler.sequential()
             // a feature and its scenarios take the worker threads from the same pool, whatever the number of features is
-            ParallelMode.SCENARIO, ParallelMode.TAG -> ParallelGroupScheduler.fixedPool(parallelConfig.workersFor())
+            ParallelMode.SCENARIO -> ParallelGroupScheduler.fixedPool(parallelConfig.workersFor())
+            ParallelMode.TAG -> ParallelGroupScheduler.tagged(parallelConfig, skelligTestContext::createParallelGroupContext)
             else -> ParallelGroupScheduler.fixedPool(parallelConfig.workersFor(children.size))
         }
     }
@@ -102,7 +97,6 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
         val excludeTags = readTags(skelligOptions.excludeTags.toSet(), "skellig.excludeTags")
         val tagsFilter = TagsFilter(includeTags, excludeTags)
 
-        val parsedFeatures = mutableListOf<Feature>()
         skelligOptions.features
             .forEach { featureResourcePath: String ->
                 try {
@@ -114,29 +108,16 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
                                 tagsFilter.checkTagsAreIncluded(it.tags) ||
                                         it.scenarios?.any { testScenario -> tagsFilter.checkTagsAreIncluded(testScenario.tags) } == true
                             }
-                            .toCollection(parsedFeatures)
+                            .map { feature: Feature ->
+                                createFeatureRunner(feature, testStepRunner, testStepLogger, hookRunner, tagsFilter, defaultScope)
+                            }
+                            .toCollection(children)
                         if (features.isEmpty()) throwNoFeaturesFoundError(featureResourcePath, includeTags, excludeTags)
                     } ?: throwNoFeaturesFoundError(featureResourcePath, includeTags, excludeTags)
                 } catch (e: Exception) {
                     throw FeatureRunnerException("Failed to read features from path: $featureResourcePath", e)
                 }
             }
-        try {
-            if (parallelConfig.mode == ParallelMode.TAG) {
-                val plan = TagGroupPlan.create(parsedFeatures, tagsFilter, parallelConfig)
-                plan.forEach { (key, scenarios) ->
-                    val group = skelligTestContext.createParallelGroupContext(key)
-                    tagGroupOrder.add(group)
-                    scenarios.forEach { tagGroups[it] = group }
-                }
-            }
-            parsedFeatures.mapTo(children) {
-                createFeatureRunner(it, testStepRunner, testStepLogger, hookRunner, tagsFilter, defaultScope)
-            }
-        } catch (e: Exception) {
-            skelligTestContext.close()
-            throw e
-        }
         log.info(
             "Skellig Runner initialized successfully with test steps from '${skelligOptions.testSteps.joinToString(",")}' " +
                     "and features from '${skelligOptions.features.joinToString(",")}'"
@@ -180,7 +161,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
             ParallelMode.TAG -> TagFeatureRunner(
                 feature, tagsFilter, hookRunner, testStepRunner, testStepLogger, eventDispatcher,
                 createScope(featureScopeId, skelligTestContext.createParallelGroupContext(featureScopeId)),
-                { scenario, index -> createScope("$featureScopeId/$index/${scenario.path}", tagGroups.getValue(scenario)) }
+                createScope, scheduler
             )
 
             // everything runs in the default scope, which wraps the only state of the context
@@ -231,24 +212,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
         return object : Statement() {
             override fun evaluate() {
                 try {
-                    if (parallelConfig.mode == ParallelMode.TAG) {
-                        val work = children.filterIsInstance<TagFeatureRunner>().flatMap { feature ->
-                            feature.scenarios.map { scenario -> feature to scenario }
-                        }.groupBy { (_, scenario) -> scenario.scenarioScope.parallelGroup }
-                        tagGroupOrder.forEach { group ->
-                            scheduler.schedule {
-                                try {
-                                    work[group].orEmpty().forEach { (feature, scenario) -> feature.runChild(scenario, notifier) }
-                                } finally {
-                                    group.close()
-                                }
-                            }
-                        }
-                        children.filterIsInstance<TagFeatureRunner>().filter { it.scenarios.isEmpty() }
-                            .forEach { feature -> scheduler.schedule { feature.run(notifier) } }
-                    } else {
-                        getChildren().forEach { feature -> scheduler.schedule { runChild(feature, notifier) } }
-                    }
+                    getChildren().forEach { feature -> scheduler.schedule { runChild(feature, notifier) } }
                 } finally {
                     // waits for all the features and reports the first unexpected exception
                     scheduler.finished()

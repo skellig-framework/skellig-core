@@ -1,13 +1,12 @@
 package org.skellig.runner
 
-import org.junit.Assert.*
 import com.typesafe.config.ConfigFactory
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.JUnitCore
 import org.junit.runner.RunWith
 import org.skellig.runner.annotation.SkelligOptions
-import org.skellig.runner.exception.ParallelConfigException
 import org.skellig.runner.parallelrun.ParallelRunRecorder
 
 class ParallelTagModeTest {
@@ -16,148 +15,133 @@ class ParallelTagModeTest {
         testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
     class TagRunner
 
-    @Before
-    fun reset() { ParallelRunRecorder.reset() }
-
-    @Test
-    fun groupsOverlapAndKeepDeclarationOrderAndInstancesAcrossFeatures() {
-        val result = JUnitCore().run(TagRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        val runs = ParallelRunRecorder.runs.filter { it.owner == "scenario" }
-        val a = runs.filter { it.what.startsWith("A") }
-        val b = runs.filter { it.what.startsWith("B") }
-        assertEquals(listOf("A1", "A2"), a.map { it.what })
-        assertEquals(listOf("B1", "B2"), b.map { it.what })
-        assertSame(a[0].instance, a[1].instance)
-        assertSame(b[0].instance, b[1].instance)
-        assertNotSame(a[0].instance, b[0].instance)
-    }
-    @Test
-    fun patternGroupsRunInParallel() = withSettings("tag.groups" to "", "tag.pattern" to "@A|@B") {
-        groupsOverlapAndKeepDeclarationOrderAndInstancesAcrossFeatures()
-    }
-
     @RunWith(SkelligRunner::class)
-    @SkelligOptions(features = ["parallel-tag/merge.sf"],
-        testSteps = ["org.skellig.runner.parallelscenario", "org.skellig.runner.paralleltag"], config = "parallel-tag.conf")
-    class MergeRunner
-
-    @Test
-    fun mergingIsTransitivePreservesOrderAndPreventsOverlap() = withSettings("tag.groups" to "@A,@B,@C") {
-        ParallelRunRecorder.reset(barrierTimeoutSeconds = 1)
-        val result = JUnitCore().run(MergeRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        val runs = ParallelRunRecorder.runs.filter { it.owner == "scenario" }
-        assertEquals(listOf("B", "AB", "A", "C", "BC"), runs.map { it.what })
-        runs.forEach { assertSame(runs[0].instance, it.instance) }
-    }
-
-    @Test
-    fun failRejectsMultipleTagsBeforeAnyHooksOrStepsRun() = withSettings("tag.on-multiple" to "fail") {
-        val error = assertThrows(ParallelConfigException::class.java) { SkelligRunner(MergeRunner::class.java) }
-        assertTrue(error.message, error.message!!.contains("AB"))
-        assertTrue(error.message, error.message!!.contains("@A") && error.message!!.contains("@B"))
-        assertTrue(ParallelRunRecorder.runs.isEmpty())
-    }
-
-    @Test
-    fun untaggedScenariosCanEachRunInTheirOwnGroup() = withSettings("tag.groups" to "", "tag.untagged" to "own-group") {
-        val result = JUnitCore().run(TagRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        val runs = ParallelRunRecorder.runs.filter { it.owner == "scenario" }
-        assertEquals(setOf("A1", "B1", "A2", "B2"), runs.map { it.what }.toSet())
-        assertEquals(4, runs.map { it.instance }.toSet().size)
-    }
+    @SkelligOptions(features = ["parallel-tag/cross-1.sf", "parallel-tag/cross-2.sf"],
+        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
+    class CrossFeatureRunner
 
     @RunWith(SkelligRunner::class)
     @SkelligOptions(features = ["parallel-tag/U.sf", "parallel-tag/V.sf"],
         testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
     class UntaggedRunner
 
-    @Test
-    fun untaggedScenariosCanRunInParallelFeatureGroups() = withSettings("tag.untagged" to "per-feature") {
-        val result = JUnitCore().run(UntaggedRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        val runs = ParallelRunRecorder.runs.filter { it.owner == "scenario" }
-        val u = runs.filter { it.what.startsWith("U") }
-        val v = runs.filter { it.what.startsWith("V") }
-        assertEquals(listOf("U1", "U2"), u.map { it.what })
-        assertEquals(listOf("V1", "V2"), v.map { it.what })
-        assertSame(u[0].instance, u[1].instance)
-        assertSame(v[0].instance, v[1].instance)
-        assertNotSame(u[0].instance, v[0].instance)
-    }
-
-    @Test
-    fun explicitGroupsTakePrecedenceOverPattern() = withSettings("tag.pattern" to "@DoesNotMatch") {
-        groupsOverlapAndKeepDeclarationOrderAndInstancesAcrossFeatures()
-    }
-
-    @Test
-    fun oneWorkerRunsGroupsInConfiguredOrderAcrossFeatures() = withSettings("threads" to "1", "tag.groups" to "@B,@A") {
-        ParallelRunRecorder.reset(parties = 1)
-        val result = JUnitCore().run(TagRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        assertEquals(listOf("B1", "B2", "A1", "A2"), scenarioRuns().map { it.what })
-        assertEquals(1, ParallelRunRecorder.runs.map { it.thread }.toSet().size)
-    }
-
-    @Test
-    fun untaggedScenariosShareOneSequentialGroupByDefault() {
-        ParallelRunRecorder.reset(parties = 1)
-        val result = JUnitCore().run(UntaggedRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        val runs = scenarioRuns()
-        assertEquals(listOf("U1", "U2", "V1", "V2"), runs.map { it.what })
-        runs.forEach { assertSame(runs[0].instance, it.instance) }
-    }
-
     @RunWith(SkelligRunner::class)
     @SkelligOptions(features = ["parallel-tag/selection.sf"],
         testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
     class SelectionRunner
-
-    @Test
-    fun firstUsesConfiguredGroupOrderRatherThanScenarioTagOrder() = withSettings(
-        "threads" to "1", "tag.groups" to "@B,@A,@C", "tag.on-multiple" to "first"
-    ) {
-        val result = JUnitCore().run(SelectionRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        val runs = scenarioRuns()
-        assertEquals(listOf("B", "AB", "BC", "A", "C"), runs.map { it.what })
-        assertSame(runs[0].instance, runs[1].instance)
-        assertSame(runs[0].instance, runs[2].instance)
-        assertEquals(3, runs.map { it.instance }.toSet().size)
-    }
 
     @RunWith(SkelligRunner::class)
     @SkelligOptions(features = ["parallel-tag/examples.sf"],
         testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
     class ExamplesRunner
 
+    @RunWith(SkelligRunner::class)
+    @SkelligOptions(features = ["parallel-tag/repeated.sf"],
+        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
+    class RepeatedNamesRunner
+
+    @RunWith(SkelligRunner::class)
+    @SkelligOptions(features = ["parallel-tag/repeated.sf"], includeTags = ["@B"],
+        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
+    class FilteredRepeatedNamesRunner
+
+    @RunWith(SkelligRunner::class)
+    @SkelligOptions(features = ["parallel-tag/empty.sf"], excludeTags = ["@Skip"],
+        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
+    class EmptyRunner
+
+    @RunWith(SkelligRunner::class)
+    @SkelligOptions(features = ["parallel-tag/failing-hook.sf"],
+        testSteps = ["org.skellig.runner.paralleltag"], config = "parallel-tag.conf")
+    class FailingHookRunner
+
+    @Before
+    fun reset() = ParallelRunRecorder.reset()
+
     @Test
-    fun exampleTableTagsAccumulateOnLaterRowsIncludingUntaggedTables() = withSettings(
-        "threads" to "1", "tag.groups" to "@B,@A", "tag.on-multiple" to "first"
-    ) {
-        val result = JUnitCore().run(ExamplesRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        val runs = scenarioRuns()
-        assertEquals(listOf("row2", "row3", "row1"), runs.map { it.what })
-        assertSame(runs[0].instance, runs[1].instance)
-        assertNotSame(runs[0].instance, runs[2].instance)
+    fun tagQueuesOverlapAndKeepOrderInstancesAndWorkersAcrossFeatures() {
+        assertTagQueues()
+    }
+
+    private fun assertTagQueues() {
+        runSuccessfully(TagRunner::class.java)
+        val a = scenarioRuns().filter { it.what.startsWith("A") }
+        val b = scenarioRuns().filter { it.what.startsWith("B") }
+        assertEquals(listOf("A1", "A2"), a.map { it.what })
+        assertEquals(listOf("B1", "B2"), b.map { it.what })
+        assertSame(a[0].instance, a[1].instance)
+        assertSame(b[0].instance, b[1].instance)
+        assertNotSame(a[0].instance, b[0].instance)
+        assertEquals(1, a.map { it.thread }.toSet().size)
+        assertEquals(1, b.map { it.thread }.toSet().size)
+        assertNotEquals(a[0].thread, b[0].thread)
+        assertTrue(scenarioRuns().all { it.thread.matches(Regex("skellig-parallel-\\d+")) })
     }
 
     @Test
-    fun accumulatedExampleTagsMergeGroupsByDefault() {
-        val result = JUnitCore().run(ExamplesRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
+    fun allocationDoesNotWaitForScenariosOfEarlierFeatures() {
+        // Each feature has one party. Blocking allocation on feature one would time out at the barrier.
+        runSuccessfully(CrossFeatureRunner::class.java)
+        assertEquals(setOf("A", "B"), scenarioRuns().map { it.what }.toSet())
+    }
+
+    @Test
+    fun patternSelectsTagQueues() = withSettings("tag.groups" to "", "tag.pattern" to "@A|@B") {
+        assertTagQueues()
+    }
+
+    @Test
+    fun explicitTagsTakePrecedenceOverPattern() = withSettings("tag.pattern" to "@DoesNotMatch") {
+        assertTagQueues()
+    }
+
+    @Test
+    fun withoutConfiguredGroupsOrPatternScenarioTagsSelectQueues() = withSettings("tag.groups" to "") {
+        assertTagQueues()
+    }
+
+    @Test
+    fun oneWorkerDrainsSubmittedScenariosInOrderWithoutBlockingAllocation() = withSettings("threads" to "1") {
+        ParallelRunRecorder.reset(parties = 1)
+        runSuccessfully(TagRunner::class.java)
+        assertEquals(listOf("A1", "B1", "A2", "B2"), scenarioRuns().map { it.what })
+        assertEquals(1, ParallelRunRecorder.runs.map { it.thread }.toSet().size)
+    }
+
+    @Test
+    fun unmatchedScenariosUseOneDefaultQueue() {
+        ParallelRunRecorder.reset(parties = 1)
+        runSuccessfully(UntaggedRunner::class.java)
         val runs = scenarioRuns()
-        assertEquals(listOf("row1", "row2", "row3"), runs.map { it.what })
+        assertEquals(listOf("U1", "U2", "V1", "V2"), runs.map { it.what })
         runs.forEach { assertSame(runs[0].instance, it.instance) }
+        assertEquals(1, runs.map { it.thread }.toSet().size)
     }
 
     @Test
-    fun featureGateBracketsScenariosAndKeepsSetupInstancesForTeardown() {
+    fun multipleTagsSubmitScenarioOnceToFirstConfiguredMatch() = withSettings("tag.groups" to "@B,@A,@C") {
+        runSuccessfully(SelectionRunner::class.java)
+        val runs = scenarioRuns().associateBy { it.what }
+        assertEquals(5, scenarioRuns().size)
+        assertEquals(setOf("B", "AB", "A", "C", "BC"), runs.keys)
+        assertSame(runs.getValue("B").instance, runs.getValue("AB").instance)
+        assertSame(runs.getValue("B").instance, runs.getValue("BC").instance)
+        assertNotSame(runs.getValue("A").instance, runs.getValue("B").instance)
+        assertNotSame(runs.getValue("C").instance, runs.getValue("B").instance)
+        assertTrue(runs.values.map { it.thread }.toSet().size <= 2)
+    }
+
+    @Test
+    fun exampleTableTagsAccumulateOnLaterRowsIncludingUntaggedTables() = withSettings("tag.groups" to "@B,@A") {
+        runSuccessfully(ExamplesRunner::class.java)
+        val rows = scenarioRuns().associateBy { it.what }
+        assertEquals(setOf("row1", "row2", "row3"), rows.keys)
+        assertSame(rows.getValue("row2").instance, rows.getValue("row3").instance)
+        assertNotSame(rows.getValue("row1").instance, rows.getValue("row2").instance)
+    }
+
+    @Test
+    fun featureSuitesCloseOnlyAfterQueuedScenariosAndTeardown() {
         val listener = RecordingRunListener()
         val result = JUnitCore().apply { addListener(listener) }.run(TagRunner::class.java)
         assertTrue(result.failureReport(), result.wasSuccessful())
@@ -171,114 +155,94 @@ class ParallelTagModeTest {
             assertTrue(starts.single() < scenarios.min())
             assertTrue(ends.single() > scenarios.max())
         }
-        val featureRuns = ParallelRunRecorder.runs.filter { it.owner == "feature" }.groupBy { it.instance }
-        assertEquals(2, featureRuns.size)
-        featureRuns.forEach { (instance, runs) ->
-            assertEquals(listOf("before hook", "setup step", "teardown step", "after hook sees: set in setup"), runs.map { it.what })
-            scenarioRuns().forEach { assertNotSame(instance, it.instance) }
-        }
+        // Each feature's two queues have their own before/after lifecycle.
+        assertEquals(4, ParallelRunRecorder.runs.count { it.what == "setup step" })
+        assertEquals(4, ParallelRunRecorder.runs.count { it.what == "after hook sees: set in setup" })
     }
 
     @Test
-    fun failedFeatureHookSkipsAllItsGroupsAndClosesItsSuite() = withSettings("mode" to "tag", "tag.untagged" to "own-group") {
+    fun failedFeatureHookSkipsOnlyItsTagQueueAndStillClosesTheFeature() {
         val listener = RecordingRunListener()
-        val result = JUnitCore().apply { addListener(listener) }.run(ParallelScenarioModeTest.FailingHookRunner::class.java)
+        val result = JUnitCore().apply { addListener(listener) }.run(FailingHookRunner::class.java)
         assertEquals(result.failureReport(), 1, result.failureCount)
-        assertEquals("The feature hook failed", result.failures.single().exception.message)
-        assertEquals(listOf("P1"), scenarioRuns().map { it.what })
-        assertTrue(ParallelRunRecorder.runs.none { it.owner == "feature" && it.what != "before hook" })
-        assertEquals(1, listener.events.count { it.type == RecordingRunListener.Type.SUITE_FINISHED && it.description.displayName == "Failing hook feature" })
+        assertEquals("Feature setup failed", result.failures.single().exception.message)
+        assertTrue(ParallelRunRecorder.runs.none { it.what == "A1" || it.what == "A2" })
+        assertTrue(ParallelRunRecorder.runs.any { it.what == "B1" })
+        assertTrue(ParallelRunRecorder.runs.none { it.owner == "@A" && it.what in setOf("teardown", "after A", "after common") })
+        assertTrue(ParallelRunRecorder.runs.any { it.owner == "@B" && it.what == "teardown" })
+        assertEquals(1, listener.events.count { it.type == RecordingRunListener.Type.SUITE_FINISHED && it.description.displayName == "Failing tag hook" })
     }
 
     @Test
-    fun failedSetupStepStillRunsScenariosAndTeardown() = withSettings("mode" to "tag", "tag.untagged" to "own-group") {
+    fun failedSetupStepStillRunsScenariosAndTeardown() = withSettings("mode" to "tag") {
         val result = JUnitCore().run(ParallelScenarioModeTest.FailingSetupStepRunner::class.java)
         assertEquals(result.failureReport(), 1, result.failureCount)
-        assertEquals("The step failed", result.failures.single().exception.message)
         assertEquals(setOf("S1", "S2"), scenarioRuns().map { it.what }.toSet())
-        assertEquals(listOf("before hook", "teardown step", "after hook sees: set in setup"),
-            ParallelRunRecorder.runs.filter { it.owner == "feature" }.map { it.what })
+        assertEquals(listOf("teardown step", "after hook sees: set in setup"), ParallelRunRecorder.runs.takeLast(2).map { it.what })
     }
 
     @Test
-    fun failedScenarioStillRunsFeatureTeardown() = withSettings("mode" to "tag", "tag.untagged" to "own-group") {
+    fun failedScenarioStillRunsFeatureTeardown() = withSettings("mode" to "tag") {
         val result = JUnitCore().run(ParallelScenarioModeTest.FailingScenarioRunner::class.java)
         assertEquals(result.failureReport(), 1, result.failureCount)
-        assertEquals("The step failed", result.failures.single().exception.message)
         assertEquals(listOf("S2"), scenarioRuns().map { it.what })
         assertEquals(listOf("teardown step", "after hook sees: set in setup"), ParallelRunRecorder.runs.takeLast(2).map { it.what })
     }
 
-    @RunWith(SkelligRunner::class)
-    @SkelligOptions(features = ["parallel-tag/selection.sf"], excludeTags = ["@A", "@C"],
-        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
-    class FilteredRunner
-
     @Test
-    fun excludedScenariosDoNotCauseMultipleTagErrors() = withSettings("tag.on-multiple" to "fail") {
-        val result = JUnitCore().run(FilteredRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        assertEquals(listOf("B"), scenarioRuns().map { it.what })
+    fun noFeatureWorkIsQueuedWhenAllScenariosAreExcluded() {
+        runSuccessfully(EmptyRunner::class.java)
+        assertTrue(ParallelRunRecorder.runs.isEmpty())
     }
 
-    @RunWith(SkelligRunner::class)
-    @SkelligOptions(features = ["parallel-tag/empty.sf"], excludeTags = ["@Skip"],
-        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
-    class EmptyRunner
-
     @Test
-    fun featureWithNoSelectedScenariosStillRunsItsLifecycle() {
-        val result = JUnitCore().run(EmptyRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
-        assertEquals(listOf("before hook", "setup step", "teardown step", "after hook sees: set in setup"),
-            ParallelRunRecorder.runs.map { it.what })
-    }
-
-    @RunWith(SkelligRunner::class)
-    @SkelligOptions(features = ["parallel-tag/repeated.sf"],
-        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
-    class RepeatedNamesRunner
-
-    @Test
-    fun repeatedScenarioNamesRetainTheirDistinctTagGroups() {
-        ParallelRunRecorder.reset(barrierTimeoutSeconds = 1)
-        val result = JUnitCore().run(RepeatedNamesRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
+    fun repeatedNamesRetainTheirOwnTagQueues() {
+        runSuccessfully(RepeatedNamesRunner::class.java)
         assertEquals(setOf("A", "B"), scenarioRuns().map { it.what }.toSet())
         assertEquals(2, scenarioRuns().map { it.instance }.toSet().size)
     }
 
     @Test
-    fun repeatedScenarioNamesRetainTheirOwnUntaggedGroups() = withSettings("tag.groups" to "", "tag.untagged" to "own-group") {
-        repeatedScenarioNamesRetainTheirDistinctTagGroups()
-    }
-
-    @RunWith(SkelligRunner::class)
-    @SkelligOptions(features = ["parallel-tag/repeated.sf"], includeTags = ["@B"],
-        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
-    class FilteredRepeatedNamesRunner
-
-    @Test
     fun filteringFirstDeclarationDoesNotLoseLaterSameNamedScenario() {
         ParallelRunRecorder.reset(parties = 1)
-        val result = JUnitCore().run(FilteredRepeatedNamesRunner::class.java)
-        assertTrue(result.failureReport(), result.wasSuccessful())
+        runSuccessfully(FilteredRepeatedNamesRunner::class.java)
         assertEquals(listOf("B"), scenarioRuns().map { it.what })
     }
 
     @RunWith(SkelligRunner::class)
-    @SkelligOptions(features = ["parallel-tag/repeated-conflict.sf"],
-        testSteps = ["org.skellig.runner.parallelscenario"], config = "parallel-tag.conf")
-    class ConflictingRepeatedNamesRunner
+    @SkelligOptions(features = ["parallel-tag/hooks.sf"],
+        testSteps = ["org.skellig.runner.paralleltag"], config = "parallel-tag.conf")
+    class HookQueueRunner
 
     @Test
-    fun laterSameNamedScenarioStillGetsMultipleTagValidation() = withSettings("tag.on-multiple" to "fail") {
-        val error = assertThrows(ParallelConfigException::class.java) { SkelligRunner(ConflictingRepeatedNamesRunner::class.java) }
-        assertTrue(error.message, error.message!!.contains("@A") && error.message!!.contains("@B"))
-        assertTrue(ParallelRunRecorder.runs.isEmpty())
+    fun featureHooksAndBlocksRunOnTheirScenarioTagWorker() {
+        val result = JUnitCore().run(HookQueueRunner::class.java)
+        assertTrue(result.failureReport(), result.wasSuccessful())
+        val a = ParallelRunRecorder.runs.filter { it.owner == "@A" }
+        val b = ParallelRunRecorder.runs.filter { it.owner == "@B" }
+        assertEquals(1, a.count { it.what == "before A" })
+        assertEquals(1, a.count { it.what == "after A" })
+        assertEquals(0, b.count { it.what == "before A" || it.what == "after A" })
+        for (runs in listOf(a, b)) {
+            assertEquals(1, runs.count { it.what == "before common" })
+            assertEquals(1, runs.count { it.what == "after common" })
+            assertEquals(1, runs.count { it.what == "setup" })
+            assertEquals(1, runs.count { it.what == "teardown" })
+            assertEquals(1, runs.map { it.thread }.toSet().size)
+            assertEquals(1, runs.map { it.instance }.toSet().size)
+            assertTrue(runs.indexOfFirst { it.what == "setup" } < runs.indexOfFirst { it.what == "before scenario" })
+            assertTrue(runs.indexOfLast { it.what == "after scenario" } < runs.indexOfFirst { it.what == "teardown" })
+        }
+        assertEquals(2, a.count { it.what == "before scenario" })
+        assertEquals(1, b.count { it.what == "before scenario" })
     }
 
     private fun scenarioRuns() = ParallelRunRecorder.runs.filter { it.owner == "scenario" }
+
+    private fun runSuccessfully(runner: Class<*>) {
+        val result = JUnitCore().run(runner)
+        assertTrue(result.failureReport(), result.wasSuccessful())
+    }
 
     private fun withSettings(vararg settings: Pair<String, String>, block: () -> Unit) {
         val previous = settings.associate { (key, _) -> "skellig.parallel.$key" to System.getProperty("skellig.parallel.$key") }
@@ -291,5 +255,4 @@ class ParallelTagModeTest {
             ConfigFactory.invalidateCaches()
         }
     }
-
 }

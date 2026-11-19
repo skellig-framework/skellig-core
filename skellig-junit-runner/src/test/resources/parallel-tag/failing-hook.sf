@@ -1,0 +1,14 @@
+Feature: Failing tag hook
+    Before Feature:
+        * Record tagged feature setup
+    @A @FailSetup
+    Scenario: A1
+        * Record tagged scenario A1
+    @B
+    Scenario: B1
+        * Record tagged scenario B1
+    @A @FailSetup
+    Scenario: A2
+        * Record tagged scenario A2
+    After Feature:
+        * Record tagged feature teardown

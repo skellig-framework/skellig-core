@@ -1,9 +1,0 @@
-Feature: Repeated names
-    @A
-    Scenario: Same name
-        * Meet the other scenario
-        * Record the scenario step A
-    @A @B
-    Scenario: Same name
-        * Meet the other scenario
-        * Record the scenario step B
