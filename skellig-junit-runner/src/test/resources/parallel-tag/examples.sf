@@ -1,0 +1,16 @@
+@FeatureTag
+Feature: Example tags
+    @ScenarioTag
+    Scenario: Row <id>
+        * Record the scenario step <id>
+        @A
+        Examples:
+            | id   |
+            | row1 |
+        @B
+        Examples:
+            | id   |
+            | row2 |
+        Examples:
+            | id   |
+            | row3 |

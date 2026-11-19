@@ -1,0 +1,6 @@
+Feature: Untagged U
+    Scenario: U1
+        * Meet the other scenario
+        * Record the scenario step U1
+    Scenario: U2
+        * Record the scenario step U2
