@@ -1,0 +1,16 @@
+Feature: Selection feature
+    @B
+    Scenario: B
+        * Record the scenario step B
+    @A @B
+    Scenario: AB
+        * Record the scenario step AB
+    @A
+    Scenario: A
+        * Record the scenario step A
+    @C
+    Scenario: C
+        * Record the scenario step C
+    @B @C
+    Scenario: BC
+        * Record the scenario step BC

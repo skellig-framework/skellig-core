@@ -94,7 +94,7 @@ abstract class BaseFeatureRunner(
      * The scope the steps of the [scenario] run in: a new one of its own if the feature creates them, otherwise the one
      * of the feature.
      */
-    private fun scopeOf(scenario: TestScenario): TestScenarioScope =
+    protected open fun scopeOf(scenario: TestScenario): TestScenarioScope =
         scenarioScopeFactory?.invoke("${testEntity.getEntityName()}/${scenario.name}#${Integer.toHexString(scenario.getId())}") ?: scope
 
     override fun describeChild(child: TestScenarioRunner): Description {
@@ -102,11 +102,14 @@ abstract class BaseFeatureRunner(
     }
 
     override fun run(notifier: RunNotifier) {
+        eventDispatcher.dispatch(FeatureStartedEvent(testEntity as Feature))
+        super.run(notifier)
+    }
+
+    override fun onRunCompleted() {
         try {
-            eventDispatcher.dispatch(FeatureStartedEvent(testEntity as Feature))
-            super.run(notifier)
-        } finally {
             if (scenarioScopeFactory != null) scope.parallelGroup.close()
+        } finally {
             eventDispatcher.dispatch(FeatureFinishedEvent(testEntity.getId()))
         }
     }

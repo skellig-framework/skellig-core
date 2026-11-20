@@ -14,8 +14,6 @@ import java.util.regex.PatternSyntaxException
  * @property tagGroups The ordered tags which form parallel groups in the mode [ParallelMode.TAG].
  * @property tagPattern Tags which match it form parallel groups in the mode [ParallelMode.TAG]. It is an alternative to
  * [tagGroups], which win when both are set.
- * @property onMultipleTags What to do with a scenario which has several group tags.
- * @property untaggedScenarios What to do with a scenario which has no group tag.
  * @property exclusiveTags The tags of scenarios which run alone, after the parallel part of the run.
  */
 class ParallelConfig(
@@ -23,8 +21,6 @@ class ParallelConfig(
     val threads: Int,
     val tagGroups: List<String>,
     val tagPattern: Regex?,
-    val onMultipleTags: OnMultipleTags,
-    val untaggedScenarios: UntaggedScenarios,
     val exclusiveTags: Set<String>
 ) {
 
@@ -54,8 +50,6 @@ class ParallelConfig(
                     threads = threads(config),
                     tagGroups = tags(config, "tag.groups"),
                     tagPattern = pattern(config),
-                    onMultipleTags = choice(config, "tag.on-multiple", OnMultipleTags.entries),
-                    untaggedScenarios = choice(config, "tag.untagged", UntaggedScenarios.entries),
                     exclusiveTags = tags(config, "exclusive-tags").toSet()
                 )
             } catch (ex: ConfigException) {

@@ -45,24 +45,49 @@ abstract class BaseSkelligTestEntityRunner<T : SkelligTestEntity>(
     override fun getName(): String = getEntityName()
 
     override fun run(notifier: RunNotifier) {
-        val testNotifier = EachTestNotifier(
-            notifier,
-            description
-        )
+        val testNotifier = EachTestNotifier(notifier, description)
         testNotifier.fireTestSuiteStarted()
+        val complete = {
+            try {
+                awaitForTestStepRunResults(testStepRunResults, notifier)
+            } finally {
+                try {
+                    testNotifier.fireTestSuiteFinished()
+                } finally {
+                    onRunCompleted()
+                }
+            }
+        }
+        var childrenSubmitted = false
         try {
             runBeforeHooks(notifier)
             classBlock(notifier).evaluate()
-            runAfterHooks(notifier)
+            childrenSubmitted = true
         } catch (e: StoppedByUserException) {
             throw e
         } catch (e: Throwable) {
             testNotifier.addFailure(e)
         } finally {
-            awaitForTestStepRunResults(testStepRunResults, notifier)
-            testNotifier.fireTestSuiteFinished()
+            if (!childrenSubmitted) afterChildren(complete)
+        }
+        if (childrenSubmitted) afterChildren {
+            try {
+                runAfterHooks(notifier)
+            } catch (e: StoppedByUserException) {
+                throw e
+            } catch (e: Throwable) {
+                testNotifier.addFailure(e)
+            } finally {
+                complete()
+            }
         }
     }
+
+    /** Runs completion immediately, or after asynchronously submitted children have finished. */
+    protected open fun afterChildren(completion: () -> Unit) = completion()
+
+    /** Releases entity resources after its suite has finished, including deferred children. */
+    protected open fun onRunCompleted() = Unit
 
     open fun runBeforeHooks(notifier: RunNotifier) {
         runHooks(beforeHookType)

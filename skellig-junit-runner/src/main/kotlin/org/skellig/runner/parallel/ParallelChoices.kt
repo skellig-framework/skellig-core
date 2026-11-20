@@ -34,53 +34,7 @@ enum class ParallelMode(override val configValue: String) : ConfigChoice {
     SCENARIO("scenario"),
 
     /**
-     * Scenarios are grouped by tag: the groups run in parallel, while the scenarios of one group run in order.
+     * Tag queues run on assigned workers; work submitted to the same tag runs sequentially.
      */
     TAG("tag")
-}
-
-/**
- * Defines what happens to a scenario which has several group tags, which is set by `skellig.parallel.tag.on-multiple`.
- *
- * @property configValue The value in the configuration.
- */
-enum class OnMultipleTags(override val configValue: String) : ConfigChoice {
-
-    /**
-     * The groups of all its tags are merged into one group.
-     */
-    MERGE("merge"),
-
-    /**
-     * It belongs to the group of its first group tag.
-     */
-    FIRST("first"),
-
-    /**
-     * It is an error.
-     */
-    FAIL("fail")
-}
-
-/**
- * Defines what happens to a scenario which has no group tag, which is set by `skellig.parallel.tag.untagged`.
- *
- * @property configValue The value in the configuration.
- */
-enum class UntaggedScenarios(override val configValue: String) : ConfigChoice {
-
-    /**
-     * All of them share one group.
-     */
-    SHARED_GROUP("shared-group"),
-
-    /**
-     * Each of them is a group of its own.
-     */
-    OWN_GROUP("own-group"),
-
-    /**
-     * The untagged scenarios of a feature are a group of their own.
-     */
-    PER_FEATURE("per-feature")
 }

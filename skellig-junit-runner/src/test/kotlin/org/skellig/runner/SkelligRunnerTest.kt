@@ -30,19 +30,25 @@ class SkelligRunnerTest {
 
     @Test
     fun testOverriddenTags() {
-        System.setProperty("skellig.includeTags", "@T3, @T2")
-        val skelligRunner = SkelligRunner(SkelligRunnerWithTagsTest::class.java)
-        val features = mutableListOf<FeatureRunner>()
-        val testScenarios = mutableListOf<TestScenarioRunner>()
-        val sorter = createTestSorter(features, testScenarios)
-        skelligRunner.sort(sorter)
-        System.setProperty("skellig.includeTags", "")
+        val previousIncludeTags = System.getProperty("skellig.includeTags")
+        try {
+            System.setProperty("skellig.includeTags", "@T3, @T2")
+            val skelligRunner = SkelligRunner(SkelligRunnerWithTagsTest::class.java)
+            val features = mutableListOf<FeatureRunner>()
+            val testScenarios = mutableListOf<TestScenarioRunner>()
+            val sorter = createTestSorter(features, testScenarios)
+            skelligRunner.sort(sorter)
 
-        assertEquals(1, features.size)
-        features[0].sort(sorter)
-        assertEquals(1, testScenarios.size)
-        assertEquals("Another test scenario", testScenarios[0].getEntityName())
-        assertTrue(testScenarios[0].getEntityTags()?.contains("Extra") == false)
+            assertEquals(1, features.size)
+            features[0].sort(sorter)
+            assertEquals(1, testScenarios.size)
+            assertEquals("Another test scenario", testScenarios[0].getEntityName())
+            assertTrue(testScenarios[0].getEntityTags()?.contains("Extra") == false)
+        } finally {
+            // An empty override disables annotation filtering; it is not equivalent to an absent property.
+            if (previousIncludeTags == null) System.clearProperty("skellig.includeTags")
+            else System.setProperty("skellig.includeTags", previousIncludeTags)
+        }
     }
 
     @Test
