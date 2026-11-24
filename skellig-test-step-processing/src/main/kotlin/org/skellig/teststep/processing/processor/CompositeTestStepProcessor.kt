@@ -7,8 +7,7 @@ import org.skellig.teststep.processing.processor.task.DefaultTaskProcessor
 import org.skellig.teststep.processing.processor.task.TaskTestStepProcessor
 import org.skellig.teststep.processing.util.logger
 import org.skellig.teststep.reader.value.expression.ValueExpression
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Processes any test step by assigning an appropriate []test step processor][TestStepProcessor] from its registry.
@@ -17,11 +16,14 @@ import org.slf4j.LoggerFactory
  */
 class CompositeTestStepProcessor private constructor(
     valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?,
-    processTestStepDelegate: (String, Map<String, Any?>) -> TestStepRunResult
-) : TestStepProcessor<TestStep> {
+    processTestStepDelegate: (String, Map<String, Any?>) -> TestStepRunResult,
+    private val parallelExecution: Boolean
+) : TestStepProcessor<TestStep>, ScopeAware {
 
     private val log = logger<CompositeTestStepProcessor>()
     private val testStepProcessors: MutableList<TestStepProcessor<in TestStep>> = mutableListOf()
+
+    private val warnedProcessorClasses = ConcurrentHashMap.newKeySet<Class<*>>()
 
     init {
         registerTestStepProcessor(DefaultTestStepProcessor.Builder().build())
@@ -34,6 +36,13 @@ class CompositeTestStepProcessor private constructor(
         val testStepProcessor = testStepProcessors.find { testStep.javaClass == it.getTestStepClass() }
 
         return testStepProcessor?.let { ts ->
+            if (parallelExecution && testStep.scope != null && ts !is ScopeAware && warnedProcessorClasses.add(ts.javaClass)) {
+                log.warn(
+                    "Test step processor '{}' does not implement ScopeAware and may use shared scenario state in parallel runs. " +
+                            "Use the step's scope for scenario state and implement ScopeAware to declare support.",
+                    ts.javaClass.name
+                )
+            }
             return ts.process(testStep)
         } ?: throw TestStepProcessingException("No processor was found for test step '${testStep.name}'")
     }
@@ -70,6 +79,11 @@ class CompositeTestStepProcessor private constructor(
         private var valueConvertDelegate: ((ValueExpression?, Map<String, Any?>) -> Any?)? = null
         private var processTestStepDelegate: ((String, Map<String, Any?>) -> TestStepRunResult)? = null
 
+        private var parallelExecution = false
+
+        /** Enables warnings for processors which have not declared scope support. Defaults to false. */
+        fun withParallelExecution(parallelExecution: Boolean) = apply { this.parallelExecution = parallelExecution }
+
         fun withValueConvertDelegate(valueConvertDelegate: (ValueExpression?, Map<String, Any?>) -> Any?) =
             apply { this.valueConvertDelegate = valueConvertDelegate }
 
@@ -79,7 +93,8 @@ class CompositeTestStepProcessor private constructor(
         override fun build(): CompositeTestStepProcessor {
             return CompositeTestStepProcessor(
                 valueConvertDelegate!!,
-                processTestStepDelegate!!
+                processTestStepDelegate!!,
+                parallelExecution
             )
         }
     }

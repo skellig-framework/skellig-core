@@ -12,7 +12,7 @@ import org.skellig.teststep.processing.util.logger
  * Processes a [default test step][DefaultTestStep] by running validation of a result from another test step or taken from
  * [TestScenarioState].
  */
-internal class DefaultTestStepProcessor private constructor() : ValidatableTestStepProcessor<DefaultTestStep>() {
+internal class DefaultTestStepProcessor private constructor() : ValidatableTestStepProcessor<DefaultTestStep>(), ScopeAware {
 
     private val log = logger<DefaultTestStepProcessor>()
 

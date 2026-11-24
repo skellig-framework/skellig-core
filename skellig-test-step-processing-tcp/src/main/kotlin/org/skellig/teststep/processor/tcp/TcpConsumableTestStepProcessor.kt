@@ -1,5 +1,6 @@
 package org.skellig.teststep.processor.tcp
 
+import org.skellig.teststep.processing.processor.ScopeAware
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -20,7 +21,7 @@ import org.skellig.teststep.processor.tcp.model.TcpConsumableTestStep
  */
 open class TcpConsumableTestStepProcessor(
     protected val tcpChannels: Map<String, TcpChannel>,
-) : ValidatableTestStepProcessor<TcpConsumableTestStep>() {
+) : ValidatableTestStepProcessor<TcpConsumableTestStep>(), ScopeAware {
 
     private val log = logger<TcpConsumableTestStepProcessor>()
 

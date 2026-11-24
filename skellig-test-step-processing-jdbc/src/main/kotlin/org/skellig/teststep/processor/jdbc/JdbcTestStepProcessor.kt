@@ -1,5 +1,6 @@
 package org.skellig.teststep.processor.jdbc
 
+import org.skellig.teststep.processing.processor.ScopeAware
 import com.typesafe.config.Config
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -14,7 +15,7 @@ import org.skellig.teststep.processor.jdbc.model.JdbcTestStep
  * @property testScenarioState the [TestScenarioState] object that holds the state of the test scenario.
  */
 open class JdbcTestStepProcessor protected constructor(dbServers: Map<String, JdbcRequestExecutor>)
-    : DatabaseTestStepProcessor<JdbcRequestExecutor, JdbcTestStep>(dbServers) {
+    : DatabaseTestStepProcessor<JdbcRequestExecutor, JdbcTestStep>(dbServers), ScopeAware {
 
     override fun getTestStepClass(): Class<*> = JdbcTestStep::class.java
 

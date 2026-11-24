@@ -1,5 +1,6 @@
 package org.skellig.teststep.processor.rmq
 
+import org.skellig.teststep.processing.processor.ScopeAware
 import com.rabbitmq.client.AMQP
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -20,7 +21,7 @@ import org.skellig.teststep.processor.rmq.model.RmqConsumableTestStep
  */
 open class RmqConsumableTestStepProcessor(
     protected val rmqChannels: Map<String, RmqChannel>,
-) : ValidatableTestStepProcessor<RmqConsumableTestStep>() {
+) : ValidatableTestStepProcessor<RmqConsumableTestStep>(), ScopeAware {
 
     private val log = logger<RmqConsumableTestStepProcessor>()
 

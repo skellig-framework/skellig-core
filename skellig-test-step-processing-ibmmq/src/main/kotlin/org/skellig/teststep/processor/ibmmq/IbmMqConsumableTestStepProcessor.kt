@@ -1,5 +1,6 @@
 package org.skellig.teststep.processor.ibmmq
 
+import org.skellig.teststep.processing.processor.ScopeAware
 import org.skellig.teststep.processing.exception.ValidationException
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.processor.ValidatableTestStepProcessor
@@ -20,7 +21,7 @@ import org.skellig.teststep.processor.ibmmq.model.IbmMqConsumableTestStep
  */
 open class IbmMqConsumableTestStepProcessor(
     protected val ibmMqChannels: Map<String, IbmMqChannel>,
-) : ValidatableTestStepProcessor<IbmMqConsumableTestStep>() {
+) : ValidatableTestStepProcessor<IbmMqConsumableTestStep>(), ScopeAware {
 
     private val log = logger<IbmMqConsumableTestStepProcessor>()
 

@@ -1,5 +1,6 @@
 package org.skellig.teststep.processor.ui
 
+import org.skellig.teststep.processing.processor.ScopeAware
 import org.openqa.selenium.WebDriver
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processor.ui.handler.CompositeUiActionHandler
@@ -12,7 +13,7 @@ internal class UiTestStepProcessor(
     timeout: Duration,
     private val createDriver: () -> WebDriver,
     screenshotsPath: Path
-) : BaseTestStepProcessor<UiTestStep>() {
+) : BaseTestStepProcessor<UiTestStep>(), ScopeAware {
     private val screenshotCapturer = UiScreenshotCapturer(screenshotsPath)
     private var browser: WebDriver? = null
     private val uiActionsHandler = CompositeUiActionHandler(timeout)
