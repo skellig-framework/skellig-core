@@ -1,6 +1,5 @@
 package org.skellig.teststep.processing.processor.task
 
-import org.skellig.teststep.processing.processor.ScopeAware
 import org.skellig.teststep.processing.model.TaskTestStep
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.util.info
@@ -15,7 +14,7 @@ import org.skellig.teststep.processing.util.logger
  */
 internal class TaskTestStepProcessor(
     private val taskProcessor: TaskProcessor
-) : BaseTestStepProcessor<TaskTestStep>(), ScopeAware {
+) : BaseTestStepProcessor<TaskTestStep>() {
 
     private val log = logger<TaskTestStepProcessor>()
 

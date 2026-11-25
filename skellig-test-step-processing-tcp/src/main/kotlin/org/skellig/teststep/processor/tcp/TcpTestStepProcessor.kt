@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.tcp
 
-import org.skellig.teststep.processing.processor.ScopeAware
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.util.debug
@@ -23,7 +22,7 @@ import org.skellig.teststep.processor.tcp.model.TcpTestStep
  */
 open class TcpTestStepProcessor(
     private val tcpChannels: Map<String, TcpChannel>,
-) : BaseTestStepProcessor<TcpTestStep>(), ScopeAware {
+) : BaseTestStepProcessor<TcpTestStep>() {
 
     private val log = logger<TcpTestStepProcessor>()
 

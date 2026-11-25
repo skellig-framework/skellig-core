@@ -45,9 +45,7 @@ class ParallelConfigTest {
     class FeatureModeRunner
 
     private val parallelProperties = listOf(
-        "skellig.parallel", "skellig.parallel.mode", "skellig.parallel.threads", "skellig.parallel.tag.groups",
-        "skellig.parallel.tag.groups.0", "skellig.parallel.exclusive-tags", "skellig.parallel.tag.pattern",
-        "skellig.parallel.tag.on-multiple", "skellig.parallel.tag.untagged", "skellig.parallel.exclusive-tags.0"
+        "skellig.parallel", "skellig.parallel.mode", "skellig.parallel.threads"
     )
 
     @Before
@@ -104,19 +102,14 @@ class ParallelConfigTest {
 
         val ex = assertThrows<ParallelConfigException> { SkelligRunner(NoConfigFileRunner::class.java) }
 
-        assertEquals("Invalid value 'parallel' of 'skellig.parallel.mode', expected one of: none, feature, scenario, tag", ex.message)
+        assertEquals("Invalid value 'parallel' of 'skellig.parallel.mode', expected one of: none, feature, scenario", ex.message)
     }
 
     @Test
     fun testInvalidValueOfAnyKeyFailsWhenRunnerIsCreated() {
         listOf(
             "skellig.parallel.threads" to "-1",
-            "skellig.parallel.threads" to "many",
-            "skellig.parallel.tag.on-multiple" to "all",
-            "skellig.parallel.tag.untagged" to "ignore",
-            "skellig.parallel.tag.pattern" to "(",
-            "skellig.parallel.tag.groups.0" to "payments",
-            "skellig.parallel.exclusive-tags.0" to "performance"
+            "skellig.parallel.threads" to "many"
         ).forEach { (key, value) ->
             setSystemProperties(key to value)
 
@@ -128,28 +121,12 @@ class ParallelConfigTest {
     }
 
     @Test
-    fun testTagsOfSystemPropertiesCanBeCommaSeparated() {
-        setSystemProperties("skellig.parallel.tag.groups" to "@payments, @orders", "skellig.parallel.exclusive-tags" to "@performance,@inc")
-
-        SkelligRunner(NoConfigFileRunner::class.java)
-    }
-
-    @Test
-    fun testInvalidTagInCommaSeparatedTagsFailsWhenRunnerIsCreated() {
-        setSystemProperties("skellig.parallel.exclusive-tags" to "@performance,inc")
-
-        val ex = assertThrows<ParallelConfigException> { SkelligRunner(NoConfigFileRunner::class.java) }
-
-        assertEquals("Invalid value 'inc' of 'skellig.parallel.exclusive-tags', expected tags which start with '@'", ex.message)
-    }
-
-    @Test
-    fun testModeWhichIsNotSupportedYetFailsWhenRunnerIsCreated() {
+    fun testRemovedTagModeFailsWhenRunnerIsCreated() {
         setSystemProperties("skellig.parallel.mode" to "tag")
 
         val ex = assertThrows<ParallelConfigException> { SkelligRunner(NoConfigFileRunner::class.java) }
 
-        assertEquals("Parallel mode 'tag' is not supported yet, the supported modes are: none, feature, scenario", ex.message)
+        assertEquals("Invalid value 'tag' of 'skellig.parallel.mode', expected one of: none, feature, scenario", ex.message)
     }
 
     @Test
@@ -164,9 +141,7 @@ class ParallelConfigTest {
     @Test
     fun testValidValuesOfAllKeysAreAccepted() {
         setSystemProperties(
-            "skellig.parallel.mode" to "none", "skellig.parallel.threads" to "0", "skellig.parallel.tag.groups.0" to "@payments",
-            "skellig.parallel.tag.pattern" to "^@group-.+", "skellig.parallel.tag.on-multiple" to "first",
-            "skellig.parallel.tag.untagged" to "per-feature", "skellig.parallel.exclusive-tags.0" to "@performance"
+            "skellig.parallel.mode" to "none", "skellig.parallel.threads" to "0"
         )
 
         SkelligRunner(NoConfigFileRunner::class.java)

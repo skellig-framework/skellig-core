@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.http
 
-import org.skellig.teststep.processing.processor.ScopeAware
 import com.typesafe.config.Config
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.exception.TestStepProcessorInitException
@@ -35,7 +34,7 @@ import java.util.concurrent.TimeoutException
  */
 class HttpTestStepProcessor(
     private val httpServices: Map<String, HttpChannel>,
-) : BaseTestStepProcessor<HttpTestStep>(), ScopeAware {
+) : BaseTestStepProcessor<HttpTestStep>() {
 
     private val log = logger<HttpTestStepProcessor>()
 

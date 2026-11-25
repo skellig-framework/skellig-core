@@ -18,6 +18,10 @@ Skellig is Automation/Performance Testing Framework with focus on writing tests 
 * Remote Unix commands with response validation
 * Performance testing with build-in or Prometheus metrics
 
+## Parallel runs
+
+Run independent features or scenarios concurrently with the JUnit runner. See the [parallel execution guide](docs/guides/parallel-execution.md) for configuration, resource grouping, state injection and lifecycle rules.
+
 ### Sample test
 A simple and quick test which demonstrates how to write a test using Skellig Framework. This test books a ticket by
 sending a POST request to a web service with relevant information and verifies the response. It also checks if 

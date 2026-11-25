@@ -16,7 +16,7 @@ import java.lang.reflect.Method
  *
  * @see org.skellig.teststep.runner.annotation.TestStep
  */
-internal class ClassTestStepProcessor : TestStepProcessor<ClassTestStep>, ScopeAware {
+internal class ClassTestStepProcessor : TestStepProcessor<ClassTestStep> {
 
     private val log = logger<ClassTestStepProcessor>()
 

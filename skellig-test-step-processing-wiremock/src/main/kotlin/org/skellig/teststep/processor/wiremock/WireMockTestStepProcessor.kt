@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.wiremock
 
-import org.skellig.teststep.processing.processor.ScopeAware
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processor.wiremock.config.MockServerSettings
@@ -10,7 +9,7 @@ import java.util.UUID
 /** Owns the mock servers: they listen from creation until the Skellig context closes. */
 internal class WireMockTestStepProcessor private constructor(
     private val servers: Map<String, MockServer>
-) : BaseTestStepProcessor<WireMockTestStep>(), ScopeAware {
+) : BaseTestStepProcessor<WireMockTestStep>() {
 
     override fun getTestStepClass() = WireMockTestStep::class.java
 

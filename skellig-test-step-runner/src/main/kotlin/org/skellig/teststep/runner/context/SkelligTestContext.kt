@@ -97,13 +97,7 @@ open class SkelligTestContext : Closeable {
         val testStepRunner = DefaultTestStepRunner()
             .withTestStepsRegistry(testStepsRegistry!!)
 
-        val executionConfig = (config ?: ConfigFactory.defaultOverrides(classLoader))
-            .withFallback(ConfigFactory.defaultReference(classLoader))
-        // The runner validates the configuration; only recognised parallel modes enable the diagnostic here.
-        val parallelMode = if (executionConfig.hasPath("skellig.parallel.mode"))
-            executionConfig.getValue("skellig.parallel.mode").unwrapped() as? String else null
-        val parallelExecution = parallelMode?.trim()?.lowercase() in setOf("feature", "scenario", "tag")
-        initTestStepProcessors(valueExpressionContextFactory!!, testStepsRegistry!!, testStepRunner, parallelExecution)
+        initTestStepProcessors(valueExpressionContextFactory!!, testStepsRegistry!!, testStepRunner)
 
         return testStepRunner
             .withTestStepFactory(rootTestStepFactory!!)
@@ -113,8 +107,7 @@ open class SkelligTestContext : Closeable {
     private fun initTestStepProcessors(
         valueExpressionContextFactory: ValueExpressionContextFactory,
         testStepRegistry: TestStepRegistry,
-        testStepRunner: TestStepRunner,
-        parallelExecution: Boolean
+        testStepRunner: TestStepRunner
     ) {
         rootTestStepFactory = CompositeTestStepFactory.Builder()
             .withTestDataRegistry(testStepRegistry)
@@ -126,7 +119,6 @@ open class SkelligTestContext : Closeable {
                 v?.evaluate(valueExpressionContextFactory.create(p))
             }
             .withProcessTestStepDelegate(testStepRunner::run)
-            .withParallelExecution(parallelExecution)
             .build() as CompositeTestStepProcessor
 
         // initialise additional test step processors if found

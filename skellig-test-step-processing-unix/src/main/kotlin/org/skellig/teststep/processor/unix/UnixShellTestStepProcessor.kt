@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.unix
 
-import org.skellig.teststep.processing.processor.ScopeAware
 import com.typesafe.config.Config
 import org.skellig.teststep.processing.exception.TestStepProcessingException
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
@@ -28,7 +27,7 @@ import org.skellig.teststep.processor.unix.model.UnixShellTestStep
  */
 class UnixShellTestStepProcessor(
     internal val hosts: Map<String, DefaultSshClient>
-) : BaseTestStepProcessor<UnixShellTestStep>(), ScopeAware {
+) : BaseTestStepProcessor<UnixShellTestStep>() {
 
     private val log = logger<UnixShellTestStepProcessor>()
 

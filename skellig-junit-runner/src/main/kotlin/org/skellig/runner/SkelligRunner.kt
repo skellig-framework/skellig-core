@@ -18,7 +18,6 @@ import org.skellig.plugin.report.DefaultTestStepLogger
 import org.skellig.plugin.report.TestStepLogger
 import org.skellig.runner.annotation.SkelligOptions
 import org.skellig.runner.exception.FeatureRunnerException
-import org.skellig.runner.exception.ParallelConfigException
 import org.skellig.runner.parallel.ParallelConfig
 import org.skellig.runner.parallel.ParallelGroupScheduler
 import org.skellig.runner.parallel.ParallelMode
@@ -221,14 +220,7 @@ open class SkelligRunner(clazz: Class<*>) : ParentRunner<BaseFeatureRunner>(claz
             // without a configuration file, the defaults of the runner and the system properties still apply
             val config = (skelligTestContext.config ?: ConfigFactory.defaultOverrides(classLoader))
                 .withFallback(ConfigFactory.defaultReference(classLoader))
-            return ParallelConfig.read(config).also {
-                if (it.mode == ParallelMode.TAG) {
-                    throw ParallelConfigException(
-                        "Parallel mode '${it.mode.configValue}' is not supported yet, the supported modes are: " +
-                                "${ParallelMode.NONE.configValue}, ${ParallelMode.FEATURE.configValue}, ${ParallelMode.SCENARIO.configValue}"
-                    )
-                }
-            }
+            return ParallelConfig.read(config)
         } catch (e: Exception) {
             // the context has started its processors already
             skelligTestContext.close()

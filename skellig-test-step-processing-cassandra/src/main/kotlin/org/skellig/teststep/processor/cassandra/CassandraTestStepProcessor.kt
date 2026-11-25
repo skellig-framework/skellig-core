@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.cassandra
 
-import org.skellig.teststep.processing.processor.ScopeAware
 import com.typesafe.config.Config
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.state.TestScenarioState
@@ -15,7 +14,7 @@ import org.skellig.teststep.processor.db.DatabaseTestStepProcessor
  * @property testScenarioState the [TestScenarioState] object that holds the state of the test scenario.
  */
 open class CassandraTestStepProcessor protected constructor(dbServers: Map<String, CassandraRequestExecutor>)
-    : DatabaseTestStepProcessor<CassandraRequestExecutor, CassandraTestStep>(dbServers), ScopeAware {
+    : DatabaseTestStepProcessor<CassandraRequestExecutor, CassandraTestStep>(dbServers) {
 
     override fun getTestStepClass(): Class<CassandraTestStep> = CassandraTestStep::class.java
 

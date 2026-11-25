@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.performance
 
-import org.skellig.teststep.processing.processor.ScopeAware
 import org.skellig.teststep.processing.model.TestStep
 import org.skellig.teststep.processing.model.factory.TestStepRegistry
 import org.skellig.teststep.processing.processor.TestStepProcessor
@@ -26,7 +25,7 @@ open class PerformanceTestStepProcessor protected constructor(
     private val testStepProcessor: TestStepProcessor<TestStep>,
     private val testStepRegistry: TestStepRegistry,
     private val metricsFactory: MetricsFactory
-) : TestStepProcessor<PerformanceTestStep>, ScopeAware {
+) : TestStepProcessor<PerformanceTestStep> {
 
     internal var isClosed = AtomicBoolean(false)
 

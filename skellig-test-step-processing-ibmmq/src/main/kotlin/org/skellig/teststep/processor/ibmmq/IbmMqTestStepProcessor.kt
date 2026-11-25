@@ -1,6 +1,5 @@
 package org.skellig.teststep.processor.ibmmq
 
-import org.skellig.teststep.processing.processor.ScopeAware
 import org.skellig.teststep.processing.processor.BaseTestStepProcessor
 import org.skellig.teststep.processing.processor.TestStepProcessor
 import org.skellig.teststep.processing.util.debug
@@ -24,7 +23,7 @@ import org.skellig.teststep.processor.ibmmq.model.IbmMqTestStep
  */
 open class IbmMqTestStepProcessor protected constructor(
     private val ibmMqChannels: Map<String, IbmMqChannel>
-) : BaseTestStepProcessor<IbmMqTestStep>(), ScopeAware {
+) : BaseTestStepProcessor<IbmMqTestStep>() {
 
     private val log = logger<IbmMqTestStepProcessor>()
 

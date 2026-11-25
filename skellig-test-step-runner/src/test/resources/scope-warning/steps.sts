@@ -1,3 +1,0 @@
-name ("Run scope warning fixture") {
-    scopeWarningFixture = true
-}
