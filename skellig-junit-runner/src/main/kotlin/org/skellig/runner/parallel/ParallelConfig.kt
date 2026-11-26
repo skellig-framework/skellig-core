@@ -2,30 +2,17 @@ package org.skellig.runner.parallel
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigException
-import com.typesafe.config.ConfigValueType
 import org.skellig.runner.exception.ParallelConfigException
-import java.util.regex.PatternSyntaxException
 
 /**
  * The settings of `skellig.parallel`.
  *
  * @property mode Which tests run in parallel.
  * @property threads The maximum number of parallel groups which run at the same time, 0 means the number of processors.
- * @property tagGroups The ordered tags which form parallel groups in the mode [ParallelMode.TAG].
- * @property tagPattern Tags which match it form parallel groups in the mode [ParallelMode.TAG]. It is an alternative to
- * [tagGroups], which win when both are set.
- * @property onMultipleTags What to do with a scenario which has several group tags.
- * @property untaggedScenarios What to do with a scenario which has no group tag.
- * @property exclusiveTags The tags of scenarios which run alone, after the parallel part of the run.
  */
 class ParallelConfig(
     val mode: ParallelMode,
-    val threads: Int,
-    val tagGroups: List<String>,
-    val tagPattern: Regex?,
-    val onMultipleTags: OnMultipleTags,
-    val untaggedScenarios: UntaggedScenarios,
-    val exclusiveTags: Set<String>
+    val threads: Int
 ) {
 
     val isParallel: Boolean = mode != ParallelMode.NONE
@@ -51,12 +38,7 @@ class ParallelConfig(
             try {
                 ParallelConfig(
                     mode = choice(config, "mode", ParallelMode.entries),
-                    threads = threads(config),
-                    tagGroups = tags(config, "tag.groups"),
-                    tagPattern = pattern(config),
-                    onMultipleTags = choice(config, "tag.on-multiple", OnMultipleTags.entries),
-                    untaggedScenarios = choice(config, "tag.untagged", UntaggedScenarios.entries),
-                    exclusiveTags = tags(config, "exclusive-tags").toSet()
+                    threads = threads(config)
                 )
             } catch (ex: ConfigException) {
                 // a setting which is not found, such as when 'skellig.parallel' itself is not an object
@@ -78,31 +60,6 @@ class ParallelConfig(
             }
             if (threads < 0) throw invalid("threads", threads.toString(), expected)
             return threads
-        }
-
-        private fun pattern(config: Config): Regex? {
-            val pattern = text(config, "tag.pattern")
-            return if (pattern.isBlank()) null
-            else try {
-                Regex(pattern)
-            } catch (ex: PatternSyntaxException) {
-                throw invalid("tag.pattern", pattern, "expected a regular expression, but ${ex.description}", ex)
-            }
-        }
-
-        private fun tags(config: Config, key: String): List<String> {
-            val path = "$PARALLEL.$key"
-            val tags = try {
-                // tags in a system property are separated by commas, as in 'skellig.includeTags'
-                if (config.getValue(path).valueType() == ConfigValueType.STRING) {
-                    config.getString(path).split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                } else config.getStringList(path)
-            } catch (ex: ConfigException) {
-                throw invalid(key, text(config, key), "expected a list of tags", ex)
-            }
-            tags.firstOrNull { !it.startsWith("@") || it.length == 1 }
-                ?.let { throw invalid(key, it, "expected tags which start with '@'") }
-            return tags
         }
 
         private fun text(config: Config, key: String): String =
